@@ -1,0 +1,245 @@
+<?php
+/**
+ * Structure step to restore one quest activity
+ */
+class restore_quest_activity_structure_step extends restore_activity_structure_step {
+ 
+    protected function define_structure() {
+ 
+        $paths = array();
+        $userinfo = $this->get_setting_value('userinfo');
+ 
+        $paths[] = new restore_path_element('quest', '/activity/quest');
+        $paths[] = new restore_path_element('quest_element', '/activity/quest/elements/element');
+        $paths[] = new restore_path_element('quest_rubric', '/activity/quest/elements/element/rubrics/rubric');  
+        $paths[] = new restore_path_element('quest_element_autor', '/activity/quest/elements_autor/element_autor'); 
+        $paths[] = new restore_path_element('quest_rubric_autor', '/activity/quest/elements_autor/element_autor/rubrics/rubric');  
+        $paths[] = new restore_path_element('quest_challenge', '/activity/quest/challenges/challenge');
+        $paths[] = new restore_path_element('quest_particular_element', '/activity/quest/challenges/challenge/particular_elements/particular_element');
+        
+
+        if ($userinfo) {
+            $paths[] = new restore_path_element('quest_answer', '/activity/quest/challenges/challenge/answers/answer');
+            $paths[] = new restore_path_element('quest_assessment', '/activity/quest/challenges/challenge/answers/answer/assessments/assessment');
+            $paths[] = new restore_path_element('quest_assessment_autor', '/activity/quest/challenges/challenge/assessments_autor/assessment_autor');
+            $paths[] = new restore_path_element('quest_element_assess', '/activity/quest/challenges/challenges/elements_assess/elements_assess');
+            $paths[] = new restore_path_element('quest_team', '/activity/quest/teams/team');
+            $paths[] = new restore_path_element('quest_calification_user', '/activity/quest/califications_users/calification_user');
+            $paths[] = new restore_path_element('quest_calification_team', '/activity/quest/teams/team/califications_teams/calification_team');
+            
+            
+        }
+
+        // Return the paths wrapped into standard activity structure
+        return $this->prepare_activity_structure($paths);
+    }
+ 
+    protected function process_quest($data) {
+        global $DB;
+ 
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->course = $this->get_courseid();
+        
+        $data->datestart = $this->apply_date_offset($data->datestart);
+        $data->dateend = $this	->apply_date_offset($data->dateend);
+ 
+        // insert the quest record
+        $newitemid = $DB->insert_record('quest', $data);
+        // immediately after inserting "activity" record, call this
+        $this->apply_activity_instance($newitemid);
+    }
+	protected function process_quest_element($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $data->questid = $this->get_new_parentid('quest');
+        $newitemid = $DB->insert_record('quest_elements', $data);
+//         $oldid = $data->id;
+//         $this->set_mapping('quest_element', $oldid, $newitemid);
+    }
+    protected function process_quest_particular_element($data)
+    {
+    	global $DB;
+    
+    	$data = (object)$data;
+    	$data->questid = $this->get_new_parentid('quest');
+        $data->submissionsid = $this->get_mappingid('quest_challenge', $data->submissionsid);
+    	    	
+    	$newitemid = $DB->insert_record('quest_elements', $data);
+    	//         $oldid = $data->id;
+    	//         $this->set_mapping('quest_element', $oldid, $newitemid);
+    }
+	protected function process_quest_element_autor($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $data->questid = $this->get_new_parentid('quest');
+      
+        $newitemid = $DB->insert_record('quest_elementsautor', $data);
+//        $oldid = $data->id;
+//        $this->set_mapping('quest_element_autor', $oldid, $newitemid);
+    }
+	protected function process_quest_rubric_autor($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $oldid = $data->id;
+ 
+        $data->questid = $this->get_new_parentid('quest');
+        $data->submissionsid = $this->get_mappingid('quest_challenge', $data->submissionsid);
+        
+        $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
+        $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
+    }
+	protected function process_quest_rubric($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $oldid = $data->id;
+ 
+        $data->questid = $this->get_new_parentid('quest');
+      
+        $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
+        $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
+    }
+    protected function process_quest_challenge($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $oldid = $data->id;
+ 
+        $data->questid = $this->get_new_parentid('quest');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
+        $data->dateend = $this->apply_date_offset($data->dateend);
+        $data->datestart = $this->apply_date_offset($data->datestart);
+        $data->dateanswercorrect = $this->apply_date_offset($data->dateanswercorrect);
+        
+        if ($data->initialpoints==null)
+        	$data->initialpoints=0; // TODO JPC circunvents a bug with legacy backup
+        $newitemid = $DB->insert_record('quest_submissions', $data);
+        $this->set_mapping('quest_challenge', $oldid, $newitemid,true);
+    }
+  protected function process_quest_element_assess($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->assessmentid = $this->get_mappingid('quest_assessment', $data->assessmentid);
+        $data->userid = $this->get_mappingid('user', $data->userid);
+ 
+        $newitemid = $DB->insert_record('quest_elements_assessments', $data);
+
+//        $oldid = $data->id;
+//        $this->set_mapping('quest_element_assess', $oldid, $newitemid);
+    }
+ 	protected function process_quest_team($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+ 		$oldid = $data->id;
+        $data->questid = $this->get_new_parentid('quest');
+ 
+        $newitemid = $DB->insert_record('quest_teams', $data);
+        
+        $this->set_mapping('quest_team', $oldid, $newitemid);
+    }
+  
+    protected function process_quest_answer($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+  		$oldid = $data->id;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->submissionid = $this->get_new_parentid('quest_challenge');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->date = $this->apply_date_offset($data->date);
+ 
+        $newitemid = $DB->insert_record('quest_answers', $data);
+        
+        $this->set_mapping('quest_answer', $oldid, $newitemid,true);
+    }
+    protected function process_quest_calification_user($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+  		
+        $data->questid = $this->get_new_parentid('quest');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->teamid = $this->get_mappingid('quest_team', $data->teamid);
+        
+ 
+        $newitemid = $DB->insert_record('quest_calification_users', $data);
+//        $oldid = $data->id;
+//        $this->set_mapping('quest_calification_user', $oldid, $newitemid);
+    }
+    protected function process_quest_calification_team($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->teamid = $this->get_new_parentid('quest_team', $data->teamid);
+        
+ 
+        $newitemid = $DB->insert_record('quest_calification_teams', $data);
+        
+//        $oldid = $data->id;
+//        $this->set_mapping('quest_calification_team', $oldid, $newitemid);
+    }
+  protected function process_quest_assessment($data)
+    {
+        global $DB;
+ 
+        $data = (object)$data;
+ 	 	$oldid = $data->id;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->answerid = $this->get_new_parentid('quest_answer');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->teacherid = $this->get_mappingid('user', $data->teacherid);
+        
+        $data->dateassessment = $this->apply_date_offset($data->dateassessment);
+ 
+        $newitemid = $DB->insert_record('quest_assessments', $data);
+        
+        $this->set_mapping('quest_assessment', $oldid, $newitemid);
+    }
+ 	protected function process_quest_assessment_autor($data)
+    {
+      global $DB;
+ 
+        $data = (object)$data;
+ 		 $oldid = $data->id;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->submissionid =  $this->get_new_parentid('quest_challenge');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        
+        $data->dateassessment = $this->apply_date_offset($data->dateassessment);
+ 
+        $newitemid = $DB->insert_record('quest_assessments', $data);
+        
+        $this->set_mapping('quest_assessment', $oldid, $newitemid);
+    }
+    
+    
+    
+    protected function after_execute() {
+        // Add quest related files, no need to match by itemname (just internally handled context)
+    	$this->add_related_files('mod_quest','description','quest');
+        $this->add_related_files('mod_quest','submission','quest_challenge');
+ 		$this->add_related_files('mod_quest','attachment','quest_challenge');
+ 		$this->add_related_files('mod_quest','answer','quest_answer');
+ 		$this->add_related_files('mod_quest','answer_attachment','quest_answer');
+    }
+}

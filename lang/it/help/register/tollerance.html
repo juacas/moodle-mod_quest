@@ -1,0 +1,28 @@
+<p><img valign="absmiddle" src="<?php echo $CFG->wwwroot?>/mod/register/icon.gif">&nbsp;<b>Gestione statistica del timeout</b></p>
+<ul>
+<p>L'HTTP è un protocollo stateless, quindi a rigor di logica non esiste un tempo di connessione,
+ esistono solo le singole interrogazioni del browser al server HTTP.
+ Per questo motivo è necessario fissare un tempo limite dopo il quale si suppone che la sessione sia stata chiusa
+ (nel modulo Registro <b>questo tempo è fissato a 30 minuti</b> ed è facilmente modificabile: viene definita la costante REGISTER_SESSION_TIMEOUT.
+Dovendo fare un po' di statistica si può dire che la durata della sessione è una variabile aleatoria uniforme
+che può assumere valori da (ultimo log - login) a (ultimo log - login + REGISTER_SESSION_TIMEOUT).
+Il Registro può funzionare in due modalità: senza calcolare lo scarto d'errore oppure calcolando lo scarto d'errore.
+</p><p><b>Senza il calcolo dello scarto d'errore</b><br>
+In questa modalità (che è quella di default) non viene considerato lo scarto d'errore e la durata della
+sessioni sarà pari a: <i>ultimo log - login + REGISTER_SESSION_TIMEOUT</i>.
+Per esempio se il primo log di un utente è alle 10.00 e l'ultimo è alle 11.00, sapendo che
+REGISTER_SESSION_TIMEOUT = 30 minuti si ha:
+(11.00 - 10.00) + 30 min = 90 minuti</p><p>
+<b>Con il calcolo dello scarto d'errore</b><br>
+In questa modalità il logout è posto pari al valor medio della variabile aleatoria.
+Nell'esempio precedente poiché l'ultimo log è avvenuto alle 11.00 e non abbiamo avuto
+altri log almeno fino alle 11.30, l'utente potrebbe essersi disconnesso nel periodo che
+va dalle 11.00 alle 11.30, pertanto alle 11.15 verrà dichiarato il logout e verrà attribuita
+alla sessione una deviazione standard di 15 minuti.
+</p>
+<p><b>Differenze tra i due approcci</b><br>
+Essenzialmente il secondo approccio è più preciso e si avvicina maggiormente alla realtà, inoltre
+permette di fare stime statistiche sugli intervalli di fiducia della somma delle singole sessioni.
+Il primo invece è più essenziale anche se, per corsi online lunghi, attribuisce all'utente molte più ore 
+rispetto a quelle in cui effettivamente è stato presente sulla piattaforma.
+</ul>

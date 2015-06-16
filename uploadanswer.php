@@ -1,0 +1,209 @@
+<?php  // $Id: uploadanswer.php
+/******************************************************
+* Module developed at the University of Valladolid
+* Designed and directed by Juan Pablo de Castro with the effort of many other
+* students of telecommunciation engineering
+* this module is provides as-is without any guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro and many others.
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package quest
+*********************************************************/
+
+    require("../../config.php");
+    require("lib.php");
+    require("locallib.php");
+
+    $id=required_param('id',PARAM_INT);          // CM ID
+
+	global $DB;
+    if (! $cm = $DB->get_record("course_modules", array("id"=> $id))) {
+        error("Course Module ID was incorrect");
+    }
+    if (! $course = $DB->get_record("course", array("id"=> $cm->course))) {
+        error("Course is misconfigured");
+    }
+    if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
+        error("Quest is incorrect");
+    }
+
+    require_login($course->id, false, $cm);
+    quest_check_visibility($course,$cm);
+    $context = context_module::instance( $cm->id);
+    $ismanager=has_capability('mod/quest:manage',$context);
+    
+/*****
+TODO: Check capabilities
+***/
+
+// filter access to guest user
+$context = context_module::instance( $cm->id);
+if (!has_capability('moodle/legacy:admin', $context) &&
+    has_capability('moodle/legacy:guest', $context))
+   {
+       print_error('You are not enrolled in this course!!');
+   }
+
+/******************
+*******************/
+    $strquests = get_string('modulenameplural', 'quest');
+    $strquest = get_string('modulename', 'quest');
+    $stranswer = get_string('answer', 'quest');
+
+    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
+    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
+    $groupmode=$currentgroup=false;//JPC group support desactivation
+    
+    print_header_simple(format_string($quest->name)." : $stranswer", "",
+                 "<a href=\"index.php?id=$course->id\">$strquests</a> ->
+                  <a href=\"view.php?a=$quest->id\">".format_string($quest->name,true)."</a> -> $stranswer",
+                  "", "", true);
+    $timenow = time();
+
+    $form = data_submitted("nomatch"); // POST may come from two forms
+
+    $submission = $DB->get_record("quest_submissions", "id", $form->sid);
+
+
+   if($form->save == 'SaveAnswer'){
+    // don't be picky about not having a title
+
+    if (!$title = $form->title) {
+        $title = get_string("notitle", "quest");
+    }
+    if(!$validate = quest_validate_user_answer($quest,$submission)){
+      error(get_string('answerexisty','quest'),"submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+    }
+
+
+    // add new answer record
+    $newanswer->questid   = $quest->id;
+    $newanswer->userid  = $USER->id;
+    $newanswer->submissionid  = $submission->id;
+    $newanswer->title  = $title;
+    $newanswer->description = trim($form->description);
+    $newanswer->date  = $timenow;
+
+    $points = quest_get_points($submission,$quest,$newanswer);
+    $newanswer->pointsmax = $points;
+    $newanswer->phase = 0;
+    $newanswer->state = 1;
+    $submission->nanswers++;
+
+    $newanswer->perceiveddifficulty=$form->perceiveddifficulty;
+
+
+    $DB->set_field("quest_submissions", "nanswers", $submission->nanswers, "id", $submission->id);
+
+
+    if (!$newanswer->id = $DB->insert_record("quest_answers", $newanswer)) {
+        error("Quest submission: Failure to create new submission record!");
+    }
+
+
+// TODO: elever  ¿esta parte está actualizada al mecanismo nuevo de Moodle 2??
+    // do something about the attachments, if there are any
+    if ($quest->nattachments)
+    {
+        require_once($CFG->dirroot.'/lib/uploadlib.php');
+        $um = new upload_manager(null,false,false,$course,false,$quest->maxbytes);
+        $dir = quest_file_area_name_answers($quest, $newanswer);
+
+        if ($um->process_file_uploads($dir))
+        {
+            add_to_log($course->id, "quest", "newattachment", "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer", "$newanswer->id","$cm->id");
+            print_heading(get_string("uploadsuccess", "quest"));
+        // um will take care of printing errors.
+        }
+        else
+        {
+        print_heading(get_string('upload'));
+        notify(get_string('uploaderror', 'quest'));
+        echo $um->get_errors();
+
+        $error_return_url="answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=modif";
+        $CFG->framename="top";
+        print_continue($error_return_url);
+        print_footer($course);
+        die;
+        }
+    }
+    else
+    {
+    	print_heading(get_string("submittedanswer", "quest")." ".get_string("ok"));
+    }
+
+
+
+
+
+///////////////////////////////////////
+//Update scores and statistics
+////////////////////////////////////////
+quest_update_submission_counts($answer->submissionid);
+    
+////////////////////////////////////////
+// Update current User scores
+quest_update_user_scores($quest,$newanswer->userid);
+////////////////////////////////////////
+//  Update answer current team totals
+if($quest->allowteams)
+	{
+	quest_update_team_scores($quest->id,quest_get_user_team($quest->id,$newanswer->userid));
+	}
+////////////////////////////////////////////////////
+
+
+/**
+ * NOTIFICATIONS
+ */
+        if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")){
+            print_heading(get_string("nostudentsyet"));
+            print_footer($course);
+            exit;
+    }
+    //    JPC 2013-11-28 disable excesive notifications
+//     foreach($users as $user){
+//           if($ismanager)
+//           {
+//           quest_send_message($user, "answer.php?sid=$sid&amp;aid=$newanswer->id&amp;action=showanswer", 'answeradd', $quest, $submission, $newanswer);
+//           }
+//     }
+
+    
+// Challenge author is always notified
+//    if(!isteacher($course->id,$submission->userid))
+    {
+     $user = get_complete_user_data('id', $submission->userid);
+     quest_send_message($user, "answer.php?sid=$sid&amp;aid=$newanswer->id&amp;action=showanswer", 'answeradd', $quest, $submission, $newanswer);
+    }
+
+    add_to_log($course->id, "quest", "submit_answer", "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer", "$newanswer->id", "$cm->id");
+    print_continue("submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+    print_footer($course);
+
+   }
+   elseif($form->save1 == "PreviewAnswer"){
+
+
+        echo "<hr size=\"1\" noshade=\"noshade\" />";
+        print_heading_with_help(get_string('windowpreview','quest'),"windowpreview","quest");
+
+        $title = $form->title;
+        echo "<center><b>".get_string('title','quest').": ".$title."</b></center><br>";
+        echo "<center><b>".get_string('description','quest')."</b></center>";
+        // print upload form
+        $answer->title = $form->title;
+        $temp = '\\';
+        $temp1 = $temp.$temp;
+        $answer->description = str_replace($temp1,$temp,$form->description);
+
+        print_simple_box(format_text($answer->description), 'center');
+
+        close_window_button();
+
+       print_footer($course);
+       exit;
+   }
+?>
