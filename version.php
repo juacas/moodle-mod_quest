@@ -6,9 +6,10 @@
 /////////////////////////////////////////////////////////////////////////////////
 defined('MOODLE_INTERNAL') || die();
 
-$module->version  = 2014011401;
-$module->requires = 2011011900; // The current module version (Date: YYYYMMDDXX)
-$module->component = 'mod_quest';
-$module->cron     = 600// Period for cron to check this module (secs)
-
+$plugin->version  = 2014011401;
+$plugin->requires = 2012011900; // The current module version (Date: YYYYMMDDXX)
+$plugin->component = 'mod_quest';
+$plugin->cron     = 600;// Period for cron to check this module (secs)
+$plugin->matutity = MATURITY_STABLE;
+$plugin->release = 'v1.2';
 ?>
