@@ -10,6 +10,6 @@ $plugin->version  = 2014011401;
 $plugin->requires = 2012011900; // The current module version (Date: YYYYMMDDXX)
 $plugin->component = 'mod_quest';
 $plugin->cron     = 600;// Period for cron to check this module (secs)
-$plugin->matutity = MATURITY_STABLE;
-$plugin->release = 'v1.2';
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release = 'v1.2.1';
 ?>
