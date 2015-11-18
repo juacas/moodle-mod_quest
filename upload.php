@@ -308,9 +308,9 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 
 
         $user = get_complete_user_data('id', $submission->userid);
-
+        if (!$user){
         quest_send_message($user, "view.php?id=$cm->id", 'deletesubmission', $quest, $submission, '');
-
+        }
         add_to_log($course->id, "quest", "delete_submission", "view.php?id=$cm->id", "$quest->id", "$cm->id");
         redirect("view.php?id=$cm->id");
 

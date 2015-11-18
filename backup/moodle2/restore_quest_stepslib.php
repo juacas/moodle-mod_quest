@@ -18,7 +18,7 @@
  * Backup Questournament module
  *
  * Structure step to restore one quest activity
- * 
+ *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
  * students of telecommunciation engineering
@@ -142,8 +142,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $oldid = $data->id;
 
         $data->questid = $this->get_new_parentid('quest');
-        $data->userid = $this->get_mappingid('user', $data->userid);
-
+        // If userid==0 assign it to the user that is restoring the course
+        $data->userid = $data->userid===0?$USER->id:$this->get_mappingid('user', $data->userid);
         $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->dateend = $this->apply_date_offset($data->dateend);
         $data->datestart = $this->apply_date_offset($data->datestart);

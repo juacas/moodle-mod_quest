@@ -1853,7 +1853,7 @@ function quest_refresh_events($courseid = 0) {
 
 /**
  * API funtion for reporting recent aactivity
- * 
+ *
  * @global type $CFG
  * @global type $USER
  * @global type $OUTPUT
@@ -2072,7 +2072,7 @@ function quest_file_area_name_submissions($quest, $submission) {
 function quest_fullname($userid, $courseid) {
     global $CFG,$DB;
     if (!$user = $DB->get_record('user',array('id'=>$userid))) {
-        return '';
+        return 'Unknown user ($userid)';
     }
     return '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$courseid.'">'.
         fullname($user).'</a>';
@@ -2250,7 +2250,9 @@ function quest_get_course_members($courseid, $sort='s.timeaccess', $dir='', $pag
  {
     require_once 'locallib.php';
     global $CFG, $SITE, $DB,$COURSE;
-
+    if (!$user){
+        return;
+    }
     $user = get_complete_user_data('id', $user->id);
     $site = get_site();
     if (empty($from) || $from==null)

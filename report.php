@@ -82,9 +82,11 @@ if ($submissions = quest_get_submissions($quest))
         // output a submission
         $user = get_complete_user_data('id', $submission->userid);
         echo "<b>Author:</b>";
-        // User Name Surname
-        echo $OUTPUT->user_picture($user);
-        echo "<a name=\"userid->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
+        if ($user){
+            // User Name Surname
+            echo $OUTPUT->user_picture($user);
+            echo "<a name=\"userid->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
+        }
         echo '</td><td width="100%">';
 
         echo '<table border="0"><tr><td>';

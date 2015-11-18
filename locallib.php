@@ -1556,9 +1556,10 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
 // 		if(!has_capability('mod/quest:manage',$context,$submission->userid))
 // 		{
     $user = get_complete_user_data('id', $submission->userid);
-    quest_send_message($user, "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", 'answeradd', $quest,
+    if ($user){
+        quest_send_message($user, "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", 'answeradd', $quest,
             $submission, $answer);
-// 		}
+ 		}
 
     if ($modif == false) {
         add_to_log($COURSE->id, "quest", "submit_answer",
@@ -4515,14 +4516,14 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
          * @param int $userid specified user
          */
         function quest_grade_updated($quest, $userid) {
-            ///////////////////////////
-            // Update current User scores
-            ////////////////////////////
+            if (!$userid){
+                return;
+            }
+            // Update current User scores.
             quest_update_user_scores($quest, $userid);
             $userids = array($userid);
-            ///////////////////////////
-            //  Update answer current team totals
-            ///////////////////////////
+
+            //  Update answer current team totals.
             if ($quest->allowteams) {
                 $team = quest_get_user_team($quest->id, $userid);
 
@@ -4532,8 +4533,8 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             }
 
 
-            // Report to gradebook
-            // as score are relative to other's we need to update all grades
+            // Report to gradebook.
+            // as score are relative to other's we need to update all grades.
             quest_update_grades($quest, 0);
         }
 
@@ -4975,11 +4976,8 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             quest_update_assessment($assessment);
             quest_update_submission($submission);
             quest_update_submission_counts($submission->id);
-            /////////////////////
-            // recalculate points and report to gradebook
-            //////////////////////
+            // Recalculate points and report to gradebook.
             quest_grade_updated($quest, $submission->userid);
-
 
             $aid = $assessment->id;
             if (!empty($assessment->teacherid)) {

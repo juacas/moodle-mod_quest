@@ -378,9 +378,10 @@ if ($action == "answer") {
     }
     if (!has_capability('mod/quest:manage', $context, $submission->userid)) {
         $user = get_complete_user_data('id', $submission->userid);
-
+        if ($user){
         quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
                 'answerdelete', $quest, $submission, $answer);
+        }
     }
 
     echo $OUTPUT->redirect_message($submissionurl, get_string('emailanswerdeletesubject', 'quest'), 3, false);
@@ -551,12 +552,13 @@ if ($action == "answer") {
     // if(!isteacher($course->id,$submission->userid))
     // {
     $user = get_complete_user_data('id', $submission->userid);
-    quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer", 'answeradd',
-            $quest, $submission, $answer);
+    if ($user){
+        quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer", 'answeradd',$quest, $submission, $answer);
+    }
     // }
 
-    add_to_log($course->id, "quest", "modif_answer", "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer",
-            "$answer->id", "$cm->id");
+//    add_to_log($course->id, "quest", "modif_answer", "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer",
+//            "$answer->id", "$cm->id");
 
     print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
 
