@@ -1,17 +1,33 @@
-<?PHP // $Id: index.php
-/******************************************************
-* Module developed at the University of Valladolid
-* Designed and directed by Juan Pablo de Castro with the effort of many other
-* students of telecommunciation engineering
-* this module is provides as-is without any guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro and many others.
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package quest
-*******************************************************/
-/// This page lists all the instances of QUEST in a particular course
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
+/**
+ * This page lists all the instances of QUEST in a particular course
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+ *
+ */
     require_once("../../config.php");
     require_once("lib.php");
     require("locallib.php");
@@ -22,37 +38,37 @@
     }
 
     require_login($course);
-    
+
   	$context = context_course::instance( $course->id);
     add_to_log($course->id, "quest", "view all", "index.php?id=$course->id", "");
 
-/// Get all required strings
+// Get all required strings
 
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strinfo = get_string("phase", "quest");
     $strdeadline = get_string("deadline", "quest");
-    
+
     //print the header
     $url =  new moodle_url('/mod/quest/index.php',array('id'=>$id));
-    
+
     $PAGE->set_url($url);
     $PAGE->navbar->add($strquests, "index.php?id=$course->id");
     $PAGE->set_title($strquests);
     $PAGE->set_heading($course->fullname);
-    
+
     echo $OUTPUT->header();
-    
- 
-             
-/// Get all the appropriate data
+
+
+
+// Get all the appropriate data
 
     if (! $quests = get_all_instances_in_course("quest", $course)) {
         notice("There are no quests", "../../course/view.php?id=$course->id");
         die;
     }
 
-/// Print the list of instances 
+// Print the list of instances
 
     $timenow = time();
     $strname  = get_string("name");
@@ -76,7 +92,7 @@
         $info = quest_phase($quest);
         $due = userdate($quest->dateend);
 
-        if (!$quest->visible && has_capability('moodle/course:viewhiddenactivities', $context)) 
+        if (!$quest->visible && has_capability('moodle/course:viewhiddenactivities', $context))
         {
                 //Show dimmed if the mod is hidden
                 $link = "<a class=\"dimmed\" href=\"view.php?id=$quest->coursemodule\">".format_string($quest->name,true)."</a>";
@@ -97,7 +113,7 @@
 
     echo html_writer::table($table);
 
-/// Finish the page
+// Finish the page
 
     echo $OUTPUT->footer();
 

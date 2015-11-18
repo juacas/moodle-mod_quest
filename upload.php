@@ -1,13 +1,31 @@
-<?php  // $Id: upload.php
-/******************************************************
-* Module developed at the University of Valladolid
-* Designed and directed by Juan Pablo de Castro with the effort of many other
-* students of telecommunciation engineering
-* this module is provides as-is without any guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro and many others.
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package quest
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
 ***************************************/
     require("../../config.php");
     require("lib.php");
@@ -17,22 +35,22 @@
 	global $DB;
 
     if (! $cm = get_coursemodule_from_id('quest', $id)) {
-        error("Course Module ID was incorrect");
+        print_error("CourseModuleIDwasincorrect",'quest');;
     }
     if (! $course = $DB->get_record("course",array("id"=> $cm->course))) {
-        error("Course is misconfigured");
+        print_error("course_misconfigured",'quest');
     }
     if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
-        error("Quest is incorrect");
+        print_error("incorrectQuest",'quest');;
     }
 
 
     require_login($course->id, false, $cm);
     quest_check_visibility($course,$cm);
-    
+
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
-    
+
 /*****
 TODO: Check capabilities
 ***/
@@ -53,23 +71,23 @@ if (!has_capability('moodle/legacy:admin', $context) &&
     $strsubmission = get_string('submission', 'quest');
     $action = 'upload';
 	$straction = ($action) ? '-> '.get_string($action, 'quest') : '';
-    
+
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
     $groupmode = groupmode($course, $cm);   // Groups are being used?
     $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode=$currentgroup=false;//JPC group support desactivation
-    
+
     $url =  new moodle_url('/mod/quest/upload.php',array('id'=>$id));
-    
+
     $PAGE->set_url($url);
     $PAGE->navbar->add($strquests, "index.php?id=$course->id");
     $PAGE->navbar->add($strsubmission, "view.php?id=$quest->id");
     $PAGE->set_title($strquests);
     $PAGE->set_heading($course->fullname);
-    
+
     echo $OUTPUT->header();
-    
-    
+
+
     $timenow = time();
 
     $form = data_submitted("nomatch"); // POST may come from two forms
@@ -134,7 +152,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
           	$newsubmission->perceiveddifficulty=$form->perceiveddifficulty;
           	$newsubmission->predictedduration=$form->predictedduration;
           }
-          
+
           if($DB->update_record("quest_submissions", $newsubmission))
           {
            if($newsubmission->datestart <= time())
@@ -189,12 +207,12 @@ if (!has_capability('moodle/legacy:admin', $context) &&
           }
           add_to_log($course->id, "quest", "approve_submission", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
           print_heading(get_string("submitted", "quest")." ".get_string("ok"));
-          print_continue("view.php?id=$cm->id");
+          echo $OUTPUT->continue_button("view.php?id=$cm->id");
           print_footer($course);
 
 
     }
-    elseif($form->operation == get_string("save","quest"))
+    else if($form->operation == get_string("save","quest"))
     {
          // add new submission record
          $newsubmission->id=$form->sid;
@@ -245,12 +263,12 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 
             add_to_log($course->id, "quest", "save_submission", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
           }
-          print_continue("view.php?id=$cm->id");
+          echo $OUTPUT->continue_button("view.php?id=$cm->id");
           print_footer($course);
 
 
     }
-    elseif($form->operation == get_string("delete","quest")){
+    else if($form->operation == get_string("delete","quest")){
 
         if(! $submission = $DB->get_record("quest_submissions", array("id"=> $form->sid))){
                error("Submission id is incorrect");
@@ -285,7 +303,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
         // ...and the submission record...
         $DB->delete_records("quest_submissions", array("id"=> $submission->id));
         // ..and finally the submitted file
-       
+
         quest_delete_submitted_files_submissions($quest, $submission);
 
 
@@ -340,7 +358,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
     if($ismanager || has_capability('quest:addchallenge', $context))
     {
      $newsubmission->comentteacherpupil = $form->comentteacherpupil;
-    
+
      if(isset($form->perceiveddifficulty))
      {
      	$newsubmission->perceiveddifficulty=$form->perceiveddifficulty;
@@ -386,12 +404,12 @@ if (!has_capability('moodle/legacy:admin', $context) &&
     }
 
     if(!quest_check_submission_dates($newsubmission, $quest)){
-       error(get_string('invaliddates', 'quest'),"view.php?id=$cm->id&amp;action=submitexample");
+       error(get_string('invaliddates', 'quest'),"view.php?id=$cm->id&amp;action=submitchallenge");
     }
     if(!quest_check_submission_text($newsubmission)){
-       error(get_string('invalidtext', 'quest'),"view.php?id=$cm->id&amp;action=submitexample");
+       error(get_string('invalidtext', 'quest'),"view.php?id=$cm->id&amp;action=submitchallenge");
     }
-   
+
     if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
         error("Quest submission: Failure to create new submission record!");
     }
@@ -490,11 +508,11 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 
     add_to_log($course->id, "quest", "submit_submissi", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
 
-    print_continue("view.php?id=$cm->id");
+    echo $OUTPUT->continue_button("view.php?id=$cm->id");
     print_footer($course);
 
    }
-   elseif(isset($form->save1) && $form->save1 == "Preview")
+   else if(isset($form->save1) && $form->save1 == "Preview")
    {
 
     echo "<hr size=\"1\" noshade=\"noshade\" />";

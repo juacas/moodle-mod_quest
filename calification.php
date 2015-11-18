@@ -1,14 +1,32 @@
-<?php  // $Id: assess.php
-/******************************************************
-* Module developed at the University of Valladolid
-* Designed and directed by Juan Pablo de Castro with the effort of many other
-* students of telecommunciation engineering
-* this module is provides as-is without any guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro and many others.
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package quest
-*********************************************************/
+<?php
+// This file is part of INTUITEL http://www.intuitel.eu as an adaptor for Moodle http://moodle.org/
+//
+// INTUITEL for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// INTUITEL for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with INTUITEL for Moodle Adaptor.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+ * ******************************************************* */
     require("../../config.php");
     require("lib.php");
     require("locallib.php");
@@ -26,11 +44,11 @@
 
     if ($id) {
         if (! $cm = $DB->get_record("course_modules", array("id"=>$id))) {
-            error("Course Module ID was incorrect");
+            print_error("CourseModuleIDwasincorrect",'quest');;
         }
 
         if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
-            error("Course is misconfigured");
+            print_error("course_misconfigured",'quest');
         }
 
         if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
@@ -45,15 +63,15 @@
 
     require_login($course->id, false, $cm);
 	quest_check_visibility($course,$cm);
-	
+
 	$context = context_module::instance( $cm->id);
 	$ismanager=has_capability('mod/quest:manage',$context);
-	
+
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strcalification = get_string("calification", "quest");
 
-    /// Now check whether we need to display a frameset
+    // Now check whether we need to display a frameset
 
     if (empty($_GET['frameset'])) {
         echo "<head><title>{$course->shortname}: ".format_string($quest->name,true)."</title></head>\n";
@@ -64,7 +82,7 @@
         exit;
     }
 
-    /// top frame with the navigation bar and the assessment form
+    // top frame with the navigation bar and the assessment form
 
     if (!empty($_GET['frameset']) and $_GET['frameset'] == "top") {
 
@@ -154,7 +172,7 @@
         exit;
     }
 
-    /// print bottom frame with the submission
+    // print bottom frame with the submission
 
     print_header('', '', '', '', '<base target="_parent" />');
 
@@ -162,17 +180,17 @@
 
         if($action == 'global'){
 
-        /// Check to see if groups are being used in this workshop
-        /// and if so, set $currentgroup to reflect the current group
+        // Check to see if groups are being used in this workshop
+        // and if so, set $currentgroup to reflect the current group
         $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
         $groupmode = groupmode($course, $cm);   // Groups are being used?
         $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
         $groupmode=$currentgroup=false;//JPC group support desactivation
-        
-        /// Print settings and things in a table across the top
+
+        // Print settings and things in a table across the top
         echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
 
-        /// Allow the teacher to change groups (for this session)
+        // Allow the teacher to change groups (for this session)
         if ($groupmode and isteacheredit($course->id)) {
             if ($groups = $DB->get_records_menu("groups", array("courseid"=> $course->id), "name ASC", "id,name")) {
                 echo '<td>';
@@ -180,7 +198,7 @@
                 echo '</td>';
             }
         }
-        /// Print admin links
+        // Print admin links
         echo "<td align=\"right\">";
         echo "<a href=\"submissions.php?cmid=$cm->id&amp;action=adminlist\">".
             get_string("administration")."</a>\n";
@@ -199,7 +217,7 @@
             exit;
         }
 
-        /// Now prepare table with student assessments and submissions
+        // Now prepare table with student assessments and submissions
         $tablesort->data = array();
         $tablesort->sortdata = array();
         foreach ($users as $user) {
@@ -339,19 +357,19 @@
 
        echo '</table>';
    }
-   elseif($action == 'teams'){
+   else if($action == 'teams'){
 
-        /// Check to see if groups are being used in this workshop
-        /// and if so, set $currentgroup to reflect the current group
+        // Check to see if groups are being used in this workshop
+        // and if so, set $currentgroup to reflect the current group
         $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
         $groupmode = groupmode($course, $cm);   // Groups are being used?
         $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
         $groupmode=$currentgroup=false;//JPC group support desactivation
-        
-        /// Print settings and things in a table across the top
+
+        // Print settings and things in a table across the top
         echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
 
-        /// Allow the teacher to change groups (for this session)
+        // Allow the teacher to change groups (for this session)
         if ($groupmode and isteacheredit($course->id)) {
             if ($groups = $DB->get_records_menu("groups", array("courseid"=>$course->id), "name ASC", "id,name")) {
                 echo '<td>';
@@ -359,7 +377,7 @@
                 echo '</td>';
             }
         }
-        /// Print admin links
+        // Print admin links
         echo "<td align=\"right\">";
         echo "<a href=\"submissions.php?cmid=$cm->id&amp;action=adminlist\">".
             get_string("administration")."</a>\n";
@@ -379,7 +397,7 @@
             exit;
         }
 
-        /// Now prepare table with student assessments and submissions
+        // Now prepare table with student assessments and submissions
         $tablesort->data = array();
         $tablesort->sortdata = array();
         $teamstemp = array();
@@ -540,7 +558,7 @@
        echo '</table>';
    }
 
-        print_continue($_SERVER['HTTP_REFERER'].'#sid='.$submission->id);
+        echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'].'#sid='.$submission->id);
 
     print_footer('none');
 

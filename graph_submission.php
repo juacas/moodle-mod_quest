@@ -1,4 +1,33 @@
 <?php
+// This file is part of INTUITEL http://www.intuitel.eu as an adaptor for Moodle http://moodle.org/
+//
+// INTUITEL for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// INTUITEL for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with INTUITEL for Moodle Adaptor.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+ * Draw the scoring graph
+ */
 global $CFG;
 require_once('../../config.php');
 require_once('lib.php');
@@ -6,7 +35,7 @@ require_once('lib.php');
 require_once('graphlib.php');
 function quest_calculate_points($timenow,$datestart,$dateend,$tinitial,$dateanswercorrect,$initialpoints,$pointsmax,$type)
 {
- 
+
 	if(($dateend - $datestart - $tinitial) == 0)
 	{
 		$incline = 0;
@@ -27,7 +56,7 @@ function quest_calculate_points($timenow,$datestart,$dateend,$tinitial,$dateansw
 		}
 	}
 
-        
+
 
         if($datestart > $timenow)
         {
@@ -51,7 +80,7 @@ function quest_calculate_points($timenow,$datestart,$dateend,$tinitial,$dateansw
             $grade = ($t - $tinitial)*$incline + $initialpoints;
             else
             $grade = $initialpoints*exp($incline*($t - $tinitial));
-            
+
         }
         else // is in decreasing zone
 	{
@@ -70,11 +99,11 @@ function quest_calculate_points($timenow,$datestart,$dateend,$tinitial,$dateansw
                 else
         	        {
 			// WARNING THIS MAY NOT WORK PROPERTLY
-			
+
 	                $grade = $initialpoints*exp($incline*($dateanswercorrect-$datestart-$tinitial));
 			$incline2 = (1/($dateend - $dateanswercorrect))*log(0.0001/$pointscorrect);
 	                $grade = $pointsanswercorrect*exp($incline2*$t);
-			
+
         	        }
 		}
 		else
@@ -92,7 +121,7 @@ function quest_calculate_points($timenow,$datestart,$dateend,$tinitial,$dateansw
 	                $grade = $pointsanswercorrect*exp($incline2*$t);
         	        }
 		}
-        		
+
         }
         if($grade < 0){
                 $grade = 0;
@@ -108,8 +137,8 @@ function quest_calculate_pointsb($timenow,$datestart,$dateend,$tinitial,$dateans
  if($dateanswercorrect!=0)
  {
  	$nanswerscorrect=1;
- 
- }	
+
+ }
         if(($dateend - $datestart - $tinitial) == 0){
          $incline = 0;
         }
@@ -202,7 +231,7 @@ function quest_calculate_pointsb($timenow,$datestart,$dateend,$tinitial,$dateans
                                 	$pointsanswercorrect=($dateanswercorrect-$datestart-$tinitial)*$incline+$initialpoints;
                                 else
                                    $pointsanswercorrect = $initialpoints*exp($incline*($dateanswercorrect-$datestart - $tinitial));
-                                
+
                                 if(($dateend - $dateanswercorrect) == 0){
                                  $incline = 0;
                                 }
@@ -249,7 +278,7 @@ $tinit = required_param('tinit', PARAM_INT);
 $initialpoints = required_param('ipoints', PARAM_INT);
 $dateanswercorrect = required_param('daswcorr', PARAM_INT);
 $pointsmax = required_param('pointsmax', PARAM_INT);
-$timenow = time(); 
+$timenow = time();
 $width =optional_param('width',300,PARAM_INT);
 $height =optional_param('height',200,PARAM_INT);
 //$date_first_answer= $DB->get_field("quest_answers","min(date)","submissionid",$sid,"phase",0);
@@ -268,7 +297,7 @@ $my_graph->parameter['x_min'] = $datestart;
 $my_graph->parameter['x_max'] = $dateend;
 $my_graph->parameter['x_label_date'] = 1;
 $my_graph->parameter['outer_background']="none";
-$my_graph->y_tick_labels = null; 
+$my_graph->y_tick_labels = null;
 
 
 //$date_first_answer = $datestart+0.25*$tinit;
@@ -281,7 +310,7 @@ if ($tinit+$datestart>$dateend) $tinit=$dateend-$datestart;
 
 if ($dateanswercorrect == 0)
 	{
-	if (empty($date_first_answer) || $date_first_answer == 0) 
+	if (empty($date_first_answer) || $date_first_answer == 0)
 		{
 		$points= quest_calculate_points($datestart,$datestart,$dateend,$tinit,$dateanswercorrect,$initialpoints,$pointsmax,0);
 //print($initialpoints);
@@ -290,7 +319,7 @@ if ($dateanswercorrect == 0)
 		$my_graph->y_data['line1']= array($initialpoints,$initialpoints,$pointsmax);
 		$my_graph->y_data['line2']= array($initialpoints,$initialpoints,$pointsmax);
 		}
-	else 
+	else
 		{
 		if ($date_first_answer < ($datestart+$tinit))
 			{
@@ -299,7 +328,7 @@ if ($dateanswercorrect == 0)
 			$my_graph->y_data['line1']= array($initialpoints,$initialpoints,$points,0);
 			$my_graph->y_data['line2']= array($initialpoints,$initialpoints,$initialpoints,$pointsmax);
 			}
-		else	
+		else
 			{
 			$incline = ($pointsmax-$initialpoints)/($dateend-($datestart+$tinit));
 			$points = $initialpoints + $incline * ($date_first_answer - ($datestart+$tinit));
@@ -307,13 +336,13 @@ if ($dateanswercorrect == 0)
 			$my_graph->y_data['line1']= array($initialpoints,$initialpoints,$points,0);
 			$my_graph->y_data['line2']= array($initialpoints,$initialpoints,$points,$pointsmax);
 			}
-		
+
 		}
 	} // end dateanswercorrect==0
-else 
+else
 	{//dateanswercorrect!=0
 
-	if (empty($date_first_answer) || $date_first_answer == 0 || $date_first_answer>$dateanswercorrect) 
+	if (empty($date_first_answer) || $date_first_answer == 0 || $date_first_answer>$dateanswercorrect)
 		{
 		$date_first_answer=$dateanswercorrect; //should not be necessary
 		}
@@ -332,9 +361,9 @@ else
 	//		$points2 = $initialpoints + $incline * ($dateanswercorrect - ($datestart+$tinit));
 	//		$my_graph->y_data['line1']= array($initialpoints,$initialpoints,$points2,0);
 		//	}
-		
+
 	//	}
-	//else 
+	//else
 		{ //$date_first_answer!=0
 
 		if ($dateanswercorrect >= $date_first_answer)
@@ -399,7 +428,7 @@ $my_graph->y_data['line2']= array($initialpoints,
 				  0);
 				}
 			} // end dateanswercorrect  > date_first_answer
-		else 
+		else
 			{  // dateanswercorrect <= date_first_answer
 			if ($dateanswercorrect < ($datestart+$tinit))
 				{
@@ -407,7 +436,7 @@ $my_graph->y_data['line2']= array($initialpoints,
 				$points = (($dateend*$initialpoints)- (($datestart+$tinit)*$initialpoints))/($dateend-$dateanswercorrect);
 				$my_graph->y_data['line1']= array($initialpoints,$initialpoints,$points,0);
 				}
-			else	
+			else
 				{
 				$my_graph->x_data= array($datestart,$datestart+$tinit,$dateanswercorrect,$dateend);
 				$incline = ($pointsmax-$initialpoints)/($dateend-($datestart+$tinit));
@@ -416,7 +445,7 @@ $my_graph->y_data['line2']= array($initialpoints,
 				//$my_graph->y_data['line2']= array($initialpoints,$initialpoints,$points2,$pointsmax);
 				}
 			}
-			
+
 		}
 }
 //$my_graph->y_format['line2'] = array('colour' => 'blue','line' => 'line','legend' => $param->line2);
@@ -431,14 +460,10 @@ $my_graph->y_min_left=0;
 
 
 $my_graph->draw_stack();
-
-//print_object($my_graph);
-
-
 $xtoday=$my_graph->get_x_point($timenow);
 
-/**
- * Decorate graph adding references
+/*
+ * Decorate graph adding references.
  */
 $label2 = $my_graph->calculated['x_label'];
 
@@ -447,7 +472,6 @@ $my_graph->line($xtoday,0,$xtoday,$my_graph->calculated['boundary_box']['bottom'
 
 $todaymaxpoints=quest_calculate_points($timenow,$datestart,$dateend,$tinit,$dateanswercorrect,$initialpoints,$pointsmax,0);
 
-
 $ymaxpointstoday=$my_graph->get_y_point($todaymaxpoints);
 $coords = array('x' => $xtoday-16,
 		'y' => 24,
@@ -455,9 +479,6 @@ $coords = array('x' => $xtoday-16,
 $my_graph->update_boundaryBox($label2['boundary_box'], $coords);
 $label2['text']=get_string("today",'quest');;
 $my_graph->print_TTF($label2);
-
-
-
 
 $coords = array('x' => $xtoday+2, 'y' => $ymaxpointstoday -14, 'reference' => 'top-left');
 $my_graph->update_boundaryBox($label2['boundary_box'], $coords);
@@ -471,9 +492,6 @@ $my_graph->update_boundaryBox($label2['boundary_box'], $coords);
 $label2['text']="Min:".number_format($todayminpoints,2);
 $my_graph->print_TTF($label2);
 
-
-
 $my_graph->output();
-}//end graph_submissions()
+}// ...end graph_submissions.
 graph_submissions();
-?>

@@ -1,5 +1,32 @@
-<?PHP // $Id: QUESTOURnament.php,v 1.1 2006/10/03 09:34:10 administrador Exp $
-      // QUESTOURnament.php - created with Moodle 1.5.2
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle lang file
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package block_quest_classification
+ */
 
 $string['absent'] = 'Bertan ez';
 $string['accumulative'] ='Metakor';
@@ -10,7 +37,7 @@ $string['addcomment'] = 'iruzkina gehitu';
 $string['addsubmission'] = 'erronka gehitu';
 $string['afterdeadline'] = 'epe amaieraren ondoren';
 $string['agreetothisassessment'] = 'balioespen hau onetsi';
-$string['allgradeshaveamaximumof'] = 'kalikizazio guztiak... -ren 
+$string['allgradeshaveamaximumof'] = 'kalikizazio guztiak... -ren
 gehienezkoa dute ';
 $string['allowresubmit'] = 'eragorpenak onartu';
 $string['allowteams'] = 'taldeak onartu';
@@ -44,7 +71,7 @@ $string['assessmentwasagreedon'] = 'balioespena onetsita izan zen';
 $string['assessor'] = 'balioztatzailea';
 $string['assessthisanswer'] = 'erantzun hau balioztatu';
 $string['assessthissubmission'] = 'erronka/galdera hau balioztatu';
-$string['assignmentnotinthecorrectphase'] = 'balioespena ez da garai 
+$string['assignmentnotinthecorrectphase'] = 'balioespena ez da garai
 zuzenean egin';
 $string['attachment'] = 'eranskina';
 $string['attachments'] = 'eranskinak';
@@ -103,9 +130,9 @@ $string['displayoffinalgrades'] = 'Azken kalifikazioak aurkeztu';
 $string['dontshowgrades'] = 'kalifikazioak ez erakutsi';
 $string['edit'] = 'editatu';
 $string['editacomment'] = 'iruzkin bat editatu';
-$string['editingassessmentelements'] = 'balioespeneren hastapenak 
+$string['editingassessmentelements'] = 'balioespeneren hastapenak
 editatzen';
-$string['editingassessmentelementsofautors'] = ';Egileen balioespenen 
+$string['editingassessmentelementsofautors'] = ';Egileen balioespenen
 hastapenak editatzen';
 $string['element'] = 'hastapena';
 $string['elementweight'] = 'hastapenaren garrantzia';
@@ -114,84 +141,84 @@ $string['emailaddsubmission'] = 'Hola, {$a->firstname}.\n
 <b>\'{$a->title}\'</b>.\n \'erronka berria gehitu da\'
 \n \'erronka berrian sartzeko hemen klikatu\'
 {$a->link}\n
-<font size=2>{$a->admin}\n</font>\n\'laguntza behar baduzu, lekuko 
+<font size=2>{$a->admin}\n</font>\n\'laguntza behar baduzu, lekuko
 administratzailearekin harremanetan jar zaitez mesedez';
-$string['emailaddsubmissionsubject'] = 'Moodle.QUEST muduluan erronka 
+$string['emailaddsubmissionsubject'] = 'Moodle.QUEST muduluan erronka
 gehituta';
 $string['emailansweradd'] = 'Hola, {$a->firstname}.\n
 <b>\'{$a->name}\'</b> de \'{$a->sitename}\'\n \'QUET-en aldaketak\'
   <b> \'{$a->secondname}\'</b> al desafío \'{$a->title}\'.\n \'erantzuna gehitu da\'
 \n \'aipatutako erantzunan sartzeko hemen klikatu\'
 {$a->link}\n
-<font size=2>,{$a->admin}\n</font> \'laguntza behar baduzu,lekuko 
+<font size=2>,{$a->admin}\n</font> \'laguntza behar baduzu,lekuko
 administratzailearekin harremanetan jar zaitez mesedez';
-$string['emailansweraddsubject'] = 'Moodle.QUEST moduluan erantzuna 
+$string['emailansweraddsubject'] = 'Moodle.QUEST moduluan erantzuna
 gehituta';
 $string['emailanswerdelete'] = 'Hola, {$a->firstname}.\n
 <b>\'{$a->name}\'</b> de \'{$a->sitename}\'\n \'QUEST-en aldaketak\'
-<b>\'{{$a->secondname}}\'</b> del desafío <b>\'{$a->title}\'</b>.\n \'erantzuna 
+<b>\'{{$a->secondname}}\'</b> del desafío <b>\'{$a->title}\'</b>.\n \'erantzuna
 ezabatu da\'
 <font size=2>\n \'aipatutako erronkan sartzeko hemen klikatu\'
 {$a->link}</font>\n
 <font size=2>
-del sitio,{$a->admin}\n</font>\'laguntza behar baduzu,lekuko 
+del sitio,{$a->admin}\n</font>\'laguntza behar baduzu,lekuko
 administratzailearekin harremanetan jar zaitez mesedez';
-$string['emailanswerdeletesubject'] = 'Moodle.QUEST moduluan erantzuna 
+$string['emailanswerdeletesubject'] = 'Moodle.QUEST moduluan erantzuna
 ezabatuta';
 $string['emailapprobe'] = 'Hola, {$a->firstname}.\n
 <b>\'{$a->name}\'</b> de \'{$a->sitename}\'\n\'QUEST-en aldaketak\'
 <b>\'{$a->title}\'</b>.\n \'erronka berria gehitu da\'
 <font size=2>\n \'erronka berrian sartzeko hemen klikatu\'
 {$a->link}\n
-,{$a->admin}\n</font>\'laguntza behar baduzu,lekuko administratzailearekin 
+,{$a->admin}\n</font>\'laguntza behar baduzu,lekuko administratzailearekin
 harremanetan jar zaitez mesedez';
 $string['emailapprobesubject'] = 'Moodle.QUEST moduluan erronka gehituta';
-$string['emailassessment'] = 'Hola, {$a->firstname}.\n <b>\'{$a->name}\'</b> de 
+$string['emailassessment'] = 'Hola, {$a->firstname}.\n <b>\'{$a->name}\'</b> de
 \'{$a->sitename}\'\n \'QUEST-en aldaketak\'
 \'{$a->secondname}\' del desafío \'{$a->title}\'.\n \'erantzuna balioztatu da\'
 :\n \'aipatutako erantzunean sartzeko hemen klikatu\'
 {$a->link}\n
 
 del sitio,{$a->admin}\n\'
-\'laguntza behar baduzu,lekuko administratzailearekin 
+\'laguntza behar baduzu,lekuko administratzailearekin
 harremanetan jar zaitez mesedez';
 $string['emailassessmentautor'] = 'Hola, {$a->firstname}.\n
 \n
 \n\' ...an erronka bat balioztatu da\';
-\'{$a->sitename}\ \'{$a->name}\ \'{$a->title}\'.\n\'QUEST moduluan\' \'bere izena ... 
+\'{$a->sitename}\ \'{$a->name}\ \'{$a->title}\'.\n\'QUEST moduluan\' \'bere izena ...
 dela\'
 \n \'aipatutako erantzunean sartzeko hemen klikatu\'
 \n
 {$a->link}\n
 \n
-\n \'laguntza behar baduzu,lekuko administratzailearekin harremanetan jar 
+\n \'laguntza behar baduzu,lekuko administratzailearekin harremanetan jar
 zaitez mesedez\'
 {$a->admin}\n
 ';
-$string['emailassessmentautorsubject'] = 'Moodle.erronka balioztatuta QUESTOURnament 
+$string['emailassessmentautorsubject'] = 'Moodle.erronka balioztatuta QUESTOURnament
 moduluan';
-$string['emailassessmentsubject'] = 'Moodle.erantzuna balioztatuta QUESTOURnament 
+$string['emailassessmentsubject'] = 'Moodle.erantzuna balioztatuta QUESTOURnament
 moduluan';
 $string['emaildeletesubmission'] = 'Hola, {$a->firstname}.\n
 \n
 \n \'...an erronka bat ezabatu da\'
-\'{$a->sitename}\ \'{$a->name}\ \'{$a->title}\'.\'QUEST moduluan\' ;bere izena 
+\'{$a->sitename}\ \'{$a->name}\ \'{$a->title}\'.\'QUEST moduluan\' ;bere izena
 ...dela \'
 \n
 :\n
 \n \'erronka aldatuta dagoen lekuan sartzeko hemen klikatu\'
 {$a->link}\n
 \n\n
-\n \'laguntza behar baduzu,lekuko administratzailearekin harremanetan jar 
+\n \'laguntza behar baduzu,lekuko administratzailearekin harremanetan jar
 zaitez mesedez\'
 {$a->admin}\n
 \n';
-$string['emaildeletesubmissionsubject'] = 'Moodle.QUEST modulutik erronka 
+$string['emaildeletesubmissionsubject'] = 'Moodle.QUEST modulutik erronka
 ezabatuta';
 $string['emailevaluatecomment'] = 'Hola, {$a->firstname}.\n
-\n en\n \'erantzun bateko balioztatzean erreklamazioen mekanismoa erabili 
+\n en\n \'erantzun bateko balioztatzean erreklamazioen mekanismoa erabili
 da\'
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' desafío \'{$a->title}\' 
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' desafío \'{$a->title}\'
 respuesta \'{$a->secondname}\'.\n
 \n
 \n \'erantzun honetan sartzeko hemen klikatu ezazu\'
@@ -199,52 +226,52 @@ respuesta \'{$a->secondname}\'.\n
 {$a->link}\n
 \n
 \n
-\n \'laguntza behar baduzu,lekuko administratzailearekin harremanetan jar 
+\n \'laguntza behar baduzu,lekuko administratzailearekin harremanetan jar
 zaitez mesedez\'
 {$a->admin}\n
 \n';
-$string['emailevaluatecommentsubject'] = 'Moodle.balioztapenaren 
+$string['emailevaluatecommentsubject'] = 'Moodle.balioztapenaren
 erreklamazioa QUESTOURnament moduluan';
 $string['emailmodifanswer'] = 'Hola, {$a->firstname}.\n
 \n
 en\n \'erantzuna aldatu egin da\'
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del desafío \'{$a->title}\' 
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del desafío \'{$a->title}\'
 cuyo nombre es \'{$a->secondname}\'.\n
 \n
 \n aipatutako erantzunean sartzeko hemen klikatu
 \n
 {$a->link}\n
 \n\n
-\n laguntza behar baduzu,lekuko administratzailearekin harremanetan jar 
+\n laguntza behar baduzu,lekuko administratzailearekin harremanetan jar
 zaitez mesedez
 {$a->admin}\n
 \n';
-$string['emailmodifanswersubject'] = 'Moodle.erantzuna aldatuta QUESTOURnament 
+$string['emailmodifanswersubject'] = 'Moodle.erantzuna aldatuta QUESTOURnament
 moduluan';
 $string['emailmodifsubmission'] = 'Hola, {$a->firstname}.\n
 \n en\n erronka baten aldaketa egin da
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es 
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es
 \'{$a->title}\'.\n
 \n
 \n erronka aldatuta dagoen lekuan sartzeko hemen klikatu
 \n
 {$a->link}\n
 \n
-,\n laguntza behar baduzu,lekuko administratzailearekin harremanetan jar 
+,\n laguntza behar baduzu,lekuko administratzailearekin harremanetan jar
 zaitez mesedez
 {$a->admin}\n
 \n';
-$string['emailmodifsubmissionsubject'] = 'Moodle.QUEST modulu erronkan 
+$string['emailmodifsubmissionsubject'] = 'Moodle.QUEST modulu erronkan
 aldaketak egin dira';
 $string['emailsave'] = 'Hola, {$a->firstname}.\n
 \n en\n erronka batean aldaketak egin dira
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es 
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es
 \'{$a->title}\'.\n
 \n
 \n erronka aldatuta dagoen tokian sartzelp hemen klikatu
 \n
 {$a->link}\n
-\n laguntza behar baduzu,lekuko administratzailearekin harremanetan jar 
+\n laguntza behar baduzu,lekuko administratzailearekin harremanetan jar
 zaitez mesedez
 {$a->admin}\n
 \n';
@@ -273,12 +300,12 @@ $string['gradedbyteacher'] = '-rengatik kalifikatuta';
 $string['gradeforassessments'] = 'balioespen bidezko kalifikazioa';
 $string['gradeforbias'] = 'zatikako kalifikazioa';
 $string['gradeforreliability'] = 'fidagarritasun bidezko kalifikazioa';
-$string['gradeforstudentsassessment'] = 'ikasleen balioespenaren bidezko 
+$string['gradeforstudentsassessment'] = 'ikasleen balioespenaren bidezko
 kalifikazioa';
 $string['gradeofsubmission'] = 'igorpenaren kalifikazioa';
 $string['gradingstrategy'] = 'kalifikazioaren estrategia';
 $string['gradingstrategyautor'] = 'egileen kalifikazioaren estrategia';
-$string['hidegradesbeforeagreement'] = 'kalifikazioak ezkutatu onetsiak izan 
+$string['hidegradesbeforeagreement'] = 'kalifikazioak ezkutatu onetsiak izan
 baino lehen';
 $string['includeteachersgrade'] = 'irakaslearen kalifikazioa gehitu';
 $string['incorrect'] = 'okerra';
@@ -288,8 +315,8 @@ $string['invaliddates'] = 'datak ez dira zuzenak';
 $string['invalidtext'] = 'textuaren saila hutsik dago';
 $string['lastname'] = 'abizena';
 $string['leaguetable'] = 'emandako lanen taula';
-$string['legend'] = 'A (B) [C] {$a} <br> <br>\'A:Erantzun kopurua, B:erantzun 
-zuzenen kopurua, C: balioztu gabeko erantzunen kopurua, erronka erantzun 
+$string['legend'] = 'A (B) [C] {$a} <br> <br>\'A:Erantzun kopurua, B:erantzun
+zuzenen kopurua, C: balioztu gabeko erantzunen kopurua, erronka erantzun
 badut adieraz ezazu';
 $string['linear'] = 'lineala';
 $string['listassessments'] = 'baliozpenen zerrenda';
@@ -332,22 +359,22 @@ $string['newgradings'] = 'kalifikazio berriak';
 $string['newsubmissions'] = 'bidaltze berriak';
 $string['newteam'] = 'talde berria';
 $string['nivel'] = 'eskakizun maila';
-$string['nmaxanswers'] = 'erronka bakoitzeko gehienezko erantzun zuzenen 
+$string['nmaxanswers'] = 'erronka bakoitzeko gehienezko erantzun zuzenen
 kopurua';
 $string['noanswers'] = 'erantzunik ez dago';
 $string['noassessments'] = 'balioztatzerik ez dago';
 $string['noassessmentsdone'] = 'balioespenik ez da egin';
 $string['noattachments'] = 'eranskinik ez dago';
 $string['nograde'] = ' kalifikaziorik ez dago';
-$string['nosubmissionsavailableforassessment'] = 'ez daude bidaltze 
+$string['nosubmissionsavailableforassessment'] = 'ez daude bidaltze
 erabilgarririk balioespenarentzako';
 $string['notavailable'] = 'erabilezina';
-$string['noteonassessmentelements'] = ' \'nabar ezazu kalifikazioa 
+$string['noteonassessmentelements'] = ' \'nabar ezazu kalifikazioa
 balioespenen antzeko hastapenetan zatituta dagoela
-honek kalifikazioa errezagoa eta trinkoagoa izatea lortzen du. Irakasle 
-gisa, hastapen hauek gehitu behar dituzu lana ikasleen esku utzi baino 
-lehen. Hau ikastaroaren lanan klilatuz lortzen da.Haspapenik ez balego, 
-hauek gehitzea eskatuko zaizu.Hastapenen kopurua alda daitezke "Lana aldatu" 
+honek kalifikazioa errezagoa eta trinkoagoa izatea lortzen du. Irakasle
+gisa, hastapen hauek gehitu behar dituzu lana ikasleen esku utzi baino
+lehen. Hau ikastaroaren lanan klilatuz lortzen da.Haspapenik ez balego,
+hauek gehitzea eskatuko zaizu.Hastapenen kopurua alda daitezke "Lana aldatu"
 pantaila erabiliz';';hastapena zuzendu daiteke "lana kudeatu"pantailan';
 $string['notgraded'] = 'ez da kalifikatu';
 $string['notitlegiven'] = 'ez zaio izenbururik jarri';
@@ -357,14 +384,14 @@ $string['nsubmissions'] = 'Gai kopurua';
 $string['nsubmissionsassessment'] = 'balioztatutako gai kopurua';
 $string['numbercomponents'] = 'hastapen kopurua';
 $string['numbermaxofanswers'] = 'gehienezko erantzun kopurua';
-$string['numberofassessmentelements'] = 'Iruzkin kopurua, lanaren 
+$string['numberofassessmentelements'] = 'Iruzkin kopurua, lanaren
 hastapenak,kalifikazio zerrendak edo egileentzako irizpide adierazpenak';
-$string['numberofassessmentelementsautor'] = 'Iruzkin kopurua, lanaren 
+$string['numberofassessmentelementsautor'] = 'Iruzkin kopurua, lanaren
 hastapenak,kalifikazio zerrendak edo egileentzako irizpide adierazpenak';
 $string['numberofassessments'] = 'balioespen kopurua';
-$string['numberofassessmentsofstudentsubmissions'] = 'ikasleak bidalitako 
+$string['numberofassessmentsofstudentsubmissions'] = 'ikasleak bidalitako
 balioespen kopurua';
-$string['numberofassessmentsofteachersexamples'] = 'irakasleak emandako 
+$string['numberofassessmentsofteachersexamples'] = 'irakasleak emandako
 adibidezko balioespen kopurua';
 $string['numberofattachments'] = 'gehienezko eranskin kopurua';
 $string['of'] = '-ren';
@@ -404,11 +431,11 @@ $string['phase4submission'] = 'erronka itxita';
 $string['phase5submission'] = 'balioztatuta. onartzeko egiteke';
 $string['phase6submission'] = 'balioztatuta. erronka prozesuan';
 $string['phase7submission'] = 'balioztatuta. erronka itxita';
-$string['pleaseassesstheseexamplesfromtheteacher'] = '{$a} ...ren adibide 
+$string['pleaseassesstheseexamplesfromtheteacher'] = '{$a} ...ren adibide
 hauek aintzat har itzazu';
-$string['pleaseassessthesestudentsubmissions'] = 'bidaltze hauek aintzat har 
+$string['pleaseassessthesestudentsubmissions'] = 'bidaltze hauek aintzat har
 itzazu mesedez';
-$string['pleaseassessyoursubmissions'] = 'zure bidaltzeak balioztatu itzazu 
+$string['pleaseassessyoursubmissions'] = 'zure bidaltzeak balioztatu itzazu
 mesedez';
 $string['points'] = 'puntuazioa';
 $string['pointsanswers'] = 'Erantz. punt.';
@@ -435,7 +462,7 @@ $string['removeallattachments'] = 'eranskinak ezabatu';
 $string['removeattachments'] = 'eranskinak ezabatu';
 $string['repeatanalysis'] = 'analisia errepikatu';
 $string['reply'] = 'erantzun';
-$string['resume24hours'] = 'azken 24 orduetan gehitutako edo aldatutako 
+$string['resume24hours'] = 'azken 24 orduetan gehitutako edo aldatutako
 gaien laburpena';
 $string['resumeindividual'] = ' banakako laburpena';
 $string['resumequest'] = 'Moodle. QUESTOURnament ekintza laburpena';
@@ -473,27 +500,27 @@ $string['showsubmissions'] = 'gaiak erakutsi';
 $string['showsubmissionsteam'] = 'gaiak taldeen bidez erakutsi';
 $string['showsubmissionsuser'] = 'erablitzaile gaiak erakutsi';
 $string['specimenassessmentform'] = 'balioespenaren eredu galde-sorta';
-$string['specimenassessmentformanswer'] = 'erantzunetarako balioespenen 
+$string['specimenassessmentformanswer'] = 'erantzunetarako balioespenen
 ereduzko galde-sorta';
-$string['specimenassessmentformsubmission'] = 'gaietarako balioespenen 
+$string['specimenassessmentformsubmission'] = 'gaietarako balioespenen
 ereduzko galde-sorta';
 $string['standarddeviation'] = '{$a} hastapenaren desbiaketa estandarra';
 $string['studentassessments'] = '{$a} balioztapenak';
 $string['studentgrades'] = '{$a} kalifikazioak';
 $string['studentsubmissions'] = '{$a} bidaltzeak';
-$string['studentsubmissionsforassessment'] = '{$a} balioespenarentzako 
+$string['studentsubmissionsforassessment'] = '{$a} balioespenarentzako
 ikasleen bidaltzeak';
 $string['subject'] = 'erronka';
 $string['submission'] = 'erronka';
 $string['submissionend'] = '{$a} erronkaren epe-amaiera';
-$string['submissionexisty'] = 'izen bereko erronka badago. beste izenburu 
+$string['submissionexisty'] = 'izen bereko erronka badago. beste izenburu
 bat sar ezazu';
 $string['submissions'] = 'gaiak';
 $string['submissionsnolongerallowed'] = 'erronka gehiagorik ez da onartzen';
 $string['submissionstart'] = '{$a} erronkaren epe-hasiera';
 $string['submitassignment'] = 'lana bidali';
-$string['submitexample'] = ' erronka gehitu';
-$string['submitexampleassignment'] = 'erronka/galdera gehitu';
+$string['submitchallenge'] = ' erronka gehitu';
+$string['submitchallengeassignment'] = 'erronka/galdera gehitu';
 $string['submitted'] = 'erronka/galdera bidalita';
 $string['submittedanswer'] = 'erantzuna bidalita';
 $string['submittedby'] = ' ...-rengatik bidlaita';
@@ -501,7 +528,7 @@ $string['suggestedgrade'] = 'eskatutako kalifikazioa';
 $string['teacherassessments'] = '{$a} balioztapenak';
 $string['teacherscomment'] = 'irakaslearen iruzkina';
 $string['teachersgrade'] = 'irakaslearen kalifikazioa';
-$string['teachersubmissionsforassessment'] = '{$a} irakasleak 
+$string['teachersubmissionsforassessment'] = '{$a} irakasleak
 balioespenarentzako bidaltzeak';
 $string['team'] = 'taldea';
 $string['teamcalification'] = 'Taldeen bidezko kalifikazioa';
@@ -511,7 +538,7 @@ $string['teamporcent'] = 'tade kalifikazio ehunekoa';
 $string['teams'] = 'taldeen bidezko sailkapena';
 $string['thegradeis'] = 'sailakapena...{$a} da';
 $string['thereisfeedbackfromtheteacher'] = '{$a}-ren erantzun bat daukazu';
-$string['theseasessmentsaregradedbytheteacher'] = 'balioespen hauek 
+$string['theseasessmentsaregradedbytheteacher'] = 'balioespen hauek
 {$a}-rengatik  balioetsitak daude';
 $string['timeassessed'] = 'balioetsitako denbora';
 $string['timeassessment'] = 'balioets. denbora';
@@ -524,9 +551,9 @@ $string['typegrade'] = ' ...ren emaitzak lortu';
 $string['typeindividual'] = 'ikasleak';
 $string['typeofscale'] = 'eskala mota';
 $string['typeteam'] = 'taldeak';
-$string['ungradedassessmentsofstudentsubmissions'] = '{$a} ikasleen bidaltzeen 
+$string['ungradedassessmentsofstudentsubmissions'] = '{$a} ikasleen bidaltzeen
 balioespenak kalikikatu beharrekoak';
-$string['ungradedassessmentsofteachersubmissions'] = '{$a} irakaslearen 
+$string['ungradedassessmentsofteachersubmissions'] = '{$a} irakaslearen
 bidaltzeen balioespenak kalifikatu beharrekoak';
 $string['updateanswer'] = 'erantzuna bidalita';
 $string['updatesubmission'] = 'erronka gordeta';
@@ -544,20 +571,20 @@ $string['viewclasification'] = 'sailkapena ikusi';
 $string['viewclasificationglobal'] = 'amaierako salkapena ikusi';
 $string['viewclasificationteams'] = 'sailkapena taldeen bidez ikusi';
 $string['viewotherassessments'] = 'beste balioespen batzuk ikusi';
-$string['warningonamendingelements'] = 'OHARRA:bidalitako balioespenak 
+$string['warningonamendingelements'] = 'OHARRA:bidalitako balioespenak
 badaude. hastapen kopurua ez aldatu';
 $string['weight'] = 'azterketa';
 $string['weightederrorcount'] = 'akatsa {$a}  kontua aztertzerakoan';
 $string['weightforbias'] = 'zatikakoaren azterketa';
-$string['weightforgradingofassessments'] = 'balioespenen kalifikazioen 
+$string['weightforgradingofassessments'] = 'balioespenen kalifikazioen
 azterketa';
-$string['weightforpeerassessments'] = 'kideen balioespenen araberako 
+$string['weightforpeerassessments'] = 'kideen balioespenen araberako
 azterketa';
 $string['weightforreliability'] = 'fidagarritasun bidezko azterketa';
 $string['weights'] = 'azterketak';
-$string['weightsusedforfinalgrade'] = 'azken kalikikaziorako erabilitako 
+$string['weightsusedforfinalgrade'] = 'azken kalikikaziorako erabilitako
 azterketak';
-$string['weightsusedforsubmissions'] = 'bidaltzeetarako erablitako 
+$string['weightsusedforsubmissions'] = 'bidaltzeetarako erablitako
 azterketak';
 $string['wrongpassword'] = 'pasahitza okerra';
 $string['yourassessments'] = 'zure balioespenak';

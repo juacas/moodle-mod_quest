@@ -1,7 +1,32 @@
-<?PHP // $Id: register.php,v 1.2 2006/07/31 19:09:22 d.pontari Exp $ 
-      // register.php - created with Power Moodle 3
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
+/**
+ * Questournament activity for Moodle lang file
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package block_quest_classification
+ */
 $string['actualsession'] = 'in corso';
 $string['cancel'] = 'cancella';
 $string['cancelcertification'] = 'Cancella<br />autocert.';
@@ -61,7 +86,7 @@ $string['invalidtime'] = 'Data o orario non valido';
 
 
 $string['sessiontimeout'] = 'Timeout sessione';
-$string['minutes'] = '[minuti]'; 
+$string['minutes'] = '[minuti]';
 $string['dayscertificable'] = 'Periodo massimo certificabile';
 $string['days'] = '[giorni]';
 $string['allowofflinecomments'] = 'Abilita commenti autocerficazioni';

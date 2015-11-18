@@ -1,9 +1,33 @@
-﻿<?PHP 
- // Traducción realizada en la Facultad de Traducción de Soria (Universidad de Valladolid) por Anna Szybiak y Joanna Nowakowska, supervisada por Leticia Santamaria Ciordia y tutelada por Antonio Bueno García en 2006.
-//  El autor cede todos los derechos a favor de la herramienta gratuita y OpenSource Queso para Moodle
+﻿<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// quest.php - created with Moodle 1.5.2
-
+/**
+ * Questournament activity for Moodle lang file
+ * Traducción realizada en la Facultad de Traducción de Soria (Universidad de Valladolid) por Anna Szybiak y Joanna Nowakowska, supervisada por Leticia  * Santamaria Ciordia y tutelada por Antonio Bueno García en 2006.
+ * El autor cede todos los derechos a favor de la herramienta gratuita y OpenSource
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package block_quest_classification
+ */
 $string['absent'] = 'Nieobecny';
 $string['accumulative'] = 'Bieżące';
 $string['action'] = 'Działanie';
@@ -21,7 +45,7 @@ $string['amendassessmentelements'] = 'Zmień elementy oceny';
 $string['amendtitle'] = 'Tytuł zmieniony';
 $string['answer'] = 'Odpowiedz';
 $string['answercontent'] = 'Treść odpowiedzi';
-$string['answerexisty'] = 'Już odpowiedziano na to pytanie'; 
+$string['answerexisty'] = 'Już odpowiedziano na to pytanie';
 $string['answername'] = 'Odpowiedź: ';
 $string['answers'] = 'Odp.';
 $string['answersubmission'] = 'Odpowiedz na zadanie \"{$a}\"';
@@ -38,7 +62,7 @@ $string['assessmentof'] = 'Ocena {$a}';
 $string['assessmentofthissubmission'] = 'Oceń tę wiadomość';
 $string['assessments'] = 'Oceny';
 $string['assessments'] = 'Oceny';
-$string['assessmentsareok'] = 'Oceny wystawione poprawnie'; 
+$string['assessmentsareok'] = 'Oceny wystawione poprawnie';
 $string['assessmentsby'] = 'Wystawione przez {$a}';
 $string['assessmentsdone'] = 'Oceny gotowe';
 $string['assessmentsmustbeagreed'] = 'Oceny muszą zostać zatwierdzone';
@@ -55,7 +79,7 @@ $string['awaitinggradingbyteacher'] = 'Czekająca na ocenienie przez {$a}';
 $string['beforedeadline'] = 'Do zakończenia zadania pozostało: {$a}';
 $string['by'] = 'Przez';
 $string['bynameondate'] = 'Przez {$a->name} - {$a->date}';
-$string['calculationoffinalgrades'] = 'Obliczanie oceny końcowej'; 
+$string['calculationoffinalgrades'] = 'Obliczanie oceny końcowej';
 $string['calification'] = 'Punktacja';
 $string['calificationautor'] = 'Punkty zdobyte przez nadawcę';
 $string['calificationdate'] = 'Data ukazania się ocen';
@@ -70,27 +94,27 @@ $string['clasification'] = 'Klasyfikacja';
 $string['closeassignment'] = 'Zakończ zadanie';
 $string['comment'] = 'Komentarz';
 $string['commentby'] = 'Autor komentarza';
-$string['comentsforautor'] = 'Komentarze przeznaczone dla nadawcy'; 
+$string['comentsforautor'] = 'Komentarze przeznaczone dla nadawcy';
 $string['comentsforpupil'] = 'Komentarze przeznaczone dla uczniów';
-$string['commentsautor'] = 'Ogólny komentarz nadawcy'; 
+$string['commentsautor'] = 'Ogólny komentarz nadawcy';
 $string['commentsforteacher'] = 'Komentarze przeznaczone dla nauczyciela';
 $string['commentsteacher'] = 'Ogólny komentarz nauczyciela';
 $string['confirmdelete'] = 'Zatwierdź Usuń';
 $string['confirmdeletionofthisitem'] = 'Czy na pewno chcesz usunąć {$a}';
 $string['correct'] = 'Poprawnie';
 $string['criterion'] = 'Kryterium';
-$string['currentphase'] = 'Bieżąca faza konkursu QUESTOURnament'; 
+$string['currentphase'] = 'Bieżąca faza konkursu QUESTOURnament';
 $string['currentphaseanswer'] = 'Faza odpowiedzi';
 $string['dateanswer'] = 'Data odpowiedzi';
-$string['dateassess'] = 'Data wystawienia oceny'; 
-$string['dateend'] = 'Data zamknięcia'; 
+$string['dateassess'] = 'Data wystawienia oceny';
+$string['dateend'] = 'Data zamknięcia';
 $string['dateendevent'] = 'Koniec konkursu {$a}';
-$string['dateendsubmissionevent'] = 'Zakończenie zadania {$a}'; 
+$string['dateendsubmissionevent'] = 'Zakończenie zadania {$a}';
 $string['dateofend'] = 'Data zakończenia zadania';
 $string['dateofstart'] = 'Data rozpoczęcia zadania';
 $string['datestart'] = 'Data rozpoczęcia';
-$string['datestartevent'] = 'Data otwarcia konkursu {$a}'; 
-$string['datestartsubmissionevent'] = 'Data rozpoczęcia zadania {$a}'; 
+$string['datestartevent'] = 'Data otwarcia konkursu {$a}';
+$string['datestartsubmissionevent'] = 'Data rozpoczęcia zadania {$a}';
 $string['datestr'] = '%d/%m/%y<br />%H:%M';
 $string['datestrmodel'] = '%%d/%%m/%%y &nbsp;&nbsp;%%H:%%M';
 $string['deadline'] = 'Data końcowa';
@@ -101,15 +125,15 @@ $string['description'] = 'Treść';
 $string['detailsofassessment'] = 'Szczegóły oceny';
 $string['disagreewiththisassessment'] = 'Nie zgadzam się z oceną';
 $string['displayoffinalgrades'] = 'Pokaż oceny końcowe';
-$string['dontshowgrades'] = 'Nie ujawniaj ocen'; 
+$string['dontshowgrades'] = 'Nie ujawniaj ocen';
 $string['edit'] = 'Edytuj';
 $string['editacomment'] = 'Edytuj komentarz';
 $string['editingassessmentelements'] = 'Trwa edycja elementów oceny';
 $string['editingassessmentelementsofautors'] = 'Trwa edycja elementów oceny nadawców';
-$string['element'] = 'Element'; 
-$string['elementweight'] = 'Waga elementu'; 
+$string['element'] = 'Element';
+$string['elementweight'] = 'Waga elementu';
 $string['emailaddsubmission'] = 'Witaj, {$a->firstname}.
-Dokonano zmian w module QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'  
+Dokonano zmian w module QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'
 Dodano nowe zadanie <b>\'{$a->title}\'</b>.
 Aby przejść do nowego zadania kliknij tutaj:
 {$a->link}
@@ -117,7 +141,7 @@ Aby przejść do nowego zadania kliknij tutaj:
 $string['emailaddsubmissionsubject'] = 'Moodle. Zadanie dodane do modułu QUESTOURnament';
 $string['emailansweradd'] = 'Witaj, {$a->firstname}.
 Zmiany w module QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'
-Dodano nową odpowiedź  <b> \'{$a->secondname}\'</b> do zadania \'{$a->title}\'. 
+Dodano nową odpowiedź  <b> \'{$a->secondname}\'</b> do zadania \'{$a->title}\'.
 Aby przejść do tej odpowiedzi kliknij tutaj:
 {$a->link}
 <font size=2> W razie wątpliwości skontaktuj się z administratorem strony,{$a->admin}</font>';
@@ -132,7 +156,7 @@ $string['emailanswerdeletesubject'] = 'Moodle. Odpowiedź usunięta z modułu QU
 $string['emailapprobe'] = 'Witaj, {$a->firstname}.
 Dokonano zmian w module QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'
 Dodano nowe zadanie <b>\'{$a->title}\'</b>.
-<font size=2>Aby przejść do nowego zadania kliknij tutaj: 
+<font size=2>Aby przejść do nowego zadania kliknij tutaj:
 {$a->link} W razie wątpliwości skontaktuj się z administratorem strony ,{$a->admin}</font>';
 $string['emailapprobesubject'] = 'Moodle. Dodano nowe zadanie do modułu QUESTOURnament';
 $string['emailassessment'] = 'Witaj, {$a->firstname}.
@@ -143,7 +167,7 @@ Aby zobaczyć tę odpowiedź kliknij tutaj:
 W razie wątpliwości skontaktuj się z administratorem strony,{$a->admin}';
 
 $string['emailassessmentautor'] = 'Witaj, {$a->firstname}.
-Oceniono zadanie 
+Oceniono zadanie
 \'{$a->sitename}\' w module QUESTOURnament \'{$a->name}\' o nazwie \'{$a->title}\'.
 Aby zobaczyć tę odpowiedź kliknij tutaj:
 
@@ -182,7 +206,7 @@ W razie wątpliwości skontaktuj się z administratorem  strony,
 $string['emailevaluatecommentsubject'] = 'Moodle. Zakwestionowano ocenę w module QUESTOURnament';
 $string['emailmodifanswer'] = 'Witaj, {$a->firstname}.
 
-Zmieniono odpowiedź 
+Zmieniono odpowiedź
 \'{$a->sitename}\' w module QUESTOURnament \'{$a->name}\' na zadanie \'{$a->title}\' zatytułowane \'{$a->secondname}\'.
 
 Aby zobaczyć tę odpowiedź kliknij tutaj:
@@ -202,7 +226,7 @@ Aby zobaczyć stronę, na której znajduje się zmienione zadanie kliknij tutaj:
 
 {$a->link}
 
-W razie wątpliwości skontaktuj się z administratorem  strony, 
+W razie wątpliwości skontaktuj się z administratorem  strony,
 {$a->admin}
 ';
 $string['emailmodifsubmissionsubject'] = 'Moodle. Zmiany w zadaniu w module QUESTOURnament';
@@ -215,15 +239,15 @@ Aby przejść do strony, na której znajduje się zmienione zadanie kliknij tuta
 
 {$a->link}
 
-W razie wątpliwości skontaktuj się z administratorem  strony 
+W razie wątpliwości skontaktuj się z administratorem  strony
 del sitio,
 {$a->admin}
 ';
 $string['emailsavesubject'] = 'Moodle. Zmiany w zadaniu w module QUESTOURnament';
 $string['emailtagline'] = 'Ten e-mail jest kopią wiadomości, którą wysłano dnia \"{$a}\"';
-$string['enternewteam'] = 'Dodaj nową grupę'; 
+$string['enternewteam'] = 'Dodaj nową grupę';
 $string['enterpassword'] = 'Wprowadź hasło:';
-$string['enterteam'] = 'Dodaj grupę'; 
+$string['enterteam'] = 'Dodaj grupę';
 $string['errorbanded'] = 'Błąd podczas tworzenia tabeli oceniania';
 $string['evaluate'] = 'Oceń';
 $string['excellent'] = 'Celująco';
@@ -238,7 +262,7 @@ $string['global'] = 'Ogólna klasyfikacja';
 $string['good'] = 'Dobrze';
 $string['grade'] = 'Ocena';
 $string['gradeassessment'] = 'Skomentuj ocenę';
-$string['gradeautor'] = 'Oceń autora'; 
+$string['gradeautor'] = 'Oceń autora';
 $string['graded'] = 'Ocenione';
 $string['gradedbyteacher'] = 'Ocenione przez {$a}';
 $string['gradeforassessments'] = 'Ocena z zaliczeń';
@@ -268,7 +292,7 @@ $string['mail2'] = 'Zobacz komentarze i ocenę klikając \'{$a}\'';
 $string['mail3'] = 'Możesz to zobaczyć w wyszukiwarce';
 $string['mail4'] = '$n dodał komentarz do zadania \'{$a}\'';
 $string['mail5'] = 'Zobacz nowy komentarz na stronie \'{$a}\'';
-$string['mail6'] = 'Sprawdzono ponownie twoją odpowiedź na zadanie \'{$a}\''; 
+$string['mail6'] = 'Sprawdzono ponownie twoją odpowiedź na zadanie \'{$a}\'';
 $string['mail7'] = 'Komentarze wystawione przez  \'{$a}\' możesz zobaczyć w wyszukiwarce';
 $string['managingassignment'] = 'Zarządzaj zadaniem';
 $string['maxcalification'] = 'Maksymalna punktacja';
@@ -308,14 +332,14 @@ $string['nograde'] = 'Brak oceny';
 $string['nosubmissionsavailableforassessment'] = 'Brak nowych wiadomości do ocenienia';
 $string['notavailable'] = 'Niedostępne';
 $string['noteonassessmentelements'] = 'Proszę zauważyć, że na ocenę zadania składają się następujące elementy \'Elementy podlegające ocenie\'.<br />
-Dzięki temu ocenianie staje się prostsze i bardziej sprawiedliwe. Jako nauczyciel powinien/nna Pan/Pani uwzględnić następujące <br /> 
+Dzięki temu ocenianie staje się prostsze i bardziej sprawiedliwe. Jako nauczyciel powinien/nna Pan/Pani uwzględnić następujące <br />
 elementy zanim zadanie stanie się widoczne dla uczniów. Aby tego dokonać proszę kliknąć <br />
 na nazwę zadania i jeśli nie ma tam elementów zostanie Pan/ Pani poproszony/a <br /> o ich dodanie. Liczbę elementów można zmienić używając,<br />
 a poszczególne elementy można edytować korzystając z opcji &quot;Zarządzaj zadaniem&quot;. ';
 $string['notgraded'] = 'Nie oceniono';
 $string['notitlegiven'] = 'Nie nadano tytułu';
-$string['notsubmittedanswers'] = 'Brak wysłanych odpowiedzi'; 
-$string['notsubmittedyet'] = 'Brak wysłanych tematów'; 
+$string['notsubmittedanswers'] = 'Brak wysłanych odpowiedzi';
+$string['notsubmittedyet'] = 'Brak wysłanych tematów';
 $string['nsubmissions'] = 'Liczba tematów';
 $string['nsubmissionsassessment'] = 'Liczba ocenionych tematów';
 $string['numbercomponents'] = 'Liczba członków grupy';
@@ -449,11 +473,11 @@ $string['submission'] = 'Zadanie';
 $string['submissionend'] = 'Data zamknięcia zadania {$a}';
 $string['submissionexisty'] = 'Już istnieje zadanie o tej nazwie. Wprowadź inną nazwę';
 $string['submissions'] = 'Tematy';
-$string['submissionsnolongerallowed'] = 'Proszę już nie wysyłać odpowiedzi'; 
+$string['submissionsnolongerallowed'] = 'Proszę już nie wysyłać odpowiedzi';
 $string['submissionstart'] = 'Data otwarcia zadania {$a}';
 $string['submitassignment'] = 'Wyślij zadanie/ odpowiedź';
-$string['submitexample'] = 'Dodaj zadanie';
-$string['submitexampleassignment'] = 'Dodaj zadanie / pytanie';
+$string['submitchallenge'] = 'Dodaj zadanie';
+$string['submitchallengeassignment'] = 'Dodaj zadanie / pytanie';
 $string['submitted'] = 'Zadanie/Pytanie wysłane';
 $string['submittedanswer'] = 'Odpowiedź wysłana';
 $string['submittedby'] = 'Wysłane przez';
@@ -461,7 +485,7 @@ $string['suggestedgrade'] = 'Proponowana ocena';
 $string['teacherassessments'] = '{$a} Oceny';
 $string['teacherscomment'] = 'Komentarz nauczyciela';
 $string['teachersgrade'] = 'Ocena nauczyciela';
-$string['teachersubmissionsforassessment'] = '{$a} Wiadomości nauczyciela czekające na ocenę'; 
+$string['teachersubmissionsforassessment'] = '{$a} Wiadomości nauczyciela czekające na ocenę';
 $string['team'] = 'Nazwa grupy';
 $string['teamcalification'] = 'Ocena grupy';
 $string['teamforquest'] = 'Grupa uczestnicząca w konkursie {$a}';
@@ -471,8 +495,8 @@ $string['teams'] = 'Klasyfikacja grup';
 $string['thegradeis'] = 'Ocena brzmi {$a}';
 $string['thereisfeedbackfromtheteacher'] = 'Odpowiedź nauczyciela {$a}';
 $string['theseasessmentsaregradedbytheteacher'] = 'Oceny zostały wystawione przez {$a}';
-$string['timeassessed'] = 'Liczy się czas odpowiedzi'; 
-$string['timeassessment'] = 'Ocena za szybkość'; 
+$string['timeassessed'] = 'Liczy się czas odpowiedzi';
+$string['timeassessment'] = 'Ocena za szybkość';
 $string['timemaxoflife'] = 'Czas trwania zadania';
 $string['tinitial'] = 'Czas rozpoczęcia';
 $string['title'] = 'Tytuł';
@@ -503,7 +527,7 @@ $string['viewotherassessments'] = 'Zobacz inne oceny';
 $string['warningonamendingelements'] = 'UWAGA: Nadesłano nowe oceny. <br /> Proszę NIE zmieniać liczby elementów, skali ocen ani wagi elementów.';
 $string['weight'] = 'Waga';
 $string['weightederrorcount'] = 'Błąd przy ustalaniu wagi konta: {$a}';
-$string['weightforbias'] = 'Waga elementów składowych'; 
+$string['weightforbias'] = 'Waga elementów składowych';
 $string['weightforgradingofassessments'] = 'Waga oceny z zaliczeń';
 $string['weightforpeerassessments'] = 'Waga opinii wystawionych przez kolegów';
 $string['weightforreliability'] = 'Waga oceny za sumienność';
@@ -512,6 +536,6 @@ $string['weightsusedforfinalgrade'] = 'Waga przyjęta dla ocen końcowych ';
 $string['weightsusedforsubmissions'] = 'Waga przyjęta dla wiadomości';
 $string['wrongpassword'] = 'Błędne hasło';
 $string['yourassessments'] = 'Twoje oceny';
-$string['yourfeedbackgoeshere'] = 'Wpisz tutaj swoją odpowiedź'; 
+$string['yourfeedbackgoeshere'] = 'Wpisz tutaj swoją odpowiedź';
 
 ?>

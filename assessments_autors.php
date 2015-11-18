@@ -1,21 +1,38 @@
 <?php  // $Id: assessments_autors.php
-/******************************************************
-* Module developed at the University of Valladolid
-* Designed and directed by Juan Pablo de Castro with the effort of many other
-* students of telecommunciation engineering
-* this module is provides as-is without any guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro and many others.
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package quest
+  // This file is part of INTUITEL http://www.intuitel.eu as an adaptor for Moodle http://moodle.org/
+//
+// INTUITEL for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// INTUITEL for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with INTUITEL for Moodle Adaptor.  If not, see <http://www.gnu.org/licenses/>.
 
-ACTIONS:
-        - displaygradingform
-        - editelements
-        - insertelements
-        - updateassessment
+/**
+ * Questournament activity for Moodle
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+  ACTIONS:
+  - displaygradingform
+  - editelements
+  - insertelements
+  - updateassessment
 
-***************************************************/
+ * ************************************************* */
 
     require_once("../../config.php");
     require_once("lib.php");
@@ -25,7 +42,7 @@ ACTIONS:
      $qid=optional_param('qid',-1,PARAM_INT);     // quest ID
      //...get the action
      $action = required_param('action',PARAM_ALPHA);
-     
+
      global $DB, $OUTPUT, $PAGE;
     // get some useful stuff...
     if ($id) {
@@ -37,7 +54,7 @@ ACTIONS:
     } else {
         print_error("No id given",'quest');
     }
-    $course = $DB->get_record("course", array("id"=> $cm->course),'*',MUST_EXIST);
+    $course = get_course($cm->course);
 
     $url =  new moodle_url('/mod/quest/assessments_autors.php',array('action'=>$action));
     if ($id!== -1)
@@ -47,21 +64,21 @@ ACTIONS:
     if ($qid!== -1){
     	    $url->param('qid', $qid);
     }
-    
+
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
-    
+
     require_login($course->id, false, $cm);
     $PAGE->set_url($url);
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_context($context);
     $PAGE->set_heading($course->fullname);
 
-    
-    
+
+
  	quest_check_visibility($course,$cm);
 
- 	
+
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strassessments = get_string("assessments", "quest");
@@ -79,32 +96,32 @@ ACTIONS:
     {
     	echo $OUTPUT->header();
   		echo $OUTPUT->heading_with_help(get_string("specimenassessmentformsubmission", "quest"), "specimensubmission", "quest");
-		
+
         quest_print_assessment_autor($quest);
 
         $id = $_GET['id'];
          // called with no assessment
-        print_continue("view.php?id=$id");
+        echo $OUTPUT->continue_button("view.php?id=$id");
     }
 
     /*********************** edit assessment elements (for teachers) ***********************/
-    elseif ($action == 'editelements') {
+    else if ($action == 'editelements') {
 
         if (!$ismanager) {
             print_error("Only teachers can look at this page",'quest');
         }
  		// set up heading, form and table
         echo $OUTPUT->header();
-        
+
         $count = $DB->count_records("quest_items_assesments_autor", array("questid"=> $quest->id));
         if ($count) {
             notify(get_string("warningonamendingelements", "quest"));
         }
-       
+
         $gradingstrategy=$quest->gradingstrategyautor==0?get_string('nograde','quest'):get_string('accumulative','quest');
         $heading = get_string("editingassessmentelementsofautors","quest").' ('.$gradingstrategy.')';
         echo $OUTPUT->heading_with_help($heading, "elementsautor", "quest");
-        
+
         ?>
         <form name="form" method="post" action="assessments_autors.php">
         <input type="hidden" name="id" value="<?php echo $cm->id ?>" />
@@ -112,7 +129,7 @@ ACTIONS:
         <table align="center" border="1">
         <?php
 
-  
+
         // get existing elements, if none set up appropriate default ones
         if ($elementsraw = $DB->get_records("quest_elementsautor", array("questid"=> $quest->id), "elementno ASC" )) {
             foreach ($elementsraw as $element) {
@@ -279,7 +296,7 @@ ACTIONS:
     }
 
     /*********************** insert/update assignment elements (for teachers)***********************/
-    elseif ($action == 'insertelements') {
+    else if ($action == 'insertelements') {
 
         if (!$ismanager) {
             error("Only teachers can look at this page");
@@ -396,7 +413,7 @@ ACTIONS:
     }
 
     /*************** update assessment (by teacher or student) ***************************/
-    elseif ($action == 'updateassessment') {
+    else if ($action == 'updateassessment') {
         global $message;
 
         $aid=required_param('aid',PARAM_INT);
@@ -436,12 +453,12 @@ ACTIONS:
                }
 */
 	 $points=$submission->initialpoints;
-	 
+
 	 if ($manualGrade !=null )
 	 {
-	 
+
 	 $percent=((int)$manualGrade)/100;
-	
+
 	 $grade = $points * $percent;
 	 $message .=  "Grading manually! $points * $percent = $grade";
 	 }
@@ -452,7 +469,7 @@ ACTIONS:
 
         $form = data_submitted('nomatch'); //Nomatch because we can come from assess.php
         $num_elements = $quest->nelementsautor;
-        
+
         //determine what kind of grading we have
         switch ($quest->gradingstrategyautor) {
             case 0: // no grading
@@ -502,7 +519,7 @@ ACTIONS:
 
                 }
 
-              
+
                 $grade = $points * ($rawgrade / $totalweight);
 
                 break;
@@ -538,12 +555,12 @@ ACTIONS:
                 // do sanity check
                 if ($rawgrade < 0) {
                     $rawgrade = 0;
-                } elseif ($rawgrade > $quest->maxcalification) {
+                } else if ($rawgrade > $quest->maxcalification) {
                     $rawgrade = $quest->maxcalification;
                 }
                 echo "<b>".get_string("weightederrorcount", "quest", intval($error + 0.5))."</b>\n";
 
-           
+
                 $grade = $points * ($rawgrade / $quest->maxcalification);
 
                 break;
@@ -569,7 +586,7 @@ ACTIONS:
                 }
                 $rawgrade = ($elements[$form->grade[0]]->maxscore + $form->grade[1]);
 
-         
+
                 $grade = $points * ($rawgrade / $quest->maxcalification);
 
 
@@ -599,19 +616,19 @@ ACTIONS:
                     }
                     $rawgrade += ($grade / $maxscore) * $weight;
                 }
-   
+
                 $grade = $points * ($rawgrade / $totalweight);
 
                 break;
 
         } // end of switch
     }// form grading or manual grading
-	
-    
+
+
         $assessment->state = ASSESSMENT_STATE_BY_AUTOR;
         $assessment->points=$grade;
 		$assessment->dateassessment = $timenow;
-		
+
         $submission->evaluated = 1;
 
 
@@ -629,12 +646,12 @@ ACTIONS:
         quest_update_assessment_author($assessment);// weird bug with number precission and decimal point in Moodle 2.5+
         require_once('debugJP_lib.php');
         quest_update_submission_counts($submission->id);
-     
-        ///////////////////////////////
+
+        /////////////////////
         // recalculate points and report to gradebook
-        ////////////////////////////////
+        //////////////////////
         quest_grade_updated($quest,$submission->userid);
-        
+
         if($ismanager){
               if($user = get_complete_user_data('id', $submission->userid))
               {
@@ -651,13 +668,13 @@ ACTIONS:
         }else{
         	$returnto = $form->returnto;
         }
-        
+
 	echo $OUTPUT->header();
         // show grade if grading strategy is not zero
         if ($quest->gradingstrategyautor) {
 	echo $message. get_string("thegradeis", "quest").": ".
                     number_format($grade, 4).
-                    " (".get_string("initialpoints",'quest')." ".number_format($points,2).")";            
+                    " (".get_string("initialpoints",'quest')." ".number_format($points,2).")";
 	echo $OUTPUT->continue_button($returnto);
         }
         else {
@@ -673,6 +690,3 @@ ACTIONS:
     }
 
    echo $OUTPUT->footer();
-
-?>
-

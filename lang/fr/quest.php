@@ -1,107 +1,133 @@
-<?PHP // $Id: quest.php,v 1.1 2006/10/03 07:55:26 administrador Exp $
-      // quest.php - created with Moodle 1.5.2
-	
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle lang file
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package block_quest_classification
+ */
 $string['absent'] = 'Absent';
 $string['accumulative'] = 'Saccumulant';
 $string['action'] = 'Action';
 $string['actions'] = 'Actions';
 $string['addacomment'] = 'ajouter  un commentaire' ;
 $string['addcomment'] = ' Ajouter commentaire';
-$string['addsubmission'] = 'Ajouter une question'; 
+$string['addsubmission'] = 'Ajouter une question';
 $string['afterdeadline'] = 'Après la date limite: {$a}';
 $string['agreetothisassessment'] = 'Accepter cette évaluation';
-$string['allgradeshaveamaximumof'] = 'Toutes les notes ont un maximum de: {$a}'; 
-$string['allowresubmit'] = 'Autoriser les renvois '; 
+$string['allgradeshaveamaximumof'] = 'Toutes les notes ont un maximum de: {$a}';
+$string['allowresubmit'] = 'Autoriser les renvois ';
 $string['allowteams'] = 'Autoriser les équipes ';
-$string['alreadyinphase'] = 'En cours {$a}'; 
+$string['alreadyinphase'] = 'En cours {$a}';
 $string['amendassessmentelements'] = 'Modifier les éléments dévaluation';
-$string['amendtitle'] = 'Titre modifié'; 
+$string['amendtitle'] = 'Titre modifié';
 $string['answer'] = 'Répondre';
 $string['answercontent'] = 'Contenu de la réponse';
 $string['answerexisty'] = 'il existe déjà une réponse à cette question';
 $string['answername'] = 'Réponse:';
 $string['answers'] = 'Rép.';
 $string['answersubmission'] = 'Répondre à la question\"{$a}\"';
-$string['approve'] = 'Valider'; 
+$string['approve'] = 'Valider';
 $string['approvesubmission'] = 'Valider/Refuser la question';
 $string['assess'] = 'évaluer';
-$string['assessedon'] = 'Evaluée le {$a}'; 
+$string['assessedon'] = 'Evaluée le {$a}';
 $string['assessment'] = 'Evaluation';
-$string['assessmentby'] = 'Evaluée par {$a}'; 
-$string['assessmentglobal'] = 'Note générale'; 
+$string['assessmentby'] = 'Evaluée par {$a}';
+$string['assessmentglobal'] = 'Note générale';
 $string['assessmentgrade'] = 'note de lévaluation: {$a}';
-$string['assessmentnotyetagreed'] = 'Évaluation pas encore acceptée'; 
+$string['assessmentnotyetagreed'] = 'Évaluation pas encore acceptée';
 $string['assessmentof'] = 'Evaluation de {$a}';
-$string['assessmentofthissubmission'] = 'évaluation de lenvoi'; 
-$string['assessments'] = 'éval.'; 
+$string['assessmentofthissubmission'] = 'évaluation de lenvoi';
+$string['assessments'] = 'éval.';
 //$string['assessments'] = 'évaluations';
 $string['assessmentsareok'] = 'Les évaluations sont correctes';
-$string['assessmentsby'] = 'évaluées par {$a}'; 
-$string['assessmentsdone'] = 'évaluations effectuées'; 
+$string['assessmentsby'] = 'évaluées par {$a}';
+$string['assessmentsdone'] = 'évaluations effectuées';
 $string['assessmentsmustbeagreed'] = 'Les évaluations doivent être acceptées';
 $string['assessmentwasagreedon'] = 'Lévaluation a été acceptées le {$a}';
-$string['assessor'] = 'Examinateur'; 
-$string['assessthisanswer'] = 'Evaluer cette réponse'; 
-$string['assessthissubmission'] = 'Évaluer cette question'; 
-$string['assignmentnotinthecorrectphase'] = 'Lévaluation ne sest pas faite correctement'; 
-$string['attachment'] = 'Pièce jointe '; 
-$string['attachments'] = 'Pièces jointes'; 
-$string['authorofsubmission'] = 'auteur de lenvoi'; 
+$string['assessor'] = 'Examinateur';
+$string['assessthisanswer'] = 'Evaluer cette réponse';
+$string['assessthissubmission'] = 'Évaluer cette question';
+$string['assignmentnotinthecorrectphase'] = 'Lévaluation ne sest pas faite correctement';
+$string['attachment'] = 'Pièce jointe ';
+$string['attachments'] = 'Pièces jointes';
+$string['authorofsubmission'] = 'auteur de lenvoi';
 $string['averageerror'] = 'moyenne des erreurs';
-$string['awaitinggradingbyteacher'] = 'En attente de la note du professeur {$a}';  
+$string['awaitinggradingbyteacher'] = 'En attente de la note du professeur {$a}';
 $string['beforedeadline'] = 'Avant la date limite: {$a}';
 $string['by'] = 'par';
 $string['bynameondate'] = 'de {{$a->nom}}  le {$a->date}';
-$string['calculationoffinalgrades'] = 'Calcul de la note finale'; 
-$string['calification'] = 'Note'; 
+$string['calculationoffinalgrades'] = 'Calcul de la note finale';
+$string['calification'] = 'Note';
 $string['calificationautor'] = 'Note de lauteur de la question';
-$string['calificationdate'] = 'Date daffichage des notes'; 
+$string['calificationdate'] = 'Date daffichage des notes';
 $string['calificationdateevent'] = 'Affichage des notes de {$a}';
 $string['calificationthisquest'] = 'Obtenir les notes du module QUESTOURnament';
-$string['change'] = 'Enregistrer les modifications'; 
-$string['changecalification'] = 'Changer note'; $string['changemanualcalification'] = 'changer manuellement note'; 
+$string['change'] = 'Enregistrer les modifications';
+$string['changecalification'] = 'Changer note'; $string['changemanualcalification'] = 'changer manuellement note';
 $string['changeteam'] = 'Gestions des équipes';
-$string['changeteamteacher'] = 'Gestions des équipes'; $string['clasification'] = 'Classement'; 
+$string['changeteamteacher'] = 'Gestions des équipes'; $string['clasification'] = 'Classement';
 $string['closeassignment'] = 'Fermer';
-$string['comment'] = 'commentaire'; 
-$string['commentby'] = 'commenté par'; 
-$string['comentsforautor'] = 'commentaires pour lauteur'; 
-$string['comentsforpupil'] = 'Commentaires pour les élèves'; 
-$string['commentsautor'] = 'commentaire general de lauteur'; 
-$string['commentsforteacher'] = 'Commentaires pour le professeur'; 
-$string['commentsteacher'] = 'Commentaire général du professeur'; 
-$string['confirmdelete'] = 'confirmer effacer'; 
-$string['confirmdeletionofthisitem'] = 'confirmer lannulation de {$a}'; 
-$string['correct'] = 'correct'; 
-$string['criterion'] = 'Critère'; 
-$string['currentphase'] = 'Phase de QUESTOURnament'; 
-$string['currentphaseanswer'] = 'phase de réponse'; 
+$string['comment'] = 'commentaire';
+$string['commentby'] = 'commenté par';
+$string['comentsforautor'] = 'commentaires pour lauteur';
+$string['comentsforpupil'] = 'Commentaires pour les élèves';
+$string['commentsautor'] = 'commentaire general de lauteur';
+$string['commentsforteacher'] = 'Commentaires pour le professeur';
+$string['commentsteacher'] = 'Commentaire général du professeur';
+$string['confirmdelete'] = 'confirmer effacer';
+$string['confirmdeletionofthisitem'] = 'confirmer lannulation de {$a}';
+$string['correct'] = 'correct';
+$string['criterion'] = 'Critère';
+$string['currentphase'] = 'Phase de QUESTOURnament';
+$string['currentphaseanswer'] = 'phase de réponse';
 $string['dateanswer'] = 'date';
-$string['dateassess'] = 'date dévaluation'; 
-$string['dateend'] = 'date de clôture'; 
+$string['dateassess'] = 'date dévaluation';
+$string['dateend'] = 'date de clôture';
 $string['dateendevent'] = 'date de clôture du concours le {$a}';
 $string['dateendsubmissionevent'] = 'clôture de la question {$a}';
-$string['dateofend'] = 'date de clôture'; 
+$string['dateofend'] = 'date de clôture';
 $string['dateofstart'] = 'date douverture';
 $string['datestart'] = 'début';
-$string['datestartevent'] = 'début du concours {$a}'; 
+$string['datestartevent'] = 'début du concours {$a}';
 $string['datestartsubmissionevent'] = 'ouverture de la question {$a}';
 $string['datestr'] = '%d/%m/%y<br />%H:%M';
 $string['datestrmodel'] = '%%d/%%m/%%y &nbsp;&nbsp;%%H:%%M';
-$string['deadline'] = 'date limite'; 
+$string['deadline'] = 'date limite';
 $string['deadlineis'] = 'la date limite est le {$a}';
 $string['delete'] = 'effacer';
-$string['deleting'] = 'effacement en cours'; 
+$string['deleting'] = 'effacement en cours';
 $string['description'] = 'description';
-$string['detailsofassessment'] = 'détail de lévaluation'; 
-$string['disagreewiththisassessment'] = 'Contester cette évaluation'; 
-$string['displayoffinalgrades'] = 'afficher les notes finales'; 
-$string['dontshowgrades'] = 'ne pas afficher les notes'; 
-$string['edit'] = 'éditer'; 
-$string['editacomment'] = 'éditer un commentaire'; 
-$string['editingassessmentelements'] = 'éditer les éléments dévaluation.En cours'; 
+$string['detailsofassessment'] = 'détail de lévaluation';
+$string['disagreewiththisassessment'] = 'Contester cette évaluation';
+$string['displayoffinalgrades'] = 'afficher les notes finales';
+$string['dontshowgrades'] = 'ne pas afficher les notes';
+$string['edit'] = 'éditer';
+$string['editacomment'] = 'éditer un commentaire';
+$string['editingassessmentelements'] = 'éditer les éléments dévaluation.En cours';
 $string['editingassessmentelementsofautors'] = 'éditer les élements dévaluation des auteurs. En cours';
-$string['element'] = 'élément'; 
+$string['element'] = 'élément';
 $string['elementweight'] = 'poids de lélément';
 $string['emailaddsubmission'] = 'bonjour, {$a->firstname}.\n
 modifications sur QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'  \n
@@ -449,8 +475,8 @@ $string['submissions'] = 'Thèmes';
 $string['submissionsnolongerallowed'] = 'Pas dautre envois';
 $string['submissionstart'] = 'Date de début de la question {$a}';
 $string['submitassignment'] = 'Envoyer travail';
-$string['submitexample'] = 'Ajouter question';
-$string['submitexampleassignment'] = 'Ajouter questions';
+$string['submitchallenge'] = 'Ajouter question';
+$string['submitchallengeassignment'] = 'Ajouter questions';
 $string['submitted'] = 'question Envoyée';
 $string['submittedanswer'] = 'Réponse envoyée';
 $string['submittedby'] = 'Envoyé par';

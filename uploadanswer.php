@@ -1,14 +1,32 @@
-<?php  // $Id: uploadanswer.php
-/******************************************************
-* Module developed at the University of Valladolid
-* Designed and directed by Juan Pablo de Castro with the effort of many other
-* students of telecommunciation engineering
-* this module is provides as-is without any guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro and many others.
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package quest
-*********************************************************/
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+ */
 
     require("../../config.php");
     require("lib.php");
@@ -18,20 +36,20 @@
 
 	global $DB;
     if (! $cm = $DB->get_record("course_modules", array("id"=> $id))) {
-        error("Course Module ID was incorrect");
+        print_error("CourseModuleIDwasincorrect",'quest');;
     }
-    if (! $course = $DB->get_record("course", array("id"=> $cm->course))) {
-        error("Course is misconfigured");
+    if (! get_course($cm->course)) {
+        print_error("course_misconfigured",'quest');
     }
     if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
-        error("Quest is incorrect");
+        print_error("incorrectQuest",'quest');;
     }
 
     require_login($course->id, false, $cm);
     quest_check_visibility($course,$cm);
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
-    
+
 /*****
 TODO: Check capabilities
 ***/
@@ -54,7 +72,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
     $groupmode = groupmode($course, $cm);   // Groups are being used?
     $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode=$currentgroup=false;//JPC group support desactivation
-    
+
     print_header_simple(format_string($quest->name)." : $stranswer", "",
                  "<a href=\"index.php?id=$course->id\">$strquests</a> ->
                   <a href=\"view.php?a=$quest->id\">".format_string($quest->name,true)."</a> -> $stranswer",
@@ -122,9 +140,9 @@ if (!has_capability('moodle/legacy:admin', $context) &&
         notify(get_string('uploaderror', 'quest'));
         echo $um->get_errors();
 
-        $error_return_url="answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=modif";
+        $errorreturnurl="answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=modif";
         $CFG->framename="top";
-        print_continue($error_return_url);
+        echo $OUTPUT->continue_button($errorreturnurl);
         print_footer($course);
         die;
         }
@@ -138,21 +156,21 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 
 
 
-///////////////////////////////////////
+//////////////////////////
 //Update scores and statistics
-////////////////////////////////////////
+///////////////////////////
 quest_update_submission_counts($answer->submissionid);
-    
-////////////////////////////////////////
+
+///////////////////////////
 // Update current User scores
 quest_update_user_scores($quest,$newanswer->userid);
-////////////////////////////////////////
+///////////////////////////
 //  Update answer current team totals
 if($quest->allowteams)
 	{
 	quest_update_team_scores($quest->id,quest_get_user_team($quest->id,$newanswer->userid));
 	}
-////////////////////////////////////////////////////
+///////////////////////////////////
 
 
 /**
@@ -171,7 +189,7 @@ if($quest->allowteams)
 //           }
 //     }
 
-    
+
 // Challenge author is always notified
 //    if(!isteacher($course->id,$submission->userid))
     {
@@ -180,11 +198,11 @@ if($quest->allowteams)
     }
 
     add_to_log($course->id, "quest", "submit_answer", "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer", "$newanswer->id", "$cm->id");
-    print_continue("submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+    echo $OUTPUT->continue_button("submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
     print_footer($course);
 
    }
-   elseif($form->save1 == "PreviewAnswer"){
+   else if($form->save1 == "PreviewAnswer"){
 
 
         echo "<hr size=\"1\" noshade=\"noshade\" />";

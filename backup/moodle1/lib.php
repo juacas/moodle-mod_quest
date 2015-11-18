@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -61,7 +60,7 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
             new convert_path('submission', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION'),
        		new convert_path('particular_elements', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/PARTICULAR_ELEMENTS'),
        		new convert_path('particular_element', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/PARTICULAR_ELEMENTS/PARTICULAR_ELEMENT'),
-       		
+
        		new convert_path('answers', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS'),
        		new convert_path('answer', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER'),
        		new convert_path('assessments', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS'),
@@ -71,11 +70,11 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
        		new convert_path('califications_users', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_USERS'),
        		new convert_path('calification_user', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_USERS/CALIFICATION_USER'),
        		new convert_path('califications_teams', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_TEAMS'),
-       		new convert_path('calification_team', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_TEAMS/CALIFICATION_TEAM'),		 
+       		new convert_path('calification_team', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_TEAMS/CALIFICATION_TEAM'),
         );
        return $paths;
     }
-   
+
     /*****************************
      * QUEST node
      */
@@ -89,39 +88,39 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     	$cminfo         = $this->get_cminfo($instanceid);
     	$this->moduleid = $cminfo['id'];
     	$contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
-    
+
     	// get a fresh new file manager for this instance
     	$this->fileman = $this->converter->get_file_manager($contextid, 'mod_quest');
-    
+
     	// convert course files embedded into the intro
     	$this->fileman->filearea = 'description';
     	$this->fileman->itemid   = 0;
     	$data['description'] = moodle1_converter::migrate_referenced_files($data['description'], $this->fileman);
-    
+
     	// start writing quest.xml
     	$this->open_xml_writer("activities/quest_{$this->moduleid}/quest.xml");
     	$this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
     			'modulename' => 'quest', 'contextid' => $contextid));
     	$this->xmlwriter->begin_tag('quest', array('id' => $instanceid));
-    
+
     	foreach ($data as $field => $value) {
     		if ($field <> 'id') {
     			$this->xmlwriter->full_tag($field, $value);
     		}
-    	}    
+    	}
     	return $data;
     }
-    
+
     /**
      * This is executed when we reach the closing </MOD> tag of our 'quest' path
      */
     public function on_quest_end() {
     	// finish writing quest.xml
-    	
+
     	$this->xmlwriter->end_tag('quest');
     	$this->xmlwriter->end_tag('activity');
     	$this->close_xml_writer();
-    
+
     	// write inforef.xml
     	$this->open_xml_writer("activities/quest_{$this->moduleid}/inforef.xml");
     	$this->xmlwriter->begin_tag('inforef');
@@ -133,22 +132,22 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     	$this->xmlwriter->end_tag('inforef');
     	$this->close_xml_writer();
     }
-    
+
     /****************************+++
      * SUBMISSION node
      */
-   
+
  /**
      * This is executed when the parser reaches the <SUBMISSIONS> opening element
      */
     public function on_submissions_start() {
         $this->xmlwriter->begin_tag('challenges');
     }
-   
+
     function on_submission_end()
     {
     	$this->xmlwriter->end_tag('challenge');
-    
+
     }
 /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION
@@ -157,17 +156,17 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     public function process_submission($data)
     {
     	$contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
-    	
+
     	// get a fresh new file manager for this instance
-    	$this->fileman = $this->converter->get_file_manager($contextid, 'mod_quest'); 	
+    	$this->fileman = $this->converter->get_file_manager($contextid, 'mod_quest');
     	// convert course files embedded into the intro
     	$this->fileman->filearea = 'description';
     	$this->fileman->itemid   = 0;
     	$data['description'] = moodle1_converter::migrate_referenced_files($data['description'], $this->fileman);
-    	
+
        // $this->write_xml('challenge', $data, array('/submission/id'));
         $this->xmlwriter->begin_tag('challenge', array('id' => $data['id']));
-        
+
         foreach ($data as $field => $value) {
         	if ($field <> 'id') {
         		$this->xmlwriter->full_tag($field, $value);
@@ -181,8 +180,8 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     public function on_submissions_end() {
         $this->xmlwriter->end_tag('challenges');
     }
-    
-    
+
+
  /***************************************
      * ELEMENTS
      */
@@ -200,14 +199,14 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     {
     	$this->write_xml('element', $data);
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </elements> element
      */
     public function on_elements_end() {
     	$this->xmlwriter->end_tag('elements');
     }
-    
+
     /***************************************
      * PARTICULAR ELEMENTS
      */
@@ -225,14 +224,14 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     {
     	$this->write_xml('particular_element', $data);
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </particular_elements> element
      */
     public function on_particular_elements_end() {
     	$this->xmlwriter->end_tag('particular_elements');
     }
-    
+
     /***************************************
      * ELEMENTS_AUTOR
     */
@@ -251,29 +250,29 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     {
     	$this->write_xml('element_autor', $data);
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </elements_autor> element
      */
     public function on_elements_autor_end() {
     	$this->xmlwriter->end_tag('elements_autor');
     }
-    
+
     /****************************+++
      * ANSWERS node
     */
-     
+
     /**
      * This is executed when the parser reaches the <ANSWERS> opening element
      */
     public function on_answers_start() {
     	$this->xmlwriter->begin_tag('answers');
     }
-     
+
     function on_answer_end()
     {
     	$this->xmlwriter->end_tag('answer');
-    
+
     }
     /**
      * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER
@@ -282,31 +281,31 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     public function process_answer($data)
     {
     	$contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
-    	 
+
     	// get a fresh new file manager for this instance
     	$this->fileman = $this->converter->get_file_manager($contextid, 'mod_quest');
     	// convert course files embedded into the intro
     	$this->fileman->filearea = 'description';
     	$this->fileman->itemid   = 0;
     	$data['description'] = moodle1_converter::migrate_referenced_files($data['description'], $this->fileman);
-    	 
+
     	// $this->write_xml('challenge', $data, array('/submission/id'));
     	$this->xmlwriter->begin_tag('answer', array('id' => $data['id']));
-    
+
     	foreach ($data as $field => $value) {
     		if ($field <> 'id') {
     			$this->xmlwriter->full_tag($field, $value);
     		}
     	}
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </answers> element
      */
     public function on_answers_end() {
     	$this->xmlwriter->end_tag('answers');
     }
-    
+
     /***************************************
      * ASSESSMENTS
     */
@@ -323,7 +322,7 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     public function process_assessment($data)
     {
     	$this->xmlwriter->begin_tag('assessment', array('id' => $data['id']));
-    
+
     	foreach ($data as $field => $value) {
     		if ($field <> 'id') {
     			$this->xmlwriter->full_tag($field, $value);
@@ -356,7 +355,7 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     {
     	$this->write_xml('element_assess', $data);
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </elements_assess> element
      */
@@ -380,7 +379,7 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     {
     	$this->write_xml('calification_user', $data);
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </califications_users> element
      */
@@ -404,7 +403,7 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     {
     	$this->write_xml('calification_team', $data);
     }
-    
+
     /**
      * This is executed when the parser reaches the closing </califications_teams> element
      */

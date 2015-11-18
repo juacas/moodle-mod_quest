@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -20,19 +19,18 @@
  *
  * @package    mod
  * @subpackage questournament
- * @copyright  
+ * @copyright
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 $logs = array(
-    array('module'=>'quest', 'action'=>'assessment', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'close', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'display', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'resubmit', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'set up', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'submissions', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'view', 'mtable'=>'quest', 'field'=>'name'),
-	array('module'=>'quest', 'action'=>'update', 'mtable'=>'quest', 'field'=>'name'),
-	);
+    array('module' => 'quest', 'action' => 'assessment', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'close', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'display', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'resubmit', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'set up', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'submissions', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'view', 'mtable' => 'quest', 'field' => 'name'),
+    array('module' => 'quest', 'action' => 'update', 'mtable' => 'quest', 'field' => 'name'),
+);

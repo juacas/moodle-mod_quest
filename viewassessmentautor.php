@@ -1,14 +1,32 @@
-<?php  // $Id: viewassessmentautor.php
-/******************************************************
-* Module developed at the University of Valladolid
-* Designed and directed by Juan Pablo de Castro with the effort of many other
-* students of telecommunciation engineering
-* this module is provides as-is without any guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro and many others.
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package quest
-************************************************************/
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+ */
 
     require("../../config.php");
     require("lib.php");
@@ -29,10 +47,10 @@
         error("Incorrect submission id");
     }
     if (! $quest = $DB->get_record("quest", array("id"=> $submission->questid))) {
-        error("Quest is incorrect");
+        print_error("incorrectQuest",'quest');;
     }
     if (! $course = $DB->get_record("course",array("id"=> $quest->course))) {
-        error("Course is misconfigured");
+        print_error("course_misconfigured",'quest');
     }
     if (! $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
         error("No coursemodule found");
@@ -43,19 +61,19 @@
     }
 
     require_login($course->id, false, $cm);
-    
-    $url =  new moodle_url('/mod/quest/viewassessmentautor.php',array('aid'=>$aid,'allowcomments'=>$allowcomments,'redirect'=>$redirect,'dir'=>$dir,'sort'=>$sort)); 
+
+    $url =  new moodle_url('/mod/quest/viewassessmentautor.php',array('aid'=>$aid,'allowcomments'=>$allowcomments,'redirect'=>$redirect,'dir'=>$dir,'sort'=>$sort));
     $PAGE->set_url($url);
-        
+
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    
+
 	quest_check_visibility($course, $cm);
-	
+
 	$context = context_module::instance( $cm->id);
 	$ismanager=has_capability('mod/quest:manage',$context);
-	
+
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strassess = get_string("viewassessmentautor", "quest");
@@ -122,12 +140,12 @@
         quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
 
 
-       // print_continue($redirect);
+       // echo $OUTPUT->continue_button($redirect);
         //print_footer($course);
        // exit;
     //}
 
-    /// print bottom frame with the submission
+    // print bottom frame with the submission
 
    // print_header('', '', '', '', '<base target="_parent" />');
 
@@ -136,10 +154,10 @@
     if (($ismanager||($submission->userid == $USER->id))) {
         $title .= get_string('by', 'quest').' '.quest_fullname($submission->userid, $course->id);
     }
-    
+
     echo $OUTPUT->heading($title);
-    
-    
+
+
     quest_print_submission_info($quest,$submission);
 
     echo("<center><b><a href=\"assessments.php?cmid=$cm->id&amp;action=displaygradingform\">".
@@ -147,7 +165,7 @@
 
     $OUTPUT->heading(get_string('description','quest'));
     quest_print_submission($quest, $submission);
-	
+
     $timenow=time();
     if(($submission->datestart < $timenow)&&($submission->dateend > $timenow)&&($submission->nanswerscorrect < $quest->nmaxanswers)){
                     $submission->phase = SUBMISSION_PHASE_ACTIVE;
@@ -159,8 +177,8 @@
 
 
 
-  print_continue($_SERVER['HTTP_REFERER'].'#sid='.$submission->id);
-  
+  echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'].'#sid='.$submission->id);
+
   echo $OUTPUT->footer();
 
 ?>

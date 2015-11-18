@@ -1,17 +1,43 @@
 <?php
- 
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Backup Questournament module
+ *
  * Define the complete choice structure for backup, with file and id annotations
- */     
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package mod_quest
+ */
 class backup_quest_activity_structure_step extends backup_activity_structure_step {
- 
+
     protected function define_structure() {
- 
+
         // To know if we are including userinfo
         $userinfo = $this->get_setting_value('userinfo');
- 
+
  // Define each element separated
- 		$quest = new backup_nested_element('quest', array('id'), 
+ 		$quest = new backup_nested_element('quest', array('id'),
  			array(
  			'name', 'description', 'nattachments', 'validateassessment','usepassword','password',
  			'maxbytes','datestart','dateend','gradingstrategy','nelements','timemaxquestion',
@@ -33,19 +59,19 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $elements_autor = new backup_nested_element('elements_autor');
         $element_autor = new backup_nested_element('element_autor', /*array('id')*/null, array(
             'elementno', 'description', 'scale','maxscore','weight'));
-        
+
         $rubrics_autor = new backup_nested_element('rubrics_autor');
         $rubric_autor = new backup_nested_element('rubric_autor', array('id'), array(
             'elementno','rubricno','description'));
   		// submissions (challenges)
-  		
+
         $challenges = new backup_nested_element('challenges');
         $challenge = new backup_nested_element('challenge',array('id'),array(
         		'userid','numelements','title','timecreated','description','descriptionformat','descriptiontrust',
         		'attachment','points','phase','commentteacherpupil','commentteacherauthor','dateend','nanswers',
         		'nanswerscorrect','state','datestart','pointsmax','dateanswercorrect','initialpoints','pointsanswercorrect',
         		'mailed','maileduser','predictedduration','preceiveddifficulty','evaluated'));
-       
+
         $answers = new backup_nested_element('answers');
         $answer = new backup_nested_element('answer',array('id'),array(/*'questid',*/'userid','title','description','descriptionformat',
         				'descriptiontrust','attachment','date','pointsmax','grade','commentforteacher','phase','state','permitsubmit','perceiveddifficulty'));
@@ -53,12 +79,12 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $assessment = new backup_nested_element('assessment',array('id'),array('questid','userid','teacherid','pointsautor','pointsteacher','dateassessment','pointsmax','commentsforteacher','commentsteacher','phase','state'));
         $element_assessments = new backup_nested_element('elements_assess');
         $element_assessment = new backup_nested_element('element_assess', /*array('id')*/null,array('questid','userid','elementno','answer','commentteacher','calification','phase'));
-          
+
         $assessments_autor = new backup_nested_element('assessments_autor');
         $assessment_autor = new backup_nested_element('assessment_autor',array('id'),array('questid','submissionid','userid','points','dateassessment','pointsmax','commentsforteacher','commentsteacher','phase','state'));
         $element_assessments_autor = new backup_nested_element('elements_assess_autor');
         $element_assessment_autor = new backup_nested_element('element_assess_autor', array('id'),array('questid','assessmentautorid','userid','elementno','answer','commentteacher','calification','phase'));
-        
+
         $califications_users = new backup_nested_element('califications_users');
         // teamid is an identification
         $calification_users = new backup_nested_element('calification_user',array('id'),array('userid','teamid','points','nanswers','nanswerassessment','nsubmissions','nsubmissionsassessment','pointssubmission','pointsanswers'));
@@ -71,27 +97,27 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  		$default_elements->add_child($default_element);
  		$default_element->add_child($rubrics);
  		$rubrics->add_child($rubric);
- 		
+
  		$quest->add_child($elements_autor);
  		$elements_autor->add_child($element_autor);
  		$element_autor->add_child($rubrics_autor);
  		$rubrics_autor->add_child($rubric_autor);
- 		
+
  		$quest->add_child($challenges);
  		$challenges->add_child($challenge);
  		$challenge->add_child($assessments_autor);
  		$challenge->add_child($answers);
  		$challenge->add_child($particular_elements);
  		$particular_elements->add_child($particular_element);
- 		
+
  		$answers->add_child($answer);
  			$answer->add_child($assessments);
  			$assessments->add_child($assessment);
  		$assessment->add_child($element_assessments);
  			$element_assessments->add_child($element_assessment);
  			$assessments_autor->add_child($assessment_autor);
- 		
- 		
+
+
  		$quest->add_child($teams);
  		$teams->add_child($team);
  		$team->add_child($califications_teams);
@@ -104,7 +130,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  		$default_element->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid=0',  array(backup::VAR_PARENTID));
  		$particular_element->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid= ?',  array(backup::VAR_ACTIVITYID,backup::VAR_PARENTID));
  		$element_autor->set_source_table('quest_elementsautor',array( 'questid'=>backup::VAR_PARENTID));
-		
+
  		$rubric->set_source_sql('SELECT * FROM {quest_rubrics} WHERE
  								 questid = ? and submissionsid=0 and elementno = ? ORDER BY elementno', array(backup::VAR_ACTIVITYID,'../../elementno'));
  		$rubric_autor->set_source_sql('SELECT * FROM {quest_rubrics_autor} WHERE
@@ -116,12 +142,12 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  		$answer->set_source_table('quest_answers',array('questid'=>backup::VAR_ACTIVITYID,'submissionid'=>backup::VAR_PARENTID));
  		$assessment->set_source_table('quest_assessments',array('questid'=>backup::VAR_ACTIVITYID,'answerid'=>backup::VAR_PARENTID));
  		$element_assessment->set_source_table('quest_elements_assessments', array('questid'=>backup::VAR_ACTIVITYID,'assessmentid'=>backup::VAR_PARENTID),'elementno');
- 		
+
  		$calification_users->set_source_table('quest_calification_users', array('questid'=>backup::VAR_ACTIVITYID));
  		$team->set_source_table('quest_teams', array('questid'=>backup::VAR_ACTIVITYID),'id');
  		$calification_team->set_source_table('quest_calification_teams', array('questid'=>backup::VAR_ACTIVITYID,'teamid'=>backup::VAR_PARENTID));
  		}
- 		
+
         // Define id annotations
  		$answer->annotate_ids('user', 'userid');
  		$challenge->annotate_ids('user', 'userid');
@@ -130,15 +156,15 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  		$element_assessment->annotate_ids('user', 'userid');
  		$calification_users->annotate_ids('user', 'userid');
  		$calification_users->annotate_ids('team', 'teamid');
- 		
+
         // Define file annotations
         $quest->annotate_files('mod_quest','description',null);
  		$challenge->annotate_files('mod_quest','submission','id');
  		$challenge->annotate_files('mod_quest','attachment','id');
  		$answer->annotate_files('mod_quest','answer','id');
  		$answer->annotate_files('mod_quest','answer_attachment','id');
- 		
- 		
+
+
         // Return the root element (quest), wrapped into standard activity structure
  		return $this->prepare_activity_structure($quest);
     }

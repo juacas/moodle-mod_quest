@@ -1,6 +1,32 @@
-<?PHP // $Id: QUEST.php,v 1.1 2006/10/03 08:13:56 administrador Exp $
-      // QUEST.php - created with Moodle 1.5.2
-// Reg expr to adapt vars  ([^\{])(\$a)(->\w+)?([^\}])  replace with $1{$2$3}$4
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Questournament activity for Moodle lang file
+ *
+ * Module developed at the University of Valladolid
+ * Designed and directed by Juan Pablo de Castro with the effort of many other
+ * students of telecommunciation engineering
+ * this module is provides as-is without any guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @copyright (c) 2014, INTUITEL Consortium
+ * @package block_quest_classification
+ */
 $string['absent'] = 'Ausente';
 $string['accumulative'] = 'Acumulativa';
 $string['action'] = 'Acción';
@@ -127,7 +153,7 @@ Cambios no QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'\n
 Se ha eliminado la respuesta <b>\'{$a->secondname}\'</b> del desafío <b>\'{$a->title}\'</b>.\n
 <font size=2>Para acceder ao desafío en cuestión faga clic aquí:\n
 {$a->link}</font>\n
-<font size=2>Se necesita axuda, contacte co administrador 
+<font size=2>Se necesita axuda, contacte co administrador
 do sitio,{$a->admin}\n</font>';
 $string['emailanswerdeletesubject'] = 'Moodle. Resposta Eliminada no Módulo QUESTOURnament';
 $string['emailapprobe'] = 'Ola, {$a->firstname}.\n
@@ -461,8 +487,8 @@ $string['submissions'] = 'Temas';
 $string['submissionsnolongerallowed'] = 'Non se permiten máis envíos';
 $string['submissionstart'] = 'Data de Comezo do Tema {$a}';
 $string['submitassignment'] = 'Enviar Tarefa';
-$string['submitexample'] = 'Engadir Tema';
-$string['submitexampleassignment'] = 'Engadir Tema/Pregunta';
+$string['submitchallenge'] = 'Engadir Tema';
+$string['submitchallengeassignment'] = 'Engadir Tema/Pregunta';
 $string['submitted'] = 'Tema/Pregunta Enviado';
 $string['submittedanswer'] = 'Resposta Enviada';
 $string['submittedby'] = 'Enviado por';

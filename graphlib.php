@@ -1,5 +1,4 @@
-<?php  // $Id: graphlib.php,v 1.3 2009/02/21 19:51:06 juacas Exp $
-
+<?php
 /*
 Graph Class. PHP Class to draw line, point, bar, and area graphs, including numeric x-axis and double y-axis.
 Version: 1.6.3
@@ -51,7 +50,7 @@ class graph {
     'title_colour'       => 'black',       // colour for title text
 
     'x_label'            => '',            // if this is set then this text is printed on bottom axis of graph.
-    'x_label_date'	     => 0,		      
+    'x_label_date'	     => 0,
     'y_label_left'       => '',            // if this is set then this text is printed on left axis of graph.
     'y_label_right'      => '',            // if this is set then this text is printed on right axis of graph.
 
@@ -150,16 +149,16 @@ class graph {
 // init all text - title, labels, and axis text.
 function init() {
 
-  /// Moodle mods:  overrides the font path and encodings
+  // Moodle mods:  overrides the font path and encodings
 
   global $CFG;
 
-  /// A default.ttf is searched for in this order:
-  ///      dataroot/lang/xx_local/fonts
-  ///      dataroot/lang/xx/fonts
-  ///      dirroot/lang/xx/fonts
-  ///      dataroot/lang
-  ///      lib/
+  // A default.ttf is searched for in this order:
+  //      dataroot/lang/xx_local/fonts
+  //      dataroot/lang/xx/fonts
+  //      dirroot/lang/xx/fonts
+  //      dataroot/lang
+  //      lib/
 
   $currlang = current_language();
   if (file_exists("$CFG->dataroot/lang/".$currlang."_local/fonts/default.ttf")) {
@@ -176,7 +175,7 @@ function init() {
 
   $this->parameter['path_to_fonts'] = $fontpath;
 
-  /// End Moodle mods
+  // End Moodle mods
 
 
 
@@ -577,7 +576,7 @@ function draw_x_axis() {
         ImageLine($this->image, round($tickX), round($tickTop), round($tickX), round($tickBottom), $tickColour);
 
       // draw axis text
-      
+
       $coords = array('x' => $tickX, 'y' => $textBottom, 'reference' => $reference);
 	  $axisTag['text'] = $this->calculated['x_axis']['text'][$set];
       $axisTag['boundary_box'] = $this->calculated['x_axis']['boundary_box'][$set];
@@ -786,7 +785,7 @@ function get_x_point($xdata)
   $factor = $this->calculated['x_axis']['factor'];
   $min = $this->calculated['x_axis']['min'];
   $pointx=$gridLeft + ($xdata - $min) * $factor;
- 
+
 return  $pointx;
 }
 function get_y_point($ydata)
@@ -1272,11 +1271,11 @@ function print_TTF($message) {
       $x = 0;
       break;
   }
-  
-   
+
+
   // start of Moodle addition
   //$textlib = textlib_get_instance();
-  $textlib= new textlib;
+  $textlib= new core_text;
   //$text = $textlib->convert($text, current_charset(), 'UTF-8');
   $text = $textlib->utf8_to_entities($text, true, true); //does not work with hex entities!
   // end of Moodle addition
@@ -1384,7 +1383,7 @@ function get_boundaryBox($message) {
   // get boundary box and offsets for printing at an angle
   // start of Moodle addition
   //$textlib = textlib_get_instance();
-  $textlib = new textlib;
+  $textlib = new core_text();
   //$text = $textlib->convert($text, current_charset(), 'UTF-8'); //evp the only thing current_charset does is return 'UTF-8';
   $text = $textlib->utf8_to_entities($text, true, true); //gd does not work with hex entities!
   // end of Moodle addition

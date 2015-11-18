@@ -1,4 +1,18 @@
-<?PHP  // $Id: team.php
+<?php
+// This file is part of Questournament activity for Moodle http://moodle.org/
+//
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /******************************************************
 * Module developed at the University of Valladolid
@@ -25,24 +39,24 @@
     global $DB, $PAGE, $OUTPUT;
    $timenow = time();
 
-   
+
     $cm = get_coursemodule_from_id('quest', $id,0,false,MUST_EXIST);
-    $course = $DB->get_record("course", array("id"=> $cm->course),'*',MUST_EXIST);
+    $course = get_course($cm->course);
     $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
     require_login($course->id, false, $cm);
-    
 
-   
+
+
 	quest_check_visibility($course,$cm);
 	$context = context_module::instance( $cm->id);
 	$ismanager=has_capability('mod/quest:manage',$context);
-	
-	
-	
-/// Print the page header
 
-	$url =  new moodle_url('/mod/quest/team.php',array('id'=>$id,'action'=>$action,'sort'=>$sort,'dir'=>$dir)); 
-	$PAGE->set_url($url);	
+
+
+// Print the page header
+
+	$url =  new moodle_url('/mod/quest/team.php',array('id'=>$id,'action'=>$action,'sort'=>$sort,'dir'=>$dir));
+	$PAGE->set_url($url);
 	$PAGE->set_title(format_string($quest->name));
 	$PAGE->set_heading($course->fullname);
 	echo $OUTPUT->header();
@@ -69,9 +83,9 @@
     $groupmode = groupmode($course, $cm);   // Groups are being used?
     $currentgroup = groups_get_course_group($course);
     $groupmode=$currentgroup=false;//JPC group support desactivation
-    
 
-        /// Allow the teacher to change groups (for this session)
+
+        // Allow the teacher to change groups (for this session)
     if ($groupmode and isteacheredit($course->id))
     	{
         if ($groups = $DB->get_records_menu("groups", array("courseid"=> $course->id), "name ASC", "id,name"))
@@ -86,11 +100,11 @@
 
      $form = data_submitted("nomatch");
 	 if ($form == false) $form = new stdclass();
-	
+
      $title = get_string('changeteamteacher','quest');
      echo $OUTPUT->heading_with_help($title,"changeteamteacher","quest");
-	
-      
+
+
      if($action == 'change')
       {
       if(($groupmode == false)||($currentgroup != 0))
@@ -99,7 +113,7 @@
     if (isset($form->team))
        foreach($form->team as $i=>$team_field)
 		{
-   
+
 		$team_field=trim($team_field);
 	    if(!empty($team_field))
 			{
@@ -115,14 +129,14 @@
 					{
 					    $oldteam=null;
 					}
-					
+
 				if($team = $DB->get_record("quest_teams", array("name"=> $team_field,"currentgroup"=> $currentgroup,"questid"=>$quest->id)))
 					{// Exist the team with this name
 					    if ($calification_user->teamid == $team->id)
 					        continue;
 					    $members =quest_get_team_members($quest->id, $team->id);
 					    $team->ncomponents=count($members);
-					    
+
 					    if($quest->ncomponents > $team->ncomponents)
 					    {
 					        $calification_user->teamid = $team->id;
@@ -131,36 +145,36 @@
 					    }
 					    else{
 					        echo ("<center><b>The Team \"$team->name\" is complete</b></center>");
-					        print_continue("view.php?id=$cm->id");
+					        echo $OUTPUT->continue_button("view.php?id=$cm->id");
 					        exit();
 					    }
-					if($oldteam!=null && $team->id != $oldteam->id) // user change of team 
-						{ 
+					if($oldteam!=null && $team->id != $oldteam->id) // user change of team
+						{
 						    quest_update_team_scores($quest->id,$oldteam->id); // update stats for oldteam
 						} // change of team
-					
+
 	              }// exist the team with this name
 	              else
 		      { // Create a new team
-				    $team = new stdClass();	
+				    $team = new stdClass();
 	               $team->ncomponents=1;
 	               $team->questid = $quest->id;
 	               $team->currentgroup = $currentgroup;
 	               $team->name = $form->team[$i];
-	
+
 	               $team->id = $DB->insert_record("quest_teams", $team);
-	
+
 	               $calification_user->teamid = $team->id;
 	               $DB->set_field("quest_calification_users","teamid", $calification_user->teamid, array("id"=> $calification_user->id));
-					
+
 	               quest_update_team_scores($quest->id,$team->id);
 	               if(!empty($oldteam) )
 	               {
-	                    quest_update_team_scores($quest->id,$oldteam->id);   
+	                    quest_update_team_scores($quest->id,$oldteam->id);
 	                }
 
 	              }
-	
+
 	        if(!empty($calification_user->teamid) && !empty($oldteam))
 				{
 	               	if($team->id != $oldteam->id){
@@ -170,11 +184,11 @@
 					print("<p>Team: $oldteam->name ($oldteam->id) empty.Deleted.</p>");
 					$DB->delete_records("quest_teams", array("id"=> $oldteam->id));
 					$DB->delete_records('quest_calification_teams',array('questid'=>$quest->id,'teamid'=>$oldteam->id));
-					
+
 					}
-	                
+
 	               }
-	
+
 	              }
 	         }
 	        }
@@ -194,36 +208,36 @@
         }
 
 
-        /// Now prepare table with student assessments and submissions
+        // Now prepare table with student assessments and submissions
         $tablesort = new stdClass();
         $tablesort->data = array();
         $tablesort->sortdata = array();
         $i = 0;
 
         echo "<form enctype=\"multipart/form-data\" name=\"team\" method=\"POST\" action=\"team.php?id=$id\">";
-        foreach ($users as $user) 
+        foreach ($users as $user)
         {
             // skip if student not in group
         	if($ismanager)
         	{
-        		
+
         			if ($currentgroup) {
         				if (!groups_is_member($currentgroup, $user->id)) {
         					continue;
         				}
         			}
         	}
-            elseif(!$ismanager&&($groupmode == 1)){
+            else if(!$ismanager&&($groupmode == 1)){
              if ($currentgroup) {
                  if (!groups_is_member($currentgroup, $user->id)) {
                      continue;
                  }
              }
             }
-            
-            
+
+
          	$calification_user = $DB->get_record("quest_calification_users", array("userid"=> $user->id, "questid"=> $quest->id));
-         	
+
          	if ($calification_user)
          		$team = $DB->get_record("quest_teams", array("id"=> $calification_user->teamid));
 
@@ -266,8 +280,8 @@
 
          	$tablesort->data[] = $data;
          	$tablesort->sortdata[] = $sortdata;
-        
-        
+
+
         }
 
         uasort($tablesort->sortdata, 'quest_sortfunction');
@@ -310,8 +324,8 @@
         echo "</form>";
 
     }
- 
-/// Finish the page
+
+// Finish the page
     echo $OUTPUT->footer($course);
 
 ?>
