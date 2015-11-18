@@ -125,8 +125,8 @@ echo $OUTPUT->heading($title);
 
 // Get all the students
 if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-    print_heading(get_string("nostudentsyet"));
-    print_footer($course);
+    echo $OUTPUT->heading(get_string("nostudentsyet"));
+    echo $OUTPUT->footer();
     exit;
 }
 ?>
@@ -605,7 +605,6 @@ if (!$ismanager) {
         $data = array();
         $sortdata = array();
 
-        //$data[] = print_user_picture($USER->id, $course->id, $USER->picture,0,true);
         $data[] = $OUTPUT->user_picture($USER, array('courseid' => $course->id));
         $sortdata['picture'] = 1;
 
