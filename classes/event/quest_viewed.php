@@ -54,13 +54,13 @@ class quest_viewed extends base {
  * @param \stdClass $cm
  * @return quest_viewed
  */
-    public static function create_from_parts(\stdClass $quest,\stdClass $cm) {
+    public static function create_from_parts($user,\stdClass $quest,  \cm_info $cm) {
         $url = "/mod/quest/view.php?id=$cm->id";
         $info = $cm->id;
         $data = array(
-            'relateduserid' => $quest->userid,
+            'relateduserid' => $user->id,
             'context' => \context_module::instance($cm->id),
-            'userid' => $quest->userid,
+            'userid' => $user->id,
             'objectid' =>$cm->id,
             'courseid' => $cm->course,
             'other' => array(

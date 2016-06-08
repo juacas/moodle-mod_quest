@@ -37,8 +37,7 @@ require("../../config.php");
 require("lib.php");
 require("locallib.php");
 require_once('scores_lib.php');
-require_sesskey();
-$id = required_param('cmid', PARAM_INT);     // Course Module ID.
+$id = required_param('id', PARAM_INT);     // Course Module ID.
 $action = required_param('action', PARAM_ALPHA);
 $sid = optional_param('sid', null, PARAM_INT);     // Quest Submission ID.
 $newform = optional_param('newform', null, PARAM_INT); // Flag: if you want new form for one submission...newform=1. If form is general...newform=0.
@@ -47,19 +46,8 @@ $changeform = optional_param('change_form', null, PARAM_INT); // Flag: if you ch
 $viewgeneral = optional_param('viewgeneral', -1, PARAM_INT); // Flag: view general form =1, particular form view of one submission = 0
 
 global $DB, $OUTPUT, $PAGE;
-
-// ...get some useful stuff...
-if ($id) {
-    if (!$cm = get_coursemodule_from_id("quest", $id)) {
-        print_error("CourseModuleIDwasincorrect",'quest');
-    }
-    if (!$quest = $DB->get_record("quest", array("id" => $cm->instance))) {
-        print_error("Questisincorrect",'quest');
-    }
-}
-if (!$course = get_course($cm->course)) {
-    print_error("course_misconfigured",'quest');
-}
+list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+$quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 
 $context = context_module::instance($id);
 $isteacher = has_capability('mod/quest:manage', $context);
@@ -69,7 +57,7 @@ $strquest = get_string("modulename", "quest");
 $strassessments = get_string("assessments", "quest");
 
 require_login($course->id, false, $cm);
-$url = new moodle_url('/mod/quest/assessments.php', array('action' => $action, 'cmid' => $cm->id));
+$url = new moodle_url('/mod/quest/assessments.php', array('action' => $action, 'id' => $cm->id,'sesskey'=>sesskey()));
 if ($sid != '') {
     $url->param('sid', $sid);
 }
@@ -106,21 +94,18 @@ if ($action == 'displaygradingform') {
            echo $OUTPUT->continue_button(new moodle_url("view.php", array('id'=>$id)));
         } else {
             echo $OUTPUT->continue_button(new moodle_url("submissions.php",
-                    array('cmid'=>$cm->id,'sid'=>$sid,'action'=>'showsubmission')));
+                    array('id'=>$cm->id,'sid'=>$sid,'action'=>'showsubmission')));
         }
     }
 }
 
 // ... edit assessment elements (for teachers).
 else if ($action == 'editelements') {
-
+    require_sesskey();
     $authorid = isset($sid)?$DB->get_field('quest_submissions', 'userid', array('id' => $sid)):null;
-
     if (!$isteacher && $authorid != $USER->id) {
         error("Only teachers or author can look at this page");
     }
-
-
     // If the elements have not been defined for the questournament $newform=0.
     if ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) == 0) {
         $newform = 0;
@@ -134,7 +119,7 @@ else if ($action == 'editelements') {
     ?>
 
     <form name="form" method="post" action="assessments.php">
-        <input type="hidden" name="cmid" value="<?php echo $cm->id ?>" />
+        <input type="hidden" name="id" value="<?php echo $cm->id ?>" />
         <input type="hidden" name="action" value="insertelements" />
         <center><table cellpadding="5" border="1">
                 <?php
@@ -157,8 +142,6 @@ else if ($action == 'editelements') {
                         }
                     }
                 }
-
-
                 if ($DB->count_records('quest_elements', array('submissionsid' => $sid)) == 0) {
                     $num = $quest->nelements;
                 }
@@ -175,9 +158,7 @@ else if ($action == 'editelements') {
                 if (($newform == 0) && ($changeform == 0)) {
                     $num = $quest->nelements;
                 }
-
                 $changeform = 0;
-
                 // ...check for missing elements (this happens either the first time round or when the number of elements is increased).
                 for ($i = 0; $i < $num; $i++) {
                     if (!isset($elements[$i])) {
@@ -192,7 +173,6 @@ else if ($action == 'editelements') {
                     $viewgeneral = 1;
                 }
 // TODO: replace  with quest_print_assessment from locallib.php!
-
                 switch ($quest->gradingstrategy) {
                     case 0: // ...no grading.
                         for ($i = 0; $i < $num; $i++) {
@@ -212,7 +192,6 @@ else if ($action == 'editelements') {
                             $DB->set_field("quest", "nelements", $num, array("id" => $var));
                         }
                         break;
-
                     case 1: // ...accumulative grading.
                         // ...set up scales name.
 
@@ -386,53 +365,50 @@ else if ($action == 'editelements') {
                 <input type="hidden" name="n_elem_when_change" value="<?php echo $num ?>" />
                 <input type="submit" value="<?php print_string("savechanges") ?>" />
                 <input type="submit" name="cancel" value="<?php print_string("cancel") ?>" />
+                <input type="hidden" name="sesskey" value="<?php echo sesskey()?>" />
             </center>
     </form>
     <center>
         <form ACTION="assessments.php">
             <input type="hidden" name="newform" value="<?php echo $nf ?>" />
             <input type="hidden" name="change_form" value="1" />
-            <input type="hidden" name="cmid" value="<?php echo $cm->id ?>" />
+            <input type="hidden" name="id" value="<?php echo $cm->id ?>" />
             <input type="hidden" name="sid" value="<?php echo $sid ?>" />
             <input type="hidden" name="viewgeneral" value="<?php echo $viewgeneral ?>" />
             <input type="hidden" name="num_elems_when_change" value="<?php echo $num + 1; ?>" />
             <input type="hidden" name="action" value="editelements" />
             <input type="submit" value="<?php print_string("addelement", "quest") ?>" />
+            <input type="hidden" name="sesskey" value="<?php echo sesskey()?>" />
         </form>
 
         <form ACTION="">
             <input type="hidden" name="newform" value="<?php echo $nf ?>" />
             <input type="hidden" name="change_form" value="1" />
-            <input type="hidden" name="cmid" value="<?php echo $cm->id ?>" />
+            <input type="hidden" name="id" value="<?php echo $cm->id ?>" />
             <input type="hidden" name="sid" value="<?php echo $sid ?>" />
             <input type="hidden" name="viewgeneral" value="<?php echo $viewgeneral ?>" />
             <input type="hidden" name="num_elems_when_change" value="<?php echo $num - 1; ?>" />
             <input type="hidden" name="action" value="editelements" />
             <input type="submit" value="<?php print_string("removeelement", "quest") ?>" />
+            <input type="hidden" name="sesskey" value="<?php echo sesskey()?>" />
         </form>
     </center>
-
-
     <?php
 }
 // ... insert/update assignment elements (for teachers).
 else if ($action == 'insertelements') {
-
+    require_sesskey();
     $authorid = $DB->get_field('quest_submissions', 'userid', array('id' => $sid));
-
     if (!$isteacher && $authorid != $USER->id) {
         error("Only teachers or author can look at this page");
     }
-
     $form = data_submitted();
-
     // let's not fool around here, dump the junk!
     if ($newform == 0) {
         $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0));
     } else {
         $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid));
     }
-
     // determine wich type of grading
     switch ($quest->gradingstrategy) {
         case 0: // no grading
@@ -574,15 +550,15 @@ else if ($action == 'insertelements') {
     if ($viewgeneral == 1) {
         echo $OUTPUT->redirect_message("view.php?id=$cm->id", '<center>' . get_string("savedok", "quest") . '</center>', 1, false);
     } else {
-        echo $OUTPUT->redirect_message("submissions.php?cmid=$cm->id&sid=$sid&action=showsubmission",
+        echo $OUTPUT->redirect_message("submissions.php?id=$cm->id&sid=$sid&action=showsubmission",
                 get_string("savedok", "quest"), 1, false);
     }
 }
-/* ************* update assessment (by teacher or student) ************************** */ else if ($action == 'updateassessment') {
+/* ************* update assessment (by teacher or student) ************************** */ 
+else if ($action == 'updateassessment') {
     $aid = required_param('aid', PARAM_INT);
     $sid = optional_param('sid', 0, PARAM_INT);
-
-
+    require_sesskey();
     if (!$answer = $DB->get_record("quest_answers", array("id" => $aid))) {
         error("quest answer is misconfigured");
     }
@@ -592,54 +568,18 @@ else if ($action == 'insertelements') {
     if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
         error("quest submission is misconfigured");
     }
-
     // Check access
     if (!$isteacher && $USER->id != $submission->userid) {
         error("Can't access this script. You should be teacher or challenge's author.");
     }
-// Answers can't be submitted by teachers in QUEST
-    /*        if(!has_capability('mod/quest:manage',$context,$answer->userid))
-      {
-
-
-      if(! $calification_user = $DB->get_record("quest_calification_users", array("userid"=> $answer->userid, "questid"=> $quest->id)))
-      {
-
-      warn("<p>WARNING: This users has no calification record. This is unusual. Please send this text to admin.(assessments 645)</p>");
-      warn("<p>Creating default record...</p>");
-      $calification_user->userid = $answer->userid;
-      $calification_user->questid = $quest->id;
-      $calification_user->id = $DB->insert_record("quest_calification_users", $calification_user);
-      // print_object($calification_user);
-      }
-      if($quest->allowteams)
-      {
-
-      if(!$calification_team = $DB->get_record("quest_calification_teams", array("teamid"=>$calification_user->teamid,"questid"=> $quest->id)))
-      {
-      //  	print_object($calification_user);
-      error("User can't be evaluated because he is not listed in a team.");
-      }
-      }
-
-      }
-
-     */
     $timenow = time();
-
-    $form = data_submitted('nomatch'); //Nomatch because we can come from assess.php
-
+    $form = data_submitted('nomatch'); //Nomatch because we can come from assess.php.
     $isvalidating = false; // marca si se está validando la pregunta en cuyo caso no hay puntuacion previa que restar
     if ($quest->validateassessment == 1) {
 // necesita validar evaluacion
         if ($isteacher) {
             // El profesor puede validar pasando a phase=1
             if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {// contabiliza la nueva evaluación
-//            	$calification_user->nanswersassessment++;
-//            	if($quest->allowteams)
-//            		{
-//             	$calification_team->nanswerassessment++;
-//            		}
                 $isvalidating = true;
                 $assessment->phase = 1; // ya está validada ahora OJO: ¿se había sumado esta nota?
             }
@@ -655,22 +595,17 @@ else if ($action == 'insertelements') {
             $assessment->phase = ASSESSMENT_PHASE_APPROVED; // pasa directamente a phase=1 (validada)
         }
     }
-
     if ($answer->phase == ANSWER_PHASE_UNGRADED) {//respuesta no evaluada
         $answer->phase = ANSWER_PHASE_GRADED; // respuesta evaluada
     }
-
     $recalification = false;
     $revision = false;
-
-    //determine what kind of grading we have
-    // and calculate grade as a percentage
+    // determine what kind of grading we have
+    // and calculate grade as a percentage.
     /**
      * Manual grading
      */
     $manualgrade = optional_param('manualcalification', null, PARAM_ALPHANUM);
-
-
     if ($manualgrade != null) {
         // ... "Grading manually!";
         $percent = ((int) $manualgrade) / 100;
@@ -679,14 +614,9 @@ else if ($action == 'insertelements') {
          * Form grading
          */
         // ... "Grading by criteria!";
-
         $percent = quest_get_answer_grade($quest, $answer, $form);
     }
-    print($percent);
-
-
     $points = quest_get_points($submission, $quest, $answer);
-
     $grade = $points * $percent;
     /*
      * Process the grade
@@ -709,7 +639,6 @@ else if ($action == 'insertelements') {
             $submission->dateanswercorrect = $answer->date;
         }
 // FIN comprobación respuestas correctas.
-
         $submission->points = $grade;
 // ...no hay resp.correctas y la evaluacion esta aprobada.
         if (($submission->nanswerscorrect == 0) && ($assessment->phase == ASSESSMENT_PHASE_APPROVED)) {
@@ -733,7 +662,6 @@ else if ($action == 'insertelements') {
             $recalification = true; // ...recalifica todas.
         }
     }
-
     /**
      * assesment->state
      * 0 sin realizar
@@ -759,9 +687,7 @@ else if ($action == 'insertelements') {
         $submission->dateanswercorrect = 0;
         $submission->pointsanswercorrect = 0;
     }
-
     $answer->permitsubmit = 0;
-
     /*
      * answer->state
      * 0 sin editar
@@ -805,15 +731,13 @@ else if ($action == 'insertelements') {
     quest_update_submission($submission);
     quest_update_assessment($assessment);
     quest_update_submission_counts($submission->id);
-
 // ...points recalculation.
-    $recalification = true; // ...disable this optimization. It's not worth as evaluation is not a frequent action.
+    $recalification = true; // ...To disable this optimization it's not worth as evaluation is not a frequent action.
 // ...Recalcula los puntos de las respuestas del quest.
     if ($recalification) {
         quest_update_grade_for_answer($answer, $submission, $quest, $course);
     }
     $userid = $answer->userid;
-
 // ...recalculate points and report to gradebook.
     quest_grade_updated($quest, $userid);
 // NOTIFICATIONS.
@@ -833,7 +757,7 @@ else if ($action == 'insertelements') {
             print_footer($course);
             exit;
         }
-// JPC 2013-11-28 disable excesive notifications
+// JPC 2013-11-28 disable excesive notifications.
 //          foreach($users as $user){
 //           if(!has_capability('mod/quest:manage',$context,$user->id)){
 //            continue;
@@ -848,15 +772,11 @@ else if ($action == 'insertelements') {
 } else {
     add_to_log($course->id, "quest", "assess_answer", "viewassessment.php?id=$cm->id&amp;asid=$assessment->id", "$assessment->id", "$cm->id");
 }
-
-
     // ...set up return address.
-
     $returnto = $_POST['returnto'];
     if (!$returnto) {
         $returnto = "view.php?id=$cm->id";
     }
-
     // ...show grade if grading strategy is not zero.
     if ($quest->gradingstrategy) {
         echo $OUTPUT->redirect_message($returnto,
@@ -866,7 +786,6 @@ else if ($action == 'insertelements') {
         echo $OUTPUT->redirect_message($returnto, '', 1, false);
     }
 }// ...updateassessment.
-
 /*
  * no man's land
 */ else {

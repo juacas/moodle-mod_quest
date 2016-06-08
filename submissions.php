@@ -51,16 +51,12 @@ require_once("lib.php");
 require_once("locallib.php");
 require_once("scores_lib.php");
 
-$id = required_param('cmid', PARAM_INT);    // quest coursemoduleID
-
-
+$id = required_param('id', PARAM_INT);    // quest coursemoduleID
 global $DB, $OUTPUT, $PAGE, $sort, $dir;
 
 $timenow = time();
-$cm = get_coursemodule_from_id('quest', $id, null, null, MUST_EXIST);
+list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
-$course = $DB->get_record("course", array("id" => $quest->course), '*', MUST_EXIST);
-
 
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
@@ -85,7 +81,7 @@ $strsubmissions = ($action) ? get_string($action, 'quest') . ':' . $submissionti
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
 $url = new moodle_url('/mod/quest/submissions.php',
-        array('cmid' => $id, 'sid' => $sid, 'action' => $action, 'sort' => $sort, 'dir' => $dir)); // evp debería añadir los otros posibles parámetros tal y como se ha hecho en assessments_autors.php
+        array('id' => $id, 'sid' => $sid, 'action' => $action, 'sort' => $sort, 'dir' => $dir)); // evp debería añadir los otros posibles parámetros tal y como se ha hecho en assessments_autors.php
 $PAGE->set_url($url);
 
 if (($quest->usepassword) && (!$ismanager)) {
@@ -104,13 +100,13 @@ if ($action == 'confirmdelete') {
 
     echo "<br><br>";
     echo $OUTPUT->confirm(get_string("confirmdeletionofthisitem", "quest", $submission->title),
-            "submissions.php?action=delete&amp;cmid=$cm->id&amp;sid=$sid", "view.php?id=$cm->id#sid=$sid");
+            "submissions.php?action=delete&amp;id=$cm->id&amp;sid=$sid", "view.php?id=$cm->id#sid=$sid");
 } else if ($action == 'delete') {
     $sid = required_param('sid', PARAM_INT); //submission id
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $sid))) {
-        print_error('cannotgetsubmissionrecord', 'quest');
-    }
-
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
+    $PAGE->set_title(format_string($quest->name));
+    $PAGE->set_heading($course->fullname);
+    echo $OUTPUT->header();
     // ...check if the user has enough capability to delete the submission and only up to the deadline.
     if (!($ismanager or
             ( has_capability('mod/quest:deletechallengeall', $context)
@@ -153,13 +149,10 @@ if ($action == 'confirmdelete') {
                 array("assessmentautorid" => $assessment_autor->id, "questid" => $quest->id));
         $DB->delete_records("quest_assessments_autors", array("id" => $assessment_autor->id));
     }
-
-
     /////////////////////
     // recalculate points and report to gradebook
     //////////////////////
     quest_grade_updated($quest, $submission->userid);
-
 
     $DB->delete_records_select('event', 'modulename = ? AND instance = ? and ' . $DB->sql_compare_text('description') . ' = ?',
             array('modulename' => 'quest', 'instance' => $quest->id, 'description' => $submission->description));
@@ -170,8 +163,8 @@ if ($action == 'confirmdelete') {
 
     if ($ismanager) {
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            print_heading(get_string("nostudentsyet"));
-            print_footer($course);
+            echo $OUTPUT->heading(get_string("nostudentsyet"));
+            echo $OUTPUT->footer();
             exit;
         }
         if ($submissiongroup = $DB->get_record("groups_members", array("userid" => $submission->userid))) {
@@ -214,15 +207,14 @@ if ($action == 'confirmdelete') {
         add_to_log($course->id, "quest", "delete_submission",
                 "view.php?id=$cm->id", "$submission->id", "$cm->id");
     }
-    $PAGE->set_title(format_string($quest->name));
-    $PAGE->set_heading($course->fullname);
-    echo $OUTPUT->header();
+   
     echo "<center>" . get_string("deletechallenge", "quest") . "</center>";
 
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
 }
 
-/* * **************** submission of a challenge by teacher or proposal from student ********************** */ else if ($action == 'submitchallenge') {
+/* * **************** submission of a challenge by teacher or proposal from student ********************** */
+else if ($action == 'submitchallenge') {
     // check if the user has enough capability to add the submission
     if (!($ismanager or ( has_capability('mod/quest:addchallenge', $context)))) {
         $PAGE->set_title(format_string($quest->name));
@@ -233,7 +225,6 @@ if ($action == 'confirmdelete') {
         echo $OUTPUT->footer();
         exit();
     }
-
     $newsubmission = new stdClass();
     $newsubmission->id = null;
 
@@ -251,7 +242,6 @@ if ($action == 'confirmdelete') {
             array('submission' => $newsubmission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $definitionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
 
     if ($mform->is_cancelled()) {
-
         redirect("view.php?id=$cm->id");
     } else if ($newsubmission = $mform->get_data()) {
         $authorid = $USER->id;
@@ -266,13 +256,12 @@ if ($action == 'confirmdelete') {
         $mform->display();
     }
 }
-/* * ***************** edit submission *********************************** */ else if ($action == 'modif') {
-
+// Edit submission. 
+else if ($action == 'modif') {
     // $usehtmleditor = can_use_html_editor();
     $sid = required_param('sid', PARAM_INT); //submission id
 
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $sid)))
-        error('Edit submission:  invalid submission');
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $titlesubmission = $submission->title;
 
     if (($submission->userid != $USER->id) && (!($ismanager))) {
@@ -332,9 +321,9 @@ if ($action == 'confirmdelete') {
     print_string("removeallattachments", "quest");
     quest_delete_submitted_files_submissions($quest, $submission);
     add_to_log($course->id, "quest", "removeattachments",
-            "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
+            "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
 
-    echo $OUTPUT->continue_button("submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=$form->beforeaction");
+    echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=$form->beforeaction");
 }
 /*
  * show submission
@@ -375,7 +364,7 @@ if ($action == 'confirmdelete') {
     $title = '"' . $submission->title . '"';
     // convenient editing button for teachers
     if (has_capability('mod/quest:editchallengeall', $context)) {
-        $title.= "<a href=\"submissions.php?action=modif&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+        $title.= "<a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
                 $OUTPUT->pix_icon('/t/edit', get_string('modif', 'quest'))
                 . '</a> ';
     }
@@ -406,7 +395,7 @@ if ($action == 'confirmdelete') {
         /*
          *  Link for recalculate challenge stats
          */
-        $recalculatelink = '/ <a href="' . $CFG->wwwroot . "/mod/quest/submissions.php?cmid=$cm->id&action=showsubmission&sid=$submission->id&recalculate=yes" . '">Recalc.</a>';
+        $recalculatelink = '/ <a href="' . $CFG->wwwroot . "/mod/quest/submissions.php?id=$cm->id&action=showsubmission&sid=$submission->id&recalculate=yes" . '">Recalc.</a>';
     }
 
 
@@ -422,18 +411,18 @@ if ($action == 'confirmdelete') {
 
     echo"</td></tr></table></center>";
     $text = "<center><b>";
-    $text .= "<a href=\"assessments.php?cmid=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform\">" .
+    $text .= "<a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform\">" .
             get_string("specimenassessmentformanswer", "quest") . "</a>";
     $text.=$OUTPUT->help_icon('specimenanswer', 'quest');
 
     if ((($ismanager || $USER->id == $submission->userid)
             and $quest->nelementsautor) && ($submission->numelements == 0)) {
-        $text .= "&nbsp;<a href=\"submissions.php?cmid=$cm->id&newform=1&sid=$sid&cambio=0&amp;action=confirmchangeform\">" .
+        $text .= "&nbsp;<a href=\"submissions.php?id=$cm->id&newform=1&sid=$sid&cambio=0&amp;action=confirmchangeform\">" .
                 $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
     } else
     if ((($ismanager || $USER->id == $submission->userid)
             and $quest->nelementsautor) && ($submission->numelements != 0)) {
-        $text .= "&nbsp;<a href=\"assessments.php?cmid=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements\">" .
+        $text .= "&nbsp;<a href=\"assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements\">" .
                 $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
     }
     $text .= "</b></center>";
@@ -446,7 +435,7 @@ if ($action == 'confirmdelete') {
     quest_print_submission($quest, $submission);
 
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     //$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);  evp no estoy segura de que sea este el mejor cambio
     $currentgroup = groups_get_course_group($COURSE);
 
@@ -493,13 +482,14 @@ if ($action == 'confirmdelete') {
         $view_event->trigger();
     } else {
         add_to_log($course->id, "quest", "read_submission",
-                "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
+                "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
     }
 
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
 }
 
-/* * ************* update submission ************************** */ else if ($action == 'updatesubmission') {
+/* * ************* update submission ************************** */
+else if ($action == 'updatesubmission') {
     $form = data_submitted();
     $submission = $DB->get_record("quest_submissions", array("id" => $sid));
 
@@ -507,12 +497,10 @@ if ($action == 'confirmdelete') {
     if (!($ismanager or ( ($USER->id == $submission->userid) and ( $timenow < $quest->dateend)))) {
         error("You are not authorized to update your submission");
     }
-
     $title = required_param('title', PARAM_TEXT);
     $description = required_param('description', PARAM_RAW_TRIMMED);
     $submission->title = $title;
     $submission->description = $description;
-
 
     $submission->datestart = make_timestamp(required_param('submissionstartyear', PARAM_INT),
             required_param('submissionstartmonth', PARAM_INT), required_param('submissionstartday', PARAM_INT),
@@ -521,8 +509,6 @@ if ($action == 'confirmdelete') {
     $submission->dateend = make_timestamp(required_param('submissionendyear', PARAM_INT),
             required_param('submissionendmonth', PARAM_INT), required_param('submissionendday', PARAM_INT),
             required_param('submissionendhour', PARAM_INT), required_param('submissionendminute', PARAM_INT));
-
-
     $submission->timecreated = time();
     $submission->tinitial = $quest->tinitial;
 
@@ -532,18 +518,15 @@ if ($action == 'confirmdelete') {
     if ($form->initialpoints > $form->pointsmax) {
         $form->initialpoints = $form->pointsmax;
     }
-
     if (!quest_check_submission_dates($submission, $quest)) {
-        error(get_string('invaliddates', 'quest'), "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=modif");
+        error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
     }
     if (!quest_check_submission_text($submission)) {
-        error(get_string('invalidtext', 'quest'), "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=modif");
+        error(get_string('invalidtext', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
     }
-
     $submission->mailed = 0;
     $submission->pointsmax = required_param('pointsmax', PARAM_INT);
     $submission->initialpoints = required_param('initialpoints', PARAM_INT);
-
 
     if ($ismanager) {
         $submission->perceiveddifficulty = $form->perceiveddifficulty;
@@ -551,55 +534,8 @@ if ($action == 'confirmdelete') {
         $submission->comentteacherautor = optional_param('comentteacherautor', $submission->comentteacherautor, PARAM_TEXT);
         $submission->comentteacherpupil = optional_param('comentteacherpupil', $submission->comentteacherpupil, PARAM_TEXT);
     }
-
     quest_update_submission($submission);
-
-    $dates = array(
-        'datestartsubmission' => $submission->datestart,
-        'dateendsubmission' => $submission->dateend
-    );
-
-    $moduleid = $DB->get_field('modules', 'id', 'name', 'quest');
-
-    foreach ($dates as $type => $date) {
-        if ($submission->datestart <= time()) {
-            if ($event = $DB->get_record('event', array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type))) {
-                if ($type == 'datestartsubmission') {
-                    $stringevent = 'datestartsubmissionevent';
-                } else if ($type == 'dateendsubmission') {
-                    $stringevent = 'dateendsubmissionevent';
-                }
-                $event = calendar_event::load($event->id);
-
-                $eventdata = new stdClass();
-                $eventdata->name = get_string($stringevent, 'quest', $submission->title);
-                $eventdata->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">" . $submission->title . "</a>";
-                $eventdata->eventtype = $type;
-                $eventdata->timestart = $date;
-                $event->update($eventdata);
-            } else if ($date) {
-                if ($type == 'datestartsubmission') {
-                    $stringevent = 'datestartsubmissionevent';
-                } else if ($type == 'dateendsubmission') {
-                    $stringevent = 'dateendsubmissionevent';
-                }
-                $event = new stdClass();
-                $event->name = get_string($stringevent, 'quest', $submission->title);
-                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">" . $submission->title . "</a>";
-                $event->courseid = $quest->course;
-                $event->groupid = 0;
-                $event->userid = 0;
-                $event->modulename = '';
-                $event->instance = $quest->id;
-                $event->eventtype = $type;
-                $event->timestart = $date;
-                $event->timeduration = 0;
-                $event->visible = $DB->get_field('course_modules', 'visible',
-                        array('module' => $moduleid, 'instance' => $quest->id));
-                calendar_event::create($event);
-            }
-        }
-    }
+    quest_update_challenge_calendar($cm,$quest,$submission);
 
     if ($ismanager) {
         if ($submission->datestart < time() &&
@@ -621,7 +557,7 @@ if ($action == 'confirmdelete') {
 //                          }
 //               }
 //              }
-//              quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'modifsubmission', $quest, $submission, '');
+//              quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'modifsubmission', $quest, $submission, '');
 //           }
 //           $DB->set_field("quest_submissions","maileduser",1,array("id"=>$submission->id));
         }
@@ -636,7 +572,7 @@ if ($action == 'confirmdelete') {
 //           if(!$ismanager){
 //            continue;
 //           }
-//           quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'modifsubmission', $quest, $submission, '');
+//           quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'modifsubmission', $quest, $submission, '');
 //          }
     }
 
@@ -648,7 +584,7 @@ if ($action == 'confirmdelete') {
             $dir = quest_file_area_name_submissions($quest, $submission);
             if ($um->save_files($dir)) {
                 add_to_log($course->id, "quest", "newattachment",
-                        "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id",
+                        "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id",
                         "$cm->id");
                 print_heading(get_string("uploadsuccess", "quest"));
             }
@@ -664,7 +600,7 @@ if ($action == 'confirmdelete') {
         $view_event->trigger();
     } else {
         add_to_log($course->id, "quest", "modif_submission",
-                "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
+                "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
     }
 
 
@@ -691,7 +627,7 @@ if ($action == 'confirmdelete') {
 
     if ($mform->is_cancelled()) {
 
-        redirect("submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$sid");
+        redirect("submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$sid");
     } else if ($submission = $mform->get_data()) {
 
 
@@ -903,9 +839,9 @@ if ($action == 'confirmdelete') {
             }
 
             $data[] = quest_print_submission_title($quest, $submission) .
-                    " <a href=\"submissions.php?action=modif&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                    " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
                     $OUTPUT->pix_icon('/t/edit', get_string('modif', 'quest')) . '</a>' .
-                    " <a href=\"submissions.php?action=confirmdelete&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                    " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
                     $OUTPUT->pix_icon('/t/delete', get_string('delete', 'quest')) . '</a>';
             $sortdata['title'] = strtolower($submission->title);
 
@@ -994,7 +930,7 @@ if ($action == 'confirmdelete') {
             }
             $columnicon = $OUTPUT->pix_icon("/t/$columnicon", $columnicon);
         }
-        $$column = "<a href=\"submissions.php?cmid=$id&amp;sid=$sid&amp;uid=$user->id&amp;action=showsubmissionsuser&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
+        $$column = "<a href=\"submissions.php?id=$id&amp;sid=$sid&amp;uid=$user->id&amp;action=showsubmissionsuser&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
 
 
@@ -1156,7 +1092,7 @@ else if ($action == "showanswersuser") {
             }
             $columnicon = " <img src=\"" . $CFG->wwwroot . "pix/t/$columnicon.png\" alt=\"$columnicon\" />";
         }
-        $$column = "<a href=\"submissions.php?cmid=$cm->id&amp;sid=$sid&amp;uid=$user->id&amp;action=showanswersuser&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
+        $$column = "<a href=\"submissions.php?id=$cm->id&amp;sid=$sid&amp;uid=$user->id&amp;action=showanswersuser&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
 
 
@@ -1365,11 +1301,11 @@ else if ($action == 'showsubmissionsteam') {
                     $submission->phase = SUBMISSION_PHASE_ACTIVE;
                 }
                 $data[] = quest_print_submission_title($quest, $submission) .
-                        " <a href=\"submissions.php?action=modif&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
 //                         "<img src=\"".$CFG->wwwroot."/pix/t/edit.svg\" ".'height="11" width="11" border="0" alt="'.get_string('modif', 'quest').'" />'
                         $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'))
                         . '</a>' .
-                        " <a href=\"submissions.php?action=confirmdelete&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
 //                         "<img src=\"".$CFG->wwwroot."/pix/t/delete.svg\" ".'height="11" width="11" border="0" alt="'.get_string('delete', 'quest').'" />'
                         $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'))
                         . '</a>';
@@ -1464,7 +1400,7 @@ else if ($action == 'showsubmissionsteam') {
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $$column = "<a href=\"submissions.php?cmid=$id&amp;sid=$sid&amp;tid=$team->id&amp;action=showsubmissionsteam&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "$columnicon</a>";
+        $$column = "<a href=\"submissions.php?id=$id&amp;sid=$sid&amp;tid=$team->id&amp;action=showsubmissionsteam&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "$columnicon</a>";
     }
 
 
@@ -1516,7 +1452,7 @@ else if ($action == 'showsubmissionsteam') {
 
     echo "</script>\n";
 
-    echo $OUTPUT->continue_button("submissions.php?action=showsubmission&sid=$submission->id&cmid=$cm->id");
+    echo $OUTPUT->continue_button("submissions.php?action=showsubmission&sid=$submission->id&id=$cm->id");
 }
 ////////////////////////////////////////////////////////////
 else if ($action == "showanswersteam") {
@@ -1622,7 +1558,6 @@ else if ($action == "showanswersteam") {
         $table->data[] = $tablesort->data[$key];
     }
 
-
     $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
     $columns = array('title', 'firstname', 'lastname', 'phase', 'dateanswer', 'actions', 'calification');
 
@@ -1642,14 +1577,12 @@ else if ($action == "showanswersteam") {
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $$column = "<a href=\"submissions.php?cmid=$cm->id&amp;sid=$sid&amp;tid=$team->id&amp;action=showanswersteam&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
+        $$column = "<a href=\"submissions.php?id=$cm->id&amp;sid=$sid&amp;tid=$team->id&amp;action=showanswersteam&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
 
-
     $table->head = array("$title", "$firstname / $lastname", "$phase", "$dateanswer", get_string('actions', 'quest'), "$calification");
-
     echo html_writer::table($table);
-    echo $OUTPUT->continue_button("submissions.php?action=showsubmission&sid=$submission->id&cmid=$cm->id");
+    echo $OUTPUT->continue_button("submissions.php?action=showsubmission&sid=$submission->id&id=$cm->id");
 } else if ($action == "preview") {
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
@@ -1680,7 +1613,7 @@ else if ($action == "showanswersteam") {
 
     $submission = $DB->get_record("quest_submissions", array("id" => $sid));
     quest_recalification_all($submission, $quest, $course);
-    redirect("submissions.php?cmid=$id&amp;sid=$sid&amp;action=showsubmission");
+    redirect("submissions.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
 }
 /* * ***********confirmar particularizar formulario para desafios********************** */ else if ($action == "confirmchangeform") {
     $PAGE->set_title(format_string($quest->name));
@@ -1689,8 +1622,8 @@ else if ($action == "showanswersteam") {
     echo $OUTPUT->header();
     echo "<br><br>";
     echo $OUTPUT->confirm(get_string("doyouwantparticularform", "quest"),
-            "assessments.php?cmid=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements",
-            "submissions.php?cmid=$cm->id&amp;sid=$sid&amp;action=showsubmission");
+            "assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements",
+            "submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
 } else {
 
     print_error("Fatal Error: Unknown Action", 'quest', null, $action);

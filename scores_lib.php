@@ -33,7 +33,6 @@ require_once("../../config.php");
 require_once("locallib.php");
 
 //TODO use $quest record
-
 function updateallteams($questid) {
     global $DB;
     $query = $DB->get_records_select("quest_teams", "questid=?", array($questid));

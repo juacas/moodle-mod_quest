@@ -59,7 +59,7 @@ class answer_viewed extends base {
      * @param \stdClass $cm
      * @return type
      */
-    public static function create_from_parts(\stdClass $user, \stdClass $challenge, \stdClass $answer, \stdClass $cm) {
+    public static function create_from_parts(\stdClass $user, \stdClass $challenge, \stdClass $answer, \cm_info $cm) {
 
         $url = "/mod/quest/answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer";
         $data = array(

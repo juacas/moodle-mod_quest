@@ -119,13 +119,13 @@ $string['currentphasesubmission'] = 'Submission phase';
 $string['dateanswer'] = 'Date';
 $string['dateassess'] = 'Assessment date';
 
-$string['dateendevent'] = 'End of QUESTOURnament {$a}';
-$string['dateendsubmissionevent'] = 'End of challenge {$a}';
+$string['dateendevent'] = 'End of QUESTOURnament "{$a}"';
+$string['dateendsubmissionevent'] = 'End of challenge "{$a}"';
 
 $string['dateofstart'] = 'Starting date';
 
 $string['datestartevent'] = 'Starting of QUESTOURnament {$a}';
-$string['datestartsubmissionevent'] = 'Challenge will start on {$a}';
+$string['datestartsubmissionevent'] = 'Starting of challenge "{$a}"';
 $string['datestr'] = '%m/%d/%y<br />%H:%M';
 $string['datestrmodel'] = '%%m/%%d/%%y &nbsp;&nbsp;%%H:%%M';
 $string['deadline'] = 'Dead line';
@@ -334,7 +334,7 @@ $string['includeteachersgrade'] = 'include teacher\'s grade';
 $string['incorrect'] = 'wrong';
 $string['individualcalification'] = 'individual score';
 
-$string['invaliddates'] = 'invalid dates';
+$string['invaliddates'] = 'Invalid dates. Must be between {$a->questdatestart} and {$a->questdateend}';
 $string['invalidtext'] = 'Text field is blank';
 $string['lastname'] = 'Lastname';
 $string['leaguetable'] = 'Tabla de trabajos entregados';
@@ -387,10 +387,10 @@ $string['nosubmissionsavailableforassessment'] = 'There are no submissions avail
 $string['notavailable'] = 'not available';
 $string['noteonassessmentelements'] = 'Note that grading is broken down into a number of \'Assessment Elements\'.<br />
     This makes the grading easier and more consistent. As evaluator you must add these <br />
-    Elements before making the assignment available to students. This is done by<br />
-    clicking on the assignment in the course, if no elements are present you will be asked<br />
-    to add them. You can change the number of elements using the Edit Assignment screen,<br />
-    the elements themselves can be amended from the &quot;Managing Assessment&quot; screen. ';
+    Elements before making the Questournament available to students. This is done by<br />
+    clicking on the Questournament in the course, if no elements are present you will be asked<br />
+    to add them. You can change the number of elements using the Edit Author Assessment screen,<br />
+    the elements themselves can be amended from the &quot;Edit Author Assessment&quot; screen. ';
 $string['notgraded'] = 'Not Graded';
 $string['notitlegiven'] = 'No Title Given';
 $string['notsubmittedyet'] = 'No submission has been made yet';
@@ -422,7 +422,9 @@ $string['permitsubmit'] = 'Allow re-submition';
 $string['perceiveddifficultyLevelQuestion'] = 'How difficult has been this challenge to you?';
 $string['perceiveddifficultyLevel'] = 'Difficulty';
 $string['perceivedTeacherDifficultyLevel'] = 'Estimated difficulty';
-$string['predictedDurationQuestion'] = 'Minimum time to answer this question';
+$string['perceivedTeacherDifficultyLevel_help'] = 'Estimated difficulty of the challenge. This level is used to cathegorize the challenges. It is used for pedagogic research. This is an optional parameter.';
+$string['predictedDurationQuestion'] = 'Estimation of the time to answer this question';
+$string['predictedDurationQuestion_help'] = 'Estimation of the time to answer this question.  This level is used to cathegorize the challenges. It is used for pedagogic research. This is an optional parameter.';
 $string['phase'] = 'Phase';
 $string['phase1'] = 'Inactive QUESTOURnament';
 $string['phase2'] = 'Open QUESTOURnament ';
@@ -871,7 +873,7 @@ of its authorship, otherwise, the challenge could be refused of modified by the 
   <li><strong>Comments for Students</strong>: in this field it will be able to include comments that the teacher wants to make to the students about the challenge, these comments will be available for all the participants in the QUESTOURnament. </li>
 </ul>';
 $string['modulename'] = 'QUESTOURnament';
-$string['modulename_help'] = 'Questournament is an activity that allows to develop contests. Students can engage in a competition to answer a set of challenges whose score changes in time. The challenge gains reward as the time goes by without any valid answer. This activity allows to place some preasure and motivation on the course. The game can be played individually or in teams. The scoreboard gives credit to the best participants.<p>An aditional ';
+$string['modulename_help'] = 'Questournament is an activity that allows to develop contests. Students can engage in a competition to answer a set of challenges whose score changes in time. The challenge gains reward as the time goes by without any valid answer. This activity allows to place some preasure and motivation on the course. The game can be played individually or in teams. The scoreboard gives credit to the best participants.';
 $string['myplace'] = 'My Place for this Questournament';
 $string['myplace_help'] = '<P align="justify">This page shows the information corresponding to the activity developed by each participant in the QUESTOURnament.</P>
 <P align="justify">The information presented is divided in several sections:</P>

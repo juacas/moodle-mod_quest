@@ -139,12 +139,12 @@ $string['dateanswer'] = 'Fecha';
 $string['dateassess'] = 'Fecha de Evaluación';
 $string['dateend'] = 'Cierre';
 $string['dateendevent'] = 'Finalización del Concurso {$a}';
-$string['dateendsubmissionevent'] = 'Finalización del Desafío {$a}';
+$string['dateendsubmissionevent'] = 'Finalización del Desafío: "{$a}"';
 $string['dateofend'] = 'Fecha de Cierre';
 $string['dateofstart'] = 'Fecha de Comienzo';
 $string['datestart'] = 'Comienzo';
 $string['datestartevent'] = 'Inicio del Concurso {$a}';
-$string['datestartsubmissionevent'] = 'Inicio del Desafío {$a}';
+$string['datestartsubmissionevent'] = 'Inicio del Desafío: "{$a}"';
 $string['datestr'] = '%d/%m/%y<br />%H:%M';
 $string['datestrmodel'] = '%%d/%%m/%%y &nbsp;&nbsp;%%H:%%M';
 $string['deadline'] = 'Fecha límite';
@@ -304,7 +304,7 @@ $string['incorrect'] = 'Incorrecto';
 $string['individualcalification'] = 'Calificación Individual';
 $string['initialpoints'] = 'Puntuación Inicial';
 $string['introductiontothechallenge'] = 'Descripción del desafío';
-$string['invaliddates'] = 'Las Fechas no son Válidas';
+$string['invaliddates'] = 'Las Fechas no son Válidas. Deben estar entre {$a->questdatestart} y {$a->questdateend}.';
 $string['invalidtext'] = 'El Campo de Texto está Vacío';
 $string['lastname'] = 'Apellido';
 $string['leaguetable'] = 'Tabla de trabajos entregados';
@@ -362,10 +362,10 @@ $string['nosubmissionsavailableforassessment'] = 'No hay envíos disponibles par
 $string['notavailable'] = 'No disponible';
 $string['noteonassessmentelements'] = 'Tenga en cuenta que la calificación está dividida en una serie de \'Elementos de Valoración\'.<br />
 Esto hace la calificación más sencilla y consistente. Como evaluador usted debe añadir estos<br />
-Elementos antes de poner a disposición de los estudiantes la tarea. Esto se consigue<br />
-haciendo clic en la tarea en el curso, y si no hay elementos se le pedirá<br />
-que los añada. Puede cambiar el número de elementos usando la pantalla de Editar Tarea,<br />
-el elemento en sí puede ser rectificado desde la pantalla &quot;Administrar Tarea&quot;. ';
+Elementos antes de poner a disposición de los estudiantes el Questournament. Esto se consigue<br />
+haciendo clic en el Questournament, y si no hay elementos se le pedirá<br />
+que los añada. Puede cambiar el número de elementos usando la pantalla de Editar Evaluación de Desafíos,<br />
+el elemento en sí puede ser rectificado desde la pantalla &quot;Editar Evaluación de Desafíos&quot;. ';
 $string['notgraded'] = 'No se ha calificado';
 $string['notitle'] = 'Sin Título';
 $string['notitlegiven'] = 'No se le ha dado un título';
@@ -399,7 +399,9 @@ $string['permitviewautors'] = '¿Mostrar a los alumnos los autores de los Desaf�
 $string['perceiveddifficultyLevelQuestion'] = '¿Qué dificultad le ha supuesto este desafío?';
 $string['perceiveddifficultyLevel'] = 'Dificultad';
 $string['perceivedTeacherDifficultyLevel'] = 'Estimación del profesor de la dificultad';
+$string['perceivedTeacherDifficultyLevel_help'] = 'Estimación del profesor de la dificultad del desafío. Se usa para clasificar el desafío. Es un parámetro opcional con fines de investigación docente.';
 $string['predictedDurationQuestion'] = 'Tiempo mínimo para resolver el desafío';
+$string['predictedDurationQuestion_help'] = 'Tiempo mínimo que el profesor estima necesario para resolver el desafío. Se usa para clasificar el desafío. Es un parámetro opcional con fines de investigación docente.';
 
 $string['phase'] = 'Fase';
 $string['phase1'] = 'Concurso No Comenzado';

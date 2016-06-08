@@ -28,8 +28,6 @@
  * @package mod_quest
  */
 // This page prints a particular instance of QUEST
-
-
 require_once("../../config.php");
 require_once("lib.php");
 require("locallib.php");
@@ -51,16 +49,11 @@ if (empty($actionclasification)) {
         $actionclasification = $USER->showclasifindividual;
     }
 }
-
-
 global $DB, $PAGE, $OUTPUT, $USER;
 $timenow = time();
 // Print the page header
 
-
-
-$cm = get_coursemodule_from_id('quest', $id, 0, false, MUST_EXIST);
-$course = get_course($cm->course);
+list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
@@ -88,7 +81,7 @@ $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
 
 $changegroup = optional_param('group',-1,PARAM_INT); // Group change requested?
-$groupmode = groupmode($course, $cm);   // Groups are being used?
+$groupmode = groups_get_activity_group($cm);   // Groups are being used?
 $currentgroup = groups_get_activity_group($cm); //evp esto de los grupos hay que comprobar que funciona bien
 $groupmode = $currentgroup = false; //JPC group support desactivation
 
@@ -122,10 +115,10 @@ if ($ismanager) {
             if ($quest->gradingstrategyautor == 0 || $num_elements >= $quest->nelementsautor) {
                 $action = "teachersview";
             } else {
-                redirect("assessments_autors.php?action=editelements&id=$cm->id");
+                redirect("assessments_autors.php?action=editelements&id=$cm->id&sesskey=".sesskey());
             }
         } else {
-            redirect("assessments.php?action=editelements&cmid=$cm->id");
+            redirect("assessments.php?action=editelements&id=$cm->id&sesskey=".sesskey());
         }
     }
 } else
@@ -196,13 +189,13 @@ if (has_capability('mod/quest:attempt', $context)) {
                         }
                     } else { // ...new team.
                         $team = new stdClass();
-                        $team->ncomponents++;
+                        $team->ncomponents=1;
                         $team->questid = $quest->id;
                         $team->currentgroup = $currentgroup;
                         $team->name = trim($_POST['team']);
-                        /*                         * ******
+                        /*******
                           JPC: 20-11-2008: prevent creation of teams without name
-                         * ******* */
+                         *********/
                         if ($team->name == '')
                             $team->name = 'Team_user(' . $calification_user->id . ")";
                         $team->id = $DB->insert_record("quest_teams", $team);
@@ -290,11 +283,11 @@ if (has_capability('mod/quest:attempt', $context)) {
     } // not have calification_user
 }
 // Log event.
-$url = "view.php?id=$cm->id";
 if ($CFG->version >= 2014051200) {
     require_once 'classes/event/quest_viewed.php';
     \mod_quest\event\quest_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 } else {
+    $url = "view.php?id=$cm->id";
     add_to_log($course->id, "quest", "view", $url, "$quest->id");
 }
 echo $OUTPUT->header();
@@ -305,8 +298,7 @@ if ($action == 'displayfinalgrade') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
-    //   $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
+    $groupmode = groups_get_activity_groupmode($cm, $course);
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; //JPC group support desactivation
     // Print settings and things in a table across the top
@@ -336,7 +328,7 @@ if ($action == 'displayfinalgrade') {
     if ($ismanager and $quest->nelements) {
         $edit_icon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
 
-        $text .= " <a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements\">" .
+        $text .= " <a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&sesskey=".sesskey()."\">" .
                 $edit_icon . '</a>';
     }
     $text .= "</b></center>";
@@ -504,7 +496,6 @@ else if ($action == 'notavailable') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group
     $groupmode = groups_get_activity_groupmode($cm, $course);   // Groups are being used?
-    //  $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $currentgroup = groups_get_course_group($course, true);
     $groupmode = $currentgroup = false; //JPC group support desactivation
     // Print settings and things in a table across the top
@@ -532,7 +523,7 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group.
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     //$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; //JPC group support desactivation
@@ -555,20 +546,20 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
 
     if (has_capability('mod/quest:manage', $context) and $quest->nelements) {
         $edit_icon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-        $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements\">" .
+        $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&sesskey=".sesskey()."\">" .
                 $edit_icon . '</a>';
     }
     $text .= "</b></center>";
     echo($text);
 
     $text = "<center><b>";
-    $text .= "<a href=\"assessments.php?cmid=$cm->id&amp;viewgeneral=1&amp;action=displaygradingform\">" .
+    $text .= "<a href=\"assessments.php?id=$cm->id&amp;viewgeneral=1&amp;action=displaygradingform\">" .
             get_string("specimenassessmentformanswer", "quest") . "</a>";
     $text .= $OUTPUT->help_icon('specimenanswer', 'quest');
 
     if (has_capability('mod/quest:manage', $context) and $quest->nelements) {
         $edit_icon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-        $text .="&nbsp;<a href=\"assessments.php?cmid=$cm->id&newform=0&cambio=0&amp;viewgeneral=1&amp;action=editelements\">" . $edit_icon . '</a>';
+        $text .="&nbsp;<a href=\"assessments.php?id=$cm->id&newform=0&cambio=0&amp;viewgeneral=1&amp;action=editelements&sesskey=".sesskey()."\">" . $edit_icon . '</a>';
     }
     $text .= "</b></center>";
     echo($text);
@@ -615,7 +606,7 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
     if (!has_capability('mod/quest:addchallenge', $context)) {
         echo("&nbsp;/&nbsp;" . get_string('need_to_be_editor', 'quest'));
     } else if ($quest->dateend > $timenow) {
-        echo( "<a href=\"submissions.php?action=submitchallenge&amp;cmid=$cm->id\">" .
+        echo( "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" .
         '&nbsp;/&nbsp;<b>' . get_string('addsubmission', 'quest') . "</b></a>");
     } else {
         echo "&nbsp;/&nbsp;" . get_string('phase3', 'quest', '');
@@ -841,9 +832,9 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
                  ( $ismanager)) {
                 $edit_icon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $delete_icon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
-                $titleText .= "<a href=\"submissions.php?action=modif&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                $titleText .= "<a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         $edit_icon . '</a>' .
-                        " <a href=\"submissions.php?action=confirmdelete&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         $delete_icon . '</a>';
             }
 

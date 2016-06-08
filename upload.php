@@ -33,21 +33,10 @@
 
     $id=required_param('id',PARAM_INT);          // CM ID
 	global $DB;
-
-    if (! $cm = get_coursemodule_from_id('quest', $id)) {
-        print_error("CourseModuleIDwasincorrect",'quest');;
-    }
-    if (! $course = $DB->get_record("course",array("id"=> $cm->course))) {
-        print_error("course_misconfigured",'quest');
-    }
-    if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
-        print_error("incorrectQuest",'quest');;
-    }
-
-
+    list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+    $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
     require_login($course->id, false, $cm);
     quest_check_visibility($course,$cm);
-
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
 
@@ -73,7 +62,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 	$straction = ($action) ? '-> '.get_string($action, 'quest') : '';
 
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode=$currentgroup=false;//JPC group support desactivation
 
@@ -128,10 +117,10 @@ if (!has_capability('moodle/legacy:admin', $context) &&
           }
 
           if(!quest_check_submission_dates($newsubmission, $quest)){
-             error(get_string('invaliddates', 'quest'),"submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+             error(get_string('invaliddates', 'quest'),"submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
           }
           if(!quest_check_submission_text($newsubmission)){
-             error(get_string('invalidtext', 'quest'),"submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+             error(get_string('invalidtext', 'quest'),"submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
           }
 
           $newsubmission->comentteacherautor = $form->comentteacherautor;
@@ -160,7 +149,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 
              $event = NULL;
              $event->name        = get_string('datestartsubmissionevent','quest', $newsubmission->title);
-             $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">".$newsubmission->title."</a>";
+             $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">".$newsubmission->title."</a>";
              $event->courseid    = $quest->course;
              $event->groupid     = $idgroup;
              $event->userid      = 0;
@@ -188,24 +177,9 @@ if (!has_capability('moodle/legacy:admin', $context) &&
            if($submissiongroup = $DB->get_record("groups_members", array("userid"=> $submission->userid))){
              $currentgroup = $submissiongroup->groupid;
            }
-//            foreach($users as $user){
-
-//             if(!$ismanager){
-//              if ($currentgroup) {
-//                         if (!groups_is_member($currentgroup, $user->id)) {
-//                             continue;
-//                         }
-//              }
-//             }
-            // JPC: let's the CRON do the job
-//            if($newsubmission->datestart < time()){
-//             quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'approbe', $quest, $newsubmission, '');
-//             $DB->set_field("quest_submissions","maileduser",1,"id",$newsubmission->id);
-//            }
-
-//            }
           }
-          add_to_log($course->id, "quest", "approve_submission", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
+          
+          add_to_log($course->id, "quest", "approve_submission", "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
           print_heading(get_string("submitted", "quest")." ".get_string("ok"));
           echo $OUTPUT->continue_button("view.php?id=$cm->id");
           print_footer($course);
@@ -244,10 +218,10 @@ if (!has_capability('moodle/legacy:admin', $context) &&
           }
 
           if(!quest_check_submission_dates($newsubmission, $quest)){
-             error(get_string('invaliddates', 'quest'),"submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+             error(get_string('invaliddates', 'quest'),"submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
           }
           if(!quest_check_submission_text($newsubmission)){
-             error(get_string('invalidtext', 'quest'),"submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+             error(get_string('invalidtext', 'quest'),"submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
           }
      	  if($ismanager)
           {
@@ -259,9 +233,9 @@ if (!has_capability('moodle/legacy:admin', $context) &&
           if($submission = $DB->get_record("quest_submissions", array("id"=> $newsubmission->id))){
            $user = get_complete_user_data('id', $submission->userid);
 
-            quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'save', $quest, $newsubmission, '');
+            quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'save', $quest, $newsubmission, '');
 
-            add_to_log($course->id, "quest", "save_submission", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
+            add_to_log($course->id, "quest", "save_submission", "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
           }
           echo $OUTPUT->continue_button("view.php?id=$cm->id");
           print_footer($course);
@@ -436,7 +410,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 
         $event = NULL;
         $event->name        = get_string('datestartsubmissionevent','quest', $newsubmission->title);
-        $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">".$newsubmission->title."</a>";
+        $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">".$newsubmission->title."</a>";
         $event->courseid    = $quest->course;
         $event->groupid     = 0;
         $event->userid      = 0;
@@ -462,7 +436,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
         if ($um->preprocess_files()) {
             $dir = quest_file_area_name_submissions($quest, $newsubmission);
             if ($um->save_files($dir)) {
-                add_to_log($course->id, "quest", "newattachment", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id","$cm->id");
+                add_to_log($course->id, "quest", "newattachment", "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id","$cm->id");
                 print_heading(get_string("uploadsuccess", "quest"));
             }
         // um will take care of printing errors.
@@ -484,7 +458,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
 //      }
 //      foreach($users as $user){
 //
-//        quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
+//        quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
 //
 //      }
 //      $DB->set_field("quest_submissions","maileduser",1,"id",$newsubmission->id);
@@ -501,12 +475,12 @@ if (!has_capability('moodle/legacy:admin', $context) &&
       {
        continue;
       }
-      quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
+      quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
      }
 
     }
 
-    add_to_log($course->id, "quest", "submit_submissi", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
+    add_to_log($course->id, "quest", "submit_submissi", "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
 
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
     print_footer($course);

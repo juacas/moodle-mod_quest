@@ -32,7 +32,7 @@
     require("locallib.php");
 
     $id=required_param('id',PARAM_INT);   // Submission ID
-   $allowcomments=optional_param('allowcomments',false,PARAM_BOOL);
+    $allowcomments=optional_param('allowcomments',false,PARAM_BOOL);
     $redirect=optional_param('redirect','',PARAM_ALPHA);
 
     $action=optional_param('action','',PARAM_ALPHA);
@@ -41,22 +41,8 @@
 
 	global $DB;
     $timenow = time();
-
-    if ($id) {
-        if (! $cm = $DB->get_record("course_modules", array("id"=>$id))) {
-            print_error("CourseModuleIDwasincorrect",'quest');;
-        }
-
-        if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
-            print_error("course_misconfigured",'quest');
-        }
-
-        if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
-            error("Course module is incorrect");
-        }
-    }
-
-
+    list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+    $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
     if (!$redirect) {
         $redirect = urlencode($_SERVER["HTTP_REFERER"].'#id='.$cm->id);
     }
@@ -183,7 +169,7 @@
         // Check to see if groups are being used in this workshop
         // and if so, set $currentgroup to reflect the current group
         $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-        $groupmode = groupmode($course, $cm);   // Groups are being used?
+        $groupmode = groups_get_activity_group($cm);   // Groups are being used?
         $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
         $groupmode=$currentgroup=false;//JPC group support desactivation
 
@@ -200,7 +186,7 @@
         }
         // Print admin links
         echo "<td align=\"right\">";
-        echo "<a href=\"submissions.php?cmid=$cm->id&amp;action=adminlist\">".
+        echo "<a href=\"submissions.php?id=$cm->id&amp;action=adminlist\">".
             get_string("administration")."</a>\n";
 
         echo '</td></tr>';
@@ -249,7 +235,7 @@
                         $sortdata['lastname'] = $user->lastname;
                     }
                     if($ismanager){
-                      $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showanswersuser&amp;cmid=$cm->id\">".$clasification->nanswers.'</a>';
+                      $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showanswersuser&amp;id=$cm->id\">".$clasification->nanswers.'</a>';
                     }
                     else{
                       $data[] = $clasification->nanswers;
@@ -260,7 +246,7 @@
                     $sortdata['nanswersassessment'] = $clasification->nanswersassessment;
 
                     if($ismanager){
-                      $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showsubmissionsuser&amp;cmid=$cm->id\">".$clasification->nsubmissions.'</a>';
+                      $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showsubmissionsuser&amp;id=$cm->id\">".$clasification->nsubmissions.'</a>';
                     }
                     else{
                       $data[] = $clasification->nsubmissions;
@@ -362,7 +348,7 @@
         // Check to see if groups are being used in this workshop
         // and if so, set $currentgroup to reflect the current group
         $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-        $groupmode = groupmode($course, $cm);   // Groups are being used?
+        $groupmode = groups_get_activity_group($cm);   // Groups are being used?
         $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
         $groupmode=$currentgroup=false;//JPC group support desactivation
 
@@ -379,7 +365,7 @@
         }
         // Print admin links
         echo "<td align=\"right\">";
-        echo "<a href=\"submissions.php?cmid=$cm->id&amp;action=adminlist\">".
+        echo "<a href=\"submissions.php?id=$cm->id&amp;action=adminlist\">".
             get_string("administration")."</a>\n";
 
         echo '</td></tr>';
@@ -465,7 +451,7 @@
                   $sortdata['team'] = $team->name;
 
                   if($ismanager){
-                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showanswersteam&amp;cmid=$cm->id\">".$nanswers.'</a>';
+                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showanswersteam&amp;id=$cm->id\">".$nanswers.'</a>';
                   }
                   else{
                     $data[] = $nanswers;
@@ -476,7 +462,7 @@
                   $sortdata['nanswersassessment'] = $nanswersassessment;
 
                   if($ismanager){
-                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showsubmissionsteam&amp;cmid=$cm->id\">".$nsubmissions.'</a>';
+                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showsubmissionsteam&amp;id=$cm->id\">".$nsubmissions.'</a>';
                   }
                   else{
                     $data[] = $nsubmissions;

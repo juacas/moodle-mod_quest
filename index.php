@@ -33,36 +33,24 @@
     require("locallib.php");
     $id=required_param('id',PARAM_INT);   // course
 	global $DB, $OUTPUT;
-    if (! $course = $DB->get_record("course", array("id"=> $id))) {
-        error("Course ID is incorrect");
-    }
-
+    $course = get_course($id);
     require_login($course);
 
   	$context = context_course::instance( $course->id);
-    add_to_log($course->id, "quest", "view all", "index.php?id=$course->id", "");
-
 // Get all required strings
-
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strinfo = get_string("phase", "quest");
     $strdeadline = get_string("deadline", "quest");
-
     //print the header
     $url =  new moodle_url('/mod/quest/index.php',array('id'=>$id));
-
     $PAGE->set_url($url);
     $PAGE->navbar->add($strquests, "index.php?id=$course->id");
     $PAGE->set_title($strquests);
     $PAGE->set_heading($course->fullname);
 
     echo $OUTPUT->header();
-
-
-
 // Get all the appropriate data
-
     if (! $quests = get_all_instances_in_course("quest", $course)) {
         notice("There are no quests", "../../course/view.php?id=$course->id");
         die;

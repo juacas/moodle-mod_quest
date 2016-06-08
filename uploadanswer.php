@@ -35,16 +35,8 @@
     $id=required_param('id',PARAM_INT);          // CM ID
 
 	global $DB;
-    if (! $cm = $DB->get_record("course_modules", array("id"=> $id))) {
-        print_error("CourseModuleIDwasincorrect",'quest');;
-    }
-    if (! get_course($cm->course)) {
-        print_error("course_misconfigured",'quest');
-    }
-    if (! $quest = $DB->get_record("quest", array("id"=> $cm->instance))) {
-        print_error("incorrectQuest",'quest');;
-    }
-
+    list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+    $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
     require_login($course->id, false, $cm);
     quest_check_visibility($course,$cm);
     $context = context_module::instance( $cm->id);
@@ -69,7 +61,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
     $stranswer = get_string('answer', 'quest');
 
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode=$currentgroup=false;//JPC group support desactivation
 
@@ -91,7 +83,7 @@ if (!has_capability('moodle/legacy:admin', $context) &&
         $title = get_string("notitle", "quest");
     }
     if(!$validate = quest_validate_user_answer($quest,$submission)){
-      error(get_string('answerexisty','quest'),"submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+      error(get_string('answerexisty','quest'),"submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
     }
 
 
@@ -198,7 +190,7 @@ if($quest->allowteams)
     }
 
     add_to_log($course->id, "quest", "submit_answer", "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer", "$newanswer->id", "$cm->id");
-    echo $OUTPUT->continue_button("submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+    echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
     print_footer($course);
 
    }

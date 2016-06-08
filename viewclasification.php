@@ -49,20 +49,8 @@ $timenow = time();
 $NUMBER_PRECISSION = 2;
 $local = setlocale(LC_CTYPE, 'esn');
 global $DB, $PAGE, $OUTPUT;
-
-if ($id) {
-    if (!$cm = $DB->get_record("course_modules", array("id" => $id))) {
-        print_error("CourseModuleIDwasincorrect", 'quest');
-    }
-
-    if (!$course = get_course($cm->course)) {
-        print_error("course_misconfigured", 'quest');
-    }
-
-    if (!$quest = $DB->get_record("quest", array("id" => $cm->instance))) {
-        print_error("incorrectQuest", 'quest');
-    }
-}
+list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+$quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
@@ -128,7 +116,7 @@ if ($action == 'global') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group.
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation in this version.
     // Print settings and things in a table across the top.
@@ -194,7 +182,7 @@ if ($action == 'global') {
                 $sortdata['lastname'] = strtolower($user->lastname);
 // ...answers submitted.
                 if ($ismanager) {
-                    $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showanswersuser&amp;cmid=$cm->id\">" . $clasification->nanswers . '</a>';
+                    $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showanswersuser&amp;id=$cm->id\">" . $clasification->nanswers . '</a>';
                 } else {
                     $data[] = $clasification->nanswers;
                 }
@@ -207,7 +195,7 @@ if ($action == 'global') {
                 if ($show_authoring_details) {// START AUTHORING ANONYMIZING
 // ...number of challenges authored.
                     if ($ismanager) {
-                        $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showsubmissionsuser&amp;cmid=$cm->id\">" . $clasification->nsubmissions . '</a>';
+                        $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showsubmissionsuser&amp;id=$cm->id\">" . $clasification->nsubmissions . '</a>';
                     } else {
                         $data[] = $clasification->nsubmissions;
                     }
@@ -328,7 +316,7 @@ if ($action == 'global') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group.
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     //$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
@@ -408,7 +396,7 @@ if ($action == 'global') {
             $sortdata['team'] = strtolower($team->name);
 // ...number of answers.
             if ($ismanager) {
-                $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showanswersteam&amp;cmid=$cm->id\">" . $clasification_team->nanswers . '</a>';
+                $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showanswersteam&amp;id=$cm->id\">" . $clasification_team->nanswers . '</a>';
             } else {
                 $data[] = $clasification_team->nanswers;
             }
@@ -422,7 +410,7 @@ if ($action == 'global') {
             if ($show_authoring_details) { // START AUTHORING ANONYMIZING.
                 // ...number of challenges submitted.
                 if ($ismanager) {
-                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showsubmissionsteam&amp;cmid=$cm->id\">" . $clasification_team->nsubmissions . '</a>';
+                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showsubmissionsteam&amp;id=$cm->id\">" . $clasification_team->nsubmissions . '</a>';
                 } else {
                     $data[] = $clasification_team->nsubmissions;
                 }

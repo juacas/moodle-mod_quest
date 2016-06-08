@@ -44,41 +44,25 @@ require_once("locallib.php");
 require_once("scores_lib.php");
 
 global $DB, $OUTPUT;
-
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 
 // Allows the script to use only AnswerId.
-$aid = optional_param('aid', - 1, PARAM_INT); // Answer ID.
-if ($aid != - 1) {
-    $answer = $DB->get_record('quest_answers', array(
-        'id' => $aid
-    ));
+$aid = optional_param('aid',null,PARAM_INT); // Answer ID.
+if ($aid){
+    $answer = $DB->get_record('quest_answers', array('id' => $aid),'*',MUST_EXIST);
 }
+
 if (!empty($answer)) {
     $sid = $answer->submissionid;
 } else {
     $sid = required_param('sid', PARAM_INT); // Submission ID.
 }
 
-if (!$submission = $DB->get_record('quest_submissions', array(
-    'id' => $sid
-        ))) {
-    print_error("Incorrect submission id");
-}
-if (!$quest = $DB->get_record("quest", array(
-    "id" => $submission->questid
-        ))) {
-    print_print_error("incorrectQuest",'quest');;
-}
-if (!$course = $DB->get_record("course", array(
-    "id" => $quest->course
-        ))) {
-    print_print_error("course_misconfigured",'quest');
-}
-if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-    print_error("No coursemodule found");
-}
+$submission = $DB->get_record('quest_submissions', array('id' => $sid ),'*',MUST_EXIST);
+$quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_EXIST);
+$course=get_course($quest->course);
+$cm= get_fast_modinfo($course->id)->instances["quest"][$quest->id];
 
 if (!$redirect && isset($_SERVER["HTTP_REFERER"])) {
     $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
@@ -107,7 +91,7 @@ $strquest = get_string("modulename", "quest");
 
 $stranswer = ($action) ? get_string($action, 'quest') : get_string("answer", "quest");
 
-$submissionurl = "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
+$submissionurl = "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
 
 // Now check whether we need to display a frameset.
 if ($action == "answer") {
@@ -168,7 +152,7 @@ if ($action == "answer") {
         echo $OUTPUT->header();
         echo $OUTPUT->heading($title);
         // Disabled by now: quest_print_submission_info($quest,$submission); to show additional information about the submission.
-        echo ("<center><b><a href=\"assessments.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">"
+        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">"
         . get_string("specimenassessmentform", "quest") . "</a>"
         . $OUTPUT->help_icon('specimensubmission', 'quest') . "</b></center>");
 
@@ -203,7 +187,7 @@ if ($action == "answer") {
     $title = get_string('answername', 'quest', $answer);
 
     $subject = get_string('subject', 'quest');
-    $subject .= "<a name=\"sid_$submission->id\" href=\"submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+    $subject .= "<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
     if (($ismanager) || ($answer->userid == $USER->id)) {
         $title .= get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
@@ -258,9 +242,6 @@ if ($action == "answer") {
            add_to_log($course->id, "quest", "read_answer", "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
         }
 
-
-
-
     if (isset($_SERVER['HTTP_REFERER'])) {
         echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER']);
     }
@@ -309,7 +290,7 @@ if ($action == "answer") {
     quest_print_answer($quest, $answer);
     echo '<br/>';
     echo $OUTPUT->confirm(get_string("confirmdeletionofthisitem", "quest", get_string("answername", "quest", $answer)),
-            "answer.php?action=delete&amp;id=$id&amp;aid=$aid", "submissions.php?cmid=$id&amp;sid=$sid&amp;action=showsubmission");
+            "answer.php?action=delete&amp;id=$id&amp;aid=$aid", "submissions.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
     echo $OUTPUT->footer();
 } else if ($action == 'delete') { // Deletion.
     $PAGE->set_title(format_string($quest->name));
@@ -355,7 +336,7 @@ if ($action == "answer") {
 
     // ...and finally the submitted file
     // TODO: elever Eliminar esta función y sustituirla por el mecanismo nuevo de Moodle 2.
-    quest_delete_submitted_files_answers($quest, $answer);
+    //quest_delete_submitted_files_answers($quest, $answer);
     // Update scores and statistics.
 
     $submission = quest_update_submission_counts($submission->id);
@@ -374,12 +355,12 @@ if ($action == "answer") {
             continue;
         }
 
-        quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",'answerdelete', $quest, $submission, $answer);
+        quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",'answerdelete', $quest, $submission, $answer);
     }
     if (!has_capability('mod/quest:manage', $context, $submission->userid)) {
         $user = get_complete_user_data('id', $submission->userid);
         if ($user){
-        quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
+        quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
                 'answerdelete', $quest, $submission, $answer);
         }
     }
@@ -389,20 +370,11 @@ if ($action == "answer") {
     print_string("deleting", "quest");
     echo $OUTPUT->footer;
 } else if ($action == 'modif') {
-
     $aid = required_param('aid', PARAM_INT); // Answer ID.
-    if (!$answer = $DB->get_record("quest_answers", array(
-        "id" => $aid
-            ))) {
-        print_error('Edit answer:  invalid answer identification.');
-    }
-
-    $submission = $DB->get_record("quest_submissions", array(
-        "id" => $answer->submissionid
-    ));
-
+    $answer = $DB->get_record("quest_answers", array("id" => $aid),'*',MUST_EXIST);
+    $answerautor=$answer->userid;
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid),'*',MUST_EXIST);
     $maxfiles = 99; // ...limit of image files for the html editor.
-
     $definitionoptions = array(
         'trusttext' => true,
         'subdirs' => false,
@@ -440,28 +412,23 @@ if ($action == "answer") {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string('submittedanswer', 'quest') . " " . get_string('ok'));
+        $answer->userid=$answerautor;
         quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context);
-        echo $OUTPUT->continue_button("submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+        echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
         echo $OUTPUT->footer();
     } else {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string("modifanswersubmission", "quest", ":"));
-
         // Print information about the submission.
         $title = '"' . $submission->title . '" ';
         echo $OUTPUT->heading($title);
-
-        echo ("<center><b><a href=\"assessments.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" . get_string("specimenassessmentform",
+        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" . get_string("specimenassessmentform",
                 "quest") . "</a></b></center>");
-
         quest_print_submission($quest, $submission);
-
         echo $OUTPUT->heading_with_help(get_string("answersubmission", "quest"), "answersubmission", "quest");
-
         $mform->display();
-
         echo $OUTPUT->footer();
     }
 } else if ($action == 'updateanswer') { // Evp esta acción es la que actualiza la respuesta y esto se sustituye en la función quest_uploadanswer.
@@ -469,20 +436,13 @@ if ($action == "answer") {
             "<a href=\"index.php?id=$course->id\">$strquests</a> ->
                       <a href=\"view.php?id=$cm->id\">" . format_string($quest->name, true) . "</a> -> $stranswer", "",
             '<base target="_self" />', true);
-
     $form = data_submitted();
-
     $aid = required_param('aid', PARAM_INT); // Answer ID.
-    $answer = $DB->get_record("quest_answers", array(
-        "id" => $aid
-    ));
-
-    $submission = $DB->get_record("quest_submissions", array(
-        "id" => $answer->submissionid
-    ));
+    $answer = $DB->get_record("quest_answers", array("id" => $aid),'*',MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid),'*',MUST_EXIST);
 
     if (!($ismanager or ( ($USER->id == $answer->userid) and ( $timenow < $quest->dateend)))) {
-        error("You are not authorized to update your answer");
+        print_error("You are not authorized to update your answer","quest");
     }
 
     // Check existence of title.
@@ -510,8 +470,14 @@ if ($action == "answer") {
         $dir = quest_file_area_name_answers($quest, $answer);
 
         if ($um->process_file_uploads($dir)) {
-            add_to_log($course->id, "quest", "newattachment",
+            if ($CFG->version >= 2014051200) {
+                require_once('classes/event/answer_viewed.php');
+                $updated_event = mod_quest\event\answer_updated::create_from_parts( $submission, $answer, $cm);
+                $updated_event->trigger();
+            } else {
+                add_to_log($course->id, "quest", "newattachment",
                     "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
+            }
             print_heading(get_string("uploadsuccess", "quest"));
             // ...will take care of printing errors.
         } else {
@@ -562,7 +528,7 @@ if ($action == "answer") {
 
     print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
 
-    echo $OUTPUT->continue_button("submissions.php?cmid=$cm->id&amp;sid=$sid&amp;action=showsubmission");
+    echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
 } else if ($action == 'removeattachments') {
 
     print_header_simple(format_string($quest->name), "",
@@ -590,11 +556,16 @@ if ($action == "answer") {
             "id" => $answer->id
         ));
     }
-    print_string("removeallattachments", "quest");
-    quest_delete_submitted_files_answers($quest, $answer);
-    add_to_log($course->id, "quest", "removeattachments", "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer",
-            "$answer->id", "$cm->id");
-
+//   Moodle 2.x has different mchanism for files... quest_delete_submitted_files_answers($quest, $answer);
+    
+    if ($CFG->version >= 2014051200) {
+                require_once('classes/event/answer_updated.php');
+                $updated_event = mod_quest\event\answer_updated::create_from_parts( $submission, $answer, $cm);
+                $updated_event->trigger();
+            } else {
+               add_to_log($course->id, "quest", "removeattachments", "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer",
+                    "$answer->id", "$cm->id");
+            }
     echo $OUTPUT->continue_button("answer.php?id=$cm->id&amp;aid=$answer->id&amp;sid=$sid&amp;action=$form->beforeaction");
 } else if ($action == "preview") {
 

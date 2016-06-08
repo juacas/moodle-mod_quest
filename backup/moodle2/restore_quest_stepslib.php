@@ -143,7 +143,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $data->questid = $this->get_new_parentid('quest');
         // If userid==0 assign it to the user that is restoring the course
-        $data->userid = $data->userid===0?$USER->id:$this->get_mappingid('user', $data->userid);
+        $data->userid = $this->get_mappingid('user', $data->userid,$USER->id);
         $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->dateend = $this->apply_date_offset($data->dateend);
         $data->datestart = $this->apply_date_offset($data->datestart);

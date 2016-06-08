@@ -76,30 +76,17 @@ $QUEST_SCALES = array(
         'size' => 20),
     9 => array('name' => get_string('scale100', 'quest'), 'type' => 'selection',
         'size' => 100));
-
-$QUEST_TYPE_POINTS = array(0 => get_string('linear', 'quest'));
-//1 => get_string('exponential', 'quest') );
-
-$QUEST_TYPE_GRADES = array(0 => get_string('typeindividual', 'quest'),
-    1 => get_string('typeteam', 'quest'));
-
+// Constants.
 define('QUEST_TYPE_GRADE_INDIVIDUAL', 0);
 define('QUEST_TYPE_GRADE_TEAM', 1);
-
-/* * * Constants ********************************* */
-
-
 $QUEST_EWEIGHTS = array(0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25,
     7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0,
     14 => 4.0);
-
 $QUEST_FWEIGHTS = array(0 => 0, 1 => 0.1, 2 => 0.25, 3 => 0.5, 4 => 0.75, 5 => 1.0, 6 => 1.5,
     7 => 2.0, 8 => 3.0, 9 => 5.0, 10 => 7.5, 11 => 10.0, 12 => 50.0);
-
 $QUEST_EWEIGHTS_RECALIF = array(0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25,
     7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0,
     14 => 4.0);
-
 /**
  * assesment->state
  * 0 sin realizar
@@ -157,7 +144,17 @@ define('SUBMISSION_PHASE_CLOSED', 0);
 
  * ************************************* */
 
-/////////////////////////////////////////////////////
+/**
+ * 
+ * @param type $options
+ * @param type $name
+ * @param type $selected
+ * @param string $nothing
+ * @param type $script
+ * @param type $nothingvalue
+ * @param type $return
+ * @return string
+ */
 function quest_choose_from_menu($options, $name, $selected = "", $nothing = "choose", $script = "", $nothingvalue = "0",
         $return = false) {
     // Given an array of value, creates a popup menu to be part of a form
@@ -275,7 +272,7 @@ function quest_print_submission_title($quest, $submission) {
     if (!$submission->timecreated) { // a "no submission"
         return $submission->title;
     }
-    return "<a name=\"sid_$submission->id\" href=\"submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+    return "<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 }
 
 /**
@@ -297,8 +294,8 @@ class quest_print_upload_form extends moodleform {
         $context = context_module::instance($cm->id);
         $ismanager = has_capability('mod/quest:manage', $context);
 
-        $mform->addElement('hidden', 'cmid', $cm->id);
-        $mform->setType('cmid', PARAM_INT);
+        $mform->addElement('hidden', 'id', $cm->id);
+        $mform->setType('id', PARAM_INT);
 
         $mform->addElement('hidden', 'sid', $submission->id);
         $mform->setType('sid', PARAM_INT);
@@ -330,7 +327,6 @@ class quest_print_upload_form extends moodleform {
             $mform->addElement('html', get_string("challengestart", "quest") . ': ' . userdate($challengestart));
             $mform->addElement('hidden', 'datestart', $challengestart);
         }
-
         $mform->setType('datestart', PARAM_INT);
 
         $challengeend = $challengestart + $quest->timemaxquestion * 24 * 3600;
@@ -385,12 +381,8 @@ class quest_print_upload_form extends moodleform {
           }
          */
         if ($quest->nattachments) {
-            //$this->set_upload_manager(new upload_manager('attachment', true, false, $COURSE, false, 0, true, true, false));
-//			$mform->addElement('filemanager', 'attachment_filemanager', get_string("attachments", "quest"),null,array('subdirs'=>0,'maxbytes'=>$quest->maxbytes,'maxfiles'=>$quest->nattachments));//evp a lo mejor hay que poner una comprobaciï¿½n porque podrï¿½a ser que el limite de bytes de loos adjuntos se imponga a otro nivel $course->maxbytes, o lo comprueba el propio filemanager supongo
             $mform->addElement('filemanager', 'attachment_filemanager', get_string("attachments", "quest"), null,
                     $attachmentoptions);
-
-            //upload_print_form_fragment($questournament->nattachments,null,$tag,false,null,$course->maxbytes,$questournament->maxbytes,false);
         }
 
         if ($action == 'approve') {
@@ -403,11 +395,12 @@ class quest_print_upload_form extends moodleform {
             foreach ($difficultyScale as $value => $item) {
                 $radioarray[] = & $mform->createElement('radio', 'perceiveddifficulty', '', $item, $value);
             }
-            $mform->addGroup($radioarray, 'radioar', get_string("perceivedTeacherDifficultyLevel", "quest"), array(' '), false);
-// TODO evp pendiente hacer que no salga ninguna opción seleccionada.
+            $mform->addGroup($radioarray, 'perceiveddifficultyOps', get_string("perceivedTeacherDifficultyLevel", "quest"), array(' '), false);
+            $mform->addHelpButton('perceiveddifficultyOps', 'perceivedTeacherDifficultyLevel', 'quest');
 
             $minutes = quest_get_durations();
-            $mform->addElement('select', 'predictedduration', get_string("predictedDurationQuestion", "quest"), $minutes); // TODO evp pendiente hacer que no salga ninguna opción seleccionada
+            $mform->addElement('select', 'predictedduration', get_string("predictedDurationQuestion", "quest"), $minutes);
+            $mform->addHelpButton('predictedduration', 'predictedDurationQuestion', 'quest');
         }
 
         if ($action == 'submitchallenge') {
@@ -421,11 +414,6 @@ class quest_print_upload_form extends moodleform {
         }
         $mform->setType('action', PARAM_TEXT);
 
-        $mform->addElement('hidden', 'questdatestart', $quest->datestart);
-        $mform->setType('questdatestart', PARAM_INT);
-        $mform->addElement('hidden', 'questdateend', $quest->dateend);
-        $mform->setType('questdateend', PARAM_INT);
-
         if ($action == 'approve') {
             $buttonarray = array();
             $buttonarray[] = & $mform->createElement('submit', 'submitbuttonapprove', get_string('approve', 'quest'));
@@ -436,18 +424,26 @@ class quest_print_upload_form extends moodleform {
         } else {
             $this->add_action_buttons();
         }
+        // In the form the id hidden element is used to hold the cmid of the quest
+        $submission->sid=$submission->id;
+        $submission->id=$cm->id;
         $this->set_data($submission);
     }
 
     function validation($data, $files) {
         // TODO evp el tema de las fechas se podrÃ­a tratar de ver si se puede mejorar de tal manera que no se pueda seleccionar una fecha posterior a la del fin del quest...
         $errors = parent::validation($data, $files);
-        if ($data['datestart'] < $data['questdatestart'])
-            $errors['datestart'] = get_string('invaliddates', 'quest');
-        if ($data['dateend'] > $data['questdateend'])
-            $errors['dateend'] = get_string('invaliddates', 'quest');
+        $a=new stdClass();
+        $quest=$this->_customdata['quest'];
+        $a->questdatestart=userdate($quest->datestart);
+        $a->questdateend=userdate($quest->dateend);
+        
+        if ($data['datestart'] < $quest->datestart)
+            $errors['datestart'] = get_string('invaliddates', 'quest',$a);
+        if ($data['dateend'] > $quest->dateend)
+            $errors['dateend'] = get_string('invaliddates', 'quest',$a);
         if ($data['datestart'] >= $data['dateend'])
-            $errors['datestart'] = get_string('invaliddates', 'quest');
+            $errors['datestart'] = get_string('invaliddates', 'quest',$a);
 
         return $errors;
     }
@@ -548,118 +544,46 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
       if(!$ismanager){
       continue;
       }else{
-      quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
+      quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
       }
       }
      */
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
 
     if ($ismanager) {
-        if ($isnew = true) {
-            if ($newsubmission->datestart <= time()) {
-
-                $event = new stdClass();
-                $event->name = get_string('datestartsubmissionevent', 'quest', $newsubmission->title);
-                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" . $newsubmission->title . "</a>";
-                $event->courseid = $quest->course;
-                $event->groupid = 0;
-                $event->userid = 0;
-                $event->modulename = '';
-                $event->instance = $quest->id;
-                $event->eventtype = 'datestartsubmission';
-                $event->timestart = $newsubmission->datestart;
-                $event->timeduration = 0;
-                calendar_event::create($event);
-
-                $event->name = get_string('dateendsubmissionevent', 'quest', $newsubmission->title);
-                $event->eventtype = 'dateendsubmission';
-                $event->timestart = $newsubmission->dateend;
-                calendar_event::create($event);
-            }
-        } else if ($action === 'approve') {
-            if (!has_capability('mod/quest:manage', $context, $submission->userid) &&
-                    ($group_member = $DB->get_record("groups_members", "userid", $submission->userid))) {
+        if ($action === 'approve') {
+            if (!has_capability('mod/quest:manage', $context, $newsubmission->userid) &&
+                    ($group_member = $DB->get_record("groups_members", "userid", $newsubmission->userid))) {
                 $idgroup = $group_member->groupid;
             } else {
                 $idgroup = 0;
             }
-
-            if ($newsubmission->datestart <= time()) {
-                $event = NULL;
-                $event->name = get_string('datestartsubmissionevent', 'quest', $newsubmission->title);
-                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" . $newsubmission->title . "</a>";
-                $event->courseid = $quest->course;
-                $event->groupid = $idgroup;
-                $event->userid = 0;
-                $event->modulename = '';
-                $event->instance = $quest->id;
-                $event->eventtype = 'datestartsubmission';
-                $event->timestart = $newsubmission->datestart;
-                $event->timeduration = 0;
-                calendar_event::create($event);
-
-                $event->name = get_string('dateendsubmissionevent', 'quest', $newsubmission->title);
-                $event->eventtype = 'dateendsubmission';
-                $event->timestart = $newsubmission->dateend;
-                calendar_event::create($event);
-            }
-        } else { //it is a modification  evp PERO NO ESTOY MUY SEGURA DE LO QUE SE ESTÃ� HACIENDO, HAY QUE COMPROBAR QUE ESTO SE HACÃ�A PARA MODIFICAR
-            $dates = ['datestartsubmission' => $newsubmission->datestart,
-                'dateendsubmission' => $newsubmission->dateend
-            ];
-            foreach ($dates as $type => $date) {
-                if ($newsubmission->datestart <= time()) {
-                    if ($event = $DB->get_record('event',
-                            array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type))) {
-                        if ($type == 'datestartsubmission') {
-                            $stringevent = 'datestartsubmissionevent';
-                        } else if ($type == 'dateendsubmission') {
-                            $stringevent = 'dateendsubmissionevent';
-                        }
-                        $eventobj = calendar_event::load($event->id);
-                        $event->name = get_string($stringevent, 'quest', $newsubmission->title);
-                        $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" . $newsubmission->title . "</a>";
-                        $event->eventtype = $type;
-                        $event->timestart = $date;
-                        $eventobj->update($event);
-                    } else if ($date) {
-                        if ($type == 'datestartsubmission') {
-                            $stringevent = 'datestartsubmissionevent';
-                        } else if ($type == 'dateendsubmission') {
-                            $stringevent = 'dateendsubmissionevent';
-                        }
-                        $event = new stdClass();
-                        $event->name = get_string($stringevent, 'quest', $newsubmission->title);
-                        $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" . $newsubmission->title . "</a>";
-                        $event->courseid = $quest->course;
-                        $event->groupid = 0;
-                        $event->userid = 0;
-                        $event->modulename = '';
-                        $event->instance = $quest->id;
-                        $event->eventtype = $type;
-                        $event->timestart = $date;
-                        $event->timeduration = 0;
-                        $event->visible = $DB->get_field('course_modules', 'visible',
-                                array('module' => $moduleid, 'instance' => $quest->id));
-                        calendar_event::create($event);
-                    }
-                }
-            }
         }
     }//end of if ismanager
+    quest_update_challenge_calendar($cm,$quest,$newsubmission);
 
     if ($action == 'submitchallenge') {
         require_once('classes/event/challenge_created.php');
-        $challengeevent = mod_quest\event\challenge_created::create_from_parts($newsubmission, $cm);
-//		add_to_log($COURSE->id, "quest", "submit_submission", "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
+        mod_quest\event\challenge_created::create_from_parts($newsubmission, $cm)->trigger();
     } else if ($action == 'modif') {
-        add_to_log($COURSE->id, "quest", "modif_submission",
-                "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
+        if ($CFG->version >= 2014051200) {
+            require_once 'classes/event/challenge_updated.php';
+            \mod_quest\event\challenge_updated::create_from_parts($USER,$newsubmission,$cm)->trigger();
+        } else {
+            add_to_log($COURSE->id, "quest", "modif_submission",
+                "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
                 "$cm->id");
+        }
     } else if ($action == 'approve') {
-        add_to_log($COURSE->id, "quest", "approve_submission",
-                "submissions.php?cmid=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
+        if ($CFG->version >= 2014051200) {
+            require_once 'classes/event/challenge_aproved.php';
+            \mod_quest\event\challenge_approved::create_from_parts($USER,$newsubmission,$cm)->trigger();
+        } else {
+            add_to_log($COURSE->id, "quest", "approve_submission",
+                "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
                 "$cm->id");
+        }
+        
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($COURSE->fullname);
@@ -767,7 +691,12 @@ function quest_print_upload_form($quest) {
     }
     $form->pointsmax = $quest->maxcalification;
     echo html_writer::select($numbers, "pointsmax", "$form->pointsmax", "");
-    helpbutton("maxcalification", get_string("pointsmax", "quest"), "quest");
+    $helpicon = new moodle_help_icon();
+    $helpicon->page = 'maxcalification';
+    $helpicon->text = get_string("pointsmax", "quest");
+    $helpicon->module = 'quest';
+    echo $OUTPUT->help_icon($helpicon);
+//    helpbutton("maxcalification", , "quest");
     echo '</td></tr>';
 
     echo '<tr valign="top"><td><b>';
@@ -803,9 +732,7 @@ function quest_print_upload_form($quest) {
     echo "</td></tr>";
     $form->comentteacherpupil = '';
     if ($ismanager) {
-
         echo "<tr><td><b>" . get_string("comentsforpupil", "quest") . ":</b><br />\n";
-
         print_textarea($usehtmleditor, 8, 30, 630, 400, "comentteacherpupil", $form->comentteacherpupil);
         echo "</td></tr>\n";
         echo "<tr><td>";
@@ -814,7 +741,6 @@ function quest_print_upload_form($quest) {
         quest_print_duration_selector($form, $minutes, get_string("predictedDurationQuestion", "quest"));
         echo "</td></tr>";
     }
-
     echo "</table>\n";
     echo "<input type=\"hidden\" name=\"save\" value=\"\" />";
     echo "<input type=\"submit\" name=\"save0\" value=\"" . get_string('submitassignment', 'quest') . "\" onclick='document.forms.save.target=\"\";document.forms.save.nosubmit.value=\"1\";'/>";
@@ -823,25 +749,10 @@ function quest_print_upload_form($quest) {
     echo "</div>";
 }
 
-function quest_print_teachers_estimation_fragment($form) {
-    /**
-     * Teacher's estimations
-     */
-    echo "<tr><td>";
-
-
-    $minutes = quest_get_durations();
-    quest_print_duration_selector($form, $minutes, get_string("predictedDurationQuestion", "quest"));
-    quest_print_difficultyScale($form, get_string("perceivedTeacherDifficultyLevel", "quest"));
-
-    echo "</td></tr>";
-    /**
-     * End teacher's estimation
-     */
-}
 
 function quest_get_durations() {
     $minutes = array(
+        -1 => "",
         1 => " 1 " . get_string("minutes", "moodle"),
         2 => " 2 " . get_string("minutes", "moodle"),
         5 => " 5 " . get_string("minutes", "moodle"),
@@ -879,41 +790,28 @@ function quest_print_difficultyScale($form, $label = null) {
     if (!isset($label))
         $label = get_string("perceiveddifficultyLevelQuestion", "quest");
     $dificultyScale = quest_get_difficulty_levels();
-
     echo "
      <fieldset>
 	<legend>
 	" . $label . "<br>
 	</legend>";
-
-    /*
-      if(!isset($form->perceiveddifficulty) || $form->perceiveddifficulty==-1)
-      {$checked="checked"; $form->perceiveddifficulty=-1;} else $checked="";
-
-      echo " <input type=\"radio\"  name=\"perceiveddifficulty\" value=\"-1\" $checked alt=\"No opinion\" >N/A</input> \n";
-     */
     $checked = "";
-
-    //rgm
     $isAnyChecked = false;
     foreach ($dificultyScale as $value => $item) {
         if (isset($form) && isset($form->perceiveddifficulty) && $form->perceiveddifficulty == $value)
             $isAnyChecked = true;
     }
-
     foreach ($dificultyScale as $value => $item) {
         if (isset($form) && isset($form->perceiveddifficulty) && $form->perceiveddifficulty == $value) {
             $checked = "checked";
-            //print("form:".$form->perceiveddifficulty." value:".$value."  checked:".$checked);
         } else {
-            //if(!$isAnyChecked && $value==0)
-            //	$checked="checked";
             $checked = " ";
         }
 
         echo " <input type=\"radio\"  name=\"perceiveddifficulty\" $checked value=\"$value\" alt=\"$item\" >$item</input> \n";
     }
     echo "</fieldset>";
+    helpbutton("perceiveddifficulty", get_string("perceiveddifficulty", "quest"), "quest");
 }
 
 /**
@@ -1388,10 +1286,7 @@ class quest_print_answer_form extends moodleform {
         foreach ($difficultyScale as $value => $item) {
             $radioarray[] = & $mform->createElement('radio', 'perceiveddifficulty', '', $item, $value);
         }
-        $mform->addGroup($radioarray, 'radioar', get_string("perceiveddifficultyLevelQuestion", "quest"), array(' '), false); //evp pendiente hacer que no salga ninguna opciÃ³n seleccionada
-        //evp el js de abajo hace algo de esto: hay que ver cÃ³mo hacer para que no salga marcada una de las opciones por defecto
-        //$mform->addElement('hidden','id',$cm->id);
-        //$mform->addElement('hidden', 'cmid',$cm->id);
+        $mform->addGroup($radioarray, 'radioar', get_string("perceiveddifficultyLevelQuestion", "quest"), array(' '), false); //evp pendiente hacer que no salga ninguna opciÃ³n seleccionada.
         $mform->addElement('hidden', 'aid', $currententry->id);
         $mform->setType('aid', PARAM_INT);
         $mform->addElement('hidden', 'id', $currententry->id);
@@ -1417,29 +1312,22 @@ class quest_print_answer_form extends moodleform {
 
         $this->set_data($currententry);
     }
-
-    /* function validation($data,$files)
-      {
-      //evp el tema de las fechas se podrÃ­a tratar de ver si se puede mejorar de tal manera que no se pueda seleccionar una fecha posterior a la del fin del quest...
-      $errors = parent::validation($data,$files);
-      if($data['datestart']<$data['questdatestart'])
-      $errors['datestart']=get_string('invaliddates', 'quest');
-      if($data['dateend']>$data['questdateend'])
-      $errors['dateend']=get_string('invaliddates', 'quest');
-      if($data['datestart']>=$data['dateend'])
-      $errors['datestart']=get_string('invaliddates', 'quest');
-
-      //return ($newsubmission->datestart >= $quest->datestart and $newsubmission->dateend <= $quest->dateend and $newsubmission->dateend > $newsubmission->datestart);
-
-      return $errors;
-
-      } */
 }
 
-////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-//TODO: Elever esta funciÃ³n sustituirÃ­a a lo realizado en el fichero uploadanswer.php que era llamado desde el formulario de enviar respuesta
-
+/**
+ * 
+ * @global stdClass $DB
+ * @global type $COURSE
+ * @global type $OUTPUT
+ * @global stdClass $USER
+ * @param type $quest
+ * @param type $answer
+ * @param type $ismanager
+ * @param type $cm
+ * @param type $definitionoptions
+ * @param type $attachmentoptions
+ * @param type $context
+ */
 function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context) {
 
     global $DB, $COURSE, $OUTPUT, $USER;
@@ -1458,7 +1346,7 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     if (empty($answer->id)) {
         $modif = false;
         if (!$validate = quest_validate_user_answer($quest, $submission)) {
-            print_error('answerexisty', 'quest', "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+            print_error('answerexisty', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
         }
 //		$answer= new stdClass();
         $answer->questid = $quest->id;
@@ -1469,7 +1357,7 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
         $answer->id = $DB->get_field('quest_answers', 'id', array('id' => $answer->id), MUST_EXIST);
         if (!($ismanager or ( ($USER->id == $answer->userid) and ( $timenow < $quest->dateend)))) {
             print_error('answernoauthorizedupdate', 'quest',
-                    "submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id");
+                    "submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id");
         }
     }
 
@@ -1491,10 +1379,10 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
         $answer->state = 1;
     } else {
         $answer->phase = $DB->get_field('quest_answers', 'phase', array('id' => $answer->id));
-        if (($answer->phase == 1) || ($answer->phase == 2))
-            $answer->state = 2;
+        if (($answer->phase == ANSWER_PHASE_GRADED) || ($answer->phase == ANSWER_PHASE_PASSED))
+            $answer->state = ANSWER_STATE_MODIFIED;
         else
-            $answer->state = 1;
+            $answer->state = ANSWER_STATE_EDITTED;
     }
     if ($modif == false) {
         if (!$answer->id = $DB->insert_record("quest_answers", $answer)) {
@@ -1535,9 +1423,6 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     if ($quest->allowteams) {
         quest_update_team_scores($quest->id, quest_get_user_team($quest->id, $answer->userid));
     }
-    ///////////////////////////////////
-
-
     /**
      * NOTIFICATIONS
      */
@@ -1562,111 +1447,16 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
  		}
 
     if ($modif == false) {
-        add_to_log($COURSE->id, "quest", "submit_answer",
-                "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
+        \mod_quest\event\answer_created::create_from_parts($submission, $answer, $cm)->trigger();
+//        add_to_log($COURSE->id, "quest", "submit_answer",
+//                "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
     } else {
-        add_to_log($COURSE->id, "quest", "modif_answer",
-                "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
+        \mod_quest\event\answer_updated::create_from_parts($submission,$answer,$cm)->trigger();
+//        add_to_log($COURSE->id, "quest", "modif_answer",
+//                "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
     }
 }
 
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-//Evp esta funciÃ³n habrÃ¡ que eliminarla
-function quest_print_answer_form($quest, $submission, $form) {
-    global $CFG, $USER, $DB;
-
-    if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-        print_error("course_misconfigured", 'quest');
-    }
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
-    ?>
-    <script language=javascript>
-        function desactivar() {
-            //check radio buttons
-            if (!comprobarRadio(document.forms.save.perceiveddifficulty))
-            {
-                alert("<?php print(get_string("shouldSelectDifficultyLevel", "quest")); ?>")
-                return false;
-            }
-            if (document.forms.save.nosubmit.value == 1)
-            {
-                document.forms.save.save.value = 'SaveAnswer';
-                setTimeout(document.forms.save.save0.disabled = 'true', 1000);
-            }
-
-            return true;
-
-
-        }
-
-        function comprobarRadio(radio)
-        {
-            for (i = 0; i < radio.length; i++)
-            {
-                if (radio[i].checked)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-    </script>
-    <?php
-    echo "<div align=\"center\">";
-    echo "<form name=\"save\" enctype=\"multipart/form-data\" method=\"POST\" action=\"uploadanswer.php\" target=\"_parent\" onsubmit=\"return desactivar();\">";
-    echo " <input type=\"hidden\" name=\"id\" value=\"$cm->id\" />";
-    echo " <input type=\"hidden\" name=\"sid\" value=\"$submission->id\" />";
-
-    quest_print_answer_form_fragment($quest, $course, $form);
-
-    echo " <input type=\"hidden\" name=\"save\" value=\"\" />";
-    echo " <input type=\"hidden\" name=\"nosubmit\" value=\"0\" />";
-    echo " <input type=\"submit\" name=\"save0\" value=\"SaveAnswer\" onclick='document.forms.save.target=\"\";document.forms.save.nosubmit.value=\"1\";'/>";
-    echo " <input type=\"submit\" name=\"save1\" value=\"PreviewAnswer\" onclick='document.forms.save.target=\"Preview\";window.open(\"uploadanswer.php\",\"Preview\",\"height=400,width=600\");'/>";
-
-    echo "</form>";
-    echo "</div>";
-}
-
-/**
- *
- */
-//Evp esta funciÃ³n habrÃ¡ que eliminarla
-function quest_print_answer_form_fragment($quest, $course, $form) {
-    $usehtmleditor = can_use_html_editor();
-    global $CFG;
-    echo "<table celpadding=\"5\" border=\"1\" align=\"center\">\n";
-    // now get the submission
-    echo "<tr valign=\"top\"><td><b>" . get_string("title", "quest") . ":</b>\n";
-    echo "<input type=\"text\" name=\"title\" size=\"60\" maxlength=\"100\" value=\"$form->title\" />\n";
-    echo "</td></tr><tr><td><b>" . get_string("answer", "quest") . ":</b>";
-    //    echo "<a href=\"javascript:void()\"><img src='mathEditor.png' onclick='window.open(\"../../filter/tex/texed.php\",\"MathEditor\",\"height=400,width=600\");return false;' width=32 alt=\"EditorEcuaciones\"></img></a><br />\n";
-    print_textarea($usehtmleditor, 25, 70, 630, 400, "description", $form->description);
-    use_html_editor("description");
-    echo "</td></tr>\n";
-
-    echo '<tr><td height="32">';
-
-    if ($quest->nattachments) {
-
-        require_once($CFG->dirroot . '/lib/uploadlib.php');
-
-        for ($i = 0; $i < $quest->nattachments; $i++) {
-            $iplus1 = $i + 1;
-            $tag[$i] = get_string("attachment", "quest") . " $iplus1:";
-        }
-
-        upload_print_form_fragment($quest->nattachments, null, $tag, false, null, $course->maxbytes, $quest->maxbytes, false);
-    }
-
-    echo "</td></tr><tr><td>";
-    quest_print_difficultyScale($form);
-
-    echo "</td></tr></table>\n";
-}
 
 /**
  *
@@ -1688,7 +1478,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     //$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
 
     $currentgroup = groups_get_course_group($course);
@@ -1697,7 +1487,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     if ($groupmode and $ismanager) {
         if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
             groups_print_activity_menu($cm,
-                    $CFG->wwwroot . "mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
+                    $CFG->wwwroot . "mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
                     $return = false, $hideallparticipants = false);
         }
     }
@@ -1850,7 +1640,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
             }
             $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/i/$columnicon.png\" alt=\"$columnicon\" />";
         }
-        $$column = "<a href=\"submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
+        $$column = "<a href=\"submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
 
     if ($ismanager) {
@@ -1868,213 +1658,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     echo '</td></tr>';
 }
 
-// TODO JPC remove
-function quest_print_table_answers_silly($quest, $submission, $course, $cm, $sort, $dir) {
-    global $CFG, $USER, $DB, $OUTPUT;
-
-    $timenow = time();
-    $context = context_module::instance($cm->id);
-    $ismanager = has_capability('mod/quest:manage', $context);
-
-    // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
-    //$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
-
-    $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; //JPC group support desactivation
-    // Allow the teacher to change groups (for this session)
-    if ($groupmode and $ismanager) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-//			print_group_menu($groups, $groupmode, $currentgroup, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
-            groups_print_activity_menu($cm,
-                    $CFG->wwwroot . "mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                    $return = false, $hideallparticipants = false);
-        }
-    }
-
-
-    // Get all the students
-    if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer();
-        exit;
-    }
-
-    // Now prepare table with student assessments and submissions
-    $tablesort = new stdClass;
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
-    foreach ($users as $user) {
-        $ismanager_user = has_capability('mod/quest:manage', $context, $user->id);
-        // skip if student not in group
-        if ($ismanager) {
-            if (!$ismanager_user) {
-                if ($currentgroup) {
-                    if (!groups_is_member($currentgroup, $user->id))
-                        continue;
-                }
-            }
-        }
-        else if (!$ismanager_user && ($groupmode == 1)) {
-            if ($currentgroup) {
-                if (!groups_is_member($currentgroup, $user->id))
-                    continue;
-            }
-        }
-
-        if ($answers = quest_get_user_answers($submission, $user)) {
-            foreach ($answers as $answer) {
-                $data = array();
-                $sortdata = array();
-
-                if (($ismanager) || ($submission->userid == $USER->id) || ($answer->userid == $USER->id) || ($submission->dateend < $timenow) || ($submission->nanswerscorrect >= $quest->nmaxanswers)) {
-                    $edit_icon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
-                    $delete_icon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
-
-                    if ($ismanager) {
-
-                        $commands = quest_print_answer_title($quest, $answer, $submission) .
-                                " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
-                                $edit_icon . '</a>';
-                        $commands.=" <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
-                                $delete_icon . '</a>';
-
-                        $data[] = $commands;
-
-                        $sortdata['title'] = strtolower($answer->title);
-                    } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase == 0) && $submission->nanswerscorrect < $quest->nmaxanswers) {
-                        $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                                " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
-                                $edit_icon . '</a>' .
-                                " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
-                                $delete_icon . '</a>';
-
-                        $sortdata['title'] = strtolower($answer->title);
-                    } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase > 0) && ($answer->permitsubmit == 1)) {
-                        $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                                " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
-                                $edit_icon . '</a>';
-
-                        $sortdata['title'] = strtolower($answer->title);
-                    } else {
-                        $data[] = quest_print_answer_title($quest, $answer, $submission);
-                        $sortdata['title'] = strtolower($answer->title);
-                    }
-                    // User Name Surname
-                    if ($ismanager) {
-                        $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
-                                fullname($user) . '</a>';
-                        $sortdata['firstname'] = strtolower($user->firstname);
-                        $sortdata['lastname'] = strtolower($user->lastname);
-                    }
-                    // Answer Phase
-                    $data[] = quest_answer_phase($answer, $course);
-                    $sortdata['phase'] = quest_answer_phase($answer, $course);
-
-                    $data[] = userdate($answer->date, get_string('datestr', 'quest'));
-                    $sortdata['dateanswer'] = $answer->date;
-
-                    if (($answer->phase == 1) || ($answer->phase == 2)) {
-                        $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id));
-                    } else {
-                        $assessment = NULL;
-                    }
-
-                    if (!$ismanager_user && ($groupmode == 2)) {
-                        if ($currentgroup) {
-                            if (!groups_is_member($currentgroup, $user->id)) {
-                                $data[] = '----';
-                                $sortdata['tassmnt'] = 1;
-                            } else {
-                                $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
-                                $sortdata['tassmnt'] = 1;
-                            }
-                        } else {
-                            $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
-                            $sortdata['tassmnt'] = 1;
-                        }
-                    } else {
-                        $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
-                        $sortdata['tassmnt'] = 1;
-                    }
-
-                    $score = quest_answer_grade($quest, $answer, 'ALL');
-                    if ($answer->pointsmax == 0)
-                        $grade = number_format($score, 4) . ' (' . get_string('phase4submission', 'quest') . ')';
-                    else
-                        $grade = number_format($score, 4) . ' (' . number_format($answer->grade, 0) . '%) [max:' . number_format($answer->pointsmax,
-                                        4) . ']';
-
-                    $data[] = $grade;
-                    $sortdata['calification'] = $score;
-                    $difflevels = quest_get_difficulty_levels();
-
-                    if ($answer->perceiveddifficulty == -1) {
-                        $data[] = "--";
-                    } else {
-                        $data[] = $difflevels[$answer->perceiveddifficulty] . " ($answer->perceiveddifficulty)";
-                    }
-                    $sortdata['perceiveddifficulty'] = $answer->perceiveddifficulty;
-
-                    $tablesort->data[] = $data;
-                    $tablesort->sortdata[] = $sortdata;
-                }// if user is authorized to view answer
-            }// for each user's answer
-        }// if there are answers
-    } //foreach users
-
-    uasort($tablesort->sortdata, 'quest_sortfunction');
-    //$table = new stdClass();
-    $table = new html_table();
-    $table->data = array();
-    foreach ($tablesort->sortdata as $key => $row) {
-        $table->data[] = $tablesort->data[$key];
-    }
-
-
-    $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-    if ($ismanager) {
-        $columns = array('title', 'firstname', 'lastname', 'phase', 'dateanswer', 'actions', 'calification');
-    } else {
-        $columns = array('title', 'phase', 'dateanswer', 'actions', 'calification');
-    }
-
-    $table->width = "95%";
-
-    foreach ($columns as $column) {
-        $string[$column] = get_string("$column", 'quest');
-        if ($sort != $column) {
-            $columnicon = '';
-            $columndir = 'ASC';
-        } else {
-            $columndir = $dir == 'ASC' ? 'DESC' : 'ASC';
-            if ($column == 'lastaccess') {
-                $columnicon = $dir == 'ASC' ? 'up' : 'down';
-            } else {
-                $columnicon = $dir == 'ASC' ? 'down' : 'up';
-            }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/i/$columnicon.png\" alt=\"$columnicon\" />";
-        }
-        $$column = "<a href=\"submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
-    }
-
-    if ($ismanager) {
-        $table->head = array("$title", "$firstname / $lastname", "$phase", "$dateanswer", get_string('actions', 'quest'), "$calification", get_string("perceiveddifficultyLevel",
-                    'quest'));
-    } else {
-        $table->head = array("$title", "$phase", "$dateanswer", get_string('actions', 'quest'), "$calification");
-    }
-
-
-    echo '<tr><td>';
-    //print_table($table);
-    echo html_writer::table($table);
-    echo '</td></tr>';
-}
-
-/////////////////////////////////////////////////////////
+//
 function quest_print_answer_title($quest, $answer, $submission) {
     // Arguments are objects
 
@@ -2088,7 +1672,7 @@ function quest_print_answer_title($quest, $answer, $submission) {
     return "<a name=\"sid_$answer->id\" href=\"answer.php?id=$cm->id&amp;sid=$submission->id&amp;action=showanswer&amp;aid=$answer->id\">$answer->title</a>";
 }
 
-/////////////////////////////////////////////////////////
+
 function quest_print_actions_answers($cm, $answer, $submission, $course, $assessment) {
     global $USER;
     // Returns the teacher or peer grade and a hyperlinked list of grades for this submission
@@ -2156,34 +1740,24 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     return $str;
 }
 
-/////////////////////////////////////////////////////
 
 function quest_print_answer_info($quest, $answer) {
-
-
     global $CFG, $DB, $OUTPUT;
-
     if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
         print_error("course_misconfigured", 'quest');
     }
     if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
         print_error("CourseModuleIDwasincorrect", 'quest'); ;
     }
-
-
-    // print standard assignment heading
-
+    // Print standard assignment heading.
     echo $OUTPUT->box_start("center");
-
-    // print phase and date info
+    // Print phase and date info.
     $string = '<b>' . get_string('currentphaseanswer', 'quest') . '</b>: ' . quest_answer_phase($answer, $course) . '<br />';
     $dates = array(
         'dateanswer' => $answer->date,
         'dateassess' => 0
     );
-
     $points = 0;
-
     if ($assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id))) {
         $dates['dateassess'] = $assessment->dateassessment;
         if ($assessment->state == 2) {
@@ -2192,7 +1766,6 @@ function quest_print_answer_info($quest, $answer) {
             $points = $assessment->pointsautor;
         }
     }
-
     foreach ($dates as $type => $date) {
         if ($date) {
             if ((($date == $dates['dateassess']) && ($answer->phase == 1)) || ($date == $dates['dateanswer'])) {
@@ -2204,21 +1777,15 @@ function quest_print_answer_info($quest, $answer) {
             }
         }
     }
-
     $string .= '<b>' . get_string('pointsmax', 'quest') . ":&nbsp;&nbsp;" . number_format($answer->pointsmax, 4) . '</b><br>';
-
     if (($answer->phase == 1) || ($answer->phase == 2)) {
         $string .= '<b>' . get_string('points', 'quest') . ":&nbsp;&nbsp;$points" . '</b><br>';
     }
-
-
     echo $string;
-
-
     echo $OUTPUT->box_end();
 }
 
-/* * **********************
+/************************
  * 			  answer->phase
  * 							0			1					2
  * assessment->state	1	ungraded	graded autor		graded >0.5 autor
@@ -2229,7 +1796,6 @@ function quest_print_answer_info($quest, $answer) {
  * answer->state	1
  * 					2				modified
  * **************** */
-
 function quest_answer_phase($answer, $course, $style = '') {
 
     global $USER, $DB;
@@ -2405,7 +1971,7 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     // FORM is needed for Mozilla browsers, else radio bttons are not checked
     ?>
     <form name="assessmentform" method="post" action="assessments.php"><input
-            type="hidden" name="cmid" value="<?php echo $cm->id ?>" /> <input
+            type="hidden" name="id" value="<?php echo $cm->id ?>" /> <input
             type="hidden" name="aid" value="<?php echo $answer->id ?>" /> <input
             type="hidden" name="sid" value="<?php echo $sid ?>" /> <input
             type="hidden" name="sesskey" value="<?php echo sesskey() ?>" /> <input
@@ -2454,7 +2020,7 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     $elementsraw = $DB->get_records("quest_elements", array("submissionsid" => $condition), "elementno ASC");
     if (isset($nelements)) {
         if (count($elementsraw) < $nelements) {
-            print_string("noteonassignmentelements", "quest");
+            print_string("noteonassessmentelements", "quest");
         }
     }
     if ($elementsraw) {
@@ -2990,51 +2556,6 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
     }
 }
 
-//////////////////////////////////////////////////////////
-/**
- * @deprecated
- * @param unknown $quest
- * @param unknown $submission
- */
-function quest_delete_submitted_files_submissions($quest, $submission) {
-    // Deletes the files in the quest area for this submission
-// TODO: Elever Comprueba los ficheros se borran tal y como dice el nuevo mecanismo de Moodle2
-// 	if ($basedir = quest_file_area_submissions($quest, $submission)) {
-// 		if ($files = get_directory_list($basedir)) {
-// 			foreach ($files as $file) {
-// 				if (unlink("$basedir/$file")) {
-// 					notify("Existing file '$file' has been deleted!");
-// 				}
-// 				else {
-// 					notify("Attempt to delete file $basedir/$file has failed!");
-// 				}
-// 			}
-// 		}
-// 	}
-}
-
-//////////////////////////////////////////////////////////
-/**
- * @deprecated
- * @param unknown $quest
- * @param unknown $answer
- */
-function quest_delete_submitted_files_answers($quest, $answer) {
-    // Deletes the files in the quest area for this answer
-// 	if ($basedir = quest_file_area_answers($quest, $answer)) {
-// 		if ($files = get_directory_list($basedir)) {
-// 			foreach ($files as $file) {
-// 				if (unlink("$basedir/$file")) {
-// 					notify("Existing file '$file' has been deleted!");
-// 				}
-// 				else {
-// 					notify("Attempt to delete file $basedir/$file has failed!");
-// 				}
-// 			}
-// 		}
-// 	}
-}
-
 /**
  *
  * Calculate a percentual grade for an answer.
@@ -3399,7 +2920,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
         }
 
         echo $OUTPUT->heading(get_string('assessmentof', 'quest',
-                        "<a href=\"submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\" target=\"submission\">" .
+                        "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\" target=\"submission\">" .
                         $submission->title . '</a>'));
     }
 
@@ -3452,12 +2973,10 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
                 }
             }
 
-
             if ($assessment->dateassessment != null) {
                 echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
             }
             echo "</tr>\n";
-
 
             // get the assignment elements...
             $elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC");
@@ -4157,7 +3676,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
 
             $can_approve = has_capability('mod/quest:approvechallenge', $context);
             if (($can_approve) && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING)) {
-                $string = "<a href=\"submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=approve\">" .
+                $string = "<a href=\"submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=approve\">" .
                         get_string('approve', 'quest') . "</a>";
             }
 
@@ -4230,7 +3749,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
                 if ($string != '') {
                     $string.='&nbsp;/&nbsp;';
                 }
-                $string .= "<a href=\"submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=recalificationall\">" .
+                $string .= "<a href=\"submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=recalificationall\">" .
                         get_string('recalificationall', 'quest') . "</a>";
             }
             return $string;
@@ -4260,28 +3779,6 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             return $validate;
         }
 
-        function quest_update_grafics_recalification($answer_actual, $submission, $quest, $course) {
-            global $DB;
-            if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
-                    array($quest->id, $submission->id))) {
-                foreach ($answers as $answer) {
-                    if (($answer->id != $answer_actual->id) && ($answer->date >= $answer_actual->date)) {
-
-                        $points = quest_get_points($submission, $quest, $answer);
-                        $answer->pointsmax = $points;
-                        $DB->set_field("quest_answers", "pointsmax", $answer->pointsmax, "id", $answer->id);
-
-                        if ($assessment = $DB->get_record("quest_assessments",
-                                array("questid" => $quest->id, "answerid" => $answer->id))) {
-
-                            if ($answer->state != 2) { // state=2 -> Modificada. (respuesta evaluada a mano por el profesor?)
-                                quest_recalification($answer, $quest, $assessment, $course);
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         /**
          * Update quest points and scores of the answers older than $answer_actual
@@ -4290,8 +3787,6 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
          */
         function quest_update_grade_for_answer($answer_actual, $submission, $quest, $course) {
             global $DB;
-
-// 	$answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?  AND date>=?",array($quest->id,$submission->id,$answer_actual->date));
 // all answers to this submission
             $answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", array($quest->id, $submission->id));
 
@@ -4321,7 +3816,42 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             $submission->points = number_format($submission->points, 4);
             $DB->update_record('quest_submissions', $submission);
         }
+        function quest_update_challenge_calendar($cm,$quest, $challenge){
+            global $DB;
+            $dates = array(
+           'openchallenge' => $challenge->datestart,
+           'closechallenge' => $challenge->dateend
+               );
+            foreach ($dates as $type => $date) {
+                if ($type == 'openchallenge') {
+                    $stringevent = 'datestartsubmissionevent';
+                } else if ($type == 'closechallenge') {
+                    $stringevent = 'dateendsubmissionevent';
+                }
+                $eventdata = new stdClass();
+                $eventdata->name = get_string($stringevent, 'quest', $challenge->title);
+                $url=new moodle_url('/mod/quest/submissions.php',array('id'=>$cm->id,'sid'=>$challenge->id,'action'=>'showsubmission'));
+                $eventdata->description =  "<a href=\"$url\">$challenge->title</a>";
+                $eventdata->eventtype = $type;
+                $eventdata->timestart = $date;
+                $eventdata->modulename='quest';
+                $eventdata->instance = $quest->id;
+                $eventdata->timeduration = 0;
+                $eventdata->visible = $cm->visible;
+                $eventdata->groupid = 0;
+                $eventdata->userid = 0;
+                $eventdata->courseid = $quest->course;
+                $eventdata->uuid= $challenge->id;
 
+                $event = $DB->get_record('event', array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type,'uuid'=>$challenge->id));
+                if ($event) { // Update event.
+                        $event = calendar_event::load($event->id);
+                        $event->update($eventdata);
+                    } else { // Create new event.         
+                        calendar_event::create($eventdata);
+                    }
+            }   
+        }
         /**
          * Update a assessment details in the database.
          * Trucate numeric values to workaround weird database truncation errors and decimal points with Moodle 2.5
@@ -5014,8 +4544,9 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             }
 
             $cm = get_coursemodule_from_instance('quest', $quest->id);
-            add_to_log($course->id, "quest", "assess_answer", "viewassessment.php?id=$cm->id&amp;asid=$assessment->id",
-                    "$assessment->id", "$cm->id");
+            mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm);
+//            add_to_log($course->id, "quest", "assess_answer", "viewassessment.php?id=$cm->id&amp;asid=$assessment->id",
+//                    "$assessment->id", "$cm->id");
         }
 
         function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
@@ -5023,7 +4554,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             global $CFG, $USER, $DB;
 
             $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-            $groupmode = groupmode($course, $cm);   // Groups are being used?
+            $groupmode = groups_get_activity_group($cm);   // Groups are being used?
             $currentgroup = groups_get_course_group($course);
             $groupmode = $currentgroup = false; //JPC group support desactivation
 

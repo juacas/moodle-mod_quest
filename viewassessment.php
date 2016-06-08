@@ -39,22 +39,12 @@
     $allowcomments=optional_param('allowcomments',false,PARAM_BOOL);
     $redirect=optional_param('redirect','',PARAM_LOCALURL);
 
-           if (! $assessment = $DB->get_record("quest_assessments", array("id"=> $asid)))
-               error("Assessment id is incorrect");
-
-           if (! $answer = $DB->get_record('quest_answers', array('id'=> $assessment->answerid)))
-               error("Incorrect answer id");
-
-           if (! $submission = $DB->get_record('quest_submissions', array('id'=> $answer->submissionid)))
-               error("Incorrect submission id");
-
-           if (! $quest = $DB->get_record("quest", array("id"=> $submission->questid)))
-               print_error("incorrectQuest",'quest');;
-
-           if (! $course = $DB->get_record("course", array("id"=> $quest->course)))
-               print_error("course_misconfigured",'quest');
-           if (! $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id))
-               error("No coursemodule found");
+    $assessment = $DB->get_record("quest_assessments", array("id"=> $asid),'*',MUST_EXIST);
+    $answer = $DB->get_record('quest_answers', array('id'=> $assessment->answerid),'*',MUST_EXIST);
+    $submission = $DB->get_record('quest_submissions', array('id'=> $answer->submissionid),'*',MUST_EXIST);
+    $quest = $DB->get_record("quest", array("id"=> $submission->questid),'*',MUST_EXIST);
+    $course = get_course($quest->course);
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,MUST_EXIST);
 
    require_login($course->id, false, $cm);
 
@@ -81,7 +71,7 @@
 
    if (!$redirect)
    {
-       $redirect = "submissions.php?cmid=$cm->id&sid=$sid&action=showsubmission#sid=$sid";
+       $redirect = "submissions.php?id=$cm->id&sid=$sid&action=showsubmission#sid=$sid";
    }
 
 
@@ -152,13 +142,13 @@
             $title .= ' '.get_string('by', 'quest').' '.quest_fullname($answer->userid, $course->id);
     }
 
-    $title .= " ".get_string('tothechallenge','quest')."<a name=\"sid_$submission->id\" href=\"submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+    $title .= " ".get_string('tothechallenge','quest')."<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
     echo $OUTPUT->heading($title);
 
     quest_print_answer_info($quest,$answer);
 
-//     echo("<center><b><a href=\"assessments.php?cmid=$cm->id&amp;action=displaygradingform\">".
+//     echo("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">".
 //                 get_string("specimenassessmentform", "quest")."</a></b></center>");
 	echo $OUTPUT->box_start();
     echo $OUTPUT->heading(get_string('answercontent','quest'));

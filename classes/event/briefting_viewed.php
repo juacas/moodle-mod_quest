@@ -55,9 +55,9 @@ class briefting_viewed extends base {
      * @param string $cmId
      * @return unknown
      */
-    public static function create_from_parts(\stdClass $user, \stdClass $quest, \stdClass $cm) {
+    public static function create_from_parts(\stdClass $user, \stdClass $quest, \cm_info $cm) {
 
-        $url = "/mod/quest/report.php?cmid=$cm->id";
+        $url = "/mod/quest/report.php?id=$cm->id";
         $info = " Quest name: $quest->name";
         $data = array(
             'relateduserid' => $user->id,

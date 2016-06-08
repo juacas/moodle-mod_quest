@@ -50,7 +50,7 @@ function quest_add_instance($quest) {
     if(($quest->showclasifindividual == 0)&&($quest->allowteams == 0)){
      $quest->showclasifindividual = 1;
     }
-    if(($quest->typegrade == 1)&&($quest->allowteams == 0)){
+    if(($quest->typegrade == QUEST_TYPE_GRADE_TEAM)&&($quest->allowteams == 0)){
      $quest->typegrade = 0;
     }
 
@@ -71,16 +71,15 @@ function quest_add_instance($quest) {
         $event->userid      = 0;
         $event->modulename  = 'quest';
         $event->instance    = $returnid;
-        $event->eventtype   = 'datestart';
+        $event->eventtype   = 'open';
         $event->timestart   = $quest->datestart;
         $event->timeduration = 0;
         calendar_event::create($event);
 
         $event->name        = get_string('dateendevent','quest', $quest->name);
-        $event->eventtype   = 'dateend';
+        $event->eventtype   = 'close';
         $event->timestart   = $quest->dateend;
         calendar_event::create($event);
-
     }
 
     return $returnid;
@@ -154,8 +153,6 @@ function quest_check_submission_text($newsubmission) {
  return $validate;
 
 }
-
-
 /**
  * Update the configuration of the Quest
  *
@@ -818,7 +815,7 @@ mtrace("Searching events to notify to all users...");
              {
               $userscount++;
 	print("Sending message to user $user->username in name of $userfrom->username\n");
-              quest_send_message($user, "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'addsubmission', $quest, $submission,'',$userfrom);
+              quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'addsubmission', $quest, $submission,'',$userfrom);
              }
             }
             $DB->set_field("quest_submissions","maileduser",1,array('id'=>$submission->id));
@@ -830,19 +827,14 @@ mtrace("Searching events to notify to all users...");
 
              $moduleid = $DB->get_field('modules', 'id', array('name'=> 'quest'));//evp creo que hay una funci�n de moodle para esto
 
-             if(!has_capability('mod/quest:manage', $context,$submission->userid))
-             {
-              if($group_member = $DB->get_record("groups_members", array("userid"=> $submission->userid)))
-              {
-                $idgroup = $group_member->groupid;
-              }
-             }
-             else
-             {
-               $idgroup = 0;
-             }
+             if (!has_capability('mod/quest:manage', $context, $submission->userid)
+                     && ($group_member = $DB->get_record("groups_members", array("userid" => $submission->userid)))){
+                    $idgroup = $group_member->groupid;
+                } else {
+                    $idgroup = 0;
+                }
 
-             foreach ($dates as $type => $date) {
+            foreach ($dates as $type => $date) {
               if($submission->datestart <= time() ){
                  if ($event = $DB->get_record('event', array('modulename'=> 'quest', 'instance'=> $quest->id, 'eventtype'=> $type))) {
                      if($type == 'datestartsubmission'){
@@ -852,7 +844,7 @@ mtrace("Searching events to notify to all users...");
                       $stringevent = 'dateendsubmissionevent';
                      }
                      $event->name        = get_string($stringevent,'quest', $submission->title);
-                     $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">".$submission->title."</a>";
+                     $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">".$submission->title."</a>";
                      $event->eventtype   = $type;
                      $event->timestart   = $date;
                      update_event($event);
@@ -865,7 +857,7 @@ mtrace("Searching events to notify to all users...");
                      }
                      $event = new stdClass();
                      $event->name        = get_string($stringevent,'quest', $submission->title);
-                     $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">".$submission->title."</a>";
+                     $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">".$submission->title."</a>";
                      $event->courseid    = $quest->course;
                      $event->groupid     = $idgroup;
                      $event->userid      = 0;
@@ -919,13 +911,13 @@ function quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, 
     $posttext .= "\n\r".$strbynameondate."\n\r";
     $posttext .= "\n\r---------------------------------------------------------------------\n\r";
     $site = get_site();
-
+    $data = new stdClass();
     $data->firstname = fullname($userto);
     $data->sitename = $site->fullname;
     $data->admin = $CFG->supportname .' ('. $CFG->supportemail .')';
     $data->title = $submission->title;
     $data->name = $quest->name;
-    $data->link = $CFG->wwwroot ."/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
+    $data->link = $CFG->wwwroot ."/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
     $message = get_string('emailaddsubmission', 'quest', $data);
 
     $posttext .= format_text_email($message,1);
@@ -951,7 +943,7 @@ function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, 
     '<a target="_blank" href="'.$CFG->wwwroot.'/mod/quest/index.php?id='.$course->id.'">'.$strquests.'</a> &raquo; '.
     '<a target="_blank" href="'.$CFG->wwwroot.'/mod/quest/view.php?id='.$cm->id.'">'.format_string($quest->name,true).'</a>';
 
-    $posthtml .= ' &raquo; <a target="_blank" href="'.$CFG->wwwroot.'/mod/quest/submissions.php?cmid='.$cm->id.
+    $posthtml .= ' &raquo; <a target="_blank" href="'.$CFG->wwwroot.'/mod/quest/submissions.php?id='.$cm->id.
                 '&amp;action=showsubmission&amp;id='.$submission->id.'">'.
                      format_string($submission->title,true).'</a></div>';
 
@@ -998,7 +990,7 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
     $data->sitename = $site->fullname;
     $data->title = $submission->title;
     $data->name = $quest->name;
-    $data->link = $CFG->wwwroot ."/mod/quest/submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission".'&amp;p='. $userto->secret .'&amp;s='. $userto->username;
+    $data->link = $CFG->wwwroot ."/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission".'&amp;p='. $userto->secret .'&amp;s='. $userto->username;
     $message = get_string('emailaddsubmission', 'quest', $data);
 
     $messagehtml = text_to_html($message, false, false, true);
@@ -1073,22 +1065,15 @@ setlocale(LC_NUMERIC,'C'); // JPC Moodle aplies  numeric locale to casts of stri
  */
 function quest_get_user_grades($quest, $userid=0)
 {
-    global $CFG;
-   require_once($CFG->dirroot . '/mod/quest/locallib.php');
-
-	global $DB;
-
-//	print("<!-- <p>Getting QUESTOURnament grades for questid:$quest->id</p>-->");
-
-	if ($quest = $DB->get_record("quest", array("id"=> $quest->id)))
+    global $CFG,$DB;
+    require_once($CFG->dirroot . '/mod/quest/locallib.php');
+	if ($quest = $DB->get_record("quest", array("id"=> $quest->id),'*',MUST_EXIST))
 	{
-		$course = $DB->get_record("course", array("id"=> $quest->course));
-		$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
-		$groupmode = groupmode($course, $cm);
+		$course = get_course($quest->course);
+		$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,null,MUST_EXIST);
+		$groupmode = groups_get_activity_group($cm);
 	 	$maxpoints=-1;
 		$maxpointsgroup=null;
-
-
 // 	 if ($quest->gradingstrategy)
 // 	 {
 	 	// select users queried
@@ -1186,11 +1171,10 @@ function quest_get_user_grades($quest, $userid=0)
 		    		}// student has calification
 	 			} //foreach student in list
 	 	}// there are students
-// 	 }
-// 	 else // gradingstrategy==false
-// 	 {
-// 	 	$return=false;
-// 	 }
+        else // No students.
+        {
+           $return=false;
+        }
 	}
 	else
 	{
@@ -1231,9 +1215,9 @@ $grades = quest_get_user_grades($quest, $userid);
 function create_user_grade($questid)
 {
 if ($quest = $DB->get_record("quest", array("id"=> $questid))) {
-		$course = $DB->get_record("course", array("id"=> $quest->course));
+		$course = get_course($quest->course);
 		$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
-		$groupmode = groupmode($course, $cm);
+		$groupmode = groups_get_activity_group($cm);
 	 $maxpoints=-1;
 	 $maxpointsgroup=null;
 	 $maxpointsgroupteams=null;
@@ -1378,7 +1362,7 @@ function quest_grades($questid, $userid=0) {
 	if ($quest = $DB->get_record("quest", array("id"=> $questid))) {
 		$course = $DB->get_record("course", array("id"=> $quest->course));
 		$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
-		$groupmode = groupmode($course, $cm);
+		$groupmode = groups_get_activity_group($cm);
 	 $maxpoints=-1;
 	 $maxpointsgroup=null;
 	 $maxpointsgroupteams=null;
@@ -2589,8 +2573,8 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
 
 		$catnode=$questnode->add('Admin logs',null,navigation_node::TYPE_CONTAINER);
 
-		$catnode->add('Get technical logs',new moodle_url('/mod/quest/getLogs.php',array('qid'=>$PAGE->cm->id)),navigation_node::TYPE_SETTING);
-		$catnode->add('Full activity listing',new moodle_url('/mod/quest/report.php',array('cmid'=>$PAGE->cm->id)),navigation_node::TYPE_SETTING);
+		$catnode->add('Get technical logs',new moodle_url('/mod/quest/getLogs.php',array('id'=>$PAGE->cm->id)),navigation_node::TYPE_SETTING);
+		$catnode->add('Full activity listing',new moodle_url('/mod/quest/report.php',array('id'=>$PAGE->cm->id)),navigation_node::TYPE_SETTING);
 
 	}
 

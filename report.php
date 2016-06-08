@@ -26,19 +26,15 @@
  * ************************************* */
 // This page prints a long report of this QUEST
 
-
 require_once("../../config.php");
 require_once("lib.php");
 require("locallib.php");
 
-$cmid = required_param('cmid', PARAM_INT);    // Course Module ID
+$cmid = required_param('id', PARAM_INT);    // Course Module ID
 
 global $DB, $PAGE, $OUTPUT;
 $timenow = time();
-
-
-$cm = get_coursemodule_from_id('quest', $cmid, 0, false, MUST_EXIST);
-$course = get_course($cm->course);
+list($course,$cm)=get_course_and_cm_from_cmid($cmid,"quest");
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 // Print the page header and check login
 require_login($course->id, false, $cm);
@@ -51,7 +47,7 @@ if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $
     print_error("Modulehidden.", 'quest', "view.php?id=$cmid");
 }
 
-$url = new moodle_url('/mod/quest/report.php', array('cmid' => $cmid));
+$url = new moodle_url('/mod/quest/report.php', array('id' => $cmid));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
@@ -65,7 +61,7 @@ if ($CFG->version >= 2014051200) {
     require_once 'classes/event/quest_viewed.php';
     \mod_quest\event\briefting_viewed::create_from_parts($USER, $quest,$cm)->trigger();
 } else {
-    add_to_log($course->id, "quest", "report", "report.php?cmid=$cm->id", "$quest->id", "$cm->id");
+    add_to_log($course->id, "quest", "report", "report.php?id=$cm->id", "$quest->id", "$cm->id");
 }
 
 echo $OUTPUT->header();
@@ -86,9 +82,10 @@ if ($submissions = quest_get_submissions($quest))
             // User Name Surname
             echo $OUTPUT->user_picture($user);
             echo "<a name=\"userid->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
+        }else{
+            echo "Unknown ($submission->userid)";
         }
         echo '</td><td width="100%">';
-
         echo '<table border="0"><tr><td>';
         quest_print_submission_info($quest, $submission);
         echo '</td><td>';

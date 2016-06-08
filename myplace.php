@@ -31,8 +31,7 @@ require_once("../../config.php");
 require_once("lib.php");
 require("locallib.php");
 
-$id = required_param('id', PARAM_INT);    // Course Module ID, or
-
+$id = required_param('id', PARAM_INT);    // Course Module ID
 $action = optional_param('action', '', PARAM_ALPHA);
 $sort = optional_param('sort', 'datestart', PARAM_ALPHA);
 $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
@@ -43,28 +42,18 @@ $diranswer = optional_param('diranswer', 'DESC', PARAM_ALPHA);
 global $DB, $OUTPUT, $PAGE;
 $timenow = time();
 
-    if (!$cm = $DB->get_record("course_modules", array("id" => $id))) {
-        print_error("CourseModuleIDwasincorrect",'quest');;
-    }
-    if (!$course = get_course($cm->course)) {
-        print_error("course_misconfigured", 'quest');
-    }
-    if (!$quest = $DB->get_record("quest", array("id" => $cm->instance))) {
-        print_error("incorrectQuest",'quest');;
-    }
+list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+$quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 require_login($course->id, false, $cm);
 
 $url = new moodle_url('/mod/quest/myplace.php',
         array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer, 'diranswer' => $diranswer));
-
 $PAGE->set_url($url);
-
 quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 // Print the page header.
-
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '-> ' . get_string('myplace', 'quest');
@@ -77,14 +66,14 @@ if (($quest->usepassword) && (!$ismanager)) {
 }
 
 $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-$groupmode = groupmode($course, $cm);   // Groups are being used?
+$groupmode = groups_get_activity_group($cm);   // Groups are being used?
 $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; //JPC group support desactivation in this version.
 // Allow the teacher to change groups (for this session).
 if ($groupmode and $ismanager) {
     if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
 
-        groups_print_activity_menu($cm, $CFG->wwwroot . "mod/quest/myplace.php?cmid=$cm->id", $return = false,
+        groups_print_activity_menu($cm, $CFG->wwwroot . "mod/quest/myplace.php?id=$cm->id", $return = false,
                 $hideallparticipants = false); //evp revise this
     }
 }
@@ -95,7 +84,7 @@ echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 $text = '';
 $text = "<center><b>";
 if ($quest->dateend > $timenow) {
-    $text .= "<a href=\"submissions.php?action=submitchallenge&amp;cmid=$cm->id\">" .
+    $text .= "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" .
             get_string('addsubmission', 'quest') . "</a>";
 }
 if ($quest->allowteams) {
@@ -116,7 +105,7 @@ echo $text;
 
 if ($ismanager and $quest->nelements) {
     echo "<center>(<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements\">"
-    . get_string('editelementsautor', 'quest') . "</a> / <a href=\"assessments.php?cmid=$cm->id&newform=0&amp;action=editelements\">" . get_string('editelementsanswer',
+    . get_string('editelementsautor', 'quest') . "</a> / <a href=\"assessments.php?id=$cm->id&newform=0&amp;action=editelements\">" . get_string('editelementsanswer',
             'quest') . "</a>)</center>";
 }
 
@@ -295,20 +284,20 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
 
             if ($ismanager) {
                 $data[] = quest_print_submission_title($quest, $submission) .
-                        " <a href=\"submissions.php?action=modif&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " .
                         'height="11" width="11" border="0" alt="' . get_string('modif', 'quest') . '" /></a>' .
-                        " <a href=\"submissions.php?action=confirmdelete&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " .
                         'height="11" width="11" border="0" alt="' . get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
             } else if (($submission->nanswers == 0)and ( $timenow < $submission->dateend)and ( $submission->state < 2)) {
 
                 $data[] = quest_print_submission_title($quest, $submission) .
-                        " <a href=\"submissions.php?action=modif&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " .
                         'height="11" width="11" border="0" alt="' . get_string('modif', 'quest') . '" /></a>' .
-                        " <a href=\"submissions.php?action=confirmdelete&amp;cmid=$cm->id&amp;sid=$submission->id\">" .
+                        " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " .
                         'height="11" width="11" border="0" alt="' . get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
@@ -811,7 +800,7 @@ if ($REPEAT_ACTIONS_BELOW) {
     $text = '';
     $text = "<center><b>";
     if ($quest->dateend > $timenow) {
-        $text .= "<a href=\"submissions.php?action=submitchallenge&amp;cmid=$cm->id\">" .
+        $text .= "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" .
                 get_string('addsubmission', 'quest') . "</a>";
     }
     if ($quest->allowteams) {
@@ -832,7 +821,7 @@ if ($REPEAT_ACTIONS_BELOW) {
 
     if (isteacheredit($course->id) and $quest->nelements) {
         echo "<center>(<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements\">"
-        . get_string('editelementsautor', 'quest') . "</a> / <a href=\"assessments.php?cmid=$cm->id&amp;action=editelements\">" . get_string('editelementsanswer',
+        . get_string('editelementsautor', 'quest') . "</a> / <a href=\"assessments.php?id=$cm->id&amp;action=editelements\">" . get_string('editelementsanswer',
                 'quest') . "</a>)</center>";
     }
 }

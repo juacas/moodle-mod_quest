@@ -33,33 +33,19 @@
     require("locallib.php");
 
     $aid=required_param('aid',PARAM_INT);   // Assessment ID
-   $allowcomments=optional_param('allowcomments',false,PARAM_BOOL);
+    $allowcomments=optional_param('allowcomments',false,PARAM_BOOL);
     $redirect=optional_param('redirect','',PARAM_URL);
     $sort=optional_param('sort','dateanswer',PARAM_ALPHA);
     $dir=optional_param('dir','ASC',PARAM_ALPHA);
 
   	global $DB,$PAGE,$OUTPUT;
 
-    if (! $assessment = $DB->get_record("quest_assessments_autors", array("id"=> $aid))) {
-        error("Assessment id is incorrect");
-    }
-    if (! $submission = $DB->get_record('quest_submissions', array('id'=> $assessment->submissionid))) {
-        error("Incorrect submission id");
-    }
-    if (! $quest = $DB->get_record("quest", array("id"=> $submission->questid))) {
-        print_error("incorrectQuest",'quest');;
-    }
-    if (! $course = $DB->get_record("course",array("id"=> $quest->course))) {
-        print_error("course_misconfigured",'quest');
-    }
-    if (! $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        error("No coursemodule found");
-    }
-    if (!$redirect) {
-        //$redirect = urlencode($_SERVER["HTTP_REFERER"].'#sid='.$submission->id);
-    	//!!!!!!!!!!!!!evp poner $redirect  igual a la página a la que queremos que vaya después
-    }
-
+    $assessment = $DB->get_record("quest_assessments_autors", array("id"=> $aid),'*',MUST_EXIST);
+    $submission = $DB->get_record('quest_submissions', array('id'=> $assessment->submissionid),'*',MUST_EXIST);
+    $quest = $DB->get_record("quest", array("id"=> $submission->questid),'*',MUST_EXIST);
+    $course = get_course($quest->course);
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,null,MUST_EXIST);
+  
     require_login($course->id, false, $cm);
 
     $url =  new moodle_url('/mod/quest/viewassessmentautor.php',array('aid'=>$aid,'allowcomments'=>$allowcomments,'redirect'=>$redirect,'dir'=>$dir,'sort'=>$sort));
@@ -160,7 +146,7 @@
 
     quest_print_submission_info($quest,$submission);
 
-    echo("<center><b><a href=\"assessments.php?cmid=$cm->id&amp;action=displaygradingform\">".
+    echo("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">".
                 get_string("specimenassessmentform", "quest")."</a></b></center>");
 
     $OUTPUT->heading(get_string('description','quest'));

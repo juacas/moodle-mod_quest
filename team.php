@@ -37,15 +37,10 @@
     $dir=optional_param('dir','ASC',PARAM_ALPHA);
 
     global $DB, $PAGE, $OUTPUT;
-   $timenow = time();
-
-
-    $cm = get_coursemodule_from_id('quest', $id,0,false,MUST_EXIST);
-    $course = get_course($cm->course);
+    $timenow = time();
+    list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
     $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
     require_login($course->id, false, $cm);
-
-
 
 	quest_check_visibility($course,$cm);
 	$context = context_module::instance( $cm->id);
@@ -65,22 +60,13 @@
     $strquest  = get_string("modulename", "quest");
     $straction = ($action) ? '-> '.$action : '-> '.get_string('changeteam', 'quest');
 
-    /*print_header_simple(format_string($quest->name), "",
-                 "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                  <a href=\"view.php?id=$cm->id\">".format_string($quest->name,true)."</a> $straction",
-                  "", "", true);
-*/
-
-    add_to_log($course->id, "quest", "view_teams", "team.php?id=$cm->id", "$quest->id");
-
-
     if($quest->allowteams != 1)
     {
-        error('It is not allowed teams for this Questournament.');
+        print_error('It is not allowed teams for this Questournament.','quest');
     }
 
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
-    $groupmode = groupmode($course, $cm);   // Groups are being used?
+    $groupmode = groups_get_activity_group($cm);   // Groups are being used?
     $currentgroup = groups_get_course_group($course);
     $groupmode=$currentgroup=false;//JPC group support desactivation
 
@@ -309,7 +295,7 @@
                 } else {
                     $columnicon = $dir == 'ASC' ? 'down':'up';
                 }
-                $columnicon = " <img src=\"".$CFG->wwwroot."pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+                $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
 
             }
             $$column = "<a href=\"team.php?id=$id&amp;sort=$column&amp;dir=$columndir\">".$string[$column]."</a>$columnicon";

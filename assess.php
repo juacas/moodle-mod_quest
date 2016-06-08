@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Questournament activity for Moodle
  *
@@ -40,22 +39,11 @@ $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 require_sesskey();
 global $DB, $OUTPUT, $PAGE;
 
-if (!$answer = $DB->get_record('quest_answers', array('id' => $aid))) {
-    error("Incorrect answer id");
-}
-
-if (!$submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid))) {
-    error("Incorrect submission id");
-}
-if (!$quest = $DB->get_record("quest", array("id" => $submission->questid))) {
-    print_error("incorrectQuest",'quest');;
-}
-if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-    print_error("course_misconfigured",'quest');
-}
-if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-    error("No coursemodule found");
-}
+$answer = $DB->get_record('quest_answers', array('id' => $aid),'*',MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid),'*',MUST_EXIST);
+$quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_EXIST);
+$course = get_course($quest->course);
+$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,null,MUST_EXIST);
 
 /*  if (!$redirect) {
   $redirect = urlencode($_SERVER["HTTP_REFERER"].'#sid='.$submission->id);
@@ -71,7 +59,7 @@ $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
-$strsubmission = "<a href=\"submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+$strsubmission = "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
 $url = new moodle_url('/mod/quest/assess.php',
         array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
@@ -150,14 +138,14 @@ if ($ismanager) {
     $title .= get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
 }
 
-$title .= " " . get_string('tothechallenge', 'quest') . "<a name=\"sid_$submission->id\" href=\"submissions.php?cmid=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+$title .= " " . get_string('tothechallenge', 'quest') . "<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
 echo $OUTPUT->heading($title);
 
 
 quest_print_answer_info($quest, $answer);
 // Link to assessment elements preview.
-echo "<center><b><a href=\"assessments.php?cmid=$cm->id&amp;action=displaygradingform\">" .
+echo "<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">" .
  get_string("specimenassessmentform", "quest") . "</a></b>";
 echo $OUTPUT->help_icon('specimenanswer', 'quest');
 echo "</center>";
@@ -166,7 +154,7 @@ echo $OUTPUT->heading(get_string('answercontent', 'quest'));
 quest_print_answer($quest, $answer);
 
 
-$returnto = "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
+$returnto = "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
 quest_print_assessment($quest, $submission->id, $assessment, true, $allowcomments, $returnto);
 
 echo $OUTPUT->footer();

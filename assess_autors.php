@@ -29,8 +29,7 @@
 
   Show the page that allow to do the assess of a submission
 
- * **************************************************** */
-
+ ******************************************************/
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -40,19 +39,11 @@ $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_ALPHA);
 global $DB;
 
-if (!$submission = $DB->get_record('quest_submissions', array('id' => $sid))) {
-    error("Incorrect submission id");
-}
-if (!$quest = $DB->get_record("quest", array("id" => $submission->questid))) {
-    print_error("incorrectQuest",'quest');;
-}
-if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-    print_error("course_misconfigured",'quest');
-}
-if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-    error("No coursemodule found");
-}
-
+$submission = $DB->get_record('quest_submissions', array('id'=>$sid),'*',MUST_EXIST);
+$quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_EXIST);
+$course=get_course( $quest->course);
+//$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
+$cm = get_fast_modinfo($course)->instances["quest"][$quest->id];
 if (!$redirect) {
     $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
 }
@@ -74,11 +65,6 @@ $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-if (empty($_GET['sid'])) {
-    error("Show submission: submission id missing");
-}
-
-$submission = $DB->get_record("quest_submissions", array("id" => $_GET['sid']));
 $title = '"' . $submission->title . '" ';
 if ($ismanager) {
     $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
@@ -86,32 +72,31 @@ if ($ismanager) {
 echo $OUTPUT->heading($title);
 quest_print_submission_info($quest, $submission);
 
-echo("<center><b><a href=\"assessments.php?cmid=$cm->id&amp;action=displaygradingform\">" .
+echo("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">" .
  get_string("specimenassessmentform", "quest") . "</a></b></center>");
 
 echo $OUTPUT->heading(get_string('description', 'quest'));
 quest_print_submission($quest, $submission);
 
-if (!$assessment = $DB->get_record("quest_assessments_autors", array("submissionid" => $submission->id))) {
-
-    $now = time();
+$assessment = $DB->get_record("quest_assessments_autors", array("submissionid" => $submission->id));
+$now = time();
+if (!$assessment){
     // ...create one and set timecreated way in the future, this is reset when record is updated.
     $assessment = new stdclass();
     $assessment->questid = $quest->id;
-
     if ($ismanager) {
         $assessment->userid = $USER->id;
     }
-
     $assessment->submissionid = $submission->id;
-    $assessment->dateassessment = $now;
     $assessment->state = 0;
     $assessment->commentsforteacher = '';
     $assessment->commentsteacher = '';
-
     if (!$assessment->id = $DB->insert_record("quest_assessments_autors", $assessment)) {
-        error("Could not insert quest assessment autor!");
+        print_error("Could not insert quest assessment autor!","quest");
     }
+}
+    $assessment->dateassessment = $now;
+
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
     if ($ismanager and ( $quest->gradingstrategy == 2)) {
         for ($i = 0; $i < $quest->nelements; $i++) {
@@ -122,7 +107,7 @@ if (!$assessment = $DB->get_record("quest_assessments_autors", array("submission
             $element->userid = $USER->id;
             $element->calification = 1;
             if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                error("Could not insert quest grade!");
+                print_error("Could not insert quest grade!","quest");
             }
         }
         // ...now set the adjustment.
@@ -134,18 +119,14 @@ if (!$assessment = $DB->get_record("quest_assessments_autors", array("submission
         $element->userid = $USER->id;
         $element->calification = 0;
         if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-            error("Could not insert quest grade!");
+            print_error("Could not insert quest grade!","quest");
         }
     }
-}
 
 echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "assessthissubmission", "quest");
-
 // ...show assessment autor and allow changes.
 quest_print_assessment_autor($quest, $assessment, true, $allowcomments,
-        "submissions.php?cmid=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
-
+        new \moodle_url("/mod/quest/submissions.php", array("id"=>$cm->id,"sid"=>$submission->id,"action"=>"showsubmission")));
 
 echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'] . '#sid=' . $submission->id);
-
 echo $OUTPUT->footer();

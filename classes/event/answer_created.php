@@ -58,7 +58,7 @@ class answer_created extends base {
      * @param \stdClass $cm
      * @return type
      */
-    public static function create_from_parts(\stdClass $challenge, \stdClass $answer, \stdClass $cm) {
+    public static function create_from_parts(\stdClass $challenge, \stdClass $answer,  $cm) {
 
         $url = "/mod/quest/answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer";
         $data = array(

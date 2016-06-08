@@ -1,19 +1,4 @@
 <?php  // $Id: assessments_autors.php
-  // This file is part of INTUITEL http://www.intuitel.eu as an adaptor for Moodle http://moodle.org/
-//
-// INTUITEL for Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// INTUITEL for Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with INTUITEL for Moodle Adaptor.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Questournament activity for Moodle
  *
@@ -33,38 +18,18 @@
   - updateassessment
 
  * ************************************************* */
-
     require_once("../../config.php");
     require_once("lib.php");
     require_once("locallib.php");
+    require_once("scores_lib.php");
 
-     $id=optional_param('id',-1,PARAM_INT);     // Course Module ID
-     $qid=optional_param('qid',-1,PARAM_INT);     // quest ID
-     //...get the action
+     $id=required_param('id',PARAM_INT);     // Course Module ID
      $action = required_param('action',PARAM_ALPHA);
-
      global $DB, $OUTPUT, $PAGE;
     // get some useful stuff...
-    if ($id) {
-       $cm = get_coursemodule_from_id("quest",$id,null,null,MUST_EXIST);
-       $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
-    } else if ($qid) {
-        $quest = $DB->get_record("quest", array("id"=>$qid),'*',MUST_EXIST);
-        $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course,null,MUST_EXIST);
-    } else {
-        print_error("No id given",'quest');
-    }
-    $course = get_course($cm->course);
-
-    $url =  new moodle_url('/mod/quest/assessments_autors.php',array('action'=>$action));
-    if ($id!== -1)
-    {
-    	    $url->param('id', $id);
-    }
-    if ($qid!== -1){
-    	    $url->param('qid', $qid);
-    }
-
+    list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+    $quest = $DB->get_record("quest", array("id"=> $cm->instance),'*',MUST_EXIST);
+    $url =  new moodle_url('/mod/quest/assessments_autors.php',array('action'=>$action,'id'=>$id));
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
 
@@ -74,36 +39,21 @@
     $PAGE->set_context($context);
     $PAGE->set_heading($course->fullname);
 
-
-
  	quest_check_visibility($course,$cm);
-
-
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strassessments = get_string("assessments", "quest");
-
-    // ... print the header and...
-  /*  print_header_simple(format_string($quest->name), "",
-                 "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                  <a href=\"view.php?id=$cm->id\">".format_string($quest->name,true)."</a> -> $strassessments",
-                  "", "", true);
-
-*/
 
     /*************** display grading form *********************************/
     if ($action == 'displaygradingform')
     {
     	echo $OUTPUT->header();
   		echo $OUTPUT->heading_with_help(get_string("specimenassessmentformsubmission", "quest"), "specimensubmission", "quest");
-
         quest_print_assessment_autor($quest);
-
         $id = $_GET['id'];
          // called with no assessment
         echo $OUTPUT->continue_button("view.php?id=$id");
     }
-
     /*********************** edit assessment elements (for teachers) ***********************/
     else if ($action == 'editelements') {
 
@@ -115,7 +65,7 @@
 
         $count = $DB->count_records("quest_items_assesments_autor", array("questid"=> $quest->id));
         if ($count) {
-            notify(get_string("warningonamendingelements", "quest"));
+            echo $OUTPUT->notification(get_string("warningonamendingelements", "quest"));
         }
 
         $gradingstrategy=$quest->gradingstrategyautor==0?get_string('nograde','quest'):get_string('accumulative','quest');
@@ -128,8 +78,6 @@
         <input type="hidden" name="action" value="insertelements" />
         <table align="center" border="1">
         <?php
-
-
         // get existing elements, if none set up appropriate default ones
         if ($elementsraw = $DB->get_records("quest_elementsautor", array("questid"=> $quest->id), "elementno ASC" )) {
             foreach ($elementsraw as $element) {
@@ -146,7 +94,6 @@
                 $elements[$i]->weight = 11;
             }
         }
-
         switch ($quest->gradingstrategyautor)
         {
             case 0: // no grading
@@ -190,7 +137,6 @@
                     echo "</tr>\n";
                 }
                 break;
-
             case 2: // error banded grading
                 for ($i=0; $i<$quest->nelementsautor; $i++) {
                     $iplus1 = $i+1;
@@ -229,7 +175,6 @@
                 }
                 echo "</table></center>\n";
                 break;
-
             case 3: // criterion grading
                 for ($j = $quest->maxcalification; $j >= 0; $j--) {
                     $numbers[$j] = $j;
@@ -248,7 +193,6 @@
                     echo "</tr>\n";
                 }
                 break;
-
             case 4: // rubric
                 for ($j = $quest->maxcalification; $j >= 0; $j--) {
                     $numbers[$j] = $j;
@@ -286,7 +230,6 @@
                 break;
             }
         // close table and form
-
         ?>
         </table><br />
         <input type="submit" value="<?php  print_string("savechanges") ?>" />
@@ -294,19 +237,14 @@
         </form>
         <?php
     }
-
     /*********************** insert/update assignment elements (for teachers)***********************/
     else if ($action == 'insertelements') {
-
         if (!$ismanager) {
             error("Only teachers can look at this page");
         }
-
         $form = data_submitted();
-
         // let's not fool around here, dump the junk!
         $DB->delete_records("quest_elementsautor", array("questid"=> $quest->id));
-
         // determine wich type of grading
         switch ($quest->gradingstrategyautor) {
             case 0: // no grading
@@ -408,26 +346,19 @@
                 }
                 break;
         } // end of switch
-
         redirect("view.php?id=$cm->id", get_string("savedok","quest"));
     }
-
     /*************** update assessment (by teacher or student) ***************************/
     else if ($action == 'updateassessment') {
         global $message;
 
         $aid=required_param('aid',PARAM_INT);
-        if (! $assessment = $DB->get_record("quest_assessments_autors", array("id"=> $aid))) {
-            print_error("quest assessment is misconfigured");
-        }
-        if (! $submission = $DB->get_record("quest_submissions", array("id"=> $assessment->submissionid)))
-        {
-            print_error("quest submission is misconfigured");
-        }
+        $assessment = $DB->get_record("quest_assessments_autors", array("id"=> $aid),'*',MUST_EXIST);
+        $submission = $DB->get_record("quest_submissions", array("id"=> $assessment->submissionid),'*',MUST_EXIST);
         // first get the assignment elements for maxscores and weights...
         $elementsraw = $DB->get_records("quest_elementsautor", array("questid"=> $quest->id), "elementno ASC");
         if (count($elementsraw) < $quest->nelementsautor) {
-            print_string("noteonassessmentelements", "quest");
+            echo $OUTPUT->notification(get_string("noteonassessmentelements", "quest"));
         }
         if ($elementsraw) {
             foreach ($elementsraw as $element) {
@@ -436,29 +367,15 @@
         } else {
             $elements = null;
         }
-
         $timenow = time();
-
-
  /**
 	Manual grading
  */
 	 $manualGrade=optional_param('manualcalification',null,PARAM_ALPHANUM);
-/* JPC: this section was not stateless
- * if($submission->nanswerscorrect == 0){
-                $points = $submission->initialpoints;
-               }
-               else{
-                $points = $submission->pointsanswercorrect;
-               }
-*/
 	 $points=$submission->initialpoints;
-
 	 if ($manualGrade !=null )
 	 {
-
 	 $percent=((int)$manualGrade)/100;
-
 	 $grade = $points * $percent;
 	 $message .=  "Grading manually! $points * $percent = $grade";
 	 }
@@ -466,10 +383,8 @@
 	 { // form grading
         // don't fiddle about, delete all the old and add the new!
         $DB->delete_records("quest_items_assesments_autor", array("assessmentautorid"=>  $assessment->id));
-
         $form = data_submitted('nomatch'); //Nomatch because we can come from assess.php
         $num_elements = $quest->nelementsautor;
-
         //determine what kind of grading we have
         switch ($quest->gradingstrategyautor) {
             case 0: // no grading
@@ -487,9 +402,7 @@
                     }
                 }
                 $grade = $assessment->points; // set to satisfy save to db
-
                 break;
-
             case 1: // accumulative grading
                 // Insert all the elements that contain something
                 foreach ($form->grade as $key => $thegrade) {
@@ -516,14 +429,13 @@
                         $totalweight += $weight;
                     }
                     $rawgrade += ($grade / $maxscore) * $weight;
-
                 }
-
-
+                // If there is no defined, positive weights just use rawgrade.
+                if ($totalweight==0){
+                    $totalweight=1; 
+                }
                 $grade = $points * ($rawgrade / $totalweight);
-
                 break;
-
             case 2: // error banded graded
                 // Insert all the elements that contain something
                 $error = 0.0;
@@ -559,12 +471,8 @@
                     $rawgrade = $quest->maxcalification;
                 }
                 echo "<b>".get_string("weightederrorcount", "quest", intval($error + 0.5))."</b>\n";
-
-
                 $grade = $points * ($rawgrade / $quest->maxcalification);
-
                 break;
-
             case 3: // criteria grading
                 // save in the selected criteria value in element zero,
                 unset($element);
@@ -624,27 +532,21 @@
         } // end of switch
     }// form grading or manual grading
 
-
         $assessment->state = ASSESSMENT_STATE_BY_AUTOR;
         $assessment->points=$grade;
 		$assessment->dateassessment = $timenow;
-
         $submission->evaluated = 1;
-
-
         // any comment?
         if (!empty($form->generalcomment)) {
 //             $DB->set_field("quest_assessments_autors", "commentsteacher", $form->generalcomment, array("id"=> $assessment->id));
 				$assessment->commentsteacher=$form->generalcomment;
         }
-
         if (!empty($form->generalteachercomment)) {
 //             $DB->set_field("quest_assessments_autors", "commentsforteacher", $form->generalteachercomment, array("id"=> $assessment->id));
 				$assessment->commentsforteacher=$form->generalteachercomment;
         }
         quest_update_submission($submission);// weird bug with number precission and decimal point in Moodle 2.5+
         quest_update_assessment_author($assessment);// weird bug with number precission and decimal point in Moodle 2.5+
-        require_once('debugJP_lib.php');
         quest_update_submission_counts($submission->id);
 
         /////////////////////
@@ -659,9 +561,14 @@
               }
         }
 
-        add_to_log($course->id, "quest", "assess_submissi",
+// Log the event
+        if ($CFG->version >= 2014051200) {
+            require_once 'classes/event/challenge_assessed.php';
+            \mod_quest\event\challenge_assessed::create_from_parts($submission,$assessment,$cm)->trigger();
+        } else {
+            add_to_log($course->id, "quest", "assess_challenge",
                 "viewassessmentautor.php?id=$cm->id&amp;aid=$assessment->id", "$assessment->id", "$cm->id");
-
+        }
         // set up return address
         if(!isset($form->returnto)){
             $returnto = "view.php?id=$cm->id";

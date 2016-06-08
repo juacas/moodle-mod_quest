@@ -49,7 +49,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 Juan Pablo de Castro
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class answer_updated extends base {
+class challenge_assessed extends base {
 
     /**
      *
@@ -58,16 +58,19 @@ class answer_updated extends base {
      * @param \stdClass $cm
      * @return type
      */
-    public static function create_from_parts(\stdClass $challenge, \stdClass $answer, \cm_info $cm) {
+    public static function create_from_parts(\stdClass $challenge, \stdClass $assessment, \cm_info $cm) {
 
-        $url = "/mod/quest/answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer";
+        $url = "/mod/quest/viewassessmentautor.php?id=$cm->id&amp;aid=$assessment->id";
+
+        $assessedby = $assessment->userid;
+        $points = $assessment->points;
         $data = array(
-            'relateduserid' => $answer->userid,
+            'relateduserid' => $challenge->userid,
             'context' => \context_module::instance($cm->id),
-            'userid' => $answer->userid,
+            'userid' => $assessedby,
             'courseid' => $cm->course,
             'other' => array(
-                'info' => $answer->title,
+                'info' => $challenge->title . " Grade:" . $points,
                 'cmid' => $cm->id,
                 'activityid' => $challenge->questid,
                 'url' => $url
@@ -75,7 +78,7 @@ class answer_updated extends base {
         );
         /** @var quest_viewed $event */
         $event = self::create($data);
-        $event->set_legacy_logdata('created', $data['other']['info'], $url);
+        $event->set_legacy_logdata('graded', $data['other']['info'], $url);
         return $event;
     }
 
@@ -84,7 +87,7 @@ class answer_updated extends base {
      */
     protected function init() {
         $this->data['crud'] = 'u';
-        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
 
     /**
@@ -93,7 +96,7 @@ class answer_updated extends base {
      * @return string
      */
     public static function get_name() {
-        return "New Answer created.";
+        return "Answer graded.";
     }
 
     /**
@@ -102,7 +105,7 @@ class answer_updated extends base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' created a new Answer in the Quest activity '" . $this->data['other']['activityid'] .
+        return "The user with id '$this->userid' assessed an answer in the Quest activity '" . $this->data['other']['activityid'] .
                 "in the course '$this->courseid'. " . $this->data['other']['info'];
     }
 

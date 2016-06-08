@@ -33,21 +33,9 @@ require("locallib.php");
 
 global $CFG, $DB, $PAGE, $OUTPUT;
 
-$id = required_param('qid', PARAM_INTEGER);
-if (!$cm = get_coursemodule_from_id('quest', $id)) {
-    print_error("CourseModuleIDwasincorrect", 'quest');
-}
-
-if (!$course = get_course($cm->course)) {
-    print_error("course_misconfigured", 'quest');
-}
-
-if (!$quest = $DB->get_record("quest", array("id" => $cm->instance))) {
-    print_error("incorrectQuest", 'quest'); ;
-}
-
-
-
+$id = required_param('id', PARAM_INTEGER);
+list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+$quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
@@ -55,8 +43,6 @@ $ismanager = has_capability('mod/quest:manage', $context);
 if (!$ismanager) {
     error('No enough permissions');
 }
-
-
 /**
  * Select various queries
  */
@@ -106,13 +92,12 @@ ORDER BY id_alumno ASC, id_desafio, tpo_lectura
     default:
         $query = '';
 }
-/* * *****
+/*******
  *
  * Generate CSV report with $query
  *
- * **************************** */
+ ****************/
 $localeLang = $CFG->locale;
-
 // Moodle's bug Spanish RFC code is ES not ESP
 $localeLang = str_replace("esp", "es", $localeLang);
 $localeLang = str_replace("ESP", "ES", $localeLang);
@@ -135,11 +120,6 @@ if ($query) {
         $els = array();
         $elsk = array();
         foreach ($log as $key => $value) {
-//echo "<br/>".$value." == round:".round($value);
-//echo "<br/>float?".abs($value-round($value));
-//echo "isnum:".is_numeric($value)."<br/>";
-//echo "isint:".is_integer($value)."<br/>";
-//echo "isfloar:".is_float($value)."<br/>";
             // detect other fields not numeric like IPs
             if (is_numeric($value) && round($value) == $value) { //integer
                 $els[] = $value;
@@ -163,7 +143,7 @@ if ($query) {
     $strquests = get_string("modulenameplural", "quest");
     $strquest = get_string("modulename", "quest");
 
-    $url = new moodle_url('/mod/quest/getLogs.php', array('qid' => $id));
+    $url = new moodle_url('/mod/quest/getLogs.php', array('id' => $id));
     $PAGE->set_url($url);
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
@@ -194,9 +174,9 @@ if ($query) {
 
     echo '<p>Generate CSV report for:';
     echo '<ul>';
-    echo '<li> <a href="getLogs.php?qid=' . $cm->id . '&query=logs">Logs</a>';
-    echo '<li> <a href="getLogs.php?qid=' . $cm->id . '&query=ip">IP Addresses Accesses</a>';
-    echo '<li> <a href="getLogs.php?qid=' . $cm->id . '&query=activity">Activity</a>';
+    echo '<li> <a href="getLogs.php?id=' . $cm->id . '&query=logs">Logs</a>';
+    echo '<li> <a href="getLogs.php?id=' . $cm->id . '&query=ip">IP Addresses Accesses</a>';
+    echo '<li> <a href="getLogs.php?id=' . $cm->id . '&query=activity">Activity</a>';
     echo '</ul>';
 
     echo $OUTPUT->footer();
