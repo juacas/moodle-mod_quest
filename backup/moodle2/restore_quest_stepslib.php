@@ -70,7 +70,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $data->datestart = $this->apply_date_offset($data->datestart);
         $data->dateend = $this	->apply_date_offset($data->dateend);
-
+        if (isset($data->description)){ // Old-version backup.
+            $data->intro=$data->description;
+            $data->introformat=0;
+        }
         // insert the quest record
         $newitemid = $DB->insert_record('quest', $data);
         // immediately after inserting "activity" record, call this

@@ -344,7 +344,7 @@ if ($action == 'displayfinalgrade') {
     echo "<b>" . get_string('clasification', 'quest') . "</b>";
     echo "</td></tr>";
     echo "<tr><td width=\"70%\" valign=\"top\">";
-    echo $OUTPUT->box(format_text($quest->description), 'left', '100%');
+    echo $OUTPUT->box(format_module_intro('quest',$quest,$cm->id), 'left', '100%');
     echo "</td><td width=\"30%\" valign=\"top\">";
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {
@@ -515,7 +515,7 @@ else if ($action == 'notavailable') {
     quest_print_quest_heading($quest);
     echo $OUTPUT->notification($message);
     echo $OUTPUT->heading(get_string('description', 'quest'));
-    echo $OUTPUT->box(format_text($quest->description));
+    echo $OUTPUT->box(format_module_intro('quest',$quest,$cm->id));
 }
 // Student's and teacher's unified view.
 else if ($action == 'teachersview' || $action == 'studentsview') {
@@ -573,7 +573,7 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
     echo "<b>" . get_string('clasification', 'quest') . "</b>";
     echo "</td></tr>";
     echo "<tr><td width=\"70%\" valign=\"top\">";
-    echo $OUTPUT->box(format_text($quest->description));
+    echo $OUTPUT->box(format_module_intro('quest',$quest,$cm->id));
     echo "</td><td width=\"30%\" valign=\"top\">";
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {

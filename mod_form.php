@@ -65,9 +65,7 @@ class mod_quest_mod_form extends moodleform_mod {
 		$mform->setType('name', PARAM_TEXT);
 		$mform->addRule('name', null, 'required', null, 'client'); //??
     // Adding the description fields.
-    	$mform->addElement('htmleditor', 'description', get_string('description', 'quest'));
-		$mform->setType('description', PARAM_RAW);
-
+         $this->standard_intro_elements(get_string('description', 'quest'));
 	    $ARRAY_NATTACHMENTS = array(0,1,2,3,4,5);
 	    $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $ARRAY_NATTACHMENTS);
 	    $mform->addHelpButton('nattachments', "numberofattachments","quest");//???
@@ -111,7 +109,8 @@ class mod_quest_mod_form extends moodleform_mod {
 	    }
 	    $mform->addElement('select', 'ncomponents', get_string('ncomponents', 'quest'), $ARRAY_NCOMPONENTS);
 	  	$mform->addHelpButton('ncomponents', 'ncomponents','quest');
-
+        
+		$mform->addElement('header', 'privacy', get_string('showresultssection', 'quest'));
 		$mform->addElement('selectyesno', 'showclasifindividual', get_string('showclasifindividual', 'quest'));
 		$mform->addHelpButton('showclasifindividual', "showclasifindividual","quest");
 	    $mform->setDefault('showclasifindividual',1);

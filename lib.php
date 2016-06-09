@@ -65,7 +65,7 @@ function quest_add_instance($quest) {
 
         $event = new stdClass();
         $event->name        = get_string('datestartevent','quest', $quest->name);
-        $event->description = $quest->description;
+        $event->description = strip_pluginfile_content($quest->intro);
         $event->courseid    = $quest->course;
         $event->groupid     = 0;
         $event->userid      = 0;
@@ -97,7 +97,7 @@ function quest_supports($feature) {
 		case FEATURE_GROUPS:                  return false;
 		case FEATURE_GROUPINGS:               return false;
 		case FEATURE_GROUPMEMBERSONLY:        return false;
-		case FEATURE_MOD_INTRO:               return false;
+		case FEATURE_MOD_INTRO:               return true;
 		case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
 		case FEATURE_COMPLETION_HAS_RULES:    return false;
 		case FEATURE_GRADE_HAS_GRADE:         return true;
@@ -111,34 +111,21 @@ function quest_supports($feature) {
 	}
 }
 
-/////////////////////////////////////////////////////
-// returns true if the dates are valid, false otherwise
-function quest_check_dates($quest) {
-
-    return ($quest->datestart < $quest->dateend);
-}
-/////////////////////////////////////////////////////////////////
+/**
+ * 
+ * @param type $newsubmission
+ * @return type
+ */
 function quest_check_submission_dates($newsubmission){
 
  return ($newsubmission->datestart >= $newsubmission->questdatestart and $newsubmission->dateend <= $newsubmission->questdateend and $newsubmission->questdateend > $newsubmission->questdatestart);
-
 }
-///////////////////////////////////////////////////////////
-function quest_check_text($quest) {
 
- $validate = true;
-
- if(empty($quest->name)){
-   $validate = false;
- }
- if(empty($quest->description)){
-   $validate = false;
- }
-
- return $validate;
-
-}
-///////////////////////////////////////////////////////////
+/**
+ * 
+ * @param type $newsubmission
+ * @return boolean
+ */
 function quest_check_submission_text($newsubmission) {
 
  $validate = true;
@@ -149,9 +136,7 @@ function quest_check_submission_text($newsubmission) {
  if(empty($newsubmission->description)){
    $validate = false;
  }
-
  return $validate;
-
 }
 /**
  * Update the configuration of the Quest
@@ -161,12 +146,11 @@ function quest_check_submission_text($newsubmission) {
  * @param stdClass $quest
  * @return type
  */
-function quest_update_instance($quest) {
+function quest_update_instance($quest, $form) {
 // Given an object containing all the necessary data,
-// (defined by the form in mod.html) this function
+// (defined by the form in mod_.ht_form.php) this function
 // will update an existing instance with new data.
     global $CFG, $DB;
-
     if($quest->initialpoints > $quest->maxcalification){
      $quest->initialpoints = $quest->maxcalification;
     }
@@ -176,16 +160,13 @@ function quest_update_instance($quest) {
     if(($quest->typegrade == 1)&&($quest->allowteams == 0)){
      $quest->typegrade = 0;
     }
-
     // encode password if necessary
     if (!empty($quest->password)) {
         $quest->password = md5($quest->password);
     } else {
         unset($quest->password);
     }
-
-    $quest->id = $quest->instance;
-
+    $quest->id = $quest->instance;  
     if ($returnid = $DB->update_record("quest", $quest)) {
 
         $dates = array(
@@ -200,14 +181,14 @@ function quest_update_instance($quest) {
                 $event = calendar_event::load($event->id);
                 $event_data = new stdClass();
                 $event_data->name        = get_string($type.'event','quest', $quest->name);
-                $event_data->description = $quest->description;
+                $event_data->description = strip_pluginfile_content($quest->intro);
                 $event_data->eventtype   = $type;
                 $event_data->timestart   = $date;
                 $event->update($event_data);
             } else if ($date) {
                 $event = new stdClass();
                 $event->name        = get_string($type.'event','quest', $quest->name);
-                $event->description = $quest->description;
+                $event->description = strip_pluginfile_content($quest->intro);
                 $event->courseid    = $quest->course;
                 $event->groupid     = 0;
                 $event->userid      = 0;
@@ -1684,7 +1665,7 @@ function quest_refresh_events($courseid = 0) {
             if ($date) {
                 if ($event = $DB->get_record('event', array('modulename'=> 'quest', 'instance'=> $quest->id, 'eventtype'=> $type))) {
                     $event->name        = get_string($type.'event','quest', $quest->name);
-                    $event->description = $quest->description;
+                    $event->description = strip_pluginfile_content($quest->intro);
                     $event->eventtype   = $type;
                     $event->timestart   = $date;
                     update_event($event);
@@ -1694,7 +1675,7 @@ function quest_refresh_events($courseid = 0) {
                     $event->modulename  = 'quest';
                     $event->instance    = $quest->id;
                     $event->name        = get_string($type.'event','quest', $quest->name);
-                    $event->description = $quest->description;
+                    $event->description = strip_pluginfile_content($quest->intro);
                     $event->eventtype   = $type;
                     $event->timestart   = $date;
                     $event->timeduration = 0;

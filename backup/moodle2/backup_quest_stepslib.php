@@ -39,7 +39,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  // Define each element separated
  		$quest = new backup_nested_element('quest', array('id'),
  			array(
- 			'name', 'description', 'nattachments', 'validateassessment','usepassword','password',
+ 			'name', 'intro','introformat', 'nattachments', 'validateassessment','usepassword','password',
  			'maxbytes','datestart','dateend','gradingstrategy','nelements','timemaxquestion',
             'nmaxanswers', 'maxcalification', 'typecalification', 'allowteams',
             'ncomponents', 'phase','format', 'visible', 'tinitial', 'gradingstrategyautor',
@@ -163,7 +163,6 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  		$challenge->annotate_files('mod_quest','attachment','id');
  		$answer->annotate_files('mod_quest','answer','id');
  		$answer->annotate_files('mod_quest','answer_attachment','id');
-
 
         // Return the root element (quest), wrapped into standard activity structure
  		return $this->prepare_activity_structure($quest);

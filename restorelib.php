@@ -47,7 +47,14 @@
             //Now, build the QUEST record structure
             $quest->course = $restore->course_id;
             $quest->name = backup_todb($info['MOD']['#']['NAME']['0']['#']);
-            $quest->description = backup_todb($info['MOD']['#']['DESCRIPTION']['0']['#']);
+            if (isset($info['MOD']['#']['DESCRIPTION']['0']['#'])){
+                $quest->intro = backup_todb($info['MOD']['#']['DESCRIPTION']['0']['#']);
+                $quest->introformat=0;
+            }else{
+                $quest->intro = backup_todb($info['MOD']['#']['INTRO']['0']['#']);
+                $quest->introformat= backup_todb($info['MOD']['#']['INTROFORMAT']['0']['#']);
+            }
+             
 
             $quest->nelements = backup_todb($info['MOD']['#']['NELEMENTS']['0']['#']);
             $quest->nelementsautor = backup_todb($info['MOD']['#']['NELEMENTSAUTOR']['0']['#']);

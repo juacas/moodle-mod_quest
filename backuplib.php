@@ -66,7 +66,8 @@
                 fwrite ($bf,full_tag("ID",4,false,$quest->id));
                 fwrite ($bf,full_tag("MODTYPE",4,false,"quest"));
                 fwrite ($bf,full_tag("NAME",4,false,$quest->name));
-                fwrite ($bf,full_tag("DESCRIPTION",4,false,$quest->description));
+                fwrite ($bf,full_tag("INTRO",4,false,$quest->intro));
+                fwrite ($bf,full_tag("INTROFORMAT",4,false,$quest->introformat));
                 fwrite ($bf,full_tag("VALIDATEASSESSMENT",4,false,$quest->validateassessment));
                 fwrite ($bf,full_tag("TIMEMAXQUESTION",4,false,$quest->timemaxquestion));
                 fwrite ($bf,full_tag("NMAXANSWERS",4,false,$quest->nmaxanswers));

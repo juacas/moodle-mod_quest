@@ -54,8 +54,7 @@ class restore_quest_activity_task extends restore_activity_task {
      */
     static public function define_decode_contents() {
         $contents = array();
-
-        $contents[] = new restore_decode_content('quest', array('description'), 'quest');
+        $contents[] = new restore_decode_content('quest', array('intro'), 'quest');
         $contents[] = new restore_decode_content('quest_answers', array('description','title','commentforteacher'), 'quest_answer');
         $contents[] = new restore_decode_content('quest_submissions', array('description','title','commentteacherpupil','commentteacherauthor'), 'quest_submisssion');
 

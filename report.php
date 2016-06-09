@@ -66,7 +66,7 @@ if ($CFG->version >= 2014051200) {
 
 echo $OUTPUT->header();
 quest_print_quest_heading($quest);
-echo $OUTPUT->box(format_text($quest->description));
+echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
 
 echo '<br/>';
 // ...iterate through submissions.

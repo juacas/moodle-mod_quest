@@ -551,6 +551,7 @@ $string['see'] = 'See';
 $string['seevaluate'] = 'See assesment';
 $string['select'] = 'Select';
 $string['selfassessment'] = 'Self Assessment';
+$string['showresultssection'] = 'Information to show to students';
 $string['showanswer'] = 'Show answer';
 $string['showanswers'] = 'Show answers';
 $string['showanswersteam'] = 'Show team answers';
@@ -857,6 +858,7 @@ $string['maxcalification'] = 'Highest score';
 $string['maxcalification_help'] = '<P align="justify">This parameter sets the maximum score that each challenge of this QUESTOURnament will be able to reach, which means that it is also the maximum score that a submitted answer will be able to obtain.</P>
 <P align="justify">This value may be different for each challenge, but it can not be hihger that the maximum score set for the QUESTOURnament to which they belong.</P>';
 $string['modifsubmission'] = 'Modify challenge';
+$string['modified'] = 'modified';
 $string['modifsubmission_help'] = '<P align="justify">This page allows the teacher to modify a challenge proposed by a student. The students will be also able to modify the challenges that they have proposed, whenever they have not been yet aproved by the teacher.</P>
 
 <P align="justify">The information that is presented about the challenge and that can be modified is the following:</P>

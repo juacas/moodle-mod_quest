@@ -53,6 +53,9 @@ require_once $CFG->libdir.'/ddllib.php';
 function xmldb_quest_upgrade($oldversion=0) {
 
     global $CFG, $USER, $THEME, $DB;
+    /**
+     * database_manager dbman 
+     */
     $dbman = $DB->get_manager(); // loads DDL libs
 
 // And upgrade begins here. For each one, you'll need one
@@ -71,6 +74,16 @@ function xmldb_quest_upgrade($oldversion=0) {
         //		<FIELD NAME="attachment" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="descriptiontrust" NEXT="date"/>
         $field = new xmldb_field('attachment', XMLDB_TYPE_CHAR, '100', null, false, false, null, null);
         $dbman->change_field_notnull($table, $field);
+    }
+    if ($oldversion < 2016060900)
+    {
+        $table = new xmldb_table('quest');
+        $field = new xmldb_field('description', XMLDB_TYPE_TEXT, null, true, true, false, null, null);
+        $dbman->rename_field($table, $field,'intro');
+
+        $table = new xmldb_table('quest');
+        $field = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, null);
+        $dbman->add_field($table, $field);
     }
     return true;
 }

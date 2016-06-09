@@ -34,7 +34,7 @@
 //////////////////////////////////////////////////////
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016060600;
+$plugin->version  = 2016060901;
 $plugin->requires = 2012011900; // The current module version (Date: YYYYMMDDXX)
 $plugin->component = 'mod_quest';
 $plugin->cron     = 600;// Period for cron to check this module (secs)

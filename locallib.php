@@ -846,7 +846,6 @@ function quest_get_difficulty_levels() {
             //	,3=> get_string("difficultyVeryHard","quest")
     );
 }
-
 //////////////////////////////////////////////////////////
 function quest_print_submission($quest, $submission) {
     // prints the submission with optional attachments
@@ -1823,7 +1822,7 @@ function quest_answer_phase($answer, $course, $style = '') {
                 $string = get_string('phase5answer' . $style, 'quest');
             }
             if ($answer->state == ANSWER_STATE_MODIFIED) {
-                $string .= get_string('modificated', 'quest');
+                $string .= " ".get_string('modified', 'quest');
             }
         }
         if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
@@ -1838,7 +1837,15 @@ function quest_answer_phase($answer, $course, $style = '') {
     return $string;
 }
 
-//////////////////////////////////////////////////////////
+/**
+ * 
+ * @global type $CFG
+ * @global stdClass $USER
+ * @global type $OUTPUT
+ * @param type $quest
+ * @param type $answer
+ * @return type
+ */
 function quest_print_answer($quest, $answer) {
     // prints the answer with optional attachments
     global $CFG, $USER, $OUTPUT;
