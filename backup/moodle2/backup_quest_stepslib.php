@@ -135,14 +135,14 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  								 questid = ? and submissionsid=0 and elementno = ? ORDER BY elementno', array(backup::VAR_ACTIVITYID,'../../elementno'));
  		$rubric_autor->set_source_sql('SELECT * FROM {quest_rubrics_autor} WHERE
  								 questid = ? and elementno = ? ORDER BY elementno', array(backup::VAR_ACTIVITYID,'../../elementno'));
- 		if ($userinfo)
+        
+        $challenge->set_source_table('quest_submissions',array('questid'=>backup::VAR_PARENTID));
+ 		if ($userinfo)// TODO con userinfo copiar también los challenges
  		{
-		$challenge->set_source_table('quest_submissions',array('questid'=>backup::VAR_PARENTID));
 		$assessment_autor->set_source_table('quest_assessments_autors',array('questid'=>backup::VAR_ACTIVITYID,'submissionid'=>backup::VAR_PARENTID));
  		$answer->set_source_table('quest_answers',array('questid'=>backup::VAR_ACTIVITYID,'submissionid'=>backup::VAR_PARENTID));
  		$assessment->set_source_table('quest_assessments',array('questid'=>backup::VAR_ACTIVITYID,'answerid'=>backup::VAR_PARENTID));
  		$element_assessment->set_source_table('quest_elements_assessments', array('questid'=>backup::VAR_ACTIVITYID,'assessmentid'=>backup::VAR_PARENTID),'elementno');
-
  		$calification_users->set_source_table('quest_calification_users', array('questid'=>backup::VAR_ACTIVITYID));
  		$team->set_source_table('quest_teams', array('questid'=>backup::VAR_ACTIVITYID),'id');
  		$calification_team->set_source_table('quest_calification_teams', array('questid'=>backup::VAR_ACTIVITYID,'teamid'=>backup::VAR_PARENTID));
@@ -158,7 +158,8 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
  		$calification_users->annotate_ids('team', 'teamid');
 
         // Define file annotations
-        $quest->annotate_files('mod_quest','description',null);
+        $quest->annotate_files('mod_quest','intro',null);
+        $quest->annotate_files('mod_quest','introattachment',null);
  		$challenge->annotate_files('mod_quest','submission','id');
  		$challenge->annotate_files('mod_quest','attachment','id');
  		$answer->annotate_files('mod_quest','answer','id');

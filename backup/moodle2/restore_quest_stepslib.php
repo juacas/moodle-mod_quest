@@ -53,8 +53,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
             $paths[] = new restore_path_element('quest_team', '/activity/quest/teams/team');
             $paths[] = new restore_path_element('quest_calification_user', '/activity/quest/califications_users/calification_user');
             $paths[] = new restore_path_element('quest_calification_team', '/activity/quest/teams/team/califications_teams/calification_team');
-
-
         }
 
         // Return the paths wrapped into standard activity structure
@@ -139,7 +137,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
     }
     protected function process_quest_challenge($data)
     {
-        global $DB;
+        global $DB,$USER;
 
         $data = (object)$data;
         $oldid = $data->id;
@@ -151,7 +149,15 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->dateend = $this->apply_date_offset($data->dateend);
         $data->datestart = $this->apply_date_offset($data->datestart);
         $data->dateanswercorrect = $this->apply_date_offset($data->dateanswercorrect);
-
+        // Answers' info are part of the user information that may be ignored...
+        $userinfo = $this->get_setting_value('userinfo');
+        if (!$userinfo){
+            $data->dateanswercorrect=0;
+            $data->pointsanswercorrect=0;
+            $data->nanswers=0;
+            $data->nanswerscorrect=0;
+            $data->maileduser=0;
+        }
         if ($data->initialpoints==null)
         	$data->initialpoints=0; // TODO JPC circunvents a bug with legacy backup
         $newitemid = $DB->insert_record('quest_submissions', $data);
@@ -266,7 +272,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
     protected function after_execute() {
         // Add quest related files, no need to match by itemname (just internally handled context)
-    	$this->add_related_files('mod_quest','description','quest');
+    	$this->add_related_files('mod_quest','intro',null);
+        $this->add_related_files('mod_quest','introattachment',null);
         $this->add_related_files('mod_quest','submission','quest_challenge');
  		$this->add_related_files('mod_quest','attachment','quest_challenge');
  		$this->add_related_files('mod_quest','answer','quest_answer');

@@ -345,6 +345,7 @@ if ($action == 'displayfinalgrade') {
     echo "</td></tr>";
     echo "<tr><td width=\"70%\" valign=\"top\">";
     echo $OUTPUT->box(format_module_intro('quest',$quest,$cm->id), 'left', '100%');
+    quest_print_attachments($context, 'introattachment', false, 'timemodified');
     echo "</td><td width=\"30%\" valign=\"top\">";
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {
@@ -574,6 +575,8 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
     echo "</td></tr>";
     echo "<tr><td width=\"70%\" valign=\"top\">";
     echo $OUTPUT->box(format_module_intro('quest',$quest,$cm->id));
+    quest_print_attachments($context, 'introattachment', false, 'timemodified');
+
     echo "</td><td width=\"30%\" valign=\"top\">";
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {

@@ -102,7 +102,7 @@ if ($action == "answer") {
 
     $maxfiles = 99; // Limit used for the html editor.
 
-    $definitionoptions = array(
+    $descriptionoptions = array(
         'trusttext' => true,
         'subdirs' => false,
         'maxfiles' => $maxfiles,
@@ -115,7 +115,7 @@ if ($action == "answer") {
         'maxbytes' => $quest->maxbytes
     );
 
-    $answer = file_prepare_standard_editor($answer, 'description', $definitionoptions, $context, 'mod_quest', 'answer',
+    $answer = file_prepare_standard_editor($answer, 'description', $descriptionoptions, $context, 'mod_quest', 'answer',
             $answer->id);
     $answer = file_prepare_standard_filemanager($answer, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'answer_attachment', $answer->id);
@@ -125,7 +125,7 @@ if ($action == "answer") {
         'current' => $answer,
         'quest' => $quest,
         'cm' => $cm,
-        'definitionoptions' => $definitionoptions,
+        'definitionoptions' => $descriptionoptions,
         'attachmentoptions' => $attachmentoptions,
         'action' => $action
     ));
@@ -138,7 +138,7 @@ if ($action == "answer") {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context);
+        quest_uploadanswer($quest, $answer, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context);
         echo $OUTPUT->heading(get_string('submittedanswer', 'quest') . " " . get_string('ok'));
         echo $OUTPUT->continue_button($submissionurl);
         echo $OUTPUT->footer();
@@ -333,16 +333,16 @@ if ($action == "answer") {
         $DB->delete_records("quest_assessments", array("answerid" => $answer->id));
     }
     $DB->delete_records("quest_answers", array("id" => $answer->id));
-
-    // ...and finally the submitted file
-    // TODO: elever Eliminar esta función y sustituirla por el mecanismo nuevo de Moodle 2.
-    //quest_delete_submitted_files_answers($quest, $answer);
-    // Update scores and statistics.
+    
+    // now get rid of all files
+    $fs = get_file_storage();
+    $fs->delete_area_files($context->id,'mod_quest','answer',$answer->id);
+    $fs->delete_area_files($context->id,'mod_quest','answer_attachment',$answer->id);
 
     $submission = quest_update_submission_counts($submission->id);
+    // Update scores and statistics.
     // Update current User and team scores.
     // recalculate points and report to gradebook.
-
     quest_grade_updated($quest, $answer->userid);
 
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -375,7 +375,7 @@ if ($action == "answer") {
     $answerautor=$answer->userid;
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid),'*',MUST_EXIST);
     $maxfiles = 99; // ...limit of image files for the html editor.
-    $definitionoptions = array(
+    $descriptionoptions = array(
         'trusttext' => true,
         'subdirs' => false,
         'maxfiles' => $maxfiles,
@@ -388,7 +388,7 @@ if ($action == "answer") {
         'maxbytes' => $quest->maxbytes
     );
 
-    $answer = file_prepare_standard_editor($answer, 'description', $definitionoptions, $context, 'mod_quest', 'answer',
+    $answer = file_prepare_standard_editor($answer, 'description', $descriptionoptions, $context, 'mod_quest', 'answer',
             $answer->id);
     $answer = file_prepare_standard_filemanager($answer, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'answer_attachment', $answer->id);
@@ -398,7 +398,7 @@ if ($action == "answer") {
         'current' => $answer,
         'quest' => $quest,
         'cm' => $cm,
-        'definitionoptions' => $definitionoptions,
+        'definitionoptions' => $descriptionoptions,
         'attachmentoptions' => $attachmentoptions,
         'action' => $action
     ));
@@ -413,7 +413,7 @@ if ($action == "answer") {
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string('submittedanswer', 'quest') . " " . get_string('ok'));
         $answer->userid=$answerautor;
-        quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context);
+        quest_uploadanswer($quest, $answer, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context);
         echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
         echo $OUTPUT->footer();
     } else {

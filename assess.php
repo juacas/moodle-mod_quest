@@ -45,10 +45,6 @@ $quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_E
 $course = get_course($quest->course);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,null,MUST_EXIST);
 
-/*  if (!$redirect) {
-  $redirect = urlencode($_SERVER["HTTP_REFERER"].'#sid='.$submission->id);
-  }
- */
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 

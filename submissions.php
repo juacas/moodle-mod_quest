@@ -138,7 +138,10 @@ if ($action == 'confirmdelete') {
             }
             $DB->delete_records("quest_answers", array("id" => $answer->id));
 
-            quest_delete_submitted_files_answers($quest, $answer);
+            // now get rid of all answer files
+                $fs = get_file_storage();
+                $fs->delete_area_files($context->id,'mod_quest','answer',$answer->id);
+                $fs->delete_area_files($context->id,'mod_quest','answer_attachment',$answer->id);
         }
     }
 
@@ -158,8 +161,11 @@ if ($action == 'confirmdelete') {
             array('modulename' => 'quest', 'instance' => $quest->id, 'description' => $submission->description));
     // ...and the submission record...
     $DB->delete_records("quest_submissions", array("id" => $submission->id));
-    // ..and finally the submitted file
-    quest_delete_submitted_files_submissions($quest, $submission);
+    // ..and finally the submitted files.
+   // now get rid of all files
+    $fs = get_file_storage();
+    $fs->delete_area_files($context->id,'mod_quest','submission',$submission->id);
+    $fs->delete_area_files($context->id,'mod_quest','attachment',$submission->id);
 
     if ($ismanager) {
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -228,24 +234,22 @@ else if ($action == 'submitchallenge') {
     $newsubmission = new stdClass();
     $newsubmission->id = null;
 
-    $maxfiles = 99; // limit for the html editor
-
-    $definitionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => $maxfiles, 'maxbytes' => $course->maxbytes, 'context' => $context);
+    $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context);
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes, 'context' => $context);
 
-    $newsubmission = file_prepare_standard_editor($newsubmission, 'description', $definitionoptions, $context, 'mod_quest',
+    $newsubmission = file_prepare_standard_editor($newsubmission, 'description', $descriptionoptions, $context, 'mod_quest',
             'submission', $newsubmission->id);
     $newsubmission = file_prepare_standard_filemanager($newsubmission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $newsubmission->id);
 
     $mform = new quest_print_upload_form(null,
-            array('submission' => $newsubmission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $definitionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
+            array('submission' => $newsubmission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
 
     if ($mform->is_cancelled()) {
         redirect("view.php?id=$cm->id");
     } else if ($newsubmission = $mform->get_data()) {
         $authorid = $USER->id;
-        quest_upload_challenge($quest, $newsubmission, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context, $action,
+        quest_upload_challenge($quest, $newsubmission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context, $action,
                 $authorid);
     } else {
         $PAGE->set_title(format_string($quest->name));
@@ -268,16 +272,16 @@ else if ($action == 'modif') {
         error("Edit submission: Only teachers and autors can look this page");
     }
 
-    $definitionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, no tengo claro si es la mejor opci�n
+    $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, no tengo claro si es la mejor opci�n
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
 
-    $submission = file_prepare_standard_editor($submission, 'description', $definitionoptions, $context, 'mod_quest',
+    $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context, 'mod_quest',
             'submission', $submission->id);
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $submission->id);
 
     $mform = new quest_print_upload_form(null,
-            array('submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $definitionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
+            array('submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
 
     if ($mform->is_cancelled()) {
         redirect("view.php?id=$cm->id");
@@ -285,7 +289,7 @@ else if ($action == 'modif') {
 //         	$submission->id=$submission->sid;// id param is used in the page for coursemodule
 //         	unset($submission->sid);
         $authorid = $submission->userid;
-        quest_upload_challenge($quest, $modif_submission, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context,
+        quest_upload_challenge($quest, $modif_submission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context,
                 $action, $authorid);
     } else {
         $PAGE->set_title(format_string($quest->name));
@@ -614,16 +618,16 @@ else if ($action == 'updatesubmission') {
     if (!$ismanager)
         error("Approve submission: No enouth permissions to take this action");
 
-    $definitionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, estudiar si es la mejor opci�n
+    $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, estudiar si es la mejor opci�n
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
 
-    $submission = file_prepare_standard_editor($submission, 'description', $definitionoptions, $context, 'mod_quest',
+    $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context, 'mod_quest',
             'submission', $submission->id);
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $submission->id);
 
     $mform = new quest_print_upload_form(null,
-            array('submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $definitionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
+            array('submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
 
     if ($mform->is_cancelled()) {
 
@@ -632,12 +636,12 @@ else if ($action == 'updatesubmission') {
 
 
         if (isset($submission->submitbuttonapprove)) {
-            quest_upload_challenge($quest, $submission, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context,
+            quest_upload_challenge($quest, $submission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context,
                     $action, $authorid);
         } else {  //save but not approve
             //echo" save but not approve";print_object($submission);die;
             $action = 'modif';
-            quest_upload_challenge($quest, $submission, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context,
+            quest_upload_challenge($quest, $submission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context,
                     $action, $authorid);
             //!!!!comprobar si al modificar un profesor pero no aprobar, el desafío sigue bien su estado
         }

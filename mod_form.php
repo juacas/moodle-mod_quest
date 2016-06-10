@@ -56,7 +56,8 @@ require_once("$CFG->dirroot/mod/quest/locallib.php");
 
 class mod_quest_mod_form extends moodleform_mod {
 
-	function definition() {       
+	function definition() {   
+        global $COURSE;
 		$mform    =& $this->_form;
     // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -66,6 +67,10 @@ class mod_quest_mod_form extends moodleform_mod {
 		$mform->addRule('name', null, 'required', null, 'client'); //??
     // Adding the description fields.
          $this->standard_intro_elements(get_string('description', 'quest'));
+        $mform->addElement('filemanager', 'introattachments',
+                            get_string('introattachments', 'assign'),
+                            null, array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes) );
+        $mform->addHelpButton('introattachments', 'introattachments', 'assign');
 	    $ARRAY_NATTACHMENTS = array(0,1,2,3,4,5);
 	    $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $ARRAY_NATTACHMENTS);
 	    $mform->addHelpButton('nattachments', "numberofattachments","quest");//???

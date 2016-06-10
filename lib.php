@@ -81,7 +81,8 @@ function quest_add_instance($quest) {
         $event->timestart   = $quest->dateend;
         calendar_event::create($event);
     }
-
+    $ctx= context_module::instance($quest->coursemodule);
+    quest_save_intro_draft_files($quest,$ctx);
     return $returnid;
 }
 
@@ -201,19 +202,16 @@ function quest_update_instance($quest, $form) {
                 calendar_event::create($event);
             }
         }
+    $ctx= context_module::instance($quest->coursemodule);
+    quest_save_intro_draft_files($quest,$ctx);
     }
-
+ 
     return $returnid;
 }
-
-/////////////////////////////////////////////////////
-
-
 
 function quest_delete_instance($id) {
 	global $CFG, $DB;
 require_once('locallib.php');
-
 // Given an ID of an instance of this module,
 // this function will permanently delete the instance
 // and any data that depends on it.
@@ -225,11 +223,9 @@ require_once('locallib.php');
     }
     // delete all the associated records in the quest tables, start positive...
     $result = true;
-
     if (! $DB->delete_records("quest_elements", array("questid"=> $quest->id))) {
         $result = false;
     }
-
     if (! $DB->delete_records("quest_elements_assessments", array("questid"=> $quest->id))) {
         $result = false;
     }
@@ -249,44 +245,15 @@ require_once('locallib.php');
     if (! $DB->delete_records("quest_assessments_autors", array("questid"=>$quest->id))) {
         $result = false;
     }
-
-	/**
-	Remove attachments
-	*/
-// 	$submissions=$DB->get_records('quest_submissions',array('questid'=>$quest->id));
-// 	if ($submissions!=false)
-// 	{
-// 	foreach ($submissions as $sid=>$submission)
-// 		{
-// 		quest_delete_submitted_files_submissions($quest,$submission);
-// 		}
-// 	}
-
     if (! $DB->delete_records("quest_submissions", array("questid"=>$quest->id))) {
         $result = false;
     }
-/**
-	Remove attachments
-	*/
-// 	$answers=$DB->get_records('quest_answers',array('questid'=>$quest->id));
-// 	if ($answers!=false)
-// 	{
-// 	foreach ($answers as $aid=>$answer)
-// 		{
-// 		quest_delete_submitted_files_answers($quest, $answer);
-// 		}
-// 	}
-
-
-
     if (! $DB->delete_records("quest_answers", array("questid"=> $quest->id))) {
         $result = false;
     }
-
     if (! $DB->delete_records("quest_calification_users", array("questid"=>$quest->id))) {
         $result = false;
     }
-
     if($quest->allowteams){
      if (! $DB->delete_records("quest_teams", array("questid"=> $quest->id))) {
          $result = false;
@@ -295,28 +262,22 @@ require_once('locallib.php');
         $result = false;
      }
     }
-
     if (! $DB->delete_records("quest_rubrics", array("questid"=>$quest->id))) {
         $result = false;
     }
-
     if (! $DB->delete_records("quest_rubrics_autor", array("questid"=>$quest->id))) {
         $result = false;
     }
-
     if (! $DB->delete_records("quest", array("id"=> $quest->id))) {
         $result = false;
     }
-
     if (! $DB->delete_records('event', array('modulename'=> 'quest', 'instance'=> $quest->id))) {
         $result = false;
     }
-
     $context = context_module::instance($cm->id);
     // now get rid of all files
     $fs = get_file_storage();
     $fs->delete_area_files($context->id);
-
     return $result;
 }
 
@@ -1957,82 +1918,61 @@ function quest_get_assessments($answer, $all = '', $order = '') {
 
 
 
-//
-function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
-	global $CFG, $DB;
 
-	if ($context->contextlevel != CONTEXT_MODULE) {
-		return false;
-	}
+function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+    global $CFG, $DB;
 
-	require_course_login($course, true, $cm);
-	if (!$quest = get_coursemodule_from_id('quest', $cm->id))
-	{
-		return false;
-	}
-	$entryid = (int)array_shift($args);
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+    require_course_login($course, true, $cm);
+    if (!has_capability('mod/quest:view', $context)) {
+        return false;
+    }
+    if (!$quest = get_coursemodule_from_id('quest', $cm->id)) {
+        return false;
+    }
 
-	if ($filearea === 'attachment' or $filearea === 'submission')
-	{
-		if (!$entry = $DB->get_record('quest_submissions', array('id'=>$entryid))) {
-			return false;
-		}
-	}else if ($filearea === 'answer_attachment' or $filearea === 'answer')
-	{
+    if ($filearea === 'introattachment') {
+        $relativepath = implode('/', $args);
+        $entryid = 0;
+    } else {
+        $entryid = (int) array_shift($args);
+        if ($filearea === 'attachment' or $filearea === 'submission') {
+            if (!$entry = $DB->get_record('quest_submissions', array('id' => $entryid))) {
+                return false;
+            }
+        } else if ($filearea === 'answer_attachment' or $filearea === 'answer') {
+            if (!$entry = $DB->get_record('quest_answers', array('id' => $entryid))) {
+                return false;
+            }
+        } else {
+            return false; // unknown filearea
+        }
 
-		if (!$entry = $DB->get_record('quest_answers', array('id'=>$entryid))) {
-			return false;
-		}
-	}
-	else
-	{
+        $relativepath = implode('/', $args);
+    }
+    $fs = get_file_storage();
+    $hash = $fs->get_pathname_hash($context->id, 'mod_quest', $filearea, $entryid, '', '/'.$relativepath);
+    if (!$file = $fs->get_file_by_hash($hash) or $file->is_directory()) {
+        return false;
+    }
 
-		return false; // unknown filearea
-	}
-
-
-
-	$relativepath = implode('/', $args);
-	$fullpath = "/$context->id/mod_quest/$filearea/$entryid/$relativepath";
-
-	$fs = get_file_storage();
-	if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-		return false;
-	}
-
-	// finally send the file
-	send_stored_file($file, 0, 0, true, $options); // download MUST be forced - security!
+    // finally send the file
+    send_stored_file($file, 0, 0, true, $options); // download MUST be forced - security!
 }
 
-// TODO: elever  Eliminar esta función y sustituirla por el mecanismo nuevo de Moodle 2
-//////////////////////////////////////////////////////////
-function quest_file_area_submissions($quest, $submission) {
-    return make_upload_directory( quest_file_area_name_submissions($quest, $submission) );
-}
-
-// TODO: elever  Eliminar esta función y sustituirla por el mecanismo nuevo de Moodle 2
-//////////////////////////////////////////////////////////
-function quest_file_area_name_submissions($quest, $submission) {
-//  Creates a directory file name, suitable for make_upload_directory()
-    global $CFG;
-
-    return "$quest->course/$CFG->moddata/quest/submissions/$submission->id";
-}
-// TODO: elever  Eliminar esta función y sustituirla por el mecanismo nuevo de Moodle 2
-//////////////////////////////////////////////////////////
-//function quest_file_area_answers($quest, $answer) {
-//    return make_upload_directory( quest_file_area_name_answers($quest, $answer) );
-//}
-
-// TODO: elever  Eliminar esta función y sustituirla por el mecanismo nuevo de Moodle 2
-//////////////////////////////////////////////////////////
-//function quest_file_area_name_answers($quest, $answer) {
-//  Creates a directory file name, suitable for make_upload_directory()
- //   global $CFG;
-
-   // return "$quest->course/$CFG->moddata/quest/answers/$answer->id";
-//}
-
+/**
+     * Save the attachments in the draft areas.
+     *
+     * @param stdClass $formdata
+     */
+  function quest_save_intro_draft_files($formdata,$ctx) {
+        if (isset($formdata->introattachments)) {
+            file_save_draft_area_files($formdata->introattachments, $ctx->id,
+                                       'mod_quest', 'introattachment', 0);
+        }
+    }
 ////////////////////////////////////////////////////
 function quest_fullname($userid, $courseid) {
     global $CFG,$DB;

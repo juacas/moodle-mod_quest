@@ -199,7 +199,6 @@ function quest_choose_from_menu($options, $name, $selected = "", $nothing = "cho
 
 function quest_print_quest_heading($quest) {
     global $OUTPUT;
-
     echo $OUTPUT->pix_icon('icon', 'Quest', 'quest', array('align' => 'left'));
     echo $OUTPUT->heading(format_string($quest->name));
     quest_print_quest_info($quest);
@@ -209,16 +208,7 @@ function quest_print_quest_heading($quest) {
 function quest_print_quest_info($quest) {
     global $CFG, $DB, $OUTPUT;
 
-// 	if (! $course = $DB->get_record("course", array("id"=> $quest->course))) {
-// 		print_error("course_misconfigured",'quest');
-// 	}
-// 	if (! $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-// 		print_error("CourseModuleIDwasincorrect",'quest');;
-// 	}
-    // print standard assignment heading
-
     echo $OUTPUT->box_start();
-
     // print phase and date info
     $string = '<b>' . get_string('currentphase', 'quest') . '</b>: ' . quest_phase($quest) . '<br />';
     $dates = array(
@@ -236,14 +226,10 @@ function quest_print_quest_info($quest) {
         }
     }
     $string .= '<b>' . get_string('nmaxanswers', 'quest') . '</b>: ' . $quest->nmaxanswers . '<br />';
-
     if ($quest->allowteams) {
         $string .= '<b>' . get_string('ncomponentsteam', 'quest') . '</b>: ' . $quest->ncomponents . '<br />';
     }
-
     echo $string;
-
-
     echo $OUTPUT->box_end();
 }
 
@@ -368,23 +354,10 @@ class quest_print_upload_form extends moodleform {
         $mform->addHelpButton('initialpoints', 'initialpoints', 'quest');
         $mform->setDefault('initialpoints', $quest->initialpoints);
 
-        /*  TODO EVP esta parte comentada la dejo pendiente
-          if ($quest->nattachments)
-          {
-          require_once($CFG->dirroot.'/lib/uploadlib.php');
-          for ($i=0; $i < $quest->nattachments; $i++) {
-          $iplus1 = $i + 1;
-          $tag[$i] = get_string("attachment", "quest")." $iplus1:";
-          }
-          upload_print_form_fragment($quest->nattachments,null,$tag,false,null,$course->maxbytes,
-          $quest->maxbytes,false);
-          }
-         */
         if ($quest->nattachments) {
             $mform->addElement('filemanager', 'attachment_filemanager', get_string("attachments", "quest"), null,
                     $attachmentoptions);
         }
-
         if ($action == 'approve') {
             $mform->addElement('textarea', 'commentteacherauthor', get_string("comentsforautor", "quest"), 'rows="6" cols="70"');
         }
@@ -592,164 +565,6 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
 }
 
-function quest_print_upload_form($quest) {
-    global $CFG, $DB;
-
-    if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-        print_error("course_misconfigured", 'quest');
-    }
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
-    $usehtmleditor = can_use_html_editor();
-
-    $context = context_module::instance($cm->id);
-    $ismanager = has_capability('mod/quest:manage', $context);
-    ?>
-    <script language=javascript>
-        function desactivar() {
-            if (document.forms.save.nosubmit.value == 1)
-            {
-                document.forms.save.save.value = 'submitassignment';
-                setTimeout(document.forms.save.save0.disabled = 'true', 1000);
-            }
-        }
-    </script>
-
-    <?php
-    echo "<div align=\"center\">";
-    echo "<form name=\"save\" enctype=\"multipart/form-data\" method=\"POST\" action=\"upload.php\" onsubmit=\"desactivar();\">";
-    echo " <input type=\"hidden\" name=\"id\" value=\"$cm->id\" />";
-    echo " <input type=\"hidden\" name=\"nosubmit\" value=\"0\" />";
-    echo "<table celpadding=\"5\" border=\"1\" align=\"center\">\n";
-    // now get the submission
-    echo "<tr valign=\"top\"><td><b>" . get_string("title", "quest") . ": </b>\n";
-
-    echo "<input type=\"text\" name=\"title\" size=\"60\" maxlength=\"100\" value=\"\" />\n";
-    echo "</td></tr><tr><td><b>" . get_string("submission", "quest") . ": </b>";
-    //    echo "<a href=\"javascript:void()\"><img src='mathEditor.png' onclick='window.open(\"../../filter/tex/texed.php\",\"MathEditor\",\"height=400,width=600\");return false;' width=32 alt=\"EditorEcuaciones\"></img></a><br />\n";
-    print_textarea($usehtmleditor, 25, 70, 630, 400, "description");
-    //use_html_editor("description");
-    echo "</td></tr>\n";
-
-    echo '<tr><td height="32"></td></tr>';
-    echo '<tr valign="top"><td><b>';
-    print_string("submissionstart", "quest");
-    echo ":</b>";
-
-
-    $form->submissionstart = time();
-    if (time() < $quest->datestart) {
-        $form->submissionstart = $quest->datestart;
-    }
-    if ($ismanager) {
-
-        print_date_selector("submissionstartday", "submissionstartmonth", "submissionstartyear", $form->submissionstart);
-        echo "&nbsp;-&nbsp;";
-        print_time_selector("submissionstarthour", "submissionstartminute", $form->submissionstart);
-        helpbutton("submissionstart", get_string("submissionstart", "quest"), "quest");
-    } else {
-        $date = userdate($form->submissionstart, get_string('datestrmodel', 'quest'));
-        echo $date;
-        echo "<input type=\"hidden\" name=\"datestart\" value=\"$form->submissionstart\"/>";
-    }
-
-    echo "</td></tr>";
-    echo '<tr><td height="18"></td></tr>';
-
-    $form->submissionend = $form->submissionstart + $quest->timemaxquestion * 24 * 3600;
-    echo '<tr valign="top"><td><b>';
-    echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-    print_string("submissionend", "quest");
-    echo ":</b>";
-
-    if ($ismanager) {
-        if ($form->submissionend > $quest->dateend) {
-            $form->submissionend = $quest->dateend;
-        }
-        print_date_selector("submissionendday", "submissionendmonth", "submissionendyear", $form->submissionend);
-        echo "&nbsp;-&nbsp;";
-        print_time_selector("submissionendhour", "submissionendminute", $form->submissionend);
-        helpbutton("submissionend", get_string("submissionend", "quest"), "quest");
-    } else {
-        if ($form->submissionend > $quest->dateend) {
-            $form->submissionend = $quest->dateend;
-        }
-        $date = userdate($form->submissionend, get_string('datestrmodel', 'quest'));
-        echo $date;
-        echo "<input type=\"hidden\" name=\"dateend\" value=\"$form->submissionend\"/>";
-    }
-
-    echo "</td></tr>";
-    echo '<tr><td height="18"></td></tr>';
-
-    echo '<tr valign="top"><td><b>';
-    print_string("pointsmax", "quest");
-    echo ':</b>';
-    for ($i = 0; $i <= $quest->maxcalification; $i++) {
-        $numbers[$i] = $i;
-    }
-    $form->pointsmax = $quest->maxcalification;
-    echo html_writer::select($numbers, "pointsmax", "$form->pointsmax", "");
-    $helpicon = new moodle_help_icon();
-    $helpicon->page = 'maxcalification';
-    $helpicon->text = get_string("pointsmax", "quest");
-    $helpicon->module = 'quest';
-    echo $OUTPUT->help_icon($helpicon);
-//    helpbutton("maxcalification", , "quest");
-    echo '</td></tr>';
-
-    echo '<tr valign="top"><td><b>';
-    print_string("initialpoints", "quest");
-    echo ':</b>';
-    unset($numbers);
-    if ($ismanager) {
-        for ($i = 0; $i <= $quest->maxcalification; $i++) {
-            $numbers[$i] = $i;
-        }
-    } else {
-        for ($i = 0; $i <= $quest->initialpoints; $i++) {
-            $numbers[$i] = $i;
-        }
-    }
-    $form->initialpoints = $quest->initialpoints;
-    echo html_writer::select($numbers, "initialpoints", "$form->initialpoints", "");
-    helpbutton("initialpoints", get_string("initialpoints", "quest"), "quest");
-    echo '</td></tr>';
-
-    echo '<tr><td height="18"></td></tr>';
-
-    echo "<tr><td>\n";
-
-    if ($quest->nattachments) {
-        require_once($CFG->dirroot . '/lib/uploadlib.php');
-        for ($i = 0; $i < $quest->nattachments; $i++) {
-            $iplus1 = $i + 1;
-            $tag[$i] = get_string("attachment", "quest") . " $iplus1:";
-        }
-        upload_print_form_fragment($quest->nattachments, null, $tag, false, null, $course->maxbytes, $quest->maxbytes, false);
-    }
-    echo "</td></tr>";
-    $form->comentteacherpupil = '';
-    if ($ismanager) {
-        echo "<tr><td><b>" . get_string("comentsforpupil", "quest") . ":</b><br />\n";
-        print_textarea($usehtmleditor, 8, 30, 630, 400, "comentteacherpupil", $form->comentteacherpupil);
-        echo "</td></tr>\n";
-        echo "<tr><td>";
-        quest_print_difficultyScale($form, get_string("perceivedTeacherDifficultyLevel", "quest"));
-        $minutes = quest_get_durations();
-        quest_print_duration_selector($form, $minutes, get_string("predictedDurationQuestion", "quest"));
-        echo "</td></tr>";
-    }
-    echo "</table>\n";
-    echo "<input type=\"hidden\" name=\"save\" value=\"\" />";
-    echo "<input type=\"submit\" name=\"save0\" value=\"" . get_string('submitassignment', 'quest') . "\" onclick='document.forms.save.target=\"\";document.forms.save.nosubmit.value=\"1\";'/>";
-    echo " <input type=\"submit\" name=\"save1\" value=\"" . get_string('Preview', 'quest') . "\" onclick='document.forms.save.target=\"Preview\";document.forms.save.enctype=\"multipart/form-data\";window.open(\"upload.php\",\"Preview\",\"\");'/>";
-    echo "</form>";
-    echo "</div>";
-}
-
-
 function quest_get_durations() {
     $minutes = array(
         -1 => "",
@@ -785,59 +600,7 @@ function quest_get_durations() {
     return $minutes;
 }
 
-function quest_print_difficultyScale($form, $label = null) {
 
-    if (!isset($label))
-        $label = get_string("perceiveddifficultyLevelQuestion", "quest");
-    $dificultyScale = quest_get_difficulty_levels();
-    echo "
-     <fieldset>
-	<legend>
-	" . $label . "<br>
-	</legend>";
-    $checked = "";
-    $isAnyChecked = false;
-    foreach ($dificultyScale as $value => $item) {
-        if (isset($form) && isset($form->perceiveddifficulty) && $form->perceiveddifficulty == $value)
-            $isAnyChecked = true;
-    }
-    foreach ($dificultyScale as $value => $item) {
-        if (isset($form) && isset($form->perceiveddifficulty) && $form->perceiveddifficulty == $value) {
-            $checked = "checked";
-        } else {
-            $checked = " ";
-        }
-
-        echo " <input type=\"radio\"  name=\"perceiveddifficulty\" $checked value=\"$value\" alt=\"$item\" >$item</input> \n";
-    }
-    echo "</fieldset>";
-    helpbutton("perceiveddifficulty", get_string("perceiveddifficulty", "quest"), "quest");
-}
-
-/**
- *
- * @param $form
- * @param $minutes array with durations in minutes
- * @param $label
- * @return unknown_type
- */
-function quest_print_duration_selector($form, $minutes, $label) {
-
-    if (!isset($label))
-        $label = get_string("predictedDurationQuestion", "quest");
-
-    echo "
-     <fieldset>
-	<legend>
-	" . $label . "<br>
-	</legend>";
-    if (isset($form) && isset($form->predictedduration))
-        $selected = $form->predictedduration;
-    else
-        $selected = "";
-    echo html_writer::select($minutes, "predictedduration", $selected);
-    echo "</fieldset>";
-}
 
 function quest_get_difficulty_levels() {
     return array(0 => get_string("difficultyEasy", "quest")
@@ -854,10 +617,7 @@ function quest_print_submission($quest, $submission) {
     if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course)) {
         print_error("CourseModuleIDwasincorrect", 'quest'); ;
     }
-
-
     $description = $submission->description;
-
     $context = context_module::instance($cm->id);
     $description = file_rewrite_pluginfile_urls($description, 'pluginfile.php', $context->id, 'mod_quest', 'submission',
             $submission->id);
@@ -869,9 +629,6 @@ function quest_print_submission($quest, $submission) {
     $options->overflowdiv = true;
     $description = format_text($description, $submission->descriptionformat, $options);
     echo $OUTPUT->box($description);
-
-    //echo $OUTPUT->box(format_text($submission->description), 'center');
-    //$context = context_module::instance( $cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
     if (!empty($submission->comentteacherautor)) {
@@ -887,73 +644,36 @@ function quest_print_submission($quest, $submission) {
 
     if ($quest->nattachments) {
         if ($submission->attachment) {
-            $n = 1;
-            echo "<table align=\"center\">\n";
-
-            $fs = get_file_storage();
-            if ($files = $fs->get_area_files($context->id, 'mod_quest', 'attachment', $submission->id, "timemodified", false)) {
-                foreach ($files as $file) {
-                    $filename = $file->get_filename();
-                    $mimetype = $file->get_mimetype();
-                    $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle',
-                            array('class' => 'icon'));
-                    $path = file_encode_url($CFG->wwwroot . '/pluginfile.php',
-                            '/' . $context->id . '/mod_quest/attachment/' . $submission->id . '/' . $filename);
-
-                    /* if ($type == 'html') {
-                      $output .="<a href=\"$path\">$iconimage</a> ";
-                      $output .= "<a href=\"$path\">".s($filename)."</a>";
-                      $output .= "<br />";
-
-                      } else if ($type == 'text') {
-                      $output .= "$strattachment ".s($filename).":\n$path\n";
-
-                      } else {
-                      if (in_array($mimetype, array('image/gif', 'image/jpeg', 'image/png'))) {
-                      // Image attachments don't get printed as links
-                      $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
-                      } else {
-                      $output .= "<a href=\"$path\">$iconimage</a> ";
-                      $output .= format_text("<a href=\"$path\">".s($filename)."</a>", FORMAT_HTML, array('context'=>$context));
-                      $output .= '<br />';
-                      }
-                      } */
-                    //	$output .= "$strattachment ".s($filename).":\n$path\n";
-
-                    echo "<tr><td><b>" . get_string("attachment", "quest") . " $n:</b> \n";
-                    echo $iconimage;
-                    echo format_text("<a href=\"$path\">" . s($filename) . "</a>", FORMAT_HTML, array('context' => $context));
-                    $n++;
-                }
-            }
-
-
-
-            /* $filearea = quest_file_area_name_submissions($quest, $submission);
-              if ($basedir = quest_file_area_submissions($quest, $submission)) {
-              if ($files = get_directory_list($basedir)) {
-              foreach ($files as $file) {
-              $icon = mimeinfo("icon", $file);
-              if ($CFG->slasharguments) {
-              $ffurl = "file.php/$filearea/$file";
-              } else {
-              $ffurl = "file.php?file=/$filearea/$file";
-              }
-              echo "<tr><td><b>".get_string("attachment", "quest")." $n:</b> \n";
-              echo "<img src=\"$CFG->pixpath/f/$icon\" height=\"16\" width=\"16\"
-              border=\"0\" alt=\"File\" />".
-              "&nbsp;<a target=\"uploadedfile\" href=\"$CFG->wwwroot/$ffurl\">$file</a></td></tr>";
-              $n++;
-              }
-              }
-              } */
-            echo "</table>\n";
+            quest_print_attachments($context,'attachment',$submission->id,'timemodified');
         }
     }
     return;
 }
-
-/////////////////////////////////////////////////////
+function quest_print_attachments($context, $filearea, $itemid, $order) {
+    global $OUTPUT,$CFG;
+    $n = 1;
+    echo "<table align=\"center\">\n";
+    $fs = get_file_storage();
+    if ($files = $fs->get_area_files($context->id, 'mod_quest', $filearea, $itemid, $order, false)) {
+        foreach ($files as $file) {
+            $filename = $file->get_filename();
+            $mimetype = $file->get_mimetype();
+            $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle',
+                    array('class' => 'icon'));
+            $path = "/$context->id/mod_quest/$filearea/";
+            if ($itemid){
+                $path.=$itemid . '/';
+            }
+            $path.=$filename;
+            $path =file_encode_url($CFG->wwwroot . '/pluginfile.php',$path);
+            echo "<tr><td><b>" . get_string("attachment", "quest") . " $n:</b> \n";
+            echo $iconimage;
+            echo format_text("<a href=\"$path\">" . s($filename) . "</a>", FORMAT_HTML, array('context' => $context));
+            $n++;
+        }
+    }
+    echo "</table>\n";
+}
 
 function quest_print_submission_info($quest, $submission) {
 
@@ -1002,15 +722,6 @@ function quest_print_submission_info($quest, $submission) {
                 array("questid" => $quest->id,
             "submissionid" => $submission->id))) {
             $string .= '<b>' . get_string('calificationautor', 'quest') . ': ';
-// 			if ($submission->pointsanswercorrect>0)
-// 			{
-// 				$string .= number_format($assessment->points/$submission->pointsanswercorrect*100,1).'% ('.number_format($assessment->points,4).')</b>';
-// 			}
-// 			else
-// 			{
-// 				$string .= number_format($assessment->points/$submission->pointsanswercorrect*100,1).'% ('.number_format($assessment->points,4).')</b>';
-// 			}
-// 			print_object($submission);print_object($assessment);die;
             $string .= number_format(100 * $assessment->points / $submission->initialpoints, 1) . '% ';
             $string.= get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format($submission->initialpoints,
                             2);
@@ -1019,10 +730,7 @@ function quest_print_submission_info($quest, $submission) {
             $string .= '<br><b>' . get_string('calificationautor', 'quest') . ': ' . get_string('evaluation_pending', 'quest') . '</b>';
         }
     }
-
-
     $string .= "<script language=\"JavaScript\">\n";
-
     $string .= "function redondear(cantidad, decimales) {\n
 var cantidad = parseFloat(cantidad);\n
 var decimales = parseFloat(decimales);\n
@@ -1035,8 +743,6 @@ var browserDate=new Date();
 var browserTime=browserDate.getTime();
 var correccion=servertime-browserTime;
 function puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers){\n
-
-
                      tiempoactual = new Date();\n
                      tiempo = parseInt((tiempoactual.getTime()+correccion)/1000);\n
 
@@ -1055,7 +761,6 @@ function puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscor
 
                       }\n
                      }\n
-
                     if(state < 2){\n
                      grade = initialpoints;\n
                      formularios.style.color = \"#cccccc\";\n
@@ -1083,14 +788,11 @@ function puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscor
                                   grade = pointsmax;\n
                                   formularios.style.color = \"#cccccc\";\n
                                  }\n
-
                           }\n
                           else{\n
                             grade = 0;\n
                             formularios.style.color = \"#cccccc\";\n
                           }\n
-
-
                         }\n
                         else{\n
                          if(nanswerscorrect == 0){\n
@@ -1139,11 +841,8 @@ function puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscor
                                  formularios.style.color = \"#000000\";\n
                                 }\n
                          }\n
-
                         }\n
-
                        }\n
-
                      }\n
                     }\n
                      if(grade < 0){\n
@@ -1151,21 +850,14 @@ function puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscor
                      }\n
                      grade = redondear(grade,4);\n
                      formularios.value = grade;\n
-
-
         setTimeout(\"puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers)\",500);\n
-
 }\n
-
 </script>\n";
 
     if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) && ($submission->nanswerscorrect < $quest->nmaxanswers)) {
         $submission->phase = SUBMISSION_PHASE_ACTIVE;
     }
-
     $string .= "<script language=\"JavaScript\">\n";
-
-
     $string .= "initialpoints = $submission->initialpoints;\n";
     $string .= "nanswerscorrect =$submission->nanswerscorrect;\n";
     $string .= "datestart = $submission->datestart;\n";
@@ -1179,16 +871,9 @@ function puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscor
     $string .= "nmaxanswers = $quest->nmaxanswers;\n";
     $string .= "pointsnmaxanswers = $submission->points;\n";
     $string .= "formularios = document.forms.puntos.calificacion;\n";
-
     $string .= "puntuacion(state,pointsmax,initialpoints,tinitial,datestart,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers);\n";
-
     $string .= "</script>\n";
-
-
-
     echo $string;
-
-
     echo $OUTPUT->box_end();
 }
 
@@ -1886,39 +1571,7 @@ function quest_print_answer($quest, $answer) {
 
     if ($quest->nattachments) {
         if ($answer->attachment) {
-
-            $n = 1;
-            echo "<table align=\"center\">\n";
-            $fs = get_file_storage();
-            if ($files = $fs->get_area_files($context->id, 'mod_quest', 'answer_attachment', $answer->id, "timemodified", false)) {
-
-                //	$filearea = quest_file_area_name_answers($quest, $answer);
-                //	if ($basedir = quest_file_area_answers($quest, $answer)) {
-                //	if ($files = get_directory_list($basedir)) {
-                foreach ($files as $file) {
-                    $filename = $file->get_filename();
-                    $mimetype = $file->get_mimetype();
-                    $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle',
-                            array('class' => 'icon'));
-                    $path = file_encode_url($CFG->wwwroot . '/pluginfile.php',
-                            '/' . $context->id . '/mod_quest/answer_attachment/' . $answer->id . '/' . $filename);
-                    //$icon = mimeinfo("icon", $file);
-                    //if ($CFG->slasharguments) {
-                    //$ffurl = "file.php/$filearea/$file";
-                    //} else {
-                    //	$ffurl = "file.php?file=/$filearea/$file";
-                    //}
-                    echo "<tr><td><b>" . get_string("attachment", "quest") . " $n:</b> \n";
-                    echo $iconimage;
-                    //echo "<img src=\"$CFG->pixpath/f/$icon\" height=\"16\" width=\"16\"
-                    //  border=\"0\" alt=\"File\" />".
-                    // "&nbsp;<a target=\"uploadedfile\" href=\"$CFG->wwwroot/$ffurl\">$file</a></td></tr>";
-                    echo format_text("<a href=\"$path\">" . s($filename) . "</a>", FORMAT_HTML, array('context' => $context));
-                    $n++;
-                }
-            }
-
-            echo "</table>\n";
+            quest_print_attachments($context, 'answer_attachment', $answer->id, 'timemodified');
         }
     }
     return;
