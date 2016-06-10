@@ -68,9 +68,9 @@ class mod_quest_mod_form extends moodleform_mod {
     // Adding the description fields.
          $this->standard_intro_elements(get_string('description', 'quest'));
         $mform->addElement('filemanager', 'introattachments',
-                            get_string('introattachments', 'assign'),
+                            get_string('introattachments', 'quest'),
                             null, array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes) );
-        $mform->addHelpButton('introattachments', 'introattachments', 'assign');
+        $mform->addHelpButton('introattachments', 'introattachments', 'quest');
 	    $ARRAY_NATTACHMENTS = array(0,1,2,3,4,5);
 	    $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $ARRAY_NATTACHMENTS);
 	    $mform->addHelpButton('nattachments', "numberofattachments","quest");//???
@@ -291,6 +291,31 @@ class mod_quest_mod_form extends moodleform_mod {
             return $errors;
         }
 	}
+    /**
+     * Any data processing needed before the form is displayed
+     * (needed to set up draft areas for editor and filemanager elements)
+     * @param array $defaultvalues
+     */
+    public function data_preprocessing(&$defaultvalues) {
+        global $DB;
+
+        $ctx = null;
+        if ($this->current && $this->current->coursemodule) {
+            $cm = get_coursemodule_from_instance('quest', $this->current->id, 0, false, MUST_EXIST);
+            $ctx = context_module::instance($cm->id);
+        }
+        
+        if ($this->current && $this->current->course) {
+            if (!$ctx) {
+                $ctx = context_course::instance($this->current->course);
+            }
+            $course = $DB->get_record('course', array('id'=>$this->current->course), '*', MUST_EXIST);
+        }
+
+        $draftitemid = file_get_submitted_draft_itemid('introattachments');
+        file_prepare_draft_area($draftitemid, $ctx->id, 'mod_quest', 'introattachment',
+                                0, array('subdirs' => 0));
+        $defaultvalues['introattachments'] = $draftitemid;
+    }
 }
 
-?>
