@@ -392,7 +392,9 @@ if ($action == "answer") {
             $answer->id);
     $answer = file_prepare_standard_filemanager($answer, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'answer_attachment', $answer->id);
-
+    $draftitemid = file_get_submitted_draft_itemid('answer_attachment');
+    file_prepare_draft_area($draftitemid, $context->id, 'mod_quest', 'answer_attachment',0, array('subdirs' => 0));
+    $answer->attachment = $draftitemid;
     $mform = new quest_print_answer_form(null,
             array(
         'current' => $answer,

@@ -279,7 +279,9 @@ else if ($action == 'modif') {
             'submission', $submission->id);
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $submission->id);
-
+    $draftitemid = file_get_submitted_draft_itemid('introattachments');
+    file_prepare_draft_area($draftitemid, $context->id, 'mod_quest', 'attachment',0, array('subdirs' => 0));
+    $submission->attachment = $draftitemid;
     $mform = new quest_print_upload_form(null,
             array('submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
 
