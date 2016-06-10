@@ -314,8 +314,9 @@ $string['finalcalificationuser'] = 'Final Score';
 $string['firstname'] = 'Firstname';
 $string['generalcomment'] = 'General comment';
 $string['gradingcharacteristics'] = 'Characteristics of grading';
-
 $string['introductiontothechallenge'] = 'Description of the challenge';
+$string['introattachments'] = 'Additional files';
+$string['introattachments_help'] = 'Additional files for use in the questournament, such as answer templates, may be added. Download links for the files will then be displayed on the quest page under the description.';
 $string['good'] = 'Good';
 $string['grade'] = 'Grade';
 $string['gradeassessment'] = 'Grade assessment';
