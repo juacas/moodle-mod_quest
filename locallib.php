@@ -485,7 +485,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
         }
     } else {
         $isnew = false;
-        if ($action == 'approve') { // ...the challenge is approved by the teacher.
+        if ($ismanager && $action === 'approve') { // ...the challenge is approved by the teacher.
             $newsubmission->state = SUBMISSION_STATE_APROVED;
         } else {    // ...the challenge is modified, the status does not change.
             $newsubmission->state = $DB->get_field('quest_submissions', 'state', array('id' => $newsubmission->id));
@@ -523,16 +523,6 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
      */
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
 
-    if ($ismanager) {
-        if ($action === 'approve') {
-            if (!has_capability('mod/quest:manage', $context, $newsubmission->userid) &&
-                    ($group_member = $DB->get_record("groups_members", "userid", $newsubmission->userid))) {
-                $idgroup = $group_member->groupid;
-            } else {
-                $idgroup = 0;
-            }
-        }
-    }//end of if ismanager
     quest_update_challenge_calendar($cm,$quest,$newsubmission);
 
     if ($action == 'submitchallenge') {
