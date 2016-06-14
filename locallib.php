@@ -3496,9 +3496,9 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
                 $event = $DB->get_record('event', array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type,'uuid'=>$challenge->id));
                 if ($event) { // Update event.
                         $event = calendar_event::load($event->id);
-                        $event->update($eventdata);
+                        $event->update($eventdata,false);
                     } else { // Create new event.         
-                        calendar_event::create($eventdata);
+                        calendar_event::create($eventdata,false);
                     }
             }   
         }
