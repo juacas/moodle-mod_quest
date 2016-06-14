@@ -539,7 +539,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
         }
     } else if ($action == 'approve') {
         if ($CFG->version >= 2014051200) {
-            require_once 'classes/event/challenge_aproved.php';
+            require_once 'classes/event/challenge_approved.php';
             \mod_quest\event\challenge_approved::create_from_parts($USER,$newsubmission,$cm)->trigger();
         } else {
             add_to_log($COURSE->id, "quest", "approve_submission",
