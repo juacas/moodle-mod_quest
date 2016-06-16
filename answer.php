@@ -251,11 +251,11 @@ if ($action == "answer") {
 
     $aid = required_param('aid', PARAM_INT); // Answer ID.
 
-    $answer = $DB->get_record("quest_answers", ["id"=>$aid]);
-    $submission = $DB->get_record("quest_submissions", ["id"=>$answer->submissionid]);
-    $answer->commentforteacher = $_POST['teachercomment'];
-    $DB->set_field("quest_answers", "commentforteacher", $answer->commentforteacher, ["id"=>$answer->id]);
-    $sid = $_POST['sid'];
+    $answer = $DB->get_record("quest_answers", array("id"=>$aid));
+    $submission = $DB->get_record("quest_submissions", array("id"=>$answer->submissionid));
+    $answer->commentforteacher = optional_param('teachercomment',null,PARAM_RAW);
+    $DB->set_field("quest_answers", "commentforteacher", $answer->commentforteacher, array("id"=>$answer->id));
+    $sid = required_param('sid',PARAM_INT);
 
     if (!empty($answer->commentforteacher)) {
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
