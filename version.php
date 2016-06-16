@@ -35,7 +35,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version  = 2016061001;
-$plugin->requires = 2012011900; // The current module version (Date: YYYYMMDDXX)
+$plugin->requires = 2013111800; // Moodle 2.6 at least
 $plugin->component = 'mod_quest';
 $plugin->cron     = 600;// Period for cron to check this module (secs)
 $plugin->maturity = MATURITY_STABLE;
