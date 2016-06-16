@@ -4489,7 +4489,15 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             $members = get_users_by_capability($context, 'mod/quest:attempt');
             return $members;
         }
-
+        function quest_get_course_and_cm($id){
+            if (function_exists('get_course_and_cm_from_cmid')){
+                return get_course_and_cm_from_cmid($id,'quest');
+            }else{
+            $cm = get_coursemodule_from_id('quest', $id, 0, false, MUST_EXIST);
+            $course = get_course($cm->course);
+            return array($course,$cm);
+            }
+        }
         /**
          *
          * @param stdClass $quest
