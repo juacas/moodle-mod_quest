@@ -79,7 +79,7 @@ $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
 $url = new moodle_url('/mod/quest/submissions.php',
         array('id' => $id, 'sid' => $sid, 'action' => $action, 'sort' => $sort, 'dir' => $dir)); // evp debería añadir los otros posibles parámetros tal y como se ha hecho en assessments_autors.php
 $PAGE->set_url($url);
-$PAGE->navbar->add(get_string('submission','quest').':'.$submission->title);
+$PAGE->navbar->add(\format_string($submission->title));
 
 if (($quest->usepassword) && (!$ismanager)) {
     quest_require_password($quest, $course, $_POST['userpassword']);
