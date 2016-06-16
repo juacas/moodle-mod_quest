@@ -66,7 +66,7 @@ class mod_quest_mod_form extends moodleform_mod {
 		$mform->setType('name', PARAM_TEXT);
 		$mform->addRule('name', null, 'required', null, 'client'); //??
     // Adding the description fields.
-         $this->standard_intro_elements(get_string('description', 'quest'));
+        $this->standard_intro_elements(get_string('description', 'quest'));
         $mform->addElement('filemanager', 'introattachments',
                             get_string('introattachments', 'quest'),
                             null, array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes) );
