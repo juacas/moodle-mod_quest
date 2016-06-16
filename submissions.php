@@ -71,7 +71,6 @@ $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
 $sid = optional_param('sid', null,PARAM_INT);
-$submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
 
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
