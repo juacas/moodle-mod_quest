@@ -80,7 +80,7 @@ class quest_viewed extends base {
      */
     protected function init() {
         $this->data['crud'] = 'r';
-        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'quest';
     }
 

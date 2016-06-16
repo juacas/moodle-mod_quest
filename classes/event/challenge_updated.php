@@ -84,7 +84,7 @@ class challenge_updated extends base {
      */
     protected function init() {
         $this->data['crud'] = 'u';
-        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
 
     /**

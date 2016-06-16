@@ -84,7 +84,7 @@ class challenge_deleted extends base {
      */
     protected function init() {
         $this->data['crud'] = 'd';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
+        $this->data['level'] = $this->data['edulevel'] = self::LEVEL_OTHER;
     }
 
     /**

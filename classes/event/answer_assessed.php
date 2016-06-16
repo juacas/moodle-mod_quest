@@ -87,7 +87,7 @@ class answer_assessed extends base {
      */
     protected function init() {
         $this->data['crud'] = 'u';
-        $this->data['edulevel'] = self::LEVEL_TEACHING;
+        $this->data['level'] = $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
 
     /**
