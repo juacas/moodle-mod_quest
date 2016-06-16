@@ -4498,6 +4498,11 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             return array($course,$cm);
             }
         }
+        function quest_get_course_and_cm_from_quest($quest){
+            $course=get_course($quest->course);
+            $cm= get_fast_modinfo($course->id)->instances["quest"][$quest->id];
+            return array($course,$cm);
+        }
         /**
          *
          * @param stdClass $quest

@@ -27,7 +27,6 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  */
-
     require("../../config.php");
     require("lib.php");
     require("locallib.php");
@@ -55,7 +54,7 @@
 
    $url =  new moodle_url('/mod/quest/viewassessment.php',array('asid'=>$asid,'sid'=>$sid,'allowcomments'=>$allowcomments,'redirect'=>$redirect));
    $PAGE->set_url($url);
-
+   $PAGE->navbar->add(get_string('submission','quest').':'.$submission->title,new moodle_url('submissions.php',array('id'=>$cm->id,'sid'=>$submission->id,'action'=>'showsubmission')));
    $PAGE->set_title(format_string($quest->name));
    $PAGE->set_heading($course->fullname);
    echo $OUTPUT->header();
@@ -73,10 +72,6 @@
    {
        $redirect = "submissions.php?id=$cm->id&sid=$sid&action=showsubmission#sid=$sid";
    }
-
-
-
-
 
         echo $OUTPUT->heading_with_help(get_string('seeassessment','quest'),"seeassessment","quest");
 
@@ -147,19 +142,11 @@
     echo $OUTPUT->heading($title);
 
     quest_print_answer_info($quest,$answer);
-
-//     echo("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">".
-//                 get_string("specimenassessmentform", "quest")."</a></b></center>");
 	echo $OUTPUT->box_start();
     echo $OUTPUT->heading(get_string('answercontent','quest'));
-
-
     quest_print_answer($quest, $answer);
  	echo $OUTPUT->box_end();
  	if (!empty($redirect))
   		echo $OUTPUT->continue_button($redirect);
 
  	echo $OUTPUT->footer();
-
-?>
-

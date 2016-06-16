@@ -50,7 +50,7 @@
 
     $url =  new moodle_url('/mod/quest/viewassessmentautor.php',array('aid'=>$aid,'allowcomments'=>$allowcomments,'redirect'=>$redirect,'dir'=>$dir,'sort'=>$sort));
     $PAGE->set_url($url);
-
+    $PAGE->navbar->add(get_string('submission','quest').':'.$submission->title,new moodle_url('submissions.php',array('id'=>$cm->id,'sid'=>$submission->id,'action'=>'showsubmission')));
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
@@ -63,8 +63,6 @@
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strassess = get_string("viewassessmentautor", "quest");
-
-
         if(isset($_POST['newcalification'])){
 
          if(($ismanager)&&($assessment->state != 0)){
@@ -91,50 +89,12 @@
            $assessment->points = $_POST['newcalification'];
            $DB->set_field("quest_assessments_autors", "points", $assessment->points, array("id"=> $assessment->id));
            $DB->set_field("quest_assessments_autors", "dateassessment", time(), array("id"=> $assessment->id));
-
-
          }
 
         }
 
-     //   $OUTPUT->heading_with_help(get_string('seeassessment','quest'),"seeassessmentautor","quest");
-
-        // if($ismanager){
-         // echo "<form name=\"change\" method=\"post\" action=\"viewassessmentautor.php?frameset=top\">";
-         // echo "<input type=\"hidden\" name=\"aid\" value=\"$assessment->id\">";
-         // echo "<center><table cellpadding=\"5\" border=\"1\">";
-         // echo "<tr valign=\"top\">\n";
-         // echo "<td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-         // echo get_string('changemanualcalification','quest').'</b></center></td></tr>';
-
-         // echo "<tr valign=\"top\">";
-         // echo "<td align=\"right\"><p><b>".get_string('oldcalification','quest'). ": </b></p></td>\n";
-         // echo '<td>'.number_format($assessment->points,4).'</td></tr>';
-
-         // echo "<tr valign=\"top\">";
-         // echo "<td align=\"right\"><p><b>".get_string('newcalification','quest'). ": </b></p></td>\n";
-         // echo "<td><input name=\"newcalification\" type=\"text\"></td></tr>";
-         // echo "<tr><td colspan=\"2\" align=\"center\" valign=\"middle\"><input type=\"submit\" value=" .get_string("changecalification","quest")."></td></tr>";
-         // echo "<tr valign=\"top\">\n";
-         // echo "<td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-         // echo "</tr>\n";
-         // echo "</table></center>";
-         // echo "</form>";
-        // }
-
         // show assessment but don't allow changes
-        quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
-
-
-       // echo $OUTPUT->continue_button($redirect);
-        //print_footer($course);
-       // exit;
-    //}
-
-    // print bottom frame with the submission
-
-   // print_header('', '', '', '', '<base target="_parent" />');
-
+    quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
     $submission = $DB->get_record("quest_submissions", array("id"=> $submission->id));
     $title = '"'.$submission->title.'" ';
     if (($ismanager||($submission->userid == $USER->id))) {
@@ -156,16 +116,6 @@
     if(($submission->datestart < $timenow)&&($submission->dateend > $timenow)&&($submission->nanswerscorrect < $quest->nmaxanswers)){
                     $submission->phase = SUBMISSION_PHASE_ACTIVE;
     }
-
-
-    echo"<br><br>";
-    //quest_print_table_answers($quest,$submission,$course,$cm,$sort,$dir);
-
-
-
+  echo"<br><br>";
   echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'].'#sid='.$submission->id);
-
   echo $OUTPUT->footer();
-
-?>
-
