@@ -46,7 +46,7 @@ $changeform = optional_param('change_form', null, PARAM_INT); // Flag: if you ch
 $viewgeneral = optional_param('viewgeneral', -1, PARAM_INT); // Flag: view general form =1, particular form view of one submission = 0
 
 global $DB, $OUTPUT, $PAGE;
-list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+list($course,$cm)=quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 
 $context = context_module::instance($id);

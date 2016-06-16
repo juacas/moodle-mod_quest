@@ -53,7 +53,8 @@ global $DB, $PAGE, $OUTPUT, $USER;
 $timenow = time();
 // Print the page header
 
-list($course,$cm)=get_course_and_cm_from_cmid($id,"quest");
+list($course,$cm)=quest_get_course_and_cm($id);
+
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
