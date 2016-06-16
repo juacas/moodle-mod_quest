@@ -70,16 +70,14 @@ $action = optional_param('action', 'listallsubmissions', PARAM_ALPHA);
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
-$sid = required_param('sid', PARAM_INT);
-$submission = $DB->get_record("quest_submissions", array("id" => $sid));
-$submissiontitle = '"' . $submission->title . '"';
-$strsubmissions = ($action) ? get_string($action, 'quest') . ':' . $submissiontitle : get_string("submissions", "quest");
+$sid = optional_param('sid', null,PARAM_INT);
+$submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
+
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
 $url = new moodle_url('/mod/quest/submissions.php',
         array('id' => $id, 'sid' => $sid, 'action' => $action, 'sort' => $sort, 'dir' => $dir)); // evp debería añadir los otros posibles parámetros tal y como se ha hecho en assessments_autors.php
 $PAGE->set_url($url);
-$PAGE->navbar->add(\format_string($submission->title));
 
 if (($quest->usepassword) && (!$ismanager)) {
     quest_require_password($quest, $course, $_POST['userpassword']);
@@ -87,12 +85,11 @@ if (($quest->usepassword) && (!$ismanager)) {
 /* * ***************** confirm delete *********************************** */
 if ($action == 'confirmdelete') {
     $sid = required_param('sid', PARAM_INT); //submission id
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $sid))) {
-        print_error('cannotgetsubmissionrecord', 'quest');
-    }
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
 
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
+    $PAGE->navbar->add(\format_string($submission->title));
     echo $OUTPUT->header();
 
     echo "<br><br>";
@@ -103,6 +100,8 @@ if ($action == 'confirmdelete') {
     $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
+    $PAGE->navbar->add(\format_string($submission->title));
+
     echo $OUTPUT->header();
     // ...check if the user has enough capability to delete the submission and only up to the deadline.
     if (!($ismanager or
@@ -264,6 +263,7 @@ else if ($action == 'modif') {
 
     $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $titlesubmission = $submission->title;
+    $PAGE->navbar->add(\format_string($submission->title));
 
     if (($submission->userid != $USER->id) && (!($ismanager))) {
         error("Edit submission: Only teachers and autors can look this page");
@@ -310,7 +310,8 @@ else if ($action == 'modif') {
     $title = required_param('title', PARAM_TEXT); // ...title.
     $description = required_param('description', PARAM_RAW_TRIMMED);
 
-    $submission = $DB->get_record("quest_submissions", array("id" => $sid));
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
+    $PAGE->navbar->add(\format_string($submission->title));
 
     // ...students are only allowed to remove their own attachments and only up to the deadline.
     if (!($ismanager or ( ($USER->id == $submission->userid) and ( $timenow < $submission->dateend)))) {
@@ -370,6 +371,8 @@ else if ($action == 'modif') {
 
     $PAGE->set_title(format_string($quest->name.' '.$submission->title));
     $PAGE->set_heading($course->fullname);
+    $PAGE->navbar->add(\format_string($submission->title));
+
     echo $OUTPUT->header();
 
     /*
@@ -485,7 +488,8 @@ else if ($action == 'modif') {
 /* * ************* update submission ************************** */
 else if ($action == 'updatesubmission') {
     $form = data_submitted();
-    $submission = $DB->get_record("quest_submissions", array("id" => $sid));
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
+    $PAGE->navbar->add(\format_string($submission->title));
 
     // students are only allowed to update their own submission and only up to the deadline
     if (!($ismanager or ( ($USER->id == $submission->userid) and ( $timenow < $quest->dateend)))) {
@@ -602,11 +606,12 @@ else if ($action == 'updatesubmission') {
     print_heading(get_string("submitted", "quest") . " " . get_string("ok"));
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
 } else if ($action == 'approve') {
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $sid)))
-        error('Approve submission: invalid submission');
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $authorid = $submission->userid;
+    $PAGE->navbar->add(\format_string($submission->title));
+
     if (!$ismanager)
-        error("Approve submission: No enouth permissions to take this action");
+        print_error("Approve submission: No enougth permissions to take this action");
 
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, estudiar si es la mejor opci�n
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
@@ -620,7 +625,6 @@ else if ($action == 'updatesubmission') {
             array('submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions, 'attachmentoptions' => $attachmentoptions, 'action' => $action)); //the first parameter is $action, null will case the form action to be determined automatically)
 
     if ($mform->is_cancelled()) {
-
         redirect("submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$sid");
     } else if ($submission = $mform->get_data()) {
 
@@ -1016,7 +1020,7 @@ else if ($action == "showanswersuser") {
             $data = array();
             $sortdata = array();
 
-            $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid));
+            $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid),'*',MUST_EXIST);
             $data[] = quest_print_answer_title($quest, $answer, $submission) .
                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id\">" .
                     "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " .
@@ -1038,7 +1042,7 @@ else if ($action == "showanswersuser") {
             } else {
                 $assessment = null;
             }
-            $submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid));
+            $submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid),'*',MUST_EXIST);
             $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
             $sortdata['tassmnt'] = 1;
 
@@ -1496,7 +1500,7 @@ else if ($action == "showanswersteam") {
                 $data = array();
                 $sortdata = array();
 
-                $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid));
+                $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid),'*',MUST_EXIST);
 
                 $data[] = quest_print_answer_title($quest, $answer, $submission) .
                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id\">" .
@@ -1605,7 +1609,7 @@ else if ($action == "showanswersteam") {
     exit;
 } else if ($action == "recalificationall") {
 
-    $submission = $DB->get_record("quest_submissions", array("id" => $sid));
+    $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     quest_recalification_all($submission, $quest, $course);
     redirect("submissions.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
 }
