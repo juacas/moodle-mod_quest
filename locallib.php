@@ -1365,7 +1365,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
                             'quest') . "</a>";
         }
     } else if ($ismanager) {
-        $assessurl = new moodle_url("/mod/quest/assess.php", ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]);
+        $assessurl = new moodle_url("/mod/quest/assess.php", array('id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
         if (($answer->phase == 1) || ($answer->phase == 2)) {
 
             $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$assessurl\">" . get_string('reevaluate', 'quest') . "</a>";
@@ -1382,7 +1382,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     } else if ($submission->userid == $USER->id) {
 
         if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 1)) {
-   $assessurl = new moodle_url("/mod/quest/assess.php", ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]);
+   $assessurl = new moodle_url("/mod/quest/assess.php", array('id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
             $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"assess.php?id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" . get_string('reevaluate',
                             'quest') . "</a>";
 
