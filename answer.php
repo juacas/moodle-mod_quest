@@ -283,7 +283,7 @@ if ($action == "answer") {
     $aid = required_param('aid', PARAM_INT); // Answer ID.
     $id = required_param('id', PARAM_INT); // CourseModule ID.
     echo "<br><br>";
-    $answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
+    $answer = $DB->get_record('quest_answers', array('id' => $aid), '*', MUST_EXIST);
     $sid = $answer->submissionid;
     quest_print_answer_info($quest, $answer);
 

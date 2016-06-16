@@ -50,7 +50,7 @@
     	echo $OUTPUT->header();
   		echo $OUTPUT->heading_with_help(get_string("specimenassessmentformsubmission", "quest"), "specimensubmission", "quest");
         quest_print_assessment_autor($quest);
-        $id = $_GET['id'];
+        $id = required_param('id',PARAM_INT);
          // called with no assessment
         echo $OUTPUT->continue_button("view.php?id=$id");
     }
