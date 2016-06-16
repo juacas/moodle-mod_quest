@@ -42,9 +42,7 @@ global $DB, $OUTPUT, $PAGE;
 $answer = $DB->get_record('quest_answers', array('id' => $aid),'*',MUST_EXIST);
 $submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid),'*',MUST_EXIST);
 $quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_EXIST);
-$course = get_course($quest->course);
-$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,null,MUST_EXIST);
-
+list($course,$cm)=  quest_get_course_and_cm_from_quest($quest);
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 
@@ -63,6 +61,9 @@ $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
+$PAGE->navbar->add(get_string('submission','quest').': '.$submission->title,new moodle_url('submissions.php',array('id'=>$cm->id,'sid'=>$submission->id,'action'=>'showsubmission')));
+$PAGE->navbar->add(get_string('answername','quest',$answer));
+
 echo $OUTPUT->header();
 
 // ...there can be an assessment record , if there isn't...

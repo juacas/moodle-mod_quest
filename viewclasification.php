@@ -76,7 +76,7 @@ if ($dir !== 'ASC') {
 
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
-//$PAGE->set_context($context);
+$PAGE->navbar->add(get_string('global', 'quest'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 

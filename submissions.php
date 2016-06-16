@@ -70,19 +70,16 @@ $action = optional_param('action', 'listallsubmissions', PARAM_ALPHA);
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
-$sid = optional_param('sid', null, PARAM_INT);
-if ($sid == null) {
-    $submissiontitle = "";
-} else {
-    $submission = $DB->get_record("quest_submissions", array("id" => $sid));
-    $submissiontitle = '"' . $submission->title . '"';
-}
+$sid = required_param('sid', PARAM_INT);
+$submission = $DB->get_record("quest_submissions", array("id" => $sid));
+$submissiontitle = '"' . $submission->title . '"';
 $strsubmissions = ($action) ? get_string($action, 'quest') . ':' . $submissiontitle : get_string("submissions", "quest");
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
 $url = new moodle_url('/mod/quest/submissions.php',
         array('id' => $id, 'sid' => $sid, 'action' => $action, 'sort' => $sort, 'dir' => $dir)); // evp debería añadir los otros posibles parámetros tal y como se ha hecho en assessments_autors.php
 $PAGE->set_url($url);
+$PAGE->navbar->add(get_string('submission','quest').':'.$submission->title);
 
 if (($quest->usepassword) && (!$ismanager)) {
     quest_require_password($quest, $course, $_POST['userpassword']);
@@ -335,13 +332,8 @@ else if ($action == 'modif') {
  * show submission
  */ else if ($action == 'showsubmission') {
 
-
     $sid = required_param('sid', PARAM_INT); //submission id
-
-
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
-
-
     if (
             (!($ismanager)) &&
             ($submission->userid != $USER->id &&
@@ -354,8 +346,6 @@ else if ($action == 'modif') {
     } else {
         $submission->phase = SUBMISSION_PHASE_CLOSED; //closed
     }
-
-
     if (($quest->permitviewautors == 1) &&
             ($submission->phase == SUBMISSION_PHASE_CLOSED) &&
             ($submission->state == SUBMISSION_STATE_APROVED) &&
@@ -378,7 +368,7 @@ else if ($action == 'modif') {
         $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
     }
 
-    $PAGE->set_title(format_string($quest->name));
+    $PAGE->set_title(format_string($quest->name.' '.$submission->title));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
@@ -403,8 +393,6 @@ else if ($action == 'modif') {
          */
         $recalculatelink = '/ <a href="' . $CFG->wwwroot . "/mod/quest/submissions.php?id=$cm->id&action=showsubmission&sid=$submission->id&recalculate=yes" . '">Recalc.</a>';
     }
-
-
 
     echo $OUTPUT->heading($title);
     echo("<center><table width=100% ><tr><td>");

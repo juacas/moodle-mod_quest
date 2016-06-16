@@ -61,8 +61,8 @@ if (!empty($answer)) {
 
 $submission = $DB->get_record('quest_submissions', array('id' => $sid ),'*',MUST_EXIST);
 $quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_EXIST);
-$course=get_course($quest->course);
-$cm= get_fast_modinfo($course->id)->instances["quest"][$quest->id];
+list($course,$cm)=  quest_get_course_and_cm_from_quest($quest);
+
 
 if (!$redirect && isset($_SERVER["HTTP_REFERER"])) {
     $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
@@ -85,7 +85,7 @@ $url = new moodle_url('/mod/quest/answer.php',
     'aid' => $aid
         ));
 $PAGE->set_url($url);
-
+$PAGE->navbar->add(get_string('submission','quest').':'.$submission->title,new moodle_url('submissions.php',array('id'=>$cm->id,'sid'=>$submission->id,'action'=>'showsubmission')));
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
@@ -151,7 +151,6 @@ if ($action == "answer") {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading($title);
-        // Disabled by now: quest_print_submission_info($quest,$submission); to show additional information about the submission.
         echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">"
         . get_string("specimenassessmentform", "quest") . "</a>"
         . $OUTPUT->help_icon('specimensubmission', 'quest') . "</b></center>");
@@ -195,6 +194,7 @@ if ($action == "answer") {
 
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
+    $PAGE->navbar->add(get_string('answername','quest',$answer));
     echo $OUTPUT->header();
     echo $OUTPUT->heading($title);
     echo $OUTPUT->heading($subject);

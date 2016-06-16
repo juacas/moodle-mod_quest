@@ -41,9 +41,8 @@ global $DB;
 
 $submission = $DB->get_record('quest_submissions', array('id'=>$sid),'*',MUST_EXIST);
 $quest = $DB->get_record("quest", array("id" => $submission->questid),'*',MUST_EXIST);
-$course=get_course( $quest->course);
-//$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
-$cm = get_fast_modinfo($course)->instances["quest"][$quest->id];
+list($course,$cm)=  quest_get_course_and_cm_from_quest($quest);
+
 if (!$redirect) {
     $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
 }
@@ -63,6 +62,8 @@ $url = new moodle_url('/mod/quest/asses_autors.php',
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
+$PAGE->navbar->add(get_string('submission','quest').': '.$submission->title,new moodle_url('submissions.php',array('id'=>$cm->id,'sid'=>$submission->id,'action'=>'showsubmission')));
+
 echo $OUTPUT->header();
 
 $title = '"' . $submission->title . '" ';
