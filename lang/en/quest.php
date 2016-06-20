@@ -617,6 +617,7 @@ $string['typeteam'] = 'Team';
 $string['ungradedassessmentsofstudentsubmissions'] = '{$a} Ungraded Assessments of Student Submissions';
 $string['ungradedassessmentsofteachersubmissions'] = '{$a} Ungraded Assessments of Teacher Submissions';
 $string['unkownactionerror'] = 'Fatal error: Unknown action {$a}.';
+$string['unknownauthor']='Unknown author';
 $string['updateanswer'] = 'Answer updated';
 $string['updatecomment'] = 'Comment updated';
 $string['updatesubmission'] = 'Challenge submitted';

@@ -772,18 +772,15 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
         foreach ($submissions as $submission) {
             // get the author of this submission
             if ($submission->userid == 0) { // anonymous user
-                $user = $DB->get_record('user', array('id' => 1));
+                $user = false;
             } // Guest user
             else {
                 $user = $DB->get_record('user', array('id' => $submission->userid));
             }
-
             // skip if student not in group
-            if (!has_capability('mod/quest:manage', $context, $user->id)) {
-                //print("<p>Author is not teacher.</p>");
+            if (!has_capability('mod/quest:manage', $context)) {
                 if ($currentgroup) {
-                    if (!groups_is_member($currentgroup, $user->id)) {
-                        //print("<p>Author not in this group.</p>");
+                    if ($user!==null && !groups_is_member($currentgroup, $user->id)) {
                         continue;
                     }
                 }
@@ -804,8 +801,7 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
              */
             if (
                     $submission->state == SUBMISSION_STATE_APPROVAL_PENDING && !has_capability('mod/quest:approvechallenge',
-                            $context) && !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id
-            ) {
+                            $context) && !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id) {
                 continue;
             }
             // skip challenge for student if the challenge is not started

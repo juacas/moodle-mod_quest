@@ -84,8 +84,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data = (object)$data;
         $data->questid = $this->get_new_parentid('quest');
         $newitemid = $DB->insert_record('quest_elements', $data);
-//         $oldid = $data->id;
-//         $this->set_mapping('quest_element', $oldid, $newitemid);
     }
     protected function process_quest_particular_element($data)
     {
@@ -96,8 +94,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->submissionsid = $this->get_mappingid('quest_challenge', $data->submissionsid);
 
     	$newitemid = $DB->insert_record('quest_elements', $data);
-    	//         $oldid = $data->id;
-    	//         $this->set_mapping('quest_element', $oldid, $newitemid);
     }
 	protected function process_quest_element_autor($data)
     {
@@ -107,8 +103,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->questid = $this->get_new_parentid('quest');
 
         $newitemid = $DB->insert_record('quest_elementsautor', $data);
-//        $oldid = $data->id;
-//        $this->set_mapping('quest_element_autor', $oldid, $newitemid);
     }
 	protected function process_quest_rubric_autor($data)
     {
@@ -143,7 +137,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $oldid = $data->id;
 
         $data->questid = $this->get_new_parentid('quest');
-        // If userid==0 assign it to the user that is restoring the course
+        // If userid==0 assign it to the user that is restoring the course or unknown user?
+        // unknown user may generate incongruences if group mode is enabled.
         $data->userid = $this->get_mappingid('user', $data->userid,$USER->id);
         $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->dateend = $this->apply_date_offset($data->dateend);

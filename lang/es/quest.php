@@ -571,6 +571,7 @@ $string['typeofscale'] = 'Tipo de escala';
 $string['typeteam'] = 'Equipos';
 $string['ungradedassessmentsofstudentsubmissions'] = '{$a} Valoraciones aún por calificar de los envíos de los estudiantes';
 $string['ungradedassessmentsofteachersubmissions'] = '{$a} Valoraciones aún por calificar de los envíos del Profesor';
+$string['unknownauthor']='Autor desconocido';
 $string['updateanswer'] = 'Respuesta Enviada';
 $string['updatecomment'] = 'Commentario actualizado.';
 $string['updatesubmission'] = 'Desafío Guardado';

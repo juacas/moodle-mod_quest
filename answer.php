@@ -354,7 +354,6 @@ if ($action == "answer") {
         if (!$ismanager) {
             continue;
         }
-
         quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",'answerdelete', $quest, $submission, $answer);
     }
     if (!has_capability('mod/quest:manage', $context, $submission->userid)) {

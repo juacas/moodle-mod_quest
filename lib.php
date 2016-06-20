@@ -1977,12 +1977,11 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
 function quest_fullname($userid, $courseid) {
     global $CFG,$DB;
     if (!$user = $DB->get_record('user',array('id'=>$userid))) {
-        return 'Unknown user ($userid)';
+        return get_string('unknownauthor','quest');
     }
     return '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$user->id.'&amp;course='.$courseid.'">'.
         fullname($user).'</a>';
 }
-
 
 /**
  * Get challenges submitted from timestart in a course
