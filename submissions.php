@@ -407,7 +407,7 @@ else if ($action == 'modif') {
 
     echo"</td></tr></table></center>";
     $text = "<center><b>";
-    $text .= "<a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform\">" .
+    $text .= "<a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform&amp;sesskey=".sesskey()."\">" .
             get_string("specimenassessmentformanswer", "quest") . "</a>";
     $text.=$OUTPUT->help_icon('specimenanswer', 'quest');
 
@@ -418,7 +418,7 @@ else if ($action == 'modif') {
     } else
     if ((($ismanager || $USER->id == $submission->userid)
             and $quest->nelementsautor) && ($submission->numelements != 0)) {
-        $text .= "&nbsp;<a href=\"assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements\">" .
+        $text .= "&nbsp;<a href=\"assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements&amp;sesskey=".sesskey()."\">" .
                 $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
     }
     $text .= "</b></center>";
@@ -432,7 +432,6 @@ else if ($action == 'modif') {
 
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
     $groupmode = groups_get_activity_group($cm);   // Groups are being used?
-    //$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);  evp no estoy segura de que sea este el mejor cambio
     $currentgroup = groups_get_course_group($COURSE);
 
     if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) && ($submission->nanswerscorrect < $quest->nmaxanswers)) {
@@ -444,10 +443,10 @@ else if ($action == 'modif') {
         if ($currentgroup && !groups_is_member($currentgroup, $submission->userid) && !($submission->dateend < time())) {
             print(get_string('cantRespond_WARN_notingroup_or_challengeended', 'quest'));
         } else {
-            $actionlinks = quest_actions_submission($course, $submission, $quest, $cm);
+            $actionlinks = quest_actions_submission($course, $submission, $quest, $cm, array('recalification'=>false));
         }
     } else {
-        $actionlinks = quest_actions_submission($course, $submission, $quest, $cm);
+        $actionlinks = quest_actions_submission($course, $submission, $quest, $cm, array('recalification'=>false));
     }
     echo $actionlinks . $recalculatelink;
     echo "<br>";
@@ -457,21 +456,8 @@ else if ($action == 'modif') {
     quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir);
 
     if ($REPEAT_ACTIONS_BELOW) {
-        if (!has_capability('mod/quest:manage', $context, $submission->userid) && ($groupmode == 2)) {
-            if ($currentgroup) {
-                if (groups_is_member($currentgroup, $submission->userid)) {
-                    $actionlinks = quest_actions_submission($course, $submission, $quest, $cm);
-                } else if ($submission->dateend < time()) {
-                    $actionlinks = quest_actions_submission($course, $submission, $quest, $cm);
-                }
-            } else {
-                $actionlinks = quest_actions_submission($course, $submission, $quest, $cm);
-            }
-        } else {
-            $actionlinks = quest_actions_submission($course, $submission, $quest, $cm);
-        }
+            echo $actionlinks . $recalculatelink;
     }
-    echo $actionlinks . $recalculatelink;
     if ($CFG->version >= 2014051200) {
         require_once('classes/event/challenge_viewed.php');
         $view_event = mod_quest\event\challenge_viewed::create_from_parts($USER, $submission, $cm);
@@ -1606,12 +1592,13 @@ else if ($action == "showanswersteam") {
 
     print_footer($course);
     exit;
-} else if ($action == "recalificationall") {
+} else if ($action == "recalificationall" && false) { // This action is deprecated.
 
     $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     quest_recalification_all($submission, $quest, $course);
     redirect("submissions.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
 }
+
 /* * ***********confirmar particularizar formulario para desafios********************** */ else if ($action == "confirmchangeform") {
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
@@ -1619,7 +1606,7 @@ else if ($action == "showanswersteam") {
     echo $OUTPUT->header();
     echo "<br><br>";
     echo $OUTPUT->confirm(get_string("doyouwantparticularform", "quest"),
-            "assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements",
+            "assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements&amp;sesskey=".sesskey()."",
             "submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
 } else {
 
@@ -1629,4 +1616,5 @@ else if ($action == "showanswersteam") {
 
 
 echo $OUTPUT->footer();
+
 ?>

@@ -3312,8 +3312,19 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
             }
         }
 
-///////////////////////////////////////////////////
-        function quest_actions_submission($course, $submission, $quest, $cm) {
+/**
+ * 
+ * @global stdClass $USER
+ * @global stdClass $DB
+ * @global type $OUTPUT
+ * @param type $course
+ * @param type $submission
+ * @param type $quest
+ * @param type $cm
+ * @param type $options array with booleans for recalification, and in the future other options
+ * @return string
+ */
+        function quest_actions_submission($course, $submission, $quest, $cm, $options=null) {
 
             global $USER, $DB, $OUTPUT;
 
@@ -3395,7 +3406,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
                 }
             }
 
-            if ($ismanager) {
+            if ($ismanager==true && (isset($options['recalification']) && $options['recalification']==true)) {
                 if ($string != '') {
                     $string.='&nbsp;/&nbsp;';
                 }

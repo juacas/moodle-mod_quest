@@ -977,7 +977,7 @@ function quest_grade_item_update($quest, $grades=null) {
 
     // questournament grades as a % of the maxscore in the ranking table
     $params['gradetype'] = GRADE_TYPE_VALUE;
-    $params['grademax']  = floatval($quest->maxcalification);
+    $params['grademax']  = floatval(100); // Grade is always normalized to other users maxcalification
     $params['grademin']  = 0;
 
 
