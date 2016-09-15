@@ -2479,24 +2479,22 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
 		$PAGE->cm->context = context_module::instance($PAGE->cm->instance);
 	}
 
-	// for some actions you need to be enrolled, beiing admin is not enough sometimes here
-// 	$enrolled = is_enrolled($PAGE->cm->context, $USER, '', false);
-// 	$activeenrolled = is_enrolled($PAGE->cm->context, $USER, '', true);
-
-	$ismanager  = has_capability('mod/quest:manage', $PAGE->cm->context);
-	$questnode->add('Questournaments',new moodle_url('/mod/quest/index.php',array('id'=>$PAGE->course->id)),navigation_node::TYPE_SETTING);
+	// For some actions you need to be enrolled, beiing admin is not enough sometimes here:
+    // 	$enrolled = is_enrolled($PAGE->cm->context, $USER, '', false);
+    // 	$activeenrolled = is_enrolled($PAGE->cm->context, $USER, '', true);
+   
+    $questnode->add('Questournaments',new moodle_url('/mod/quest/index.php',array('id'=>$PAGE->course->id)),navigation_node::TYPE_SETTING);
 
 	//manage Teams
-	if(($ismanager))
+	if(has_capability('mod/quest:manage', $PAGE->cm->context))
 	{
 		if ($questobject->allowteams)
 		  $questnode->add(get_string('changeteamteacher','quest'),new moodle_url('/mod/quest/team.php',array('id'=>$PAGE->cm->id,'action'=>'change')),navigation_node::TYPE_SETTING);
-
+    }
+    if (has_capability('mod/quest:downloadlogs', $PAGE->cm->context)){
 		$catnode=$questnode->add('Admin logs',null,navigation_node::TYPE_CONTAINER);
-
 		$catnode->add('Get technical logs',new moodle_url('/mod/quest/getLogs.php',array('id'=>$PAGE->cm->id)),navigation_node::TYPE_SETTING);
 		$catnode->add('Full activity listing',new moodle_url('/mod/quest/report.php',array('id'=>$PAGE->cm->id)),navigation_node::TYPE_SETTING);
-
 	}
 
 

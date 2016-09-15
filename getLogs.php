@@ -39,10 +39,10 @@ $quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
-$canpreview = has_capability('mod/quest:preview', $context);
+$candownloadlogs = has_capability('mod/quest:downloadlogs', $context);
 
-if (!$canpreview) {
-    error('No enough permissions mod/quest:preview');
+if (!$candownloadlogs) {
+    print_error('nopermissions',null,null,'No enough permissions mod/quest:downloadlogs');
 }
 /**
  * Select various queries
@@ -51,7 +51,7 @@ $query_id = optional_param('query', 'what', PARAM_ALPHA);
 
 switch ($query_id) {
     case 'ip':
-        $query = $DB->get_records_select("log", "module='quest' and cmid=?", array($cm->id), "time", "ip,time,id");
+        $query = $DB->get_records_select("log", "module='quest' and cmid=?", array($cm->id), "time", "id,ip,time");
         break;
     case 'logs':
         $query = $DB->get_records_select("log", "module='quest' and cmid=?", array($cm->id), "time");

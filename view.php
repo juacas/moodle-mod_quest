@@ -122,7 +122,7 @@ if (has_capability('mod/quest:manage', $context)) {
             redirect("assessments.php?action=editelements&id=$cm->id&sesskey=".sesskey());
         }
     }
-} elseif (has_capability('mod/quest:preview')){ // It's a non-editing teacher
+} elseif (has_capability('mod/quest:preview',$context)){ // It's a non-editing teacher
     $action = 'teachersview';
 } elseif (has_capability('mod/quest:attempt', $context)) {
     // it's a student then

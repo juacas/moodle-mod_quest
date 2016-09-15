@@ -262,14 +262,13 @@ else if ($action == 'submitchallenge') {
 }
 // Edit submission. 
 else if ($action == 'modif') {
-    // $usehtmleditor = can_use_html_editor();
     $sid = required_param('sid', PARAM_INT); //submission id
     $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $titlesubmission = $submission->title;
     $PAGE->navbar->add(\format_string($submission->title));
 
     if (($submission->userid != $USER->id) && (!$caneditchallenges)) {
-        error("Edit submission: Only teachers and autors can look this page");
+        print_error("Edit submission: Only teachers and autors can look this page",'quest');
     }
 
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, no tengo claro si es la mejor opci�n
