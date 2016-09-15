@@ -41,7 +41,8 @@ require_login($course->id, false, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
-require_capability('mod/quest:view', $context);
+$canpreview = has_capability('mod/quest:preview', $context);
+require_capability('mod/quest:preview', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
     print_error("Modulehidden.", 'quest', "view.php?id=$cmid");

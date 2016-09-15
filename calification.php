@@ -52,7 +52,8 @@
 
 	$context = context_module::instance( $cm->id);
 	$ismanager=has_capability('mod/quest:manage',$context);
-
+    $cangrade =  has_capability('mod/quest:grade', $context);
+    $canpreview =  has_capability('mod/quest:preview', $context);
     $strquests = get_string("modulenameplural", "quest");
     $strquest  = get_string("modulename", "quest");
     $strcalification = get_string("calification", "quest");
@@ -81,7 +82,7 @@
 
         print_heading_with_help(get_string("calificationthisquest", "quest"), "grading", "quest");
 
-        if($ismanager){
+        if($cangrade){
          echo "<form name=\"calification\" method=\"post\" action=\"viewcalification.php\">";
          echo "<input type=\"hidden\" name=\"id\" value=\"$id\">";
          echo "<input type=\"hidden\" name=\"action\" value=\"upgradecalification\">";
@@ -221,7 +222,7 @@
                     $data[] = print_user_picture($user->id, $course->id, $user->picture,0,true);
                     $sortdata['picture'] = 1;
 
-                    if($ismanager){
+                    if($canpreview){
 
                         $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">".
                         fullname($user).'</a>';
@@ -234,7 +235,7 @@
                         $sortdata['firstname'] = $user->firstname;
                         $sortdata['lastname'] = $user->lastname;
                     }
-                    if($ismanager){
+                    if($canpreview){
                       $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showanswersuser&amp;id=$cm->id\">".$clasification->nanswers.'</a>';
                     }
                     else{
@@ -245,7 +246,7 @@
                     $data[] = $clasification->nanswersassessment;
                     $sortdata['nanswersassessment'] = $clasification->nanswersassessment;
 
-                    if($ismanager){
+                    if($canpreview){
                       $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showsubmissionsuser&amp;id=$cm->id\">".$clasification->nsubmissions.'</a>';
                     }
                     else{
@@ -285,7 +286,7 @@
             $table->data[] = $tablesort->data[$key];
         }
 
-        if($ismanager){
+        if($canpreview){
                 $table->align = array ('left','left', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center');
                 $table->valign = array ('center','center', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center');
                 $columns = array('picture','firstname','lastname', 'nanswers', 'nanswersassessment', 'nsubmissions', 'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'points');
@@ -318,7 +319,7 @@
             $$column = "<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=$column&amp;dir=$columndir\">".$string[$column]."</a>$columnicon";
         }
 
-        if($ismanager){
+        if($canpreview){
 
          $table->head = array ("","$firstname / $lastname", "$nanswers", "$nanswersassessment", "$nsubmissions", "$nsubmissionsassessment", "$pointssubmission", "$pointsanswers", "$points");
 
@@ -450,7 +451,7 @@
                   $data[] = $team->name;
                   $sortdata['team'] = $team->name;
 
-                  if($ismanager){
+                  if($canpreview){
                     $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showanswersteam&amp;id=$cm->id\">".$nanswers.'</a>';
                   }
                   else{
@@ -461,7 +462,7 @@
                   $data[] = $nanswersassessment;
                   $sortdata['nanswersassessment'] = $nanswersassessment;
 
-                  if($ismanager){
+                  if($canpreview){
                     $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showsubmissionsteam&amp;id=$cm->id\">".$nsubmissions.'</a>';
                   }
                   else{

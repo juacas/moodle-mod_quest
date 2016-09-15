@@ -39,13 +39,12 @@
     quest_check_visibility($course,$cm);
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
-
+    $canaddchallenge = has_capability('mod/quest:addchallenge', $context);
 /*****
 TODO: Check capabilities
 ***/
 
 // filter access to guest user
-$context = context_module::instance( $cm->id);
 if (!has_capability('moodle/legacy:admin', $context) &&
     has_capability('moodle/legacy:guest', $context))
    {

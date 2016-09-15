@@ -32,7 +32,7 @@
     $url =  new moodle_url('/mod/quest/assessments_autors.php',array('action'=>$action,'id'=>$id));
     $context = context_module::instance( $cm->id);
     $ismanager=has_capability('mod/quest:manage',$context);
-
+    $cangrade =  has_capability('mod/quest:grade', $context);
     require_login($course->id, false, $cm);
     $PAGE->set_url($url);
     $PAGE->set_title(format_string($quest->name));
@@ -554,7 +554,7 @@
         //////////////////////
         quest_grade_updated($quest,$submission->userid);
 
-        if($ismanager){
+        if($cangrade){
               if($user = get_complete_user_data('id', $submission->userid))
               {
                 quest_send_message($user, "viewassessmentautor.php?aid=$aid", 'assessmentautor', $quest,  $submission);

@@ -507,9 +507,9 @@ $string['quest:emailnotifychallenge'] = 'Receive email notification from other p
 $string['quest:grade'] = 'Manually grade and comment on student attempts at a question, and regrade questournaments';
 $string['quest:gradeownchallenge'] = 'Grade own challenge';
 $string['quest:ignoretimelimits'] = 'Ignore time limits.';
-$string['quest:manage'] = 'Edit the questournament settings, add and remove challenges.(Deprecated)';
+$string['quest:manage'] = 'Edit the questournament settings, add and remove challenges.';
 $string['quest:manageownchallenge'] = 'Manage own challenge';
-$string['quest:preview'] = 'Preview.';
+$string['quest:preview'] = 'View extended information and links of the different parts of the Questournament.';
 $string['quest:viewotherattemptsowners'] = 'View owners of other attempts';
 $string['quest:viewreports'] = 'View the questournament reports';
 

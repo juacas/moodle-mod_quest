@@ -48,6 +48,7 @@ quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$cangrade=  has_capability('mod/quest:grade', $context);
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
@@ -73,10 +74,9 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
     // ...create one and set timecreated way in the future, this is reset when record is updated.
     $assessment = new stdClass();
     $assessment->questid = $quest->id;
-
-    if ($ismanager) {
+    if ($cangrade) {
         $assessment->teacherid = $USER->id;
-    } else if (($submission->userid == $USER->id) && (!$ismanager)) {
+    } else if (($submission->userid == $USER->id) && (!$cangrade)) {
         $assessment->userid = $USER->id;
     } else {
         print_error('assess_forbidden', 'quest');
@@ -93,7 +93,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
         print_error("Could not insert quest assessment!");
     }
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
-    if ($ismanager and ( $quest->gradingstrategy == 2)) {
+    if ($cangrade and ( $quest->gradingstrategy == 2)) {
         if ($DB->get_field("quest_submissions", "numelements", array("id" => $submission->id)) == 0) {
             $num = $DB->get_field("quest", "nelements", array("id" => $quest->id));
         } else {
@@ -131,7 +131,7 @@ echo $OUTPUT->heading_with_help(get_string("assessthisanswer", "quest"), "gradin
 
 $title = get_string('answername', 'quest', $answer);
 
-if ($ismanager) {
+if (has_capability('mod/quest:preview', $context)) {
     $title .= get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
 }
 

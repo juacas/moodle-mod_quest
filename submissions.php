@@ -63,6 +63,10 @@ quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$candeletechallenge = has_capability('mod/quest:deletechallengeall', $context);
+$canpreview  = has_capability('mod/quest:preview', $context);
+$caneditchallenges= has_capability('mod/quest:editchallengeall', $context);
+$canapprove=has_capability('mod/quest:approvechallenge', $context);
 
 $action = optional_param('action', 'listallsubmissions', PARAM_ALPHA);
 
@@ -103,7 +107,7 @@ if ($action == 'confirmdelete') {
 
     echo $OUTPUT->header();
     // ...check if the user has enough capability to delete the submission and only up to the deadline.
-    if (!($ismanager or
+    if (!(
             ( has_capability('mod/quest:deletechallengeall', $context)
                 or (has_capability('mod/quest:deletechallengemine',$context)
                     and ( $USER->id == $submission->userid))
@@ -162,7 +166,7 @@ if ($action == 'confirmdelete') {
     $fs->delete_area_files($context->id,'mod_quest','submission',$submission->id);
     $fs->delete_area_files($context->id,'mod_quest','attachment',$submission->id);
 
-    if ($ismanager) {
+    if ($candeletechallenge) {
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
             echo $OUTPUT->heading(get_string("nostudentsyet"));
             echo $OUTPUT->footer();
@@ -217,7 +221,8 @@ if ($action == 'confirmdelete') {
 /* * **************** submission of a challenge by teacher or proposal from student ********************** */
 else if ($action == 'submitchallenge') {
     // check if the user has enough capability to add the submission
-    if (!($ismanager or ( has_capability('mod/quest:addchallenge', $context)))) {
+    $canaddchallenge =  has_capability('mod/quest:addchallenge', $context);
+    if (!$canaddchallenge) {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
@@ -244,7 +249,7 @@ else if ($action == 'submitchallenge') {
         redirect("view.php?id=$cm->id");
     } else if ($newsubmission = $mform->get_data()) {
         $authorid = $USER->id;
-        quest_upload_challenge($quest, $newsubmission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context, $action,
+        quest_upload_challenge($quest, $newsubmission, $canaddchallenge, $cm, $descriptionoptions, $attachmentoptions, $context, $action,
                 $authorid);
     } else {
         $PAGE->set_title(format_string($quest->name));
@@ -259,12 +264,11 @@ else if ($action == 'submitchallenge') {
 else if ($action == 'modif') {
     // $usehtmleditor = can_use_html_editor();
     $sid = required_param('sid', PARAM_INT); //submission id
-
     $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $titlesubmission = $submission->title;
     $PAGE->navbar->add(\format_string($submission->title));
 
-    if (($submission->userid != $USER->id) && (!($ismanager))) {
+    if (($submission->userid != $USER->id) && (!$caneditchallenges)) {
         error("Edit submission: Only teachers and autors can look this page");
     }
 
@@ -287,7 +291,7 @@ else if ($action == 'modif') {
 //         	$submission->id=$submission->sid;// id param is used in the page for coursemodule
 //         	unset($submission->sid);
         $authorid = $submission->userid;
-        quest_upload_challenge($quest, $modif_submission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context,
+        quest_upload_challenge($quest, $modif_submission, $caneditchallenges, $cm, $descriptionoptions, $attachmentoptions, $context,
                 $action, $authorid);
     } else {
         $PAGE->set_title(format_string($quest->name));
@@ -313,7 +317,7 @@ else if ($action == 'modif') {
     $PAGE->navbar->add(\format_string($submission->title));
 
     // ...students are only allowed to remove their own attachments and only up to the deadline.
-    if (!($ismanager or ( ($USER->id == $submission->userid) and ( $timenow < $submission->dateend)))) {
+    if (!($caneditchallenges or ( ($USER->id == $submission->userid) and ( $timenow < $submission->dateend)))) {
         error("You are not authorized to delete these attachments");
     }
     $submission->title = $title;
@@ -335,7 +339,7 @@ else if ($action == 'modif') {
     $sid = required_param('sid', PARAM_INT); //submission id
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
     if (
-            (!($ismanager)) &&
+            (!($canpreview)) &&
             ($submission->userid != $USER->id &&
             ($submission->datestart > time() || $submission->state == 1))) {
         print_error('notpermissionsubmission', 'quest');
@@ -364,7 +368,7 @@ else if ($action == 'modif') {
                 $OUTPUT->pix_icon('/t/edit', get_string('modif', 'quest'))
                 . '</a> ';
     }
-    if (($ismanager) || ($submission->userid == $USER->id) || ($permitviewautors == 1)) {
+    if (($canpreview) || ($submission->userid == $USER->id) || ($permitviewautors == 1)) {
         $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
     }
 
@@ -477,7 +481,7 @@ else if ($action == 'updatesubmission') {
     $PAGE->navbar->add(\format_string($submission->title));
 
     // students are only allowed to update their own submission and only up to the deadline
-    if (!($ismanager or ( ($USER->id == $submission->userid) and ( $timenow < $quest->dateend)))) {
+    if (!($caneditchallenges or ( ($USER->id == $submission->userid) and ( $timenow < $quest->dateend)))) {
         error("You are not authorized to update your submission");
     }
     $title = required_param('title', PARAM_TEXT);
@@ -511,7 +515,7 @@ else if ($action == 'updatesubmission') {
     $submission->pointsmax = required_param('pointsmax', PARAM_INT);
     $submission->initialpoints = required_param('initialpoints', PARAM_INT);
 
-    if ($ismanager) {
+    if ($caneditchallenges) {
         $submission->perceiveddifficulty = $form->perceiveddifficulty;
         $submission->predictedduration = $form->predictedduration;
         $submission->comentteacherautor = optional_param('comentteacherautor', $submission->comentteacherautor, PARAM_TEXT);
@@ -594,9 +598,8 @@ else if ($action == 'updatesubmission') {
     $submission = $DB->get_record("quest_submissions", array("id" => $sid),'*',MUST_EXIST);
     $authorid = $submission->userid;
     $PAGE->navbar->add(\format_string($submission->title));
-
-    if (!$ismanager)
-        print_error("Approve submission: No enougth permissions to take this action");
+    if (!$canapprove)
+        print_error("Approve challenge: Not enought permissions to take this action");
 
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, estudiar si es la mejor opci�n
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
@@ -615,14 +618,12 @@ else if ($action == 'updatesubmission') {
 
 
         if (isset($submission->submitbuttonapprove)) {
-            quest_upload_challenge($quest, $submission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context,
+            quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions, $attachmentoptions, $context,
                     $action, $authorid);
         } else {  //save but not approve
-            //echo" save but not approve";print_object($submission);die;
             $action = 'modif';
-            quest_upload_challenge($quest, $submission, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context,
+            quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions, $attachmentoptions, $context,
                     $action, $authorid);
-            //!!!!comprobar si al modificar un profesor pero no aprobar, el desafío sigue bien su estado
         }
     } else {
 
@@ -638,7 +639,7 @@ else if ($action == 'updatesubmission') {
 }
 /* * ************* no man's land ************************************* */ else if ($action == 'showsubmissionsuser') {
 
-    if (!$ismanager) {
+    if (!$canpreview) {
         error("Only teachers can look at this page");
     }
     ?>
@@ -805,7 +806,7 @@ else if ($action == 'updatesubmission') {
     $user = $usertemp;
 
     $title = get_string('showsubmissions', 'quest');
-    if ($ismanager) {
+    if ($canpreview) {
         $title .= ' ' . get_string('of', 'quest') . ' ' . quest_fullname($user->id, $course->id);
     }
     echo $OUTPUT->heading($title);
@@ -983,7 +984,7 @@ else if ($action == "showanswersuser") {
     $user = $usertemp;
 
     $title = get_string('showanswers', 'quest');
-    if ($ismanager) {
+    if ($canpreview) {
         $user->imagealt = quest_fullname($user->id, $course->id);
         $title .= ' ' . get_string('of', 'quest') . ' ' . $OUTPUT->user_picture($user) . $user->imagealt;
     }
@@ -1090,7 +1091,7 @@ else if ($action == "showanswersuser") {
 /////////////////////////////////////////////////////////////////
 else if ($action == 'showsubmissionsteam') {
 
-    if (!$ismanager) {
+    if (!$canpreview) {
         error("Only teachers can look at this page");
     }
     $PAGE->set_title(format_string($quest->name));
@@ -1267,7 +1268,7 @@ else if ($action == 'showsubmissionsteam') {
 
 
     $title = get_string('showsubmissions', 'quest');
-    if ($ismanager) {
+    if ($canpreview) {
         $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . $team->name;
     }
 
@@ -1466,7 +1467,7 @@ else if ($action == "showanswersteam") {
 
 
     $title = get_string('showanswers', 'quest');
-    if ($ismanager) {
+    if ($canpreview) {
         $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . $team->name;
     }
     echo $OUTPUT->heading($title);
@@ -1497,7 +1498,7 @@ else if ($action == "showanswersteam") {
 
                 $sortdata['title'] = strtolower($answer->title);
 
-                if ($ismanager) {
+                if ($canpreview) {
                     $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
                             fullname($user) . '</a>';
                     $sortdata['firstname'] = strtolower($user->firstname);

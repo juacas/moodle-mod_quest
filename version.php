@@ -34,7 +34,7 @@
 //////////////////////////////////////////////////////
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016061001;
+$plugin->version  = 2016091501;
 $plugin->requires = 2013111800; // Moodle 2.6 at least
 $plugin->component = 'mod_quest';
 $plugin->cron     = 600;// Period for cron to check this module (secs)

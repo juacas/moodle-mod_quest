@@ -39,9 +39,10 @@ $quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$canpreview = has_capability('mod/quest:preview', $context);
 
-if (!$ismanager) {
-    error('No enough permissions');
+if (!$canpreview) {
+    error('No enough permissions mod/quest:preview');
 }
 /**
  * Select various queries

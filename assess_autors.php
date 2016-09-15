@@ -52,6 +52,7 @@ quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$cangrade =  has_capability('mod/quest:grade', $context);
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
@@ -67,7 +68,7 @@ $PAGE->navbar->add(get_string('submission','quest').': '.$submission->title,new 
 echo $OUTPUT->header();
 
 $title = '"' . $submission->title . '" ';
-if ($ismanager) {
+if (has_capability('mod/quest:preview', $context)) {
     $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
 }
 echo $OUTPUT->heading($title);
@@ -85,7 +86,7 @@ if (!$assessment){
     // ...create one and set timecreated way in the future, this is reset when record is updated.
     $assessment = new stdclass();
     $assessment->questid = $quest->id;
-    if ($ismanager) {
+    if ($cangrade) {
         $assessment->userid = $USER->id;
     }
     $assessment->submissionid = $submission->id;
@@ -99,7 +100,7 @@ if (!$assessment){
     $assessment->dateassessment = $now;
 
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
-    if ($ismanager and ( $quest->gradingstrategy == 2)) {
+    if ($cangrade and ( $quest->gradingstrategy == 2)) {
         for ($i = 0; $i < $quest->nelements; $i++) {
             unset($element);
             $element->questid = $quest->id;

@@ -95,7 +95,7 @@ if (($quest->usepassword) && (!$ismanager)) {
  * Teachers must complete grading elements
  * and students must enroll in a team if enabled.
  */
-if ($ismanager) {
+if (has_capability('mod/quest:manage', $context)) {
 
     if (empty($action)) { // no action specified, either go straight to elements page else the admin page
         // has the assignment any elements
@@ -122,12 +122,11 @@ if ($ismanager) {
             redirect("assessments.php?action=editelements&id=$cm->id&sesskey=".sesskey());
         }
     }
-} else
-/*
- * Create a grade record and register the user as active in the quest.
- */
-if (has_capability('mod/quest:attempt', $context)) {
+} elseif (has_capability('mod/quest:preview')){ // It's a non-editing teacher
+    $action = 'teachersview';
+} elseif (has_capability('mod/quest:attempt', $context)) {
     // it's a student then
+    // Create a grade record and register the user as active in the quest.
 
     if (!$cm->visible) {
         notice(get_string("activityiscurrentlyhidden"));

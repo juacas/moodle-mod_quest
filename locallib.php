@@ -458,7 +458,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
     $newsubmission->descriptionformat = FORMAT_HTML; // updated later
     $newsubmission->descriptiontrust = 0; //updated later
     $newsubmission->timecreated = time();
-
+    $canapprove = has_capability('mod/quest:approvechallenge', $context);
     if ($ismanager) {
         // $newsubmission->commentteacherpupil = $entry->commentteacherpupil;
 
@@ -475,7 +475,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
     }
     if (empty($newsubmission->id)) {  // $newsubmission->sid is not defined or empty if this is a new submission.
         $isnew = true;
-        if ($ismanager) {
+        if ($canapprove) {
             $newsubmission->state = SUBMISSION_STATE_APROVED;  // ...if teacher, approved state.
         } else {
             $newsubmission->state = SUBMISSION_STATE_APPROVAL_PENDING;  //  ...if student, approval pending state.
@@ -485,7 +485,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
         }
     } else {
         $isnew = false;
-        if ($ismanager && $action === 'approve') { // ...the challenge is approved by the teacher.
+        if ($canapprove && $action === 'approve') { // ...the challenge is approved by the teacher.
             $newsubmission->state = SUBMISSION_STATE_APROVED;
         } else {    // ...the challenge is modified, the status does not change.
             $newsubmission->state = $DB->get_field('quest_submissions', 'state', array('id' => $newsubmission->id));
@@ -509,18 +509,6 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
         quest_grade_updated($quest, $USER->id);
     }
 
-    /* evp, check what we want to do with this (there are some comments from JP about let the cron do the job... different messages will have to be send according to the action
-      if (!$users = quest_get_course_members($COURSE->id, "u.lastname, u.firstname, u.secret")){
-      continue;
-      }else{
-      foreach($users as $user){
-      if(!$ismanager){
-      continue;
-      }else{
-      quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", 'addsubmission', $quest, $newsubmission, '');
-      }
-      }
-     */
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
 
     quest_update_challenge_calendar($cm,$quest,$newsubmission);
@@ -620,9 +608,10 @@ function quest_print_submission($quest, $submission) {
     $description = format_text($description, $submission->descriptionformat, $options);
     echo $OUTPUT->box($description);
     $ismanager = has_capability('mod/quest:manage', $context);
-
+    $canpreview = has_capability('mod/quest:preview', $context);
+    
     if (!empty($submission->comentteacherautor)) {
-        if (($submission->userid == $USER->id) || ($ismanager)) {
+        if (($submission->userid == $USER->id) || ($canpreview)) {
             echo $OUTPUT->heading(get_string('comentsforautor', 'quest'));
             echo $OUTPUT->box(format_text($submission->comentteacherautor), 'center');
         }
@@ -680,7 +669,7 @@ function quest_print_submission_info($quest, $submission) {
     // print standard assignment heading
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
-
+    $canpreview = has_capability('mod/quest:preview', $context);
     echo $OUTPUT->box_start("center");
 
     // print phase and date info
@@ -707,10 +696,9 @@ function quest_print_submission_info($quest, $submission) {
     }
     $string .= '<form name="puntos"><b>' . get_string('points', 'quest') . ":&nbsp;&nbsp;<input name=\"calificacion\" type=\"text\" value=\"0.000\" size=\"10\" readonly=\"1\" style=\"background-color : White; border : black; color : Black; font-family : Verdana, Arial, Helvetica; font-size : 14pt; text-align : center;\" ></form></b><br>";
 
-    if (($USER->id == $submission->userid) || ($ismanager) || ($submission->dateend < time())) {
+    if (($USER->id == $submission->userid) || ($canpreview) || ($submission->dateend < time())) {
         if ($submission->evaluated == 1 && $assessment = $DB->get_record("quest_assessments_autors",
-                array("questid" => $quest->id,
-            "submissionid" => $submission->id))) {
+                array("questid" => $quest->id, "submissionid" => $submission->id))) {
             $string .= '<b>' . get_string('calificationautor', 'quest') . ': ';
             $string .= number_format(100 * $assessment->points / $submission->initialpoints, 1) . '% ';
             $string.= get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format($submission->initialpoints,
@@ -875,14 +863,14 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
 
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
-
+    $cangrade = has_capability('mod/quest:grade', $context);
     $time = time();
 
     if ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING) {
         if ($submission->evaluated == false) {
             return get_string('phase1submission' . $style, 'quest');
         } else if ($submission->evaluated == true) {
-            if (($ismanager) || ($submission->userid == $USER->id)) {
+            if (($cangrade) || ($submission->userid == $USER->id)) {
                 return get_string('phase5submission' . $style, 'quest');
             } else {
                 return get_string('phase1submission' . $style, 'quest');
@@ -893,7 +881,7 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
             if ($submission->evaluated == false) {
                 return get_string('phase2submission' . $style, 'quest');
             } else if ($submission->evaluated == true) {
-                if (($ismanager) || ($submission->userid == $USER->id)) {
+                if (($cangrade) || ($submission->userid == $USER->id)) {
                     return get_string('phase8submission' . $style, 'quest');
                 } else {
                     return get_string('phase2submission' . $style, 'quest');
@@ -903,7 +891,7 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
             if ($submission->evaluated == 0) {
                 return get_string('phase3submission' . $style, 'quest');
             } else if ($submission->evaluated == 1) {
-                if (($ismanager) || ($submission->userid == $USER->id)) {
+                if (($cangrade) || ($submission->userid == $USER->id)) {
                     return get_string('phase6submission' . $style, 'quest');
                 } else {
                     return get_string('phase3submission' . $style, 'quest');
@@ -913,7 +901,7 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
             if ($submission->evaluated == 0) {
                 return get_string('phase4submission' . $style, 'quest');
             } else if ($submission->evaluated == 1) {
-                if (($ismanager) || ($submission->userid == $USER->id)) {
+                if (($cangrade) || ($submission->userid == $USER->id)) {
                     return get_string('phase7submission' . $style, 'quest');
                 } else {
                     return get_string('phase4submission' . $style, 'quest');

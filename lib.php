@@ -460,6 +460,7 @@ function quest_print_feedback($course, $submission, $user) {
 
         $context = context_course::instance( $course->id);
         $ismanager=has_capability('mod/quest:manage',$context);
+        $canpreview = has_capability('mod/quest:preview', $context);
 
         if($ismanager){
          if($feedback->teacherid == $user->id){

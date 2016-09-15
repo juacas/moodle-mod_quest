@@ -47,7 +47,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
+            'manager' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
         )
     ),
     // Ability to do the questournament as a 'student'.
@@ -86,7 +87,8 @@ $capabilities = array(
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
+            'manager' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
         )
     ),
     // Edit questournament challenge mine.
@@ -152,7 +154,7 @@ $capabilities = array(
         ),
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
-    // Edit the questournament settings, add and remove questions.
+    // Edit the questournament settings, add and remove challenges.
     'mod/quest:manage' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -161,9 +163,10 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
-    // Preview the questournament.
+    // Preview advanced information and links of the questournament.
     'mod/quest:preview' => array(
-        'captype' => 'write', // Only just a write.
+        'captype' => 'read', // Only just a write.
+        'riskbitmask' => RISK_PERSONAL,
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'teacher' => CAP_ALLOW,

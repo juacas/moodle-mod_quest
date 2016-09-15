@@ -53,6 +53,7 @@ quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$canpreview = has_capability('mod/quest:preview', $context);
 // Print the page header.
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
@@ -96,7 +97,7 @@ if ($quest->allowteams) {
 $text .= "&nbsp;/&nbsp;<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
         get_string('viewclasificationglobal', 'quest') . "</a>";
 
-if ((!$ismanager) && ($quest->allowteams)) {
+if ((!$canpreview) && ($quest->allowteams)) {
     $text .= "&nbsp;/&nbsp;<a href=\"viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
             get_string('viewclasificationteams', 'quest') . "</a>";
 }
@@ -282,7 +283,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                 $submission->phase = SUBMISSION_PHASE_ACTIVE;
             }
 
-            if ($ismanager) {
+            if ($canpreview) {
                 $data[] = quest_print_submission_title($quest, $submission) .
                         " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " .
@@ -479,7 +480,7 @@ if ($answers = $DB->get_records_select("quest_answers", "questid=? AND userid=?"
 
         if ($answer->userid == $USER->id) {
 
-            if ($ismanager) {
+            if ($canpreview) {
                 $data[] = quest_print_answer_title($quest, $answer, $submission) .
                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " .
@@ -812,7 +813,7 @@ if ($REPEAT_ACTIONS_BELOW) {
     $text .= "&nbsp;/&nbsp;<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
             get_string('viewclasificationglobal', 'quest') . "</a>";
 
-    if ((!$ismanager) && ($quest->allowteams)) {
+    if ((!$canpreview) && ($quest->allowteams)) {
         $text .= "&nbsp;/&nbsp;<a href=\"viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
                 get_string('viewclasificationteams', 'quest') . "</a>";
     }
