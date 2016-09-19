@@ -43,7 +43,7 @@ $context = context_module::instance($cm->id);
 require_capability('mod/quest:downloadlogs', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-    print_error("Modulehidden.", 'quest', "view.php?id=$cmid");
+    print_error("modulehiddenerror.", 'quest', "view.php?id=$cmid");
 }
 
 $url = new moodle_url('/mod/quest/report.php', array('id' => $cmid));

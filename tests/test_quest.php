@@ -32,13 +32,8 @@ exit();
 require_once("../scores_lib.php");
 $id=403;
 if ($id) {
-        if (! $cm = $DB->get_record("course_modules", "id", $id)) {
-            print_error("CourseModuleIDwasincorrect",'quest');;
-        }
-        if (! $quest = $DB->get_record("quest", "id", $cm->instance)) {
-            print_error("incorrectQuest",'quest');;
-        }
-print("<p>quest instance $id corresponde con quest $quest->id</p>");
+         $cm = $DB->get_record("course_modules", "id", $id,'*',MUST_EXIST);
+         $quest = $DB->get_record("quest", "id", $cm->instance,'*',MUST_EXIST);
 }
 $questid=$quest->id;
 $userid="1294";

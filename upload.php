@@ -48,7 +48,7 @@ TODO: Check capabilities
 if (!has_capability('moodle/legacy:admin', $context) &&
     has_capability('moodle/legacy:guest', $context))
    {
-       print_error('You are not enrolled in this course!!');
+       print_error('nopermissions','error',null,'You are not enrolled in this course!!');
    }
 
 /******************

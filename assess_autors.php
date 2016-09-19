@@ -94,7 +94,7 @@ if (!$assessment){
     $assessment->commentsforteacher = '';
     $assessment->commentsteacher = '';
     if (!$assessment->id = $DB->insert_record("quest_assessments_autors", $assessment)) {
-        print_error("Could not insert quest assessment autor!","quest");
+                 print_error('inserterror','quest',null,"quest_assessments_autors");
     }
 }
     $assessment->dateassessment = $now;
@@ -109,7 +109,7 @@ if (!$assessment){
             $element->userid = $USER->id;
             $element->calification = 1;
             if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                print_error("Could not insert quest grade!","quest");
+                 print_error('inserterror','quest',null,"quest_items_assesments_autor");
             }
         }
         // ...now set the adjustment.
@@ -121,7 +121,7 @@ if (!$assessment){
         $element->userid = $USER->id;
         $element->calification = 0;
         if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-            print_error("Could not insert quest grade!","quest");
+                 print_error('inserterror','quest',null,"quest_items_assesments_autor");
         }
     }
 

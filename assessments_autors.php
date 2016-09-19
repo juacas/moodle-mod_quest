@@ -58,7 +58,7 @@
     else if ($action == 'editelements') {
 
         if (!$ismanager) {
-            print_error("Only teachers can look at this page",'quest');
+            print_error('nopermissions','error',null,"Only teachers can look at this page");
         }
  		// set up heading, form and table
         echo $OUTPUT->header();
@@ -398,7 +398,7 @@
                     $element->commentteacher =$form->generalcomment;
 //                     print_object($form);die;
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                        print_error("Could not insert quest grade!",'quest');
+                         print_error('inserterror','quest',null,"quest_items_assesments_autor");
                     }
                 }
                 $grade = $assessment->points; // set to satisfy save to db
@@ -416,7 +416,7 @@
                     $element->calification = $thegrade;
                     $element->commentteacher =$form->generalcomment; // EVP CHECK THIS... DATA BASE CONTAINS THIS FIELD BUT I do not find it in the form and I have included this to avoid error. I think this field is not used
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                        print_error("Could not insert quest grade!",'quest');
+                         print_error('inserterror','quest',null,"quest_items_assesments_autor");
                         }
                     }
                 // now work out the grade...

@@ -789,7 +789,7 @@ else if ($action == 'updateassessment') {
 /*
  * no man's land
 */ else {
-    print_error("Fatal Error: Unknown Action", 'quest', $action, "Unknown action:$action");
+    print_error('unkownactionerror','quest',null, $action);
 }
 
 echo $OUTPUT->footer();

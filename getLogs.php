@@ -42,7 +42,7 @@ $ismanager = has_capability('mod/quest:manage', $context);
 $candownloadlogs = has_capability('mod/quest:downloadlogs', $context);
 
 if (!$candownloadlogs) {
-    print_error('nopermissions',null,null,'No enough permissions mod/quest:downloadlogs');
+    print_error('nopermissions','error',null,'No enough permissions mod/quest:downloadlogs');
 }
 /**
  * Select various queries

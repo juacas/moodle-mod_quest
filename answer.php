@@ -443,7 +443,7 @@ if ($action == "answer") {
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid),'*',MUST_EXIST);
 
     if (!($ismanager or ( ($USER->id == $answer->userid) and ( $timenow < $quest->dateend)))) {
-        print_error("You are not authorized to update your answer","quest");
+        print_error('nopermissions','error',null,"You are not authorized to update your answer.");
     }
 
     // Check existence of title.

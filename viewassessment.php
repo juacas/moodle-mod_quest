@@ -62,7 +62,7 @@
 
 	if (!$ismanager && $answer->userid != $USER->id && $assessment->userid != $USER->id)
 	{
-	print_error("Unauthorized access!");
+	print_error('nopermissions','error',null,"Unauthorized access!");
 	}
    $strquests = get_string("modulenameplural", "quest");
    $strquest  = get_string("modulename", "quest");
@@ -120,17 +120,10 @@
 
 
 
-    if (! $answer = $DB->get_record('quest_answers', array('id'=> $assessment->answerid)))
-	        error("Incorrect answer id");
-
-	if (! $submission = $DB->get_record('quest_submissions', array('id'=> $answer->submissionid)))
-	        error("Incorrect submission id");
-
-	if (! $quest = $DB->get_record("quest", array("id"=> $submission->questid)))
-	        print_error("incorrectQuest",'quest');;
-    if (! $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id))
-	        error("No coursemodule found");
-
+    $answer = $DB->get_record('quest_answers', array('id'=> $assessment->answerid),'*',MUST_EXIST);
+	$submission = $DB->get_record('quest_submissions', array('id'=> $answer->submissionid),'*',MUST_EXIST);
+	$quest = $DB->get_record("quest", array("id"=> $submission->questid),'*',MUST_EXIST);
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,MUST_EXIST);
     $title = get_string('answername','quest',$answer);
 
     if (($ismanager||($answer->userid == $USER->id))) {

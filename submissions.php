@@ -268,7 +268,7 @@ else if ($action == 'modif') {
     $PAGE->navbar->add(\format_string($submission->title));
 
     if (($submission->userid != $USER->id) && (!$caneditchallenges)) {
-        print_error("Edit submission: Only teachers and autors can look this page",'quest');
+        print_error('nopermissions','error',null,"Edit submission: Only teachers and autors can look this page");
     }
 
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, no tengo claro si es la mejor opci�n
@@ -598,7 +598,7 @@ else if ($action == 'updatesubmission') {
     $authorid = $submission->userid;
     $PAGE->navbar->add(\format_string($submission->title));
     if (!$canapprove)
-        print_error("Approve challenge: Not enought permissions to take this action");
+        print_error('nopermissions','error',null,"Approve challenge: Not enought permissions to take this action");
 
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes, 'context' => $context); //evp limito para el editor por el tama�o del curso permitido, estudiar si es la mejor opci�n
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
@@ -1610,7 +1610,7 @@ else if ($action == "showanswersteam") {
             "submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
 } else {
 
-    print_error("Fatal Error: Unknown Action", 'quest', null, $action);
+    print_error('unknownactionerror','quest',null, $action);
 }
 
 

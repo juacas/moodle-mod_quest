@@ -251,9 +251,7 @@ function quest_phase($quest, $style = '') {
 function quest_print_submission_title($quest, $submission) {
     // Arguments are objects
 
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course,null,MUST_EXIST);
 
     if (!$submission->timecreated) { // a "no submission"
         return $submission->title;
@@ -592,9 +590,7 @@ function quest_print_submission($quest, $submission) {
     // prints the submission with optional attachments
     global $CFG, $USER, $OUTPUT;
 
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course,null,MUST_EXIST);
     $description = $submission->description;
     $context = context_module::instance($cm->id);
     $description = file_rewrite_pluginfile_urls($description, 'pluginfile.php', $context->id, 'mod_quest', 'submission',
@@ -660,12 +656,8 @@ function quest_print_submission_info($quest, $submission) {
 
     $timenow = time();
 
-    if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-        print_error("course_misconfigured", 'quest');
-    }
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $course = $DB->get_record("course", array("id" => $quest->course),'*',MUST_EXIST);
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,MUST_EXIST);
     // print standard assignment heading
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
@@ -1324,9 +1316,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
 function quest_print_answer_title($quest, $answer, $submission) {
     // Arguments are objects
 
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course,null,MUST_EXIST);
 
     if (!$answer->date) { // a "no submission"
         return $submission->title;
@@ -1408,9 +1398,7 @@ function quest_print_answer_info($quest, $answer) {
     if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
         print_error("course_misconfigured", 'quest');
     }
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,MUST_EXIST);
     // Print standard assignment heading.
     echo $OUTPUT->box_start("center");
     // Print phase and date info.
@@ -1513,9 +1501,7 @@ function quest_print_answer($quest, $answer) {
     // prints the answer with optional attachments
     global $CFG, $USER, $OUTPUT;
 
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course,null,MUST_EXIST);
 
     $description = $answer->description;
     $context = context_module::instance($cm->id);
@@ -1567,12 +1553,8 @@ function quest_print_answer($quest, $answer) {
 function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false, $showcommentlinks = false, $returnto = '') {
 
     global $CFG, $USER, $QUEST_SCALES, $QUEST_EWEIGHTS, $DB, $OUTPUT;
-    if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-        print_error("course_misconfigured", 'quest');
-    }
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
+    $course = $DB->get_record("course", array("id" => $quest->course),'*',MUST_EXIST);
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,MUST_EXIST);
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
@@ -2541,13 +2523,8 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
 
     global $CFG, $USER, $QUEST_SCALES, $QUEST_EWEIGHTS, $DB, $OUTPUT;
 
-    if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-        print_error("course_misconfigured", 'quest');
-    }
-    if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-        print_error("CourseModuleIDwasincorrect", 'quest'); ;
-    }
-
+    $course = $DB->get_record("course", array("id" => $quest->course),'*',MUST_EXIST);
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id,null,MUST_EXIST);
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
@@ -4345,7 +4322,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
         function quest_check_visibility($course, $cm) {
             $context = context_course::instance($course->id);
             if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-                print_error("ModuleHidden", 'quest');
+                print_error("modulehiddenerror", 'quest');
             }
         }
 

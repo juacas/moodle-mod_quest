@@ -90,7 +90,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
     $assessment->commentsteacher = '';
 
     if (!$assessment->id = $DB->insert_record("quest_assessments", $assessment)) {
-        print_error("Could not insert quest assessment!");
+        print_error('inserterror','quest',null,"quest_assessments");
     }
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
     if ($cangrade and ( $quest->gradingstrategy == 2)) {
@@ -107,7 +107,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
             $element->userid = $USER->id;
             $element->calification = 1;
             if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                print_error("Could not insert quest grade!");
+                 print_error('inserterror','quest',null,"quest_elements_assessments");
             }
         }
         // now set the adjustment
@@ -119,7 +119,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
         $element->userid = $USER->id;
         $element->calification = 0;
         if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-            print_error("Could not insert quest grade!");
+                 print_error('inserterror','quest',null,"quest_elements_assessments");
         }
     }
 }

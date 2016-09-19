@@ -334,7 +334,7 @@ $string['hidegradesbeforeagreement'] = 'hide grades before agreement';
 $string['includeteachersgrade'] = 'include teacher\'s grade';
 $string['incorrect'] = 'wrong';
 $string['individualcalification'] = 'individual score';
-
+$string['inserterror']= 'Could not insert record in table {$a} in database.';
 $string['invaliddates'] = 'Invalid dates. Must be between {$a->questdatestart} and {$a->questdateend}';
 $string['invalidtext'] = 'Text field is blank';
 $string['lastname'] = 'Lastname';
@@ -358,6 +358,7 @@ $string['maximumsize'] = 'Largest size';
 $string['modif'] = 'Modify';
 $string['modifanswersubmission'] = 'Modify answer {$a}';
 $string['modulenameplural'] = 'QUESTOURnaments';
+$string['modulehiddenerror'] = 'Module is hidden.';
 $string['movingtophase'] = 'Changing to phase {$a}';
 $string['myanswers'] = 'My Answers';
 $string['mycalification'] = 'My Ranking';

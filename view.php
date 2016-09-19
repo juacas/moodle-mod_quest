@@ -1018,7 +1018,7 @@ else if ($action == 'teachersview' || $action == 'studentsview') {
     }
 }
 /* * ************* no man's land ************************************* */ else {
-    print_error("Fatal Error: Unknown Action: " . $action . "\n");
+    print_error('unknownactionerror','quest',null, $action );
 }
 // Finish the page
 echo $OUTPUT->footer();

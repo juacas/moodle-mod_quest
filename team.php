@@ -62,7 +62,7 @@
 
     if($quest->allowteams != 1)
     {
-        print_error('It is not allowed teams for this Questournament.','quest');
+        print_error('nopermissions','error',null,'It is not allowed teams for this Questournament.');
     }
 
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1;  // Group change requested?
@@ -183,7 +183,7 @@
      }
      else
      {
-     	print_error($action,'quest');
+     	print_error('unknownactionerror','quest',null,$action);
      }
 
 
