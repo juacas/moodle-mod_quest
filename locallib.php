@@ -1360,35 +1360,30 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     } else if ($submission->userid == $USER->id) {
 
         if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 1)) {
-   $assessurl = new moodle_url("/mod/quest/assess.php", array('id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"assess.php?id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" . get_string('reevaluate',
+            $assessurl = new moodle_url("/mod/quest/assess.php", array('id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
+            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$assessurl\">" . get_string('reevaluate',
                             'quest') . "</a>";
-
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"viewassessment.php?sid='.$submission->id.'&amp;asid=$assessment->id&amp;aid=$answer->id\">" . get_string('seevaluate',
-                            'quest') . "</a>";
+            $viewurl = new moodle_url("/mod/quest/viewassessment.php", array('sid' => $submission->id, 'asid' => $assessment->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
+            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$viewurl" . get_string('seevaluate','quest') . "</a>";
         } else if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 2)) {
-
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"viewassessment.php?sid='.$submission->id.'&amp;asid=$assessment->id&amp;aid=$answer->id\">" . get_string('seevaluate',
-                            'quest') . "</a>";
+            $viewurl = new moodle_url("/mod/quest/viewassessment.php", array('sid' => $submission->id, 'asid' => $assessment->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
+            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$viewurl\">" . get_string('seevaluate','quest') . "</a>";
         } else if ($answer->phase == 0) {
-
-            $str .= '&nbsp;&nbsp;<a href="assess.php?id=' .
-                    $cm->id . '&amp;aid=' . $answer->id . '&amp;sid=' . $submission->id . '$amp;action=evaluate">' . get_string('evaluate',
-                            'quest') . '</a>';
+            $assessurl = new moodle_url("/mod/quest/assess.php", array('id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey(),'action'=>'evaluate'));
+            $assessmsg=get_string('evaluate','quest');
+            $str .= "&nbsp;&nbsp;<a href=\"$assessurl\">$assessmsg</a>";
         } else {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"answer.php?aid=$answer->id&amp;action=showanswer&amp;sid=$submission->id\">" . get_string('see',
-                            'quest') . "</a>";
+            $answerurl = new moodle_url("/mod/quest/answer.php", array('sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()));
+            $str .= "&nbsp;&nbsp;<a name=\"$answerurl\">" . get_string('see','quest') . "</a>";
         }
     } else {
-        $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"answer.php?aid=$answer->id&amp;action=showanswer&amp;sid=$submission->id\">" . get_string('see',
-                        'quest') . "</a>";
+        $answerurl = new moodle_url("/mod/quest/answer.php", array('sid' => $submission->id, 'aid' => $answer->id, 'action'=>'showanswer','sesskey' => sesskey()));
+        $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$answerurl\">" . get_string('see','quest') . "</a>";
     }
     if ((($ismanager) || ($submission->userid == $USER->id)) && (($answer->phase == 1) || ($answer->phase == 2)) && ($answer->permitsubmit == 0)) {
-        $str .= "&nbsp;&nbsp;<a href=\"answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=permitsubmit\">" .
-                get_string('permitsubmit', 'quest') . "</a>";
+        $answerurl = new moodle_url("/mod/quest/answer.php", array('sid' => $submission->id, 'aid' => $answer->id, 'action'=>'permitsubmit','sesskey' => sesskey()));
+        $str .= "&nbsp;&nbsp;<a href=\"$answerurl\">" . get_string('permitsubmit', 'quest') . "</a>";
     }
-
-
     return $str;
 }
 
@@ -1606,13 +1601,13 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     echo "<tr valign=\"top\">\n";
     echo "  <td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
     if ($assessment) {
-        if (($assessment->teacherid != 0)) {
+        if ((isset($assessment->teacherid) && $assessment->teacherid != 0)) {
             $user = $DB->get_record('user', array('id' => $assessment->teacherid));
             print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
-        } else if ($assessment->userid != 0 && $ismanager) {
+        } else if (isset($assessment->userid) && $assessment->userid != 0 && $ismanager) {
             $user = get_complete_user_data('id', $assessment->userid);
             print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
-        } else if (($assessment->userid != 0) && ($assessment->userid == $USER->id) && !$ismanager) {
+        } else if (isset($assessment->userid) && ($assessment->userid != 0) && ($assessment->userid == $USER->id) && !$ismanager) {
             $user = $DB->get_record('user', array('id' => $assessment->userid));
             print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
         } else {
