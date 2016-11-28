@@ -1583,15 +1583,19 @@ function quest_get_participants($questid) {
     //Return st_submissions array (it contains an array of unique users)
     return ($st_submissions);
 }
-
+/**
+ * This function returns if a scale is being used by one QUEST
+ * it it has support for grading and scales.
+ */
 function quest_scale_used ($questid,$scaleid) {
-//This function returns if a scale is being used by one QUEST
-//it it has support for grading and scales. Commented code should be
-//modified if necessary. See forum, glossary or journal modules
-//as reference.
-
     $return = false;
-
+    return $return;
+}/**
+ * This function returns if a scale is being used by any QUEST instance
+ * it it has support for grading and scales.
+ */
+function quest_scale_used_anywhere ($questid,$scaleid) {
+    $return = false;
     return $return;
 }
 
