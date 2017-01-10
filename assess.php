@@ -57,7 +57,7 @@ $strassess = get_string("assess", "quest");
 $strsubmission = "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
 $url = new moodle_url('/mod/quest/assess.php',
-        array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
+        array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,'sesskey'=>sesskey()));
 $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));

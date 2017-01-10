@@ -421,7 +421,8 @@ else if ($action == 'modif') {
     } else
     if ((($ismanager || $USER->id == $submission->userid)
             and $quest->nelementsautor) && ($submission->numelements != 0)) {
-        $text .= "&nbsp;<a href=\"assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements&amp;sesskey=".sesskey()."\">" .
+        $assessmentsurl = new moodle_url('/mod/quest/assessments.php',array('id'=>$cm->id, 'sid'=>$sid,'newform'=>1,'change_form'=>0,'action'=>'editelements','sesskey'=>sesskey()));
+        $text .= "&nbsp;<a href=\"$assessmentsurl\">" .
                 $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
     }
     $text .= "</b></center>";
@@ -1605,16 +1606,11 @@ else if ($action == "showanswersteam") {
 
     echo $OUTPUT->header();
     echo "<br><br>";
+    $assessmentsurl = new moodle_url('/mod/quest/assessments.php',array('id'=>$cm->id, 'sid'=>$sid,'newform'=>1,'change_form'=>0,'action'=>'editelements','sesskey'=>sesskey()));
+    $submissionsurl = new moodle_url('/mod/quest/submissions.php',array('id'=>$cm->id, 'sid'=>$sid,'action'=>'showsubmission'));
     echo $OUTPUT->confirm(get_string("doyouwantparticularform", "quest"),
-            "assessments.php?id=$cm->id&amp;sid=$sid&amp;newform=1&amp;change_form=0&amp;action=editelements&amp;sesskey=".sesskey()."",
-            "submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
+            $assessmentsurl,$submissionsurl);
 } else {
-
     print_error('unknownactionerror','quest',null, $action);
 }
-
-
-
 echo $OUTPUT->footer();
-
-?>

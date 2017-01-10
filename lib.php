@@ -1594,7 +1594,7 @@ function quest_scale_used ($questid,$scaleid) {
  * This function returns if a scale is being used by any QUEST instance
  * it it has support for grading and scales.
  */
-function quest_scale_used_anywhere ($questid,$scaleid) {
+function quest_scale_used_anywhere ($scaleid) {
     $return = false;
     return $return;
 }
