@@ -152,151 +152,118 @@ $string['editingassessmentelementsofautors'] = 'Editing assessment elements of a
 $string['element'] = 'Element';
 
 $string['elementweight'] = 'Element weight';
-$string['emailaddsubmission'] = 'Hello, {$a->firstname}.\n
-\n
-A new challenge has been added in \n
-\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'.\n It is titled \'{$a->title} \'.\n
-\n
-To access this new challenge, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailaddsubmission'] = 'Hello, {$a->firstname}.
+
+A new challenge has been added in 
+\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
+
+To access this new challenge, please click here:
+
+<a href="{$a->link}">{$a->link}</a> 
+';
 $string['emailaddsubmissionsubject'] = 'Moodle. Challenge added in module QUESTOURnament';
-$string['emailansweradd'] = 'Hello, {$a->firstname}.\n
-\n
-A new answer has been received in\n
-\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', to the challenge \'{$a->title} \'. It is titled \'{$a->secondname} \'.\n
-\n
-To access this answer, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailansweradd'] = 'Hello, {$a->firstname}.
+
+A new answer has been received in
+\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', to the challenge \'{$a->title} \'. It is titled \'{$a->secondname} \'.
+
+To access this answer, please click here:
+
+<a href="{$a->link}">{$a->link}</a> 
+';
 $string['emailansweraddsubject'] = 'Moodle. Answer added in module QUESTOURnament';
-$string['emailanswerdelete'] = 'Hello, {$a->firstname}.\n
-\n
-An answer has been deleted in\n
-\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', it was titled \'{$a->secondname} \'.\n
-\n
-To access this challenge, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailanswerdelete'] = 'Hello, {$a->firstname}.
+
+An answer has been deleted in
+\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', it was titled \'{$a->secondname} \'.
+
+To access this challenge, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emailanswerdeletesubject'] = 'Moodle. Answer deleted in QUESTOURnament module';
-$string['emailapprobe'] = 'Hello, {$a->firstname}.\n
-\n
-A new challenge has been added in \n
-\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'.\n It is titled \'{$a->title} \'.\n
-\n
-To access this new challenge, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailapprobe'] = 'Hello, {$a->firstname}.
+
+A new challenge has been added in 
+\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
+
+To access this new challenge, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emailapprobesubject'] = 'Moodle. Challenge added in module QUESTOURnament';
-$string['emailassessment'] = 'Hello, {$a->firstname}.\n
-\n
-An answer hase been assessed in\n
-\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', it was titled \'{$a->secondname} \'.\n
-\n
-To access this answer, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
-$string['emailassessmentautor'] = 'Hello, {$a->firstname}.\n
-\n
-A challenge has been assessed in \n
-\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'.\n It is titled \'{$a->title} \'.\n
-\n
-To access this new challenge, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailassessment'] = 'Hello, {$a->firstname}.
+
+An answer hase been assessed in
+\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', it was titled \'{$a->secondname} \'.
+
+To access this answer, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
+$string['emailassessmentautor'] = 'Hello, {$a->firstname}.
+
+A challenge has been assessed in 
+\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
+
+To access this new challenge, please click here:
+
+<a href="{$a->link}">{$a->link}</a> 
+';
 $string['emailassessmentautorsubject'] = 'Moodle. Challenge assessed in module QUESTOURnament';
 $string['emailassessmentsubject'] = 'Moodle. Answer assessed in module QUESTOURnament';
-$string['emaildeletesubmission'] = 'Hello, {$a->firstname}.\n
-\n
-A challenge has been deleted in \n
-\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'.\n It is titled \'{$a->title} \'.\n
-\n
-To access the QUESTOURnament, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emaildeletesubmission'] = 'Hello, {$a->firstname}.
+
+A challenge has been deleted in 
+\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
+
+To access the QUESTOURnament, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emaildeletesubmissionsubject'] = 'Moodle. Challenge deleted in module QUESTOURnament';
-$string['emailevaluatecomment'] = 'Hola, {$a->firstname}.\n
-\n
-Se ha empleado el mecanismo de reclamaciones en la evaluación de una respuesta en\n
-\n
-Complaining mechanism has been started for an assessment in\n
-\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', answer \'{$a->secondname} \'.\n
-\n
-To access this answer, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailevaluatecomment'] = 'Hola, {$a->firstname}.
+
+Se ha empleado el mecanismo de reclamaciones en la evaluación de una respuesta en
+
+Complaining mechanism has been started for an assessment in
+\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', answer \'{$a->secondname} \'.
+
+To access this answer, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emailevaluatecommentsubject'] = 'Moodle. Assessment complain in module QUESTOURnament';
-$string['emailmodifanswer'] = 'Hello, {$a->firstname}.\n
-\n
-An answer hase been modified in\n
-\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', it was titled \'{$a->secondname} \'.\n
-\n
-To access this answer, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailmodifanswer'] = 'Hello, {$a->firstname}.
+
+An answer hase been modified in
+\'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', it was titled \'{$a->secondname} \'.
+
+To access this answer, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emailmodifanswersubject'] = 'Moodle. Answer modification in module QUESTOURnament';
-$string['emailmodifsubmission'] = 'Hello, {$a->firstname}.\n
-\n
-Challenge modified in\n
-\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'.\n It is titled \'{$a->title} \'.\n
-\n
-To access the challenge, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+$string['emailmodifsubmission'] = 'Hello, {$a->firstname}.
+
+Challenge modified in
+\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
+
+To access the challenge, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emailmodifsubmissionsubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
-$string['emailsave'] = 'Hello, {$a->firstname}.\n
-\n
+$string['emailsave'] = 'Hello, {$a->firstname}.
+
 n
-Challenge modified in\n
-\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'.\n It is titled \'{$a->title} \'.\n
-\n
-To access the site on which the challenge is, please click here:\n
-\n
-{$a->link} \n
-\n
-If help is needed, please, contact the administrator of this site at\n
-{$a->admin} \n
-\n';
+Challenge modified in
+\'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
+
+To access the site on which the challenge is, please click here:
+
+<a href="{$a->link}">{$a->link}</a>
+';
 $string['emailsavesubject'] = 'Moodle. Changes in challenge in module QUESTOURnament';
 $string['emailtagline'] = 'This e-mail is a copy of the message you sent on \"{$a} \"';
 $string['enternewteam'] = 'Enter new Team';
@@ -474,7 +441,7 @@ $string['poor'] = 'Poor';
 $string['porcent'] = 'percentage';
 $string['present'] = 'Present';
 $string['preview'] = 'Preview';
-$string['processingquest'] = 'Processing {$a} \n';
+$string['processingquest'] = 'Processing {$a} ';
 $string['quests'] = 'QUESTs';
 $string['questagreedassessments'] = 'Agreed assesments in QUESTOURnament';
 $string['questapprovesubmission'] = 'Challenges approved in QUESTOURnament';
@@ -524,7 +491,7 @@ $string['repeatanalysis'] = 'Repeat Analysis';
 $string['reply'] = 'Answer';
 $string['resetquestallanswers'] = 'Erase all answers and scores.';
 $string['resetchanges'] = 'Reset changes';
-$string['resume24hours'] = 'Summary of events for challenges added or modified in the QUESTOURnament {$a->name} in the past 24 hours\n';
+$string['resume24hours'] = 'Summary of events for challenges added or modified in the QUESTOURnament {$a->name} in the past 24 hours';
 $string['resumeindividual'] = 'View Individual Summary.';
 $string['resumequest'] = 'Moodle. Activity summary. QUESTOURnament {$a->name}';
 $string['resumeteams'] = 'View Summary by Teams';

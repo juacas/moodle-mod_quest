@@ -172,82 +172,71 @@ $string['editingassessmentelementsofautors'] = 'Editando Elementos de Valoració
 $string['element'] = 'Elemento';
 $string['elements'] = 'Elementos';
 $string['elementweight'] = 'Peso del elemento';
-$string['emailaddsubmission'] = 'Hola, {$a->firstname}.\n
-Se ha añadido un nuevo Desafío en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.\n
-Para acceder al nuevo Desafío haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailaddsubmission'] = 'Hola, {$a->firstname}.
+Se ha añadido un nuevo Desafío en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
+Para acceder al nuevo Desafío haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailaddsubmissionsubject'] = 'Moodle. Desafío añadido en Módulo QUESTOURnament';
-$string['emailansweradd'] = 'Hola, {$a->firstname}.\n
-Se ha añadido una respuesta en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre es \'{$a->secondname}\'.\n
-Para acceder a la respuesta en cuestión haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailansweradd'] = 'Hola, {$a->firstname}.
+Se ha añadido una respuesta en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre es \'{$a->secondname}\'.
+Para acceder a la respuesta en cuestión haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailansweraddsubject'] = 'Moodle. Respuesta Añadida en Módulo QUESTOURnament';
-$string['emailanswerdelete'] = 'Hola, {$a->firstname}.\n
-Se ha eliminado una respuesta en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre era \'{$a->secondname}\'.\n
-Para acceder al Desafío en cuestión haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailanswerdelete'] = 'Hola, {$a->firstname}.
+Se ha eliminado una respuesta en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre era \'{$a->secondname}\'.
+Para acceder al Desafío en cuestión haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailanswerdeletesubject'] = 'Moodle. Respuesta Eliminada en Módulo QUESTOURnament';
-$string['emailapprobe'] = 'Hola, {$a->firstname}.\n
-Se ha añadido un nuevo Desafío en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.\n
-Para acceder al nuevo Desafío haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailapprobe'] = 'Hola, {$a->firstname}.
+Se ha añadido un nuevo Desafío en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
+Para acceder al nuevo Desafío haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailapprobesubject'] = 'Moodle. Desafío añadido en Módulo QUESTOURnament';
-$string['emailassessment'] = 'Hola, {$a->firstname}.\n
-Se ha evaluado una respuesta en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre era \'{$a->secondname}\'.\n
-Para acceder a la evaluación en cuestión haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
-$string['emailassessmentautor'] = 'Hola, {$a->firstname}.\n
-Se ha evaluado un Desafío en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.\n
-Para acceder a la evaluación en cuestión haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailassessment'] = 'Hola, {$a->firstname}.
+Se ha evaluado una respuesta en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre era \'{$a->secondname}\'.
+Para acceder a la evaluación en cuestión haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
+$string['emailassessmentautor'] = 'Hola, {$a->firstname}.
+Se ha evaluado un Desafío en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
+Para acceder a la evaluación en cuestión haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailassessmentautorsubject'] = 'Moodle. Desafío Evaluado en Módulo QUESTOURnament';
 $string['emailassessmentsubject'] = 'Moodle. Respuesta Evaluada en Módulo QUESTOURnament';
-$string['emaildeletesubmission'] = 'Hola, {$a->firstname}.\n
-Se ha eliminado un Desafío en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.\n
-Para acceder al sitio donde se encuentraba el Desafío haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emaildeletesubmission'] = 'Hola, {$a->firstname}.
+Se ha eliminado un Desafío en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
+Para acceder al sitio donde se encuentraba el Desafío haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emaildeletesubmissionsubject'] = 'Moodle. Desafío Borrado de Módulo QUESTOURnament';
-$string['emailevaluatecomment'] = 'Hola, {$a->firstname}.\n
-Se ha empleado el mecanismo de reclamaciones en la evaluación de una respuesta en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' Desafío \'{$a->title}\' respuesta \'{$a->secondname}\'.\n
-Para acceder a esta respuesta haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio.\n';
+$string['emailevaluatecomment'] = 'Hola, {$a->firstname}.
+Se ha empleado el mecanismo de reclamaciones en la evaluación de una respuesta en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' Desafío \'{$a->title}\' respuesta \'{$a->secondname}\'.
+Para acceder a esta respuesta haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailevaluatecommentsubject'] = 'Moodle. Reclamación de Evaluación en Módulo QUESTOURnament';
-$string['emailmodifanswer'] = 'Hola, {$a->firstname}.\n
-Se ha modificado una respuesta en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre es \'{$a->secondname}\'.\n
-Para acceder a la respuesta en cuestión haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailmodifanswer'] = 'Hola, {$a->firstname}.
+Se ha modificado una respuesta en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' del Desafío \'{$a->title}\' cuyo nombre es \'{$a->secondname}\'.
+Para acceder a la respuesta en cuestión haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailmodifanswersubject'] = 'Moodle. Respuesta Modificada en Módulo QUESTOURnament';
-$string['emailmodifsubmission'] = 'Hola, {$a->firstname}.\n
-Se han realizado la modificación de un Desafío en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.\n
-Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailmodifsubmission'] = 'Hola, {$a->firstname}.
+Se han realizado la modificación de un Desafío en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
+Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailmodifsubmissionsubject'] = 'Moodle. Modificación en Desafío de Módulo QUESTOURnament';
-$string['emailsave'] = 'Hola, {$a->firstname}.\n
-Se han realizado cambios en un Desafío en\n
-\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.\n
-Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:\n
-{$a->link}\n
-Si necesita ayuda, contacte por favor con el administrador del sitio, {$a->admin}\n';
+$string['emailsave'] = 'Hola, {$a->firstname}.
+Se han realizado cambios en un Desafío en
+\'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
+Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailsavesubject'] = 'Moodle. Cambios en Desafío de Módulo QUESTOURnament';
 $string['emailtagline'] = 'Este email es una copia de un mensaje que se envió el \"{$a}\"';
 $string['enternewteam'] = 'Introducir Nuevo Equipo';
@@ -453,7 +442,7 @@ $string['poor'] = 'Pobre';
 $string['porcent'] = 'Porcentaje';
 $string['present'] = 'Presente';
 $string['preview'] = 'Previsualizar';
-$string['processingquest'] = 'Procesando {$a} \n';
+$string['processingquest'] = 'Procesando {$a} ';
 $string['quests'] = 'QUESTOURnament';
 $string['questagreedassessments'] = 'Evaluaciones Consensuadas de QUESTOURnament';
 $string['questapprovesubmission'] = 'Desafíos Aprobados en QUESTOURnament';
@@ -478,7 +467,7 @@ $string['repeatanalysis'] = 'Repetir Análisis';
 $string['reply'] = 'Responder';
 $string['resetquestallanswers'] = 'Borrar todas las respuestas y las puntuaciones.';
 $string['resetchanges'] = 'Borrar los cambios';
-$string['resume24hours'] = 'Resumen de los mensajes correspondientes a los Desafíos añadidos o modificados en el módulo QUESTOURnament {$a->name} en las últimas 24 horas\n';
+$string['resume24hours'] = 'Resumen de los mensajes correspondientes a los Desafíos añadidos o modificados en el módulo QUESTOURnament {$a->name} en las últimas 24 horas';
 $string['resumeindividual'] = 'Resumen Individual';
 $string['resumequest'] = 'Moodle. Resumen Actividad. QUESTOURnament {$a->name}';
 $string['resumeteams'] = 'Resumen por Equipos';
