@@ -1145,7 +1145,7 @@ function init_x_axis() {
       }
       else {
       	if ($max-$min < 24*3600)
-      	      $value=date(H,$start).':'.date(m,$start);
+      	      $value=date('H',$start).':'.date('m',$start);
       	      else
       	      {
       	      $value= date('j',$start).'/'.date('M',$start);

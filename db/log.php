@@ -8,29 +8,26 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Definition of log events
+/** Definition of log events
  *
- * @package    mod
+ * @package mod
  * @subpackage questournament
  * @copyright
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ *
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 defined('MOODLE_INTERNAL') || die();
 
-$logs = array(
-    array('module' => 'quest', 'action' => 'assessment', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'close', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'display', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'resubmit', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'set up', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'submissions', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'view', 'mtable' => 'quest', 'field' => 'name'),
-    array('module' => 'quest', 'action' => 'update', 'mtable' => 'quest', 'field' => 'name'),
-);
+$logs = array(array('module' => 'quest', 'action' => 'assessment', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'close', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'display', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'resubmit', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'set up', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'submissions', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'view', 'mtable' => 'quest', 'field' => 'name'), 
+                array('module' => 'quest', 'action' => 'update', 'mtable' => 'quest', 'field' => 'name'));

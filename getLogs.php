@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle
+/** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -26,30 +25,28 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
- * ******************************************************** */
-require_once("../../config.php");
-require("lib.php");
-require("locallib.php");
+ *          ******************************************************** */
+require_once ("../../config.php");
+require ("lib.php");
+require ("locallib.php");
 
 global $CFG, $DB, $PAGE, $OUTPUT;
 
 $id = required_param('id', PARAM_INTEGER);
-list($course,$cm)=quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance),'*',MUST_EXIST);
+list($course, $cm) = quest_get_course_and_cm($id);
+$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $candownloadlogs = has_capability('mod/quest:downloadlogs', $context);
 
 if (!$candownloadlogs) {
-    print_error('nopermissions','error',null,'No enough permissions mod/quest:downloadlogs');
+    print_error('nopermissions', 'error', null, 'No enough permissions mod/quest:downloadlogs');
 }
-/**
- * Select various queries
- */
-$query_id = optional_param('query', 'what', PARAM_ALPHA);
+// Select various queries.
+$queryid = optional_param('query', 'what', PARAM_ALPHA);
 
-switch ($query_id) {
+switch ($queryid) {
     case 'ip':
         $query = $DB->get_records_select("log", "module='quest' and cmid=?", array($cm->id), "time", "id,ip,time");
         break;
@@ -59,7 +56,7 @@ switch ($query_id) {
     case 'activity':
         list($insql, $inparams) = $DB->get_in_or_equal(array($cm->id));
         $allparams = array_merge(array($cm->module), $inparams);
-        $querySQL = "
+        $sqlquery = "
 SELECT {log}.id as id_log, {course_modules}.id AS id_QUEST_URL,
                 {course_modules}.course AS id_course,
                 {quest_answers}.submissionid AS id_desafio,
@@ -87,34 +84,32 @@ WHERE {log}.module = 'quest'
 ORDER BY id_alumno ASC, id_desafio, tpo_lectura
 ;";
 
-        $query = $DB->get_records_sql($querySQL, $allparams);
+        $query = $DB->get_records_sql($sqlquery, $allparams);
         break;
 
     default:
         $query = '';
 }
-/*******
- *
- * Generate CSV report with $query
- *
- ****************/
-$localeLang = $CFG->locale;
-// Moodle's bug Spanish RFC code is ES not ESP
-$localeLang = str_replace("esp", "es", $localeLang);
-$localeLang = str_replace("ESP", "ES", $localeLang);
+// Generate CSV report with $query.
+$localelang = $CFG->locale;
+// Moodle's bug Spanish RFC code is ES not ESP.
+$localelang = str_replace("esp", "es", $localelang);
+$localelang = str_replace("ESP", "ES", $localelang);
 
-setlocale(LC_ALL, $localeLang . ".utf8");
+setlocale(LC_ALL, $localelang . ".utf8");
 
-$LocaleConfig = localeConv();
+$localeconfig = localeconv();
 
-//print_object($LocaleConfig);
-//print(number_format(-123.23, 20 , $LocaleConfig[decimal_point],''));
-//exit;
+// print_object($LocaleConfig);
+// print(number_format(-123.23, 20 , $LocaleConfig[decimal_point],''));
+// exit;
 
 if ($query) {
 
     header("Content-Type: text/csv");
-    header('Content-Disposition: attachment; filename="' . date('Y-m-d', time()) . '_' . $query_id . '_questournament_' . $cm->id . '.csv"');
+    header(
+            'Content-Disposition: attachment; filename="' . date('Y-m-d', time()) . '_' . $queryid . '_questournament_' . $cm->id .
+                     '.csv"');
     $firstrow = true;
     foreach ($query as $log) {
 
@@ -122,11 +117,10 @@ if ($query) {
         $elsk = array();
         foreach ($log as $key => $value) {
             // detect other fields not numeric like IPs
-            if (is_numeric($value) && round($value) == $value) { //integer
+            if (is_numeric($value) && round($value) == $value) { // integer
                 $els[] = $value;
-            } else
-            if (is_numeric($value) && abs($value - round($value)) < 1) { //number
-                $val = number_format($value, 10, $LocaleConfig[decimal_point], '');
+            } else if (is_numeric($value) && abs($value - round($value)) < 1) { // number
+                $val = number_format($value, 10, $localeconfig[decimal_point], '');
                 $els[] = $val;
             } else {
                 $els[] = $value;
@@ -150,28 +144,30 @@ if ($query) {
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-
-    /* if (function_exists('build_navigation'))
-      {
-      $navlinks = array();
-      $navlinks[] = array('name' => 'QUESTournament Reports', 'link' => '', 'type' => 'activity');
-      $navigation = build_navigation($navlinks,$cm);
-      //$navigation = build_navigation($quest->name.': '.$strsubmission);
-      print_header($course->shortname, $course->fullname, $navigation, '', '',
-      true, null, navmenu($course, $cm));
-      }
-      else
-      {
-      print_header_simple(format_string($quest->name)." Log page.", "",
-      "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-      <a href=\"view.php?id=$cm->id\">".format_string($quest->name,true)."</a> -> QUESTournament Reports",
-      "", "", true);
-      } */
-    print("<p>For your locale \"<b>$localeLang</b>\" the decimal separator is \" <b>$LocaleConfig[decimal_point]</b> \". Check that your SpreadSheet interprets correctly this character.</p>");
-    if (!empty($querySQL)) {
-        print("Last query with no results.<br/>"); //"<pre>".$querySQL."</pre>");
+    /*
+     * if (function_exists('build_navigation'))
+     * {
+     * $navlinks = array();
+     * $navlinks[] = array('name' => 'QUESTournament Reports', 'link' => '', 'type' => 'activity');
+     * $navigation = build_navigation($navlinks,$cm);
+     * //$navigation = build_navigation($quest->name.': '.$strsubmission);
+     * print_header($course->shortname, $course->fullname, $navigation, '', '',
+     * true, null, navmenu($course, $cm));
+     * }
+     * else
+     * {
+     * print_header_simple(format_string($quest->name)." Log page.", "",
+     * "<a href=\"index.php?id=$course->id\">$strquests</a> ->
+     * <a href=\"view.php?id=$cm->id\">".format_string($quest->name,true)."</a> -> QUESTournament
+     * Reports",
+     * "", "", true);
+     * }
+     */
+    print
+            ("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" <b>$localeconfig[decimal_point]</b> \". Check that your SpreadSheet interprets correctly this character.</p>");
+    if (!empty($$$$sqlquery)) {
+        print("Last query with no results.<br/>"); // "<pre>".$querySQL."</pre>");
     }
-
 
     echo '<p>Generate CSV report for:';
     echo '<ul>';
@@ -182,4 +178,3 @@ if ($query) {
 
     echo $OUTPUT->footer();
 }
-?>

@@ -8,15 +8,16 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
- * Traducción realizada en la Facultad de Traducción de Soria (Universidad de Valladolid) por Anna Szybiak y Joanna Nowakowska, supervisada por Leticia  * Santamaria Ciordia y tutelada por Antonio Bueno García en 2006.
+/** Questournament activity for Moodle lang file
+ * Traducción realizada en la Facultad de Traducción de Soria (Universidad de Valladolid) por Anna
+ * Szybiak y Joanna Nowakowska, supervisada por Leticia * Santamaria Ciordia y tutelada por Antonio
+ * Bueno García en 2006.
  * El autor cede todos los derechos a favor de la herramienta gratuita y OpenSource
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -26,8 +27,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'Nieobecny';
 $string['accumulative'] = 'Bieżące';
 $string['action'] = 'Działanie';
@@ -382,8 +382,8 @@ $string['phase3short'] = 'Oba';
 $string['phase4short'] = 'Oceny';
 $string['phase5short'] = 'Obliczanie';
 $string['phase6short'] = 'Pokaż ocenę';
-$string['phase1submission'] ='Oczekuje na akceptację';
-$string['phase2submission'] ='Oczekuje na rozpoczęcie';
+$string['phase1submission'] = 'Oczekuje na akceptację';
+$string['phase2submission'] = 'Oczekuje na rozpoczęcie';
 $string['phase3submission'] = 'Zadanie w toku';
 $string['phase4submission'] = 'Zadanie zamknięte';
 $string['phase5submission'] = 'Ocenione. Czeka na akceptację';
@@ -426,7 +426,7 @@ $string['returnto'] = 'Zwróć do';
 $string['returntosubmissionpage'] = 'Wróć do strony Twoje wiadomości';
 $string['rubric'] = 'Rubryka';
 $string['save'] = 'Zapisz';
-$string['savecalification'] ='Zapisz ocenę';
+$string['savecalification'] = 'Zapisz ocenę';
 $string['savedok'] = 'Zapisane poprawnie';
 $string['savemyassessment'] = 'Zapisz moją ocenę';
 $string['savemycomment'] = 'Zapisz mój komentarz';
@@ -441,7 +441,7 @@ $string['scaleexcellent5'] = 'Skala 5-punktowa: Bardzo dobrze/Niedostatecznie';
 $string['scaleexcellent7'] = 'Skala 4-punktowa: Bardzo dobrze/Niedostatecznie';
 $string['scalegood3'] = 'Skala 3-punktowa: Dobrze/Źle';
 $string['scalepresent'] = 'Skala 2-punktowa: Zaliczonie/Niezaliczone';
-$string['scaleyes'] ='Skala 2-punktowa: Tak/Nie';
+$string['scaleyes'] = 'Skala 2-punktowa: Tak/Nie';
 $string['see'] = 'Zobacz';
 $string['seeassessment'] = 'Zobacz ocenę';
 $string['seeassessmentautor'] = 'Zobacz ocenę zadania';
@@ -537,5 +537,3 @@ $string['weightsusedforsubmissions'] = 'Waga przyjęta dla wiadomości';
 $string['wrongpassword'] = 'Błędne hasło';
 $string['yourassessments'] = 'Twoje oceny';
 $string['yourfeedbackgoeshere'] = 'Wpisz tutaj swoją odpowiedź';
-
-?>

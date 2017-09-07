@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,8 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'Assente';
 $string['accumulative'] = 'Cumulativa';
 $string['action'] = 'Azione';
@@ -42,7 +40,8 @@ $string['allowteams'] = 'Permettere gruppi';
 $string['alreadyinphase'] = 'Già in fase';
 $string['amendassessmentelements'] = 'Rettificare elementi di valutazione';
 $string['amendtitle'] = 'Titoli modificati';
-$string['answer'] = 'Rispondere' ;;
+$string['answer'] = 'Rispondere';
+;
 $string['answercontent'] = 'Contenuto della risposta';
 $string['answerexisty'] = 'C\'è una risposta alla sfida';
 $string['answername'] = 'Risposta';
@@ -51,31 +50,36 @@ $string['answersubmission'] = 'Rispondere sfida';
 $string['approve'] = 'Approvare';
 $string['approvesubmission'] = 'Approvare/rifiutare sfida/domanda';
 $string['assess'] = 'Valutare';
-$string['assessedon'] = 'Valutata il' ;;
+$string['assessedon'] = 'Valutata il';
+;
 $string['assessment'] = 'Valutazione';
-$string['assessmentby'] = 'Valutata da' ;;
-$string['assessmentglobal'] = 'Qualificazione globale' ;;
-$string['assessmentgrade'] = 'Qualificazione della valutazione' ;;
-$string['assessmentnotyetagreed'] = 'Valutazione ancora non accettata' ;;
+$string['assessmentby'] = 'Valutata da';
+;
+$string['assessmentglobal'] = 'Qualificazione globale';
+;
+$string['assessmentgrade'] = 'Qualificazione della valutazione';
+;
+$string['assessmentnotyetagreed'] = 'Valutazione ancora non accettata';
+;
 $string['assessmentof'] = 'Valutazione di';
 $string['assessmentofthissubmission'] = 'Valutazione di questo invio';
 $string['assessments'] = 'Valutazioni';
-//$string['assessments'] = 'Valutazioni';
+// $string['assessments'] = 'Valutazioni';
 $string['assessmentsareok'] = 'Le valutazioni sono giusti';
 $string['assessmentsby'] = 'Valutati da';
 $string['assessmentsdone'] = 'Valutazioni fatti';
-$string['assessmentsmustbeagreed'] = 'Le valutazioni devono essere accettati' ;
-$string['assessmentwasagreedon'] = 'La valutazione fu accettata il' ;
+$string['assessmentsmustbeagreed'] = 'Le valutazioni devono essere accettati';
+$string['assessmentwasagreedon'] = 'La valutazione fu accettata il';
 $string['assessor'] = 'Valutato da';
-$string['assessthisanswer'] = 'Valutare questa risposta' ;
-$string['assessthissubmission'] = 'Valutare questa sfida/domanda' ;
-$string['assignmentnotinthecorrectphase'] = 'La valutazione non è stata fatta nella fase giusta' ;
+$string['assessthisanswer'] = 'Valutare questa risposta';
+$string['assessthissubmission'] = 'Valutare questa sfida/domanda';
+$string['assignmentnotinthecorrectphase'] = 'La valutazione non è stata fatta nella fase giusta';
 $string['attachment'] = 'Annesso';
 $string['attachments'] = 'Annessi';
 $string['authorofsubmission'] = 'Autore del invio';
 $string['averageerror'] = 'Media di Errori';
-$string['awaitinggradingbyteacher'] = 'Aspettando la valutazione di' ;
-$string['beforedeadline'] = 'Prima della data limite' ;
+$string['awaitinggradingbyteacher'] = 'Aspettando la valutazione di';
+$string['beforedeadline'] = 'Prima della data limite';
 $string['by'] = 'da';
 $string['bynameondate'] = 'da {$a->name}- {$a->data}';
 $string['calculationoffinalgrades'] = 'Calcolo della Valutazione finale';
@@ -83,10 +87,10 @@ $string['calification'] = 'Qualificazione';
 $string['calificationautor'] = 'qualificazione del autore della sfida';
 $string['calificationdate'] = 'data di pubblicazione delle qualificazioni';
 $string['calificationdateevent'] = 'Pubblicazione delle qualificazioni';
-$string['calificationthisquest'] = 'Ottenere le qualificazioni del modulo QUESTOURnament' ;
+$string['calificationthisquest'] = 'Ottenere le qualificazioni del modulo QUESTOURnament';
 $string['change'] = 'Riporre';
 $string['changecalification'] = 'Riporre qualificazione';
-$string['changemanualcalification'] = 'Riporre Qualificazione Manualmente' ;
+$string['changemanualcalification'] = 'Riporre Qualificazione Manualmente';
 $string['changeteam'] = 'Gestione dei Gruppi';
 $string['changeteamteacher'] = 'Gestione dei gruppi';
 $string['clasification'] = 'Classificazione';
@@ -99,7 +103,7 @@ $string['commentsautor'] = 'Commentario generale per l\'autore';
 $string['commentsforteacher'] = 'Commentari per il professore';
 $string['commentsteacher'] = 'Commentario generale del professore';
 $string['confirmdelete'] = 'Confermare Cancellare';
-$string['confirmdeletionofthisitem'] = 'Confermare il cancello di questo punto' ;
+$string['confirmdeletionofthisitem'] = 'Confermare il cancello di questo punto';
 $string['correct'] = 'Corretto';
 $string['criterion'] = 'Criterio';
 $string['currentphase'] = 'Fase di QUESTOURnament';
@@ -109,8 +113,8 @@ $string['dateassess'] = 'Data di valutazione';
 $string['dateend'] = 'Chiusura';
 $string['dateendevent'] = 'Fine del concorso';
 $string['dateendsubmissionevent'] = 'Fine della sfida';
-$string['dateofend'] = 'Data di chiusura' ;
-$string['dateofstart'] = 'Data d\'Inizio' ;
+$string['dateofend'] = 'Data di chiusura';
+$string['dateofstart'] = 'Data d\'Inizio';
 $string['datestart'] = 'Inizio';
 $string['datestartevent'] = 'Inizio del Concorso';
 $string['datestartsubmissionevent'] = 'Inizio della sfida';
@@ -144,10 +148,10 @@ Per accedere alla risposta fecce clic qui
 <font size=2>Nel caso di avere bisogno di aiuto, per favore contattare con l\'amministratore del sitio
 admin\n</font>';
 $string['emailansweraddsubject'] = 'Moodle. Risposta aggiunta nel Modulo QUESTOURnament';
-'Cambiamenti nel QUESTOURnament' ;
-'La risposta alla sfida è stata cancellata' ;
-'Per accedere alla sfida fecce clic qui' ;
-'Nel caso di avere bisogno di aiuto, per favore contattare con l\'amministratore del sitio' ;
+'Cambiamenti nel QUESTOURnament';
+'La risposta alla sfida è stata cancellata';
+'Per accedere alla sfida fecce clic qui';
+'Nel caso di avere bisogno di aiuto, per favore contattare con l\'amministratore del sitio';
 $string['emailanswerdeletesubject'] = 'Moodle. Respuesta Cancellata nel Modulo QUESTOURnament';
 $string['emailapprobe'] = 'Ciao, {$a->firstname}.\n
 Cambiamenti nel QUESTOURnament <b>\'{$a->name}\'</b> de \'{$a->sitename}\'\n
@@ -285,8 +289,8 @@ $string['leaguetable'] = 'Classifica del campionato';
 $string['legend'] = 'A (B) [C] {$a} <br> A: Numero di Risposte. B: Numero di Risposte Corrette <br>
 C: Numero di Risposte non Valutate {$a} Indica se ho Risposto alla sfida.<br>';
 $string['linear'] = 'Lineare';
-$string['listassessments'] = 'Elenco di valutazioni' ;
-$string['listofallsubmissions'] = 'Elenco di tutti gli invii' ;
+$string['listassessments'] = 'Elenco di valutazioni';
+$string['listofallsubmissions'] = 'Elenco di tutti gli invii';
 $string['liststudentsassessments'] = 'Elenco delle Valutazioni degli Studenti';
 $string['loadingforteacherassessments'] = 'Caricando le valutazioni';
 $string['mail1'] = 'Il tuo compito \'{$a}\' ;è stato valutato da';
@@ -427,8 +431,8 @@ $string['phase3short'] = 'Entrambi';
 $string['phase4short'] = 'Valutazioni';
 $string['phase5short'] = 'Calcolo';
 $string['phase6short'] = 'Mostrare Voto';
-$string['phase1submission'] ='Pendente di Approvazione';
-$string['phase2submission'] ='Pendente d\'Inizio';
+$string['phase1submission'] = 'Pendente di Approvazione';
+$string['phase2submission'] = 'Pendente d\'Inizio';
 $string['phase3submission'] = 'sfida in Corso';
 $string['phase4submission'] = 'sfida Chiusa';
 $string['phase5submission'] = 'Valutato. Pendente di Approvazione';
@@ -471,7 +475,7 @@ $string['returnto'] = 'Restituire a';
 $string['returntosubmissionpage'] = 'Tornare alla pagina degli invii';
 $string['rubric'] = 'Rubrica';
 $string['save'] = 'Salvare';
-$string['savecalification'] ='Ottenere Voto';
+$string['savecalification'] = 'Ottenere Voto';
 $string['savedok'] = 'Salvato correttamente';
 $string['savemyassessment'] = 'Salvare la mia Valutazione';
 $string['savemycomment'] = 'Salvare il mio Commentario';
@@ -582,6 +586,3 @@ $string['weightsusedforsubmissions'] = 'Pesi usati per gli invii';
 $string['wrongpassword'] = 'Password erronea';
 $string['yourassessments'] = 'Suoi valutazioni';
 $string['yourfeedbackgoeshere'] = 'Sua risposta qui';
-
-?>
-

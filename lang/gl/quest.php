@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,8 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'Ausente';
 $string['accumulative'] = 'Acumulativa';
 $string['action'] = 'Acción';
@@ -60,7 +58,7 @@ $string['assessmentnotyetagreed'] = 'Valoración aínda non aceptada';
 $string['assessmentof'] = 'Avaliación de {$a}';
 $string['assessmentofthissubmission'] = 'Valoración deste envío';
 $string['assessments'] = 'Aval.';
-//$string['assessments'] = 'Valoracións';
+// $string['assessments'] = 'Valoracións';
 $string['assessmentsareok'] = 'As valoracións están correctas';
 $string['assessmentsby'] = 'Valoradas por {$a}';
 $string['assessmentsdone'] = 'Valoracións feitas';
@@ -392,8 +390,8 @@ $string['phase3short'] = 'Ambos';
 $string['phase4short'] = 'Avaliacións';
 $string['phase5short'] = 'Cálculo';
 $string['phase6short'] = 'Mostrar cualificación';
-$string['phase1submission'] ='Pendente de Aprobación';
-$string['phase2submission'] ='Pendente de Inicio';
+$string['phase1submission'] = 'Pendente de Aprobación';
+$string['phase2submission'] = 'Pendente de Inicio';
 $string['phase3submission'] = 'Tema en Proceso';
 $string['phase4submission'] = 'Tema Pechado';
 $string['phase5submission'] = 'Avaliado. Pendente de Aprobación';
@@ -437,7 +435,7 @@ $string['returnto'] = 'Devolver a';
 $string['returntosubmissionpage'] = 'Volver á páxina de Envíos';
 $string['rubric'] = 'Rúbrica';
 $string['save'] = 'Gardar';
-$string['savecalification'] ='Obter Cualificación';
+$string['savecalification'] = 'Obter Cualificación';
 $string['savedok'] = 'Gardado correctamente';
 $string['savemyassessment'] = 'Gardala miña Valoración';
 $string['savemycomment'] = 'Gardalo meu Comentario';
@@ -549,5 +547,3 @@ $string['windowpreview'] = 'Vista de Previsualización da Resposta';
 $string['wrongpassword'] = 'Contrasinal Erróneo';
 $string['yourassessments'] = 'A súas Valoracións';
 $string['yourfeedbackgoeshere'] = 'A súa resposta vai aquí';
-
-?>

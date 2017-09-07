@@ -31,4 +31,5 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  */
+defined('MOODLE_INTERNAL') || die();
 

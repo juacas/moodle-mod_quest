@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,13 +24,12 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'Absent';
 $string['accumulative'] = 'Saccumulant';
 $string['action'] = 'Action';
 $string['actions'] = 'Actions';
-$string['addacomment'] = 'ajouter  un commentaire' ;
+$string['addacomment'] = 'ajouter  un commentaire';
 $string['addcomment'] = ' Ajouter commentaire';
 $string['addsubmission'] = 'Ajouter une question';
 $string['afterdeadline'] = 'Après la date limite: {$a}';
@@ -60,7 +58,7 @@ $string['assessmentnotyetagreed'] = 'Évaluation pas encore acceptée';
 $string['assessmentof'] = 'Evaluation de {$a}';
 $string['assessmentofthissubmission'] = 'évaluation de lenvoi';
 $string['assessments'] = 'éval.';
-//$string['assessments'] = 'évaluations';
+// $string['assessments'] = 'évaluations';
 $string['assessmentsareok'] = 'Les évaluations sont correctes';
 $string['assessmentsby'] = 'évaluées par {$a}';
 $string['assessmentsdone'] = 'évaluations effectuées';
@@ -85,9 +83,11 @@ $string['calificationdate'] = 'Date daffichage des notes';
 $string['calificationdateevent'] = 'Affichage des notes de {$a}';
 $string['calificationthisquest'] = 'Obtenir les notes du module QUESTOURnament';
 $string['change'] = 'Enregistrer les modifications';
-$string['changecalification'] = 'Changer note'; $string['changemanualcalification'] = 'changer manuellement note';
+$string['changecalification'] = 'Changer note';
+$string['changemanualcalification'] = 'changer manuellement note';
 $string['changeteam'] = 'Gestions des équipes';
-$string['changeteamteacher'] = 'Gestions des équipes'; $string['clasification'] = 'Classement';
+$string['changeteamteacher'] = 'Gestions des équipes';
+$string['clasification'] = 'Classement';
 $string['closeassignment'] = 'Fermer';
 $string['comment'] = 'commentaire';
 $string['commentby'] = 'commenté par';
@@ -381,8 +381,8 @@ $string['phase3short'] = 'Les deux';
 $string['phase4short'] = 'Évaluations';
 $string['phase5short'] = 'Calcul';
 $string['phase6short'] = 'Afficher note';
-$string['phase1submission'] ='en cours de validation';
-$string['phase2submission'] ='demmarage en cours';
+$string['phase1submission'] = 'en cours de validation';
+$string['phase2submission'] = 'demmarage en cours';
 $string['phase3submission'] = 'Question en cours';
 $string['phase4submission'] = 'Question close';
 $string['phase5submission'] = 'Evalué. En cours de validation';
@@ -425,7 +425,7 @@ $string['returnto'] = 'Retourner à';
 $string['returntosubmissionpage'] = 'Revenir à la page denvois';
 $string['rubric'] = 'Rubrique';
 $string['save'] = 'Enregistrer';
-$string['savecalification'] ='Obternir la note';
+$string['savecalification'] = 'Obternir la note';
 $string['savedok'] = 'correctement enregistré';
 $string['savemyassessment'] = 'Enregistrer mon évaluation';
 $string['savemycomment'] = 'Enregistrer mon commentaire';
@@ -536,6 +536,3 @@ $string['weightsusedforsubmissions'] = 'Formats utilisés pour les envois';
 $string['wrongpassword'] = 'mot de passe erroné';
 $string['yourassessments'] = 'Vos évaluations';
 $string['yourfeedbackgoeshere'] = 'votre réponse va ici';
-
-?>
-

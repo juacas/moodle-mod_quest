@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,8 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'Absent';
 $string['accumulative'] = 'Acumulatiu';
 $string['action'] = 'Acció';
@@ -60,7 +58,7 @@ $string['assessmentnotyetagreed'] = 'Valoració encara no aceptada';
 $string['assessmentof'] = 'Avaluació de {$a}';
 $string['assessmentofthissubmission'] = 'Valoració d\'aquest enviament';
 $string['assessments'] = 'Aval.';
-//$string['assessments'] = 'Valoracions';
+// $string['assessments'] = 'Valoracions';
 $string['assessmentsareok'] = 'Les valoracions són correctes';
 $string['assessmentsby'] = 'Valorades per {$a}';
 $string['assessmentsdone'] = 'Valoracions fetes';
@@ -542,5 +540,3 @@ $string['weightsusedforsubmissions'] = 'Pesos Utilitzats per als Enviaments';
 $string['wrongpassword'] = 'Contrasenya Errònia';
 $string['yourassessments'] = 'Les seves Valoracions';
 $string['yourfeedbackgoeshere'] = 'La seva resposta és aquí';
-
-?>

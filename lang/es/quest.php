@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,8 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'Ausente';
 $string['accumulative'] = 'Acumulativa';
 $string['action'] = 'Acción';
@@ -75,7 +73,7 @@ $string['assessmentnotyetagreed'] = 'Valoración aún no aceptada';
 $string['assessmentof'] = 'Evaluación de {$a}';
 $string['assessmentofthissubmission'] = 'Valoración de este envío';
 $string['assessments'] = 'Eval.';
-//$string['assessments'] = 'Valoraciones';
+// $string['assessments'] = 'Valoraciones';
 $string['assessmentsareok'] = 'Las valoraciones están correctas';
 $string['assessmentsby'] = 'Valoradas por {$a}';
 $string['assessmentsdone'] = 'Valoraciones hechas';
@@ -128,7 +126,7 @@ $string['commentsautor'] = 'Comentario General del Autor';
 $string['commentsforteacher'] = 'Comentarios para el Profesor';
 $string['commentsteacher'] = 'Comentario General del Profesor';
 $string['confirmdelete'] = 'Confirmar Borrar';
-$string['confirmchangeform']= 'Cambio de formulario';
+$string['confirmchangeform'] = 'Cambio de formulario';
 $string['confirmdeletionofthisitem'] = 'Confirmar el borrado de este elemento: {$a}';
 $string['correct'] = 'Correcto';
 $string['criterion'] = 'Criterio';
@@ -297,7 +295,7 @@ $string['introattachments_help'] = 'Ficheros adjuntos para complementar el enunc
 $string['introductiontothechallenge'] = 'Descripción del desafío';
 $string['invaliddates'] = 'Las Fechas no son Válidas. Deben estar entre {$a->questdatestart} y {$a->questdateend}.';
 $string['invalidtext'] = 'El Campo de Texto está Vacío';
-$string['inserterror']= 'No se ha podido insertar un registro en la tabla {$a} de la base de datos.';
+$string['inserterror'] = 'No se ha podido insertar un registro en la tabla {$a} de la base de datos.';
 $string['lastname'] = 'Apellido';
 $string['leaguetable'] = 'Tabla de trabajos entregados';
 $string['legend'] = 'A (B) [C] {$a} <br>A: Número de Respuestas. B: Número de Respuestas Correctas. <br>C: Número de Respuestas sin Evaluar. {$a} Indica si he Respondido al Desafío<br>';
@@ -417,14 +415,14 @@ $string['phase3short'] = 'Ambos';
 $string['phase4short'] = 'Evaluaciones';
 $string['phase5short'] = 'Cálculo';
 $string['phase6short'] = 'Mostrar calificación';
-$string['phase1submission'] ='Pendiente de Aprobación';
-$string['phase2submission'] ='Pendiente de Inicio';
+$string['phase1submission'] = 'Pendiente de Aprobación';
+$string['phase2submission'] = 'Pendiente de Inicio';
 $string['phase3submission'] = 'Desafío en Proceso';
 $string['phase4submission'] = 'Desafío Cerrado';
 $string['phase5submission'] = 'Evaluado. Pendiente de Aprobación';
 $string['phase6submission'] = 'Evaluado. Desafío en Proceso';
 $string['phase7submission'] = 'Evaluado. Desafío Cerrado';
-$string['phase8submission'] ='Evaluado. Pendiente de Inicio';
+$string['phase8submission'] = 'Evaluado. Pendiente de Inicio';
 $string['picture'] = 'Foto';
 $string['pictureof'] = 'Foto de';
 $string['pleaseassesstheseexamplesfromtheteacher'] = 'Valore por favor estos ejemplos de la {$a}';
@@ -456,7 +454,7 @@ $string['questsubmissions'] = 'Envíos al módulo QUESTOURnament';
 $string['questsubmitanswer'] = 'Respuestas Enviadas en QUESTOURnament';
 $string['questsubmitsubmission'] = 'Desafíos Enviados en QUESTOURnament';
 $string['questgraphtitle'] = 'Puntuación Potencial';
-$string['questgraphYlegend']= 'Puntuación';
+$string['questgraphYlegend'] = 'Puntuación';
 $string['reassess'] = 'Re-evaluar';
 $string['recalificationall'] = 'ReEvaluar Todo';
 $string['reevaluate'] = 'Re-evaluar';
@@ -475,7 +473,7 @@ $string['returnto'] = 'Devolver a';
 $string['returntosubmissionpage'] = 'Volver a la página de Envíos';
 $string['rubric'] = 'Rúbrica';
 $string['save'] = 'Guardar';
-$string['savecalification'] ='Obtener Calificación';
+$string['savecalification'] = 'Obtener Calificación';
 $string['savedok'] = 'Guardado correctamente';
 $string['savemyassessment'] = 'Guardar mi Valoración';
 $string['savemycomment'] = 'Guardar mi Comentario';
@@ -511,7 +509,7 @@ $string['showsubmission'] = 'Mostrar Desafío';
 $string['showsubmissions'] = 'Mostrar Desafíos';
 $string['showsubmissionsteam'] = 'Mostrar Desafíos Equipo';
 $string['showsubmissionsuser'] = 'Ver Desafíos Usuario';
-$string['shouldSelectDifficultyLevel']= 'Debe seleccionar un nivel de dificultad';
+$string['shouldSelectDifficultyLevel'] = 'Debe seleccionar un nivel de dificultad';
 $string['specimenassessmentform'] = 'Formulario de Muestra de Valoración';
 $string['specimenassessmentformanswer'] = 'Formulario de Muestra de Valoración para las Respuestas';
 $string['specimenassessmentformsubmission'] = 'Formulario de Muestra de Valoración para los Desafíos';
@@ -554,7 +552,7 @@ $string['tinitial'] = 'Tiempo Inicial';
 $string['title'] = 'Título';
 $string['tocalification'] = 'Obtener Calificaciones Finales';
 $string['today'] = 'Hoy';
-$string['tothechallenge'] ='al desafío ';
+$string['tothechallenge'] = 'al desafío ';
 $string['typecalification'] = 'Tipo de Puntuación';
 $string['typegrade'] = 'Obtener Notas de';
 $string['typeindividual'] = 'Alumnos';
@@ -562,7 +560,7 @@ $string['typeofscale'] = 'Tipo de escala';
 $string['typeteam'] = 'Equipos';
 $string['ungradedassessmentsofstudentsubmissions'] = '{$a} Valoraciones aún por calificar de los envíos de los estudiantes';
 $string['ungradedassessmentsofteachersubmissions'] = '{$a} Valoraciones aún por calificar de los envíos del Profesor';
-$string['unknownauthor']='Autor desconocido';
+$string['unknownauthor'] = 'Autor desconocido';
 $string['unkownactionerror'] = 'Error fatal: acción desconocida: {$a}.';
 $string['updateanswer'] = 'Respuesta Enviada';
 $string['updatecomment'] = 'Commentario actualizado.';
@@ -597,12 +595,12 @@ $string['windowpreviewsubmission'] = 'Vista de Previsualización del Desafío';
 $string['wrongpassword'] = 'Contraseña Errónea';
 $string['yourassessments'] = 'Sus Valoraciones';
 $string['yourfeedbackgoeshere'] = 'Su respuesta va aquí';
-//////////////////////////////////////
+// ////////////////////////////////////
 // HELP TEXTS
-///////////////////////////////////////
+// /////////////////////////////////////
 
 $string['allowteams'] = 'Permitir Equipos';
-$string['allowteams_help'] =  '<P align="justify">Este par&aacute;metro obliga a que cada uno de los alumnos que participe en este m&oacute;dulo QUESTOURnament pertenezca a un equipo. Cuando un alumno acceda por primera vez a un m&oacute;dulo que tenga esta opci&oacute;n habilitada, tendr&aacute; que introducir el nombre del equipo al que pertenece para poder entrar. </P>
+$string['allowteams_help'] = '<P align="justify">Este par&aacute;metro obliga a que cada uno de los alumnos que participe en este m&oacute;dulo QUESTOURnament pertenezca a un equipo. Cuando un alumno acceda por primera vez a un m&oacute;dulo que tenga esta opci&oacute;n habilitada, tendr&aacute; que introducir el nombre del equipo al que pertenece para poder entrar. </P>
 <P align="justify">Cuando esta opci&oacute;n est&eacute; habilitada aparecer&aacute; en el m&oacute;dulo, adem&aacute;s de la clasificaci&oacute;n individual de todos los alumnos, la clasificaci&oacute;n por equipos. </P>
 <P align="justify"> Cada equipo tendr&aacute; un n&uacute;mero de componentes, fijado por el par&aacute;mero <a href="help.php?component=quest&identifier=ncomponents"">N&uacute;mero de Componentes</a>, que podr&aacute; ser gestionado por los profesores. Los posibles errores que se poduzcan podr&aacute;n solucionarse atrav&eacute;s de la opci&oacute;n de
 <a href="help.php?component=quest&identifier=changeteamteacher"">Gesti&oacute;n de Equipos</a> a la que s&oacute;lo tienen acceso los profesores. </P>
@@ -657,7 +655,6 @@ $string['assessthissubmission_help'] = '<P align="justify">Esta página permite 
 <P align="justify">La m&aacute;xima calificaci&oacute;n posible para el autor del desafío será, siempre que se haya producido una respuesta correcta, la m&aacute;xima puntuaci&oacute;n alcanzada por el desaf&iacute;o durante su tiempo de vida. Si por el contrario, no se ha enviado ninguna respuesta correcta al desaf&iacute;o antes de que éste se cierre, se considerará como m&aacute;xima puntuaci&oacute;n su <a href="help.php?component=quest&identifier=initialpoints"">Puntuaci&oacute;n Inicial</a>.
 ';
 
-
 $string['changeteamteacher'] = 'Gesti&oacute;n de Equipos';
 $string['changeteamteacher_help'] = '
 <P align="justify">Esta opción permite realizar la gesti&oacute;n de los equipos del m&oacute;dulo QUESTOURnament así como cambiar a un alumno de equipo si resultara necesario.</P>
@@ -690,7 +687,7 @@ $string['dateofend'] = 'Fecha de cierre';
 $string['dateofend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
 <P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
 $string['datestart'] = 'Fecha de Comienzo';
-$string['datestart_help'] ='<P align="justify">Este par&aacute;metro establece la fecha de comienzo de este m&oacute;dulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan al m&oacute;dulo podr&aacute;n a&ntilde;adir desaf&iacute;os, responder a los ya plantedos o realizar cualquier otra actividad contemplada en este módulo QUESTOURnament. </P>
+$string['datestart_help'] = '<P align="justify">Este par&aacute;metro establece la fecha de comienzo de este m&oacute;dulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan al m&oacute;dulo podr&aacute;n a&ntilde;adir desaf&iacute;os, responder a los ya plantedos o realizar cualquier otra actividad contemplada en este módulo QUESTOURnament. </P>
 <P align="justify">Esta fecha se comprobar&aacute; al crear el m&oacute;dulo, de manera que si fuese posterior a la <a href="help.php?component=quest&identifier=dateend"">
 Fecha de Cierre</a> establecida se mostrar&iacute;a un mensaje de error y no se a&ntilde;adir&iacute;a el m&oacute;dulo QUESTOURnament que se est&aacute; intentando crear. </P>';
 $string['elements'] = 'Elementos de Calificaci&oacute;n';
@@ -802,7 +799,7 @@ $string['gradingstrategyautor_help'] = '<P align="justify">La estrategia de eval
       </OL>
     </div>';
 $string['groupmode'] = 'Modo Grupo';
-$string['groupmode_help']='<P align="justify">El modo de agrupación puede escogerse entre las siguientes opciones:</P>
+$string['groupmode_help'] = '<P align="justify">El modo de agrupación puede escogerse entre las siguientes opciones:</P>
 <div align="justify">
   <ul>
     <li><strong>Sin grupos</strong>: No hay grupos, todos los alumnos forman parte de un único gran grupo.</li>
@@ -872,7 +869,7 @@ $string['ncomponents'] = 'N&uacute;mero de Componentes';
 $string['ncomponents_help'] = '<P align="justify">Este par&aacute;metro fija el n&uacute;mero m&aacute;ximo de componentes que puede tener cada equipo. </P>
 <P align="justify">Si un alumno intenta inscribirse en un equipo que ya est&eacute; completo, se le avisar&aacute; de ello y tendr&aacute; que darse de alta en otro equipo. </P>
 ';
-$string['need_to_be_editor']='(Necesita ser un editor para añadir desafíos. Solicite los permisos al profesor.)';
+$string['need_to_be_editor'] = '(Necesita ser un editor para añadir desafíos. Solicite los permisos al profesor.)';
 $string['nelements'] = 'Número de Elementos de Evaluación';
 $string['nelements_help'] = '<P align="justify">Este número indica la cantidad de elementos de evaluación que se utilizarán para evaluar las respuestas enviadas a los desafíos planteados. Dicho número dependerá del tamaño y complejidad del desafío. Existe además un campo para realizar comentarios generales sobre la evaluación realizada. </P>
 ';
@@ -915,7 +912,7 @@ $string['submissionend_help'] = '<P align="justify">Permite establecer la fecha 
 <P align="justify">Una vez se cierre el desafío, todos los participantes podr&aacute;n ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
 <P align="justify">Esta fecha no podr&aacute; ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del m&oacute;dulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desaf&iacute;o </a>. </P>';
 $string['submissionstart'] = 'Fecha de Comienzo del Desaf&iacute;o';
-$string['submissionstart_help'] ='<P ALIGN=CENTER><strong>Fecha de Comienzo del Desaf&iacute;o </strong></P>
+$string['submissionstart_help'] = '<P ALIGN=CENTER><strong>Fecha de Comienzo del Desaf&iacute;o </strong></P>
 <P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
 <P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
 <P align="justify">A partir de esta fecha los alumnos podr&aacute;n visualizar el desaf&iacute;o y enviar sus respuestas. </P>
@@ -961,7 +958,8 @@ $string['teamporcent_help'] = '<P align="justify">Este par&aacute;metro establec
 <P align="justify">El porcentaje, establecido por este par&aacute;metro, de la puntuación obtenida por un equipo, se suma a la puntuación individual total de cada alumno que pertenezca a dicho equipo. </P>
 <P align="justify">El objetivo es premiar el trabajo en equipo de forma que &eacute;ste repercuta en la clasificaci&oacute;n final de cada alumno. </P>
 ';
-$string['teams'] = 'Ver Clasificaci&oacute;n por Equipos'; //evp en la pagina de ayuda se titulaba View Summary by Teams
+$string['teams'] = 'Ver Clasificaci&oacute;n por Equipos'; // evp en la pagina de ayuda se titulaba
+                                                           // View Summary by Teams
 $string['teams_help'] = '<P align="justify">Esta opción muestra la clasificaci&oacute;n obtenida por cada uno de los equipos formados en el m&oacute;dulo QUESTOURnament que pertenezcan al mismo grupo. Un porcentaje de esta clasificaci&oacute;n fijado al a&ntilde;adir el m&oacute;dulo QUESTOURnament (<a href="help.php?component=quest&identifier=teamporcent"">Porcentaje en la Calificaci&oacute;n de los Equipos</a>) contribuirá a la clasificaci&oacute;n indivual de cada componente del equipo.</P>
 <P align="justify">Los par&aacute;metros que se muestran son los siguientes:</P>
 <div align="justify">
@@ -986,7 +984,7 @@ $string['timemaxquestion_help'] = '<P align="justify">Este par&aacute;metro esta
 $string['tinitial'] = 'Tiempo Inicial';
 $string['tinitial_help'] = '<P align="justify">Este par&aacute;metro establece el tiempo, en días, que transcurrirá desde la fecha de comienzo de un desaf&iacute;o durante el cuál su puntuaci&oacute;n no variará. Esto ser&aacute; as&iacute; siempre y cuando no se haya enviado y evaluado una respuesta correcta a dicho desaf&iacute;o, ya que si esto ocurre, la puntuaci&oacute;n comenzar&aacute; a descender. </P>
 <P align="justify">Se pretende de esta manera incentivar a los alumnos a que respondan lo antes posible para obtener la m&aacute;xima puntuaci&oacute;n posible.</P>';
-$string['usepassword']='Usar contraseña';
+$string['usepassword'] = 'Usar contraseña';
 $string['usepassword_help'] = '<p align="justify">Esta opción permite asociar una contraseña de acceso a este m&oacute;dulo QUESTOURnament. Proteger un módulo QUESTOURnament con contraseña puede resultar necesario, por ejemplo, cuando dicho m&oacute;dulo sea utilizado por varios grupos de estudiantes en un curso y se proponga a cada grupo en un periodo de tiempo diferente, en este caso, la contraseña de acceso impedirá que un grupo de estudiantes pueda acceder al m&oacute;dulo QUESTOURnament una vez que éste haya sido abierto para otro grupo de estudiantes diferente, pero no para ellos aún.</p>
 ';
 
@@ -1004,11 +1002,7 @@ $string['windowpreviewsubmission_help'] = '<p align="justify">Esta página muest
 <p align="justify">De esta manera se podr&aacute; comprobar el aspecto de un desaf&iacute;o antes de añadirlo. Esta posibilidad resulta sobre todo útil cuando se necesite introducir una ecuación matem&aacute;tica para lo cuál se tendr&aacute; que utilizar una expresión con el formato adecuado que transformar&aacute;n los filtros que proporciona Moodle y cuyo aspecto final no puede visualizarse en el editor de dicha plataforma.</p>
 ';
 
-
 // MEssage provider
 
 $string['messageprovider:challenge_update'] = 'Cambios en los desafios: nuevos desafíos, cambios de fase, modificaciones, etc.';
 $string['messageprovider:evaluation_update'] = 'Cambios que influyen en tu calificación.';
-
-
-?>

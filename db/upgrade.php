@@ -8,32 +8,31 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle
+/** Questournament activity for Moodle
  *
  *
- This file keeps track of upgrades to
- the questournament module
-
- Sometimes, changes between versions involve
- alterations to database structures and other
- major things that may break installations.
-
- The upgrade function in this file will attempt
- to perform all the necessary actions to upgrade
- your older installtion to the current version.
-
- If there's something it cannot do itself, it
- will tell you what you need to do.
-
- The commands in here will all be database-neutral,
- using the functions defined in lib/ddllib.php
+ * This file keeps track of upgrades to
+ * the questournament module
+ *
+ * Sometimes, changes between versions involve
+ * alterations to database structures and other
+ * major things that may break installations.
+ *
+ * The upgrade function in this file will attempt
+ * to perform all the necessary actions to upgrade
+ * your older installtion to the current version.
+ *
+ * If there's something it cannot do itself, it
+ * will tell you what you need to do.
+ *
+ * The commands in here will all be database-neutral,
+ * using the functions defined in lib/ddllib.php
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -43,43 +42,37 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- *
- */
+ * @package mod_quest */
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
-require_once $CFG->libdir.'/ddllib.php';
+require_once $CFG->libdir . '/ddllib.php';
 
-
-function xmldb_quest_upgrade($oldversion=0) {
-
+function xmldb_quest_upgrade($oldversion = 0) {
     global $CFG, $USER, $THEME, $DB;
-    /**
-     * database_manager dbman 
-     */
+    /** @var database_manager dbman */
     $dbman = $DB->get_manager(); // loads DDL libs
 
-// And upgrade begins here. For each one, you'll need one
-// block of code similar to the next one. Please, delete
-// this comment lines once this file start handling proper
-// upgrade code.
+    // And upgrade begins here. For each one, you'll need one
+                                 // block of code similar to the next one. Please, delete
+                                 // this comment lines once this file start handling proper
+                                 // upgrade code.
 
-
-    if ($oldversion < 2013100400)
-    {
+    if ($oldversion < 2013100400) {
         $table = new xmldb_table('quest_answers');
         $field = new xmldb_field('attachment', XMLDB_TYPE_CHAR, '100', null, false, false, null, null);
         $dbman->change_field_notnull($table, $field);
 
         $table = new xmldb_table('quest_submissions');
-        //		<FIELD NAME="attachment" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="descriptiontrust" NEXT="date"/>
+        // <FIELD NAME="attachment" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"
+        // PREVIOUS="descriptiontrust" NEXT="date"/>
         $field = new xmldb_field('attachment', XMLDB_TYPE_CHAR, '100', null, false, false, null, null);
         $dbman->change_field_notnull($table, $field);
     }
-    if ($oldversion < 2016060900)
-    {
+    if ($oldversion < 2016060900) {
         $table = new xmldb_table('quest');
         $field = new xmldb_field('description', XMLDB_TYPE_TEXT, null, true, true, false, null, null);
-        $dbman->rename_field($table, $field,'intro');
+        $dbman->rename_field($table, $field, 'intro');
 
         $table = new xmldb_table('quest');
         $field = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, null);
@@ -87,4 +80,3 @@ function xmldb_quest_upgrade($oldversion=0) {
     }
     return true;
 }
-?>

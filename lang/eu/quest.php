@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,14 +24,12 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
-
+ * @package block_quest_classification */
 $string['absent'] = 'Bertan ez';
-$string['accumulative'] ='Metakor';
+$string['accumulative'] = 'Metakor';
 $string['action'] = 'ekintza';
 $string['actions'] = 'ekintzak';
-$string['addacomment'] ='iruzkin bat gehitu';
+$string['addacomment'] = 'iruzkin bat gehitu';
 $string['addcomment'] = 'iruzkina gehitu';
 $string['addsubmission'] = 'erronka gehitu';
 $string['afterdeadline'] = 'epe amaieraren ondoren';
@@ -62,7 +59,7 @@ $string['assessmentnotyetagreed'] = 'baliospena oraindik ez onestuta';
 $string['assessmentof'] = '...-ren balioztapena';
 $string['assessmentofthissubmission'] = 'bidaltze honen balioespena';
 $string['assessments'] = 'Balioztat.';
-//$string['assessments'] = 'Balioespenak';
+// $string['assessments'] = 'Balioespenak';
 $string['assessmentsareok'] = 'balioespenak zuzenak dira';
 $string['assessmentsby'] = '... -rengatik balioztatuak';
 $string['assessmentsdone'] = 'balioespenak eginak';
@@ -375,7 +372,8 @@ honek kalifikazioa errezagoa eta trinkoagoa izatea lortzen du. Irakasle
 gisa, hastapen hauek gehitu behar dituzu lana ikasleen esku utzi baino
 lehen. Hau ikastaroaren lanan klilatuz lortzen da.Haspapenik ez balego,
 hauek gehitzea eskatuko zaizu.Hastapenen kopurua alda daitezke "Lana aldatu"
-pantaila erabiliz';';hastapena zuzendu daiteke "lana kudeatu"pantailan';
+pantaila erabiliz';
+';hastapena zuzendu daiteke "lana kudeatu"pantailan';
 $string['notgraded'] = 'ez da kalifikatu';
 $string['notitlegiven'] = 'ez zaio izenbururik jarri';
 $string['notsubmittedanswers'] = 'ez dago erantzun bidalirik';
@@ -402,8 +400,8 @@ $string['openassignment'] = 'lana zabalduta';
 $string['optionforpeergrade'] = 'balioespen aukera kideen aldetik';
 $string['overallgrade'] = 'Guztizko kalifikazioa';
 $string['overallpeergrade'] = 'kideen aldeko guztizko kalifikazia: {$a}';
-$string['overallteachergrade'] ='irakaslearen gehienezko kalifikazioa: {$a}';
-$string['ownwork'] ='garaia';
+$string['overallteachergrade'] = 'irakaslearen gehienezko kalifikazioa: {$a}';
+$string['ownwork'] = 'garaia';
 $string['phase1'] = 'lehiaketa ez hasita ';
 $string['phase2'] = '{$a} Lehiaketa zabalduta';
 $string['phase3'] = '{$a} Lehiaketa itxita';
@@ -424,8 +422,8 @@ $string['phase3short'] = 'biak';
 $string['phase4short'] = 'balioztapenak';
 $string['phase5short'] = 'kalkulua';
 $string['phase6short'] = 'kaifikazioa erakutsi';
-$string['phase1submission'] ='onartzeko egiteke';
-$string['phase2submission'] ='haste egiteke';
+$string['phase1submission'] = 'onartzeko egiteke';
+$string['phase2submission'] = 'haste egiteke';
 $string['phase3submission'] = 'erronka prozesuan';
 $string['phase4submission'] = 'erronka itxita';
 $string['phase5submission'] = 'balioztatuta. onartzeko egiteke';
@@ -466,12 +464,12 @@ $string['resume24hours'] = 'azken 24 orduetan gehitutako edo aldatutako
 gaien laburpena';
 $string['resumeindividual'] = ' banakako laburpena';
 $string['resumequest'] = 'Moodle. QUESTOURnament ekintza laburpena';
-$string['resumeteams'] =  'Talde bidezko laburpena';
+$string['resumeteams'] = 'Talde bidezko laburpena';
 $string['returnto'] = ' ....ri itzuli';
 $string['returntosubmissionpage'] = 'bidaltze orrira itzuli';
 $string['rubric'] = 'izenpea';
 $string['save'] = 'gorde';
-$string['savecalification'] ='kalifikazioa lortu';
+$string['savecalification'] = 'kalifikazioa lortu';
 $string['scale100'] = '100erainoko puntuazioa';
 $string['scale20'] = '20rainoko puntuazioa';
 $string['scalecorrect'] = '2 puntuetako eskala zuzena/okerra';
@@ -589,5 +587,3 @@ azterketak';
 $string['wrongpassword'] = 'pasahitza okerra';
 $string['yourassessments'] = 'zure balioespenak';
 $string['yourfeedbackgoeshere'] = 'zure erantzuna hemen doa';
-
-?>

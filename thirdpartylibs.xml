@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<libraries>
+<library>
+    <location>graphlib.php</location>
+    <name>Graph Class-PHP</name>
+    <license>LGPL</license>
+    <version>1.6.3</version>
+    <licenseversion>2.1</licenseversion>
+<!--  (c)2000  Herman Veluwenkamp  -->
+  </library>
+</libraries>

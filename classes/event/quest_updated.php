@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle: The mod_quest challenge modification event.
+/** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,90 +24,67 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- */
-
+ * @package mod_quest */
 namespace mod_quest\event;
-require_once 'base.php';
 
 defined('MOODLE_INTERNAL') || die();
+require_once 'base.php';
 
-/**
- * The user modifies the Quest caracteristics
+
+/** The user modifies the Quest caracteristics
  *
  * @property-read array $other {
- *      Extra information about event.
+ *                Extra information about event.
  *
- *      - string info
- *      - string cmid
- * }
+ *                - string info
+ *                - string cmid
+ *                }
  *
- * @package    mod_quest
- * @since      Moodle 2.7
- * @copyright  2015 Juan Pablo de Castro
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ * @package mod_quest
+ * @since Moodle 2.7
+ * @copyright 2015 Juan Pablo de Castro
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 class quest_updated extends base {
+
     /**
-     *
      * @param int $courseid
      * @param int $userid
-     * @param string $cmId
-     * @return unknown
-     */
-    public static function create_from_parts($courseid,$userid, $cmId,$activityId, $url,$info) {
-        $data = array(
-            'relateduserid' => $userid,
-            'context' => \context_course::instance($courseid),
-            'userid' => $userid,
-            'courseid' => $courseid,
-            'other' => array(
-                'info' => $info,
-                'cmid' => $cmId,
-                'activityid' => $activityId,
-                'url' => $url
-            ),
-        );
+     * @param string $cmid
+     * @return unknown */
+    public static function create_from_parts($courseid, $userid, $cmid, $activityid, $url, $info) {
+        $data = array('relateduserid' => $userid, 'context' => \context_course::instance($courseid), 'userid' => $userid,
+                        'courseid' => $courseid,
+                        'other' => array('info' => $info, 'cmid' => $cmid, 'activityid' => $activityid, 'url' => $url));
         /** @var quest_viewed $event */
         $event = self::create($data);
         $event->set_legacy_logdata('updated', $info, $url);
         return $event;
     }
 
-    /**
-     * Init method.
-     */
+    /** Init method. */
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_TEACHING;
     }
 
-    /**
-     * Returns localised general event name.
+    /** Returns localised general event name.
      *
-     * @return string
-     */
+     * @return string */
     public static function get_name() {
         return "Quest updated.";
     }
 
-    /**
-     * Returns description of what happened.
+    /** Returns description of what happened.
      *
-     * @return string
-     */
+     * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' modified the Quest activity '".$this->data['other']['activityid'].
-            "in the course '$this->courseid'. ".$this->data['other']['info'];
+        return "The user with id '$this->userid' modified the Quest activity '" . $this->data['other']['activityid'] .
+                 "in the course '$this->courseid'. " . $this->data['other']['info'];
     }
 
-
-
-    /**
-     * Custom validation.
+    /** Custom validation.
      *
-     * @throws \coding_exception
-     */
+     * @throws \coding_exception */
     protected function validate_data() {
         parent::validate_data();
 

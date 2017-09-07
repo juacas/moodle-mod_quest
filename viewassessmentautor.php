@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle
+/** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,96 +24,98 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- */
+ * @package mod_quest */
+require ("../../config.php");
+require ("lib.php");
+require ("locallib.php");
 
-    require("../../config.php");
-    require("lib.php");
-    require("locallib.php");
+$aid = required_param('aid', PARAM_INT); // Assessment ID
+$allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
+$redirect = optional_param('redirect', '', PARAM_URL);
+$sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
+$dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 
-    $aid=required_param('aid',PARAM_INT);   // Assessment ID
-    $allowcomments=optional_param('allowcomments',false,PARAM_BOOL);
-    $redirect=optional_param('redirect','',PARAM_URL);
-    $sort=optional_param('sort','dateanswer',PARAM_ALPHA);
-    $dir=optional_param('dir','ASC',PARAM_ALPHA);
+global $DB, $PAGE, $OUTPUT;
 
-  	global $DB,$PAGE,$OUTPUT;
+$assessment = $DB->get_record("quest_assessments_autors", array("id" => $aid), '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', array('id' => $assessment->submissionid), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
+list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 
-    $assessment = $DB->get_record("quest_assessments_autors", array("id"=> $aid),'*',MUST_EXIST);
-    $submission = $DB->get_record('quest_submissions', array('id'=> $assessment->submissionid),'*',MUST_EXIST);
-    $quest = $DB->get_record("quest", array("id"=> $submission->questid),'*',MUST_EXIST);
-    list($course,$cm)=  quest_get_course_and_cm_from_quest($quest);
+require_login($course->id, false, $cm);
 
-    require_login($course->id, false, $cm);
+$url = new moodle_url('/mod/quest/viewassessmentautor.php',
+        array('aid' => $aid, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'dir' => $dir, 'sort' => $sort));
+$PAGE->set_url($url);
+$PAGE->navbar->add(get_string('submission', 'quest') . ':' . $submission->title,
+        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
+$PAGE->set_title(format_string($quest->name));
+$PAGE->set_heading($course->fullname);
+echo $OUTPUT->header();
 
-    $url =  new moodle_url('/mod/quest/viewassessmentautor.php',array('aid'=>$aid,'allowcomments'=>$allowcomments,'redirect'=>$redirect,'dir'=>$dir,'sort'=>$sort));
-    $PAGE->set_url($url);
-    $PAGE->navbar->add(get_string('submission','quest').':'.$submission->title,new moodle_url('submissions.php',array('id'=>$cm->id,'sid'=>$submission->id,'action'=>'showsubmission')));
-    $PAGE->set_title(format_string($quest->name));
-    $PAGE->set_heading($course->fullname);
-    echo $OUTPUT->header();
+quest_check_visibility($course, $cm);
 
-	quest_check_visibility($course, $cm);
+$context = context_module::instance($cm->id);
+$ismanager = has_capability('mod/quest:manage', $context);
 
-	$context = context_module::instance( $cm->id);
-	$ismanager=has_capability('mod/quest:manage',$context);
+$strquests = get_string("modulenameplural", "quest");
+$strquest = get_string("modulename", "quest");
+$strassess = get_string("viewassessmentautor", "quest");
+if (isset($_POST['newcalification'])) {
 
-    $strquests = get_string("modulenameplural", "quest");
-    $strquest  = get_string("modulename", "quest");
-    $strassess = get_string("viewassessmentautor", "quest");
-        if(isset($_POST['newcalification'])){
+    if (($ismanager) && ($assessment->state != 0)) {
 
-         if(($ismanager)&&($assessment->state != 0)){
+        if ($calificationuser = $DB->get_record("quest_calification_users", "userid", $submission->userid, "questid", $quest->id)) {
+            $calificationuser->points -= $assessment->points;
+            $calificationuser->pointssubmission -= $assessment->points;
+            $calificationuser->points += $_POST['newcalification'];
+            $calificationuser->pointssubmission += $_POST['newcalification'];
+            $DB->set_field("quest_calification_users", "points", $calificationuser->points, array("id" => $calificationuser->id));
+            $DB->set_field("quest_calification_users", "pointssubmission", $calificationuser->pointssubmission,
+                    array("id" => $calificationuser->id));
 
-          if($calification_user = $DB->get_record("quest_calification_users", "userid", $submission->userid, "questid", $quest->id)){
-              $calification_user->points -= $assessment->points;
-              $calification_user->pointssubmission -= $assessment->points;
-              $calification_user->points += $_POST['newcalification'];
-              $calification_user->pointssubmission += $_POST['newcalification'];
-              $DB->set_field("quest_calification_users", "points", $calification_user->points, array("id"=> $calification_user->id));
-              $DB->set_field("quest_calification_users", "pointssubmission", $calification_user->pointssubmission, array("id"=> $calification_user->id));
-
-              if($quest->allowteams){
-               if($calification_team = $DB->get_record("quest_calification_teams", array("teamid"=> $calification_user->teamid, "questid"=>$quest->id))){
-                  $calification_team->points -= $assessment->points;
-                  $calification_team->pointssubmission -= $assessment->points;
-                  $calification_team->points += $_POST['newcalification'];
-                  $calification_team->pointssubmission += $_POST['newcalification'];
-                  $DB->set_field("quest_calification_teams", "points", $calification_team->points, array("id"=> $calification_team->id));
-                  $DB->set_field("quest_calification_teams", "pointssubmission", $calification_team->pointssubmission, array("id"=> $calification_team->id));
-               }
-              }
-           }
-           $assessment->points = $_POST['newcalification'];
-           $DB->set_field("quest_assessments_autors", "points", $assessment->points, array("id"=> $assessment->id));
-           $DB->set_field("quest_assessments_autors", "dateassessment", time(), array("id"=> $assessment->id));
-         }
-
+            if ($quest->allowteams) {
+                if ($calificationteam = $DB->get_record("quest_calification_teams",
+                        array("teamid" => $calificationuser->teamid, "questid" => $quest->id))) {
+                    $calificationteam->points -= $assessment->points;
+                    $calificationteam->pointssubmission -= $assessment->points;
+                    $calificationteam->points += $_POST['newcalification'];
+                    $calificationteam->pointssubmission += $_POST['newcalification'];
+                    $DB->set_field("quest_calification_teams", "points", $calificationteam->points,
+                            array("id" => $calificationteam->id));
+                    $DB->set_field("quest_calification_teams", "pointssubmission", $calificationteam->pointssubmission,
+                            array("id" => $calificationteam->id));
+                }
+            }
         }
-
-        // show assessment but don't allow changes
-    quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
-    $submission = $DB->get_record("quest_submissions", array("id"=> $submission->id));
-    $title = '"'.$submission->title.'" ';
-    if (($ismanager||($submission->userid == $USER->id))) {
-        $title .= get_string('by', 'quest').' '.quest_fullname($submission->userid, $course->id);
+        $assessment->points = $_POST['newcalification'];
+        $DB->set_field("quest_assessments_autors", "points", $assessment->points, array("id" => $assessment->id));
+        $DB->set_field("quest_assessments_autors", "dateassessment", time(), array("id" => $assessment->id));
     }
+}
 
-    echo $OUTPUT->heading($title);
+// show assessment but don't allow changes
+quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
+$submission = $DB->get_record("quest_submissions", array("id" => $submission->id));
+$title = '"' . $submission->title . '" ';
+if (($ismanager || ($submission->userid == $USER->id))) {
+    $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
+}
 
+echo $OUTPUT->heading($title);
 
-    quest_print_submission_info($quest,$submission);
+quest_print_submission_info($quest, $submission);
 
-    echo("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">".
-                get_string("specimenassessmentform", "quest")."</a></b></center>");
+echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">" .
+         get_string("specimenassessmentform", "quest") . "</a></b></center>");
 
-    $OUTPUT->heading(get_string('description','quest'));
-    quest_print_submission($quest, $submission);
+$OUTPUT->heading(get_string('description', 'quest'));
+quest_print_submission($quest, $submission);
 
-    $timenow=time();
-    if(($submission->datestart < $timenow)&&($submission->dateend > $timenow)&&($submission->nanswerscorrect < $quest->nmaxanswers)){
-                    $submission->phase = SUBMISSION_PHASE_ACTIVE;
-    }
-  echo"<br><br>";
-  echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'].'#sid='.$submission->id);
-  echo $OUTPUT->footer();
+$timenow = time();
+if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) && ($submission->nanswerscorrect < $quest->nmaxanswers)) {
+    $submission->phase = SUBMISSION_PHASE_ACTIVE;
+}
+echo "<br><br>";
+echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'] . '#sid=' . $submission->id);
+echo $OUTPUT->footer();

@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle lang file
+/** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,8 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification
- */
+ * @package block_quest_classification */
 $string['absent'] = 'abwesend';
 $string['accumulative'] = 'angehäuft';
 $string['action'] = 'Handlung';
@@ -60,7 +58,7 @@ $string['assessmentnotyetagreed'] = 'Einschätzung noch nicht akzeptiert';
 $string['assessmentof'] = 'Bewertung von {$a}';
 $string['assessmentofthissubmission'] = 'Einschätzung dieser gesendeten Aufträge';
 $string['assessments'] = 'Bew.';
-//$string['assessments'] = 'Einschätzungen';
+// $string['assessments'] = 'Einschätzungen';
 $string['assessmentsareok'] = 'Die Einschätzungen sind richtig';
 $string['assessmentsby'] = 'eingeschätzt durch {$a} ';
 $string['assessmentsdone'] = 'Einschätzungen gemacht';
@@ -446,7 +444,7 @@ $string['submitchallengeassignment'] = 'Aufgabenstellung/Frage hinzufügen';
 $string['submitted'] = 'Aufgabenstellung/Frage gesendet';
 $string['submittedanswer'] = 'Antwort gesendet';
 $string['submittedby'] = 'Gesendet durch';
-$string['suggestedgrade'] =' Vorgeschlagene Beurteilung';
+$string['suggestedgrade'] = ' Vorgeschlagene Beurteilung';
 $string['teacherassessments'] = '{$a} Bewertungen';
 $string['teacherscomment'] = 'Bemerkung des Dozierenden';
 $string['teachersgrade'] = 'Beurteilung des Dozierenden';
@@ -502,8 +500,3 @@ $string['weightsusedforsubmissions'] = 'Gewichtungen für die gesendeten Aufträ
 $string['wrongpassword'] = 'Passwort ungültig';
 $string['yourassessments'] = 'Ihre Einschätzungen';
 $string['yourfeedbackgoeshere'] = 'Geben Sie Ihre Antwort hier ein.';
-?>
-
-
-
-

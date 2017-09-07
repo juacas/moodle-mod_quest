@@ -8,14 +8,13 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Questournament activity for Moodle
+/** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,18 +24,16 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- *
- */
-//////////////////////////////////////////////////////
-//  Code fragment to define the version of QUEST
-//  This fragment is called by moodle_needs_upgrading() and /admin/index.php
-//////////////////////////////////////////////////////
+ * @package mod_quest */
+// ////////////////////////////////////////////////////
+// Code fragment to define the version of QUEST
+// This fragment is called by moodle_needs_upgrading() and /admin/index.php
+// ////////////////////////////////////////////////////
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016091501;
+$plugin->version = 2016091501;
 $plugin->requires = 2013111800; // Moodle 2.6 at least
 $plugin->component = 'mod_quest';
-$plugin->cron     = 600;// Period for cron to check this module (secs)
+$plugin->cron = 600; // Period for cron to check this module (secs)
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'v1.2.1';
