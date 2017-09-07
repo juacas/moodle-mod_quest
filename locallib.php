@@ -5037,16 +5037,6 @@ function quest_get_submitsubmission_logs($course, $timestart) {
                    AND q.course = :course
                    AND s.questid = q.id",
             array('timestart' => $timestart, 'timethen' => $timethen, 'course' => $course->id));
-    // ...return $DB->get_records_sql("SELECT l.time, l.url, u.firstname, u.lastname, s.questid,.
-    // ...s.userid, s.title.
-    // FROM {log} l,.
-    // ...{quest} e,.
-    // ...{quest_submissions} s,.
-    // ...{user} u.
-    // WHERE l.time > :timestart AND l.time < :timethen.
-    // AND l.course = :course AND l.module = 'quest' AND l.action = 'submit_submissi'.
-    // AND l.info = s.id AND u.id = s.userid AND e.id =.
-    // ...s.questid",array('timestart'=>$timestart,'timethen'=>$timethen,'course'=>$course->id));.
     return $submissions;
 }
 
