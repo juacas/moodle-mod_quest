@@ -37,10 +37,10 @@ require_once ("lib.php");
 require_once ("locallib.php");
 require_once ("scores_lib.php");
 
-$id = required_param('id', PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID.
 $action = required_param('action', PARAM_ALPHA);
 global $DB, $OUTPUT, $PAGE;
-// get some useful stuff...
+// Get some useful stuff...
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 $url = new moodle_url('/mod/quest/assessments_autors.php', array('action' => $action, 'id' => $id));
@@ -63,7 +63,7 @@ if ($action == 'displaygradingform') {
     echo $OUTPUT->heading_with_help(get_string("specimenassessmentformsubmission", "quest"), "specimensubmission", "quest");
     quest_print_assessment_autor($quest);
     $id = required_param('id', PARAM_INT);
-    // called with no assessment
+    // Called with no assessment.
     echo $OUTPUT->continue_button("view.php?id=$id");
 } else if ($action == 'editelements') {
     // Edit assessment elements (for teachers).
@@ -85,14 +85,14 @@ if ($action == 'displaygradingform') {
     echo '<form name="form" method="post" action="assessments_autors.php">';
     echo '<input type="hidden" name="id" value="' . $cm->id . '" /> <input type="hidden" name="action" value="insertelements" />';
     echo '<table align="center" border="1">';
-    // get existing elements, if none set up appropriate default ones
+    // Get existing elements, if none set up appropriate default ones.
     if ($elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC")) {
         foreach ($elementsraw as $element) {
-            $elements[] = $element; // to renumber index 0,1,2...
+            $elements[] = $element; // ...to renumber index 0,1,2...
         }
     }
-    // check for missing elements (this happens either the first time round or when the number of
-    // elements is icreased)
+    // Check for missing elements (this happens either the first time round or when the number of
+    // elements is icreased).
     for ($i = 0; $i < $quest->nelementsautor; $i++) {
         if (!isset($elements[$i])) {
             $elements[$i] = new stdClass();
@@ -103,7 +103,7 @@ if ($action == 'displaygradingform') {
         }
     }
     switch ($quest->gradingstrategyautor) {
-        case 0: // no grading
+        case 0: // ...no grading.
             for ($i = 0; $i < $quest->nelementsautor; $i++) {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
@@ -116,8 +116,8 @@ if ($action == 'displaygradingform') {
             }
             break;
 
-        case 1: // accumulative grading
-                // set up scales name
+        case 1: // Accumulative grading.
+                // Set up scales name.
             foreach ($questscales as $key => $scale) {
                 $scales[] = $scale['name'];
             }
@@ -131,8 +131,8 @@ if ($action == 'displaygradingform') {
                 echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
                 echo "<td valign=\"top\">\n";
                 echo html_writer::select($scales, "scale[]", $elements[$i]->scale);
-                if ($elements[$i]->weight == '') { // not set
-                    $elements[$i]->weight = 11; // unity
+                if ($elements[$i]->weight == '') { // Not set.
+                    $elements[$i]->weight = 11; // ...unity.
                 }
                 echo "</td></tr>\n";
                 echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
@@ -144,15 +144,15 @@ if ($action == 'displaygradingform') {
                 echo "</tr>\n";
             }
             break;
-        case 2: // error banded grading
+        case 2: // Error banded grading.
             for ($i = 0; $i < $quest->nelementsautor; $i++) {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
                 echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
-                if ($elements[$i]->weight == '') { // not set
-                    $elements[$i]->weight = 11; // unity
+                if ($elements[$i]->weight == '') { // ...not set.
+                    $elements[$i]->weight = 11; // ...unity.
                 }
                 echo "</tr>\n";
                 echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
@@ -173,7 +173,7 @@ if ($action == 'displaygradingform') {
             }
             for ($i = 0; $i <= $quest->nelementsautor; $i++) {
                 echo "<tr><td align=\"CENTER\">$i</td><td align=\"CENTER\">";
-                if (!isset($elements[$i])) { // the "last one" will be!
+                if (!isset($elements[$i])) { // ...the "last one" will be!
                     $elements[$i]->description = "";
                     $elements[$i]->maxscore = 0;
                 }
@@ -182,7 +182,7 @@ if ($action == 'displaygradingform') {
             }
             echo "</table></center>\n";
             break;
-        case 3: // criterion grading
+        case 3: // Criterion grading.
             for ($j = $quest->maxcalification; $j >= 0; $j--) {
                 $numbers[$j] = $j;
             }
@@ -200,14 +200,13 @@ if ($action == 'displaygradingform') {
                 echo "</tr>\n";
             }
             break;
-        case 4: // rubric
+        case 4: // Rubric.
             for ($j = $quest->maxcalification; $j >= 0; $j--) {
                 $numbers[$j] = $j;
             }
             if ($rubricsraw = $DB->get_records("quest_rubrics_autor", array("questid" => $quest->id))) {
                 foreach ($rubricsraw as $rubric) {
-                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // reindex
-                                                                                                // 0,1,2...
+                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // Reindex 0,1,2...
                 }
             }
             for ($i = 0; $i < $quest->nelementsautor; $i++) {
@@ -250,7 +249,7 @@ if ($action == 'displaygradingform') {
     $form = data_submitted();
     // Let's not fool around here, dump the junk!
     $DB->delete_records("quest_elementsautor", array("questid" => $quest->id));
-    // determine wich type of grading
+    // Determine wich type of grading.
     switch ($quest->gradingstrategyautor) {
         case 0: // no grading
                 // Insert all the elements that contain something
@@ -268,8 +267,8 @@ if ($action == 'displaygradingform') {
             }
             break;
 
-        case 1: // accumulative grading
-                // Insert all the elements that contain something
+        case 1: // Accumulative grading.
+                // Insert all the elements that contain something.
             foreach ($form->description as $key => $description) {
                 if ($description) {
                     $element = new stdClass();
@@ -297,10 +296,10 @@ if ($action == 'displaygradingform') {
             }
             break;
 
-        case 2: // error banded grading...
+        case 2: // Error banded grading...
         case 3: // ...and criterion grading
                 // Insert all the elements that contain something, the number of descriptions is one
-                // less than the number of grades
+                // less than the number of grades.
             foreach ($form->maxscore as $key => $themaxscore) {
                 unset($element);
                 $element->questid = $quest->id;
@@ -319,7 +318,7 @@ if ($action == 'displaygradingform') {
             break;
 
         case 4: // ...and criteria grading
-                // Insert all the elements that contain something
+                // Insert all the elements that contain something.
             foreach ($form->description as $key => $description) {
                 unset($element);
                 $element->questid = $quest->id;
@@ -336,13 +335,12 @@ if ($action == 'displaygradingform') {
                     error("Could not insert quest element!");
                 }
             }
-            // let's not fool around here, dump the junk!
+            // Let's not fool around here, dump the junk!
             $DB->delete_records("quest_rubrics_autor", "questid", $quest->id);
             for ($i = 0; $i < $quest->nelementsautor; $i++) {
                 for ($j = 0; $j < 5; $j++) {
                     unset($element);
-                    if (empty($form->rubric[$i][$j])) { // OK to have an element with fewer than 5
-                                                        // items
+                    if (empty($form->rubric[$i][$j])) { // OK to have an element with fewer than 5 items.
                         break;
                     }
                     $element->questid = $quest->id;
@@ -364,14 +362,14 @@ if ($action == 'displaygradingform') {
     $aid = required_param('aid', PARAM_INT);
     $assessment = $DB->get_record("quest_assessments_autors", array("id" => $aid), '*', MUST_EXIST);
     $submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid), '*', MUST_EXIST);
-    // first get the assignment elements for maxscores and weights...
+    // First get the assignment elements for maxscores and weights...
     $elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC");
     if (count($elementsraw) < $quest->nelementsautor) {
         echo $OUTPUT->notification(get_string("noteonassessmentelements", "quest"));
     }
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
-            $elements[] = $element; // to renumber index 0,1,2...
+            $elements[] = $element; // ...to renumber index 0,1,2...
         }
     } else {
         $elements = null;
@@ -383,15 +381,15 @@ if ($action == 'displaygradingform') {
         $percent = ((int) $manualgrade) / 100;
         $grade = $points * $percent;
         $message .= "Grading manually! $points * $percent = $grade";
-    } else { // form grading
+    } else { // Form grading
              // don't fiddle about, delete all the old and add the new!
         $DB->delete_records("quest_items_assesments_autor", array("assessmentautorid" => $assessment->id));
-        $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php
+        $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php.
         $numelements = $quest->nelementsautor;
-        // determine what kind of grading we have
+        // Determine what kind of grading we have.
         switch ($quest->gradingstrategyautor) {
-            case 0: // no grading
-                    // Insert all the elements that contain something
+            case 0: // No grading.
+                    // Insert all the elements that contain something.
                 for ($i = 0; $i < $numelements; $i++) {
                     $element = new stdClass();
                     $element->questid = $quest->id;
@@ -404,10 +402,10 @@ if ($action == 'displaygradingform') {
                         print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                     }
                 }
-                $grade = $assessment->points; // set to satisfy save to db
+                $grade = $assessment->points; // Set to satisfy save to db.
                 break;
-            case 1: // accumulative grading
-                    // Insert all the elements that contain something
+            case 1: // Accumulative grading.
+                    // Insert all the elements that contain something.
                 foreach ($form->grade as $key => $thegrade) {
                     unset($element);
                     $element = new stdclass();
@@ -417,18 +415,17 @@ if ($action == 'displaygradingform') {
                     $element->elementno = $key;
                     $element->answer = $form->{"feedback_$key"};
                     $element->calification = $thegrade;
-                    $element->commentteacher = $form->generalcomment; // EVP CHECK THIS... DATA BASE
+                    $element->commentteacher = $form->generalcomment; // TODO: EVP CHECK THIS... DATA BASE
                                                                       // CONTAINS THIS FIELD BUT I
-                                                                      // do
-                                                                      // not find it in the form and
+                                                                      // do not find it in the form and
                                                                       // I have included this to
-                                                                      // avoid error. I think this
-                                                                      // field is not used
+                                                                      // avoid errors. I think this
+                                                                      // field is no longer used.
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                         print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                     }
                 }
-                // now work out the grade...
+                // Now work out the grade...
                 $rawgrade = 0;
                 $totalweight = 0;
                 foreach ($form->grade as $key => $grade) {
@@ -445,8 +442,8 @@ if ($action == 'displaygradingform') {
                 }
                 $grade = $points * ($rawgrade / $totalweight);
                 break;
-            case 2: // error banded graded
-                    // Insert all the elements that contain something
+            case 2: // Error banded graded.
+                    // Insert all the elements that contain something.
                 $error = 0.0;
                 for ($i = 0; $i < $numelements; $i++) {
                     unset($element);
@@ -462,7 +459,7 @@ if ($action == 'displaygradingform') {
                         $error += $questeweights[$elements[$i]->weight];
                     }
                 }
-                // now save the adjustment
+                // Now save the adjustment.
                 $element = new stdClass();
                 $i = $numelements;
                 $element->questid = $quest->id;
@@ -473,7 +470,7 @@ if ($action == 'displaygradingform') {
                     error("Could not insert quest grade!");
                 }
                 $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
-                // do sanity check
+                // Do sanity check.
                 if ($rawgrade < 0) {
                     $rawgrade = 0;
                 } else if ($rawgrade > $quest->maxcalification) {
@@ -482,8 +479,8 @@ if ($action == 'displaygradingform') {
                 echo "<b>" . get_string("weightederrorcount", "quest", intval($error + 0.5)) . "</b>\n";
                 $grade = $points * ($rawgrade / $quest->maxcalification);
                 break;
-            case 3: // criteria grading
-                    // save in the selected criteria value in element zero,
+            case 3: // Criteria grading.
+                    // Save in the selected criteria value in element zero,
                 unset($element);
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
@@ -492,7 +489,7 @@ if ($action == 'displaygradingform') {
                 if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                     error("Could not insert quest grade!");
                 }
-                // now save the adjustment in element one
+                // Now save the adjustment in element one.
                 unset($element);
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
@@ -507,8 +504,8 @@ if ($action == 'displaygradingform') {
 
                 break;
 
-            case 4: // rubric grading (identical to accumulative grading)
-                    // Insert all the elements that contain something
+            case 4: // Rubric grading (identical to accumulative grading).
+                    // Insert all the elements that contain something.
                 foreach ($form->grade as $key => $thegrade) {
                     unset($element);
                     $element->questid = $quest->id;
@@ -540,26 +537,19 @@ if ($action == 'displaygradingform') {
     $assessment->points = $grade;
     $assessment->dateassessment = $timenow;
     $submission->evaluated = 1;
-    // any comment?
+    // Any comment?
     if (!empty($form->generalcomment)) {
-        // $DB->set_field("quest_assessments_autors", "commentsteacher", $form->generalcomment,
-        // array("id"=> $assessment->id));
         $assessment->commentsteacher = $form->generalcomment;
     }
     if (!empty($form->generalteachercomment)) {
-        // $DB->set_field("quest_assessments_autors", "commentsforteacher",
-        // $form->generalteachercomment, array("id"=> $assessment->id));
         $assessment->commentsforteacher = $form->generalteachercomment;
     }
-    quest_update_submission($submission); // weird bug with number precission and decimal point in
-                                          // Moodle 2.5+
-    quest_update_assessment_author($assessment); // weird bug with number precission and decimal
-                                                 // point in Moodle 2.5+
+    quest_update_submission($submission); // Weird bug with number precission and decimal point in
+                                          // Moodle 2.5+.
+    quest_update_assessment_author($assessment); // Weird bug with number precission and decimal
+                                                 // point in Moodle 2.5+.
     quest_update_submission_counts($submission->id);
-
-    // ///////////////////
-    // recalculate points and report to gradebook
-    // ////////////////////
+    // Recalculate points and report to gradebook.
     quest_grade_updated($quest, $submission->userid);
 
     if ($cangrade) {
@@ -567,8 +557,7 @@ if ($action == 'displaygradingform') {
             quest_send_message($user, "viewassessmentautor.php?aid=$aid", 'assessmentautor', $quest, $submission);
         }
     }
-
-    // Log the event
+    // Log the event.
     if ($CFG->version >= 2014051200) {
         require_once 'classes/event/challenge_assessed.php';
         \mod_quest\event\challenge_assessed::create_from_parts($submission, $assessment, $cm)->trigger();
@@ -582,7 +571,6 @@ if ($action == 'displaygradingform') {
     } else {
         $returnto = $form->returnto;
     }
-
     echo $OUTPUT->header();
     // ...show grade if grading strategy is not zero.
     if ($quest->gradingstrategyautor) {

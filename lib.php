@@ -164,7 +164,7 @@ function quest_update_instance($quest, $form) {
     if (($quest->typegrade == 1) && ($quest->allowteams == 0)) {
         $quest->typegrade = 0;
     }
-    // encode password if necessary
+    // ...encode password if necessary.
     if (!empty($quest->password)) {
         $quest->password = md5($quest->password);
     } else {
@@ -213,15 +213,15 @@ function quest_delete_instance($id) {
     global $CFG, $DB;
     require_once ('locallib.php');
     // Given an ID of an instance of this module,
-    // this function will permanently delete the instance
-    // and any data that depends on it.
+    // ...this function will permanently delete the instance.
+    // ...and any data that depends on it..
     if (!$quest = $DB->get_record("quest", array("id" => $id))) {
         return false;
     }
     if (!$cm = get_coursemodule_from_instance('quest', $quest->id)) {
         return false;
     }
-    // delete all the associated records in the quest tables, start positive...
+    // ...delete all the associated records in the quest tables, start positive....
     $result = true;
     if (!$DB->delete_records("quest_elements", array("questid" => $quest->id))) {
         $result = false;
@@ -275,7 +275,7 @@ function quest_delete_instance($id) {
         $result = false;
     }
     $context = context_module::instance($cm->id);
-    // now get rid of all files
+    // ...now get rid of all files.
     $fs = get_file_storage();
     $fs->delete_area_files($context->id);
     return $result;
@@ -286,7 +286,7 @@ function quest_user_outline($course, $user, $mod, $quest) {
     // user has done with a given particular instance of this module
     // Used for user activity reports.
     // $return->time = the time they did it
-    // $return->info = a short text description
+    // $return->info = a short text description.
     $result = null;
     if ($submissions = quest_get_user_submissions($quest, $user)) {
         $result->info = count($submissions) . " " . get_string("submissions", "quest") . "<br>";
@@ -478,9 +478,9 @@ function quest_is_recent_activity($course, $isteacher, $timestart) {
     global $CFG;
     require_once('locallib.php');
     $assessmentcontent = false;
-    if (!$isteacher) { // teachers only need to see submissions
+    if (!$isteacher) { // ...teachers only need to see submissions.
         if ($logs = quest_get_assessments_logs($course, $timestart)) {
-            // got some, see if any belong to a visible module
+            // ...got some, see if any belong to a visible module.
             foreach ($logs as $log) {
                 // Create a temp valid module structure (only need courseid, moduleid)
                 $tempmod->course = $course->id;
@@ -578,7 +578,7 @@ function quest_cron() {
                         // foreach ($CFG->stylesheets as $stylesheet) {
                         // $posthtml .= '<link rel="stylesheet" type="text/css"
                         // href="'.$stylesheet.'" />'."\n";
-                        // }
+                        // }.
                         $posthtml .= '</head>';
                         $posthtml .= "\n<body id=\"email\">\n\n";
                         $posthtml .= get_string('resume24hours', 'quest', $quest);
@@ -588,7 +588,7 @@ function quest_cron() {
 
                             // Imprimir cabecera del m�dulo QUEST en mensaje
                             foreach ($submissions as $submission) {
-                                // Challenge unnotified and recently created
+                                // Challenge unnotified and recently created.
                                 if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
 
                                     $indice++;
@@ -596,7 +596,7 @@ function quest_cron() {
 
                                     $cleanquestname = str_replace('"', "'", strip_tags($quest->name));
                                     $userfrom->customheaders = array( // Headers to make emails
-                                                                      // easier to track
+                                                                      // easier to track.
                                     'Precedence: Bulk',
                                                     'List-Id: "' . $cleanquestname . '" <moodlequest' . $quest->id . '@' . $hostname .
                                                              '>',
@@ -614,11 +614,11 @@ function quest_cron() {
                                     $posttext .= quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, $user, $cm);
 
                                     $posthtml .= quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, $user, $cm);
-                                } // if teacher
-                            } // for submissions
+                                } // ...if teacher.
+                            } // ...for submissions.
                         }
 
-                        // count of messages to send
+                        // ...count of messages to send.
                         if ($indice > 0) {
 
                             $posthtml .= "</body>";
@@ -638,8 +638,8 @@ function quest_cron() {
                                 $mailcount++;
                             }
                         }
-                    } // if teacher
-                } // foreach user
+                    } // ...if teacher.
+                } // ...foreach user.
 
                 // Mark submissions as mailed...
                 if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
@@ -654,7 +654,7 @@ function quest_cron() {
                     }
                 }
                 mtrace(".... mailed to $mailcount users.");
-            } // foreach quests
+            } // ...foreach quests.
         } else {
             mtrace("Posponing Daily tasks.");
         }
@@ -693,9 +693,7 @@ function quest_cron() {
 
                 // Imprimir cabecera del m�dulo QUEST en mensaje
                 foreach ($submissions as $submission) {
-                    // mtrace("Submission $submission->id starts $submission->datestart.
-                    // Anterior:".($submission->datestart < time())." mailed:
-                    // $submission->maileduser");
+
                     if (($submission->datestart < time()) && ($submission->maileduser == 0) && ($submission->state != 1)) {
 
                         $submissionscount++;
@@ -712,7 +710,7 @@ function quest_cron() {
                                                                                         // get
                                                                                         // advices
                                                                                         // as
-                                                                                        // teacher
+                                                                                        // teacher.
                                 $userscount++;
                                 print("Sending message to user $user->username in name of $userfrom->username\n");
                                 quest_send_message($user,
@@ -724,17 +722,7 @@ function quest_cron() {
 
                         $dates = array('datestartsubmission' => $submission->datestart, 'dateendsubmission' => $submission->dateend);
 
-                        $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest')); // evp
-                                                                                               // creo
-                                                                                               // que
-                                                                                               // hay
-                                                                                               // una
-                                                                                               // funci�n
-                                                                                               // de
-                                                                                               // moodle
-                                                                                               // para
-                                                                                               // esto
-
+                        $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
                         if (!has_capability('mod/quest:manage', $context, $submission->userid) &&
                                  ($groupmember = $DB->get_record("groups_members", array("userid" => $submission->userid)))) {
                             $idgroup = $groupmember->groupid;
@@ -781,8 +769,8 @@ function quest_cron() {
                                 }
                             }
                         }
-                    } // if submission started an unmailed to students
-                } // for submissions
+                    } // ...if submission started an unmailed to students.
+                } // ...for submissions.
             }
             mtrace("$submissionscount submissions mailed to $userscount users.\n");
         }
@@ -942,7 +930,7 @@ function quest_grade_item_update($quest, $grades = null) {
         $grades = null;
     }
 
-    setlocale(LC_NUMERIC, 'C'); // JPC Moodle applies numeric locale to cast strings cheating mysql
+    setlocale(LC_NUMERIC, 'C'); // JPC Moodle applies numeric locale to cast strings cheating mysql.
     return grade_update('mod/quest', $quest->courseid, 'mod', 'quest', $quest->id, 0, $grades, $params);
 }
 
@@ -969,8 +957,8 @@ function quest_get_user_grades($quest, $userid = 0) {
         if ($students) {
             $return = array();
 
-            $maxpoints = -1; // uncalculated start value
-            $maxpointsgroup = array(); // group points cache
+            $maxpoints = -1; // ...uncalculated start value.
+            $maxpointsgroup = array(); // ...group points cache.
             $textinfo = "";
             foreach ($students as $student) {
                 // Get maximum scores...
@@ -992,8 +980,8 @@ function quest_get_user_grades($quest, $userid = 0) {
                         }
                     }
                 } else if ($maxpoints == -1) {
-                    // no se usan grupos
-                    // avoid to query more than once
+                    // ...no se usan grupos.
+                    // ...avoid to query more than once.
                     if ($quest->typegrade == QUEST_TYPE_GRADE_INDIVIDUAL) { // Grading by
                                                                             // individuals...
                         $maxpoints = quest_get_maxpoints($quest);
@@ -1024,7 +1012,7 @@ function quest_get_user_grades($quest, $userid = 0) {
                     $textinfo .= " (" . number_format($points, 1) . "/" . number_format($maxpoints, 1) . ") (" .
                              number_format($rawgrade, 1) . "% of $quest->maxcalification)";
                     // Grade API needs userid, rawgrade, feedback, feedbackformat, usermodified,
-                    // dategraded, datesubmitted
+                    // ...dategraded, datesubmitted.
                     $grade = new stdClass();
                     $grade->userid = $student->id;
                     $grade->maxgrade = "100";
@@ -1034,8 +1022,8 @@ function quest_get_user_grades($quest, $userid = 0) {
                     $grade->feedback = $textinfo;
                     $grade->feedbackformat = FORMAT_PLAIN;
                     $return[$student->id] = $grade;
-                } // student has calification
-            } // foreach student in list
+                } // ...student has calification.
+            } // ...foreach student in list.
         } else { // No students.
             $return = false;
         }
@@ -1146,9 +1134,7 @@ function quest_refresh_events($courseid = 0) {
             return true;
         }
     }
-    $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest')); // EVp creo que hay
-                                                                           // funci�n de moodle para
-                                                                           // esto
+    $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
 
     foreach ($quests as $quest) {
 
@@ -1193,7 +1179,7 @@ function quest_refresh_events($courseid = 0) {
  * @param string $groupid */
 function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $courseid, $questcmid = "0", $user = "", $groupid = "") {
     // Returns all quest posts since a given time. If quest is specified then
-    // this restricts the results
+    // this restricts the results.
     global $CFG, $USER, $DB;
 
     if ($questcmid) {
@@ -1206,8 +1192,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
 
     if ($user) {
         $userselect = " AND u.id = :user";
-        $params = array_merge($params, array('user' => $user)); // evp comprobar que funciona bien,
-                                                                    // $params podr�a ser un array vacio
+        $params = array_merge($params, array('user' => $user));
     } else {
         $userselect = "";
     }
@@ -1397,54 +1382,40 @@ function quest_reset_userdata($data) {
         $typesstr = get_string('resetquestallanswers', 'quest');
         $types = array();
     }
-
-    // evp revisar que todo esto funciona bien!!!!!
-    // $allquestssql = "SELECT q.id
-    // FROM {quest} q
-    // WHERE q.course={$data->courseid}";
-
     $questidssql = $DB->get_records('quest', array('course' => $data->courseid), '', 'id');
     $questids = array();
     foreach ($questidssql as $quid) {
         $questids[] = $quid->id;
     }
-
     list($insql, $inparams) = $DB->get_in_or_equal($questids);
     $answerssql = "SELECT a.id as id FROM mdl_quest_answers a, mdl_quest q WHERE q.course=? and a.questid=q.id";
     $answerparams = array($data->courseid);
 
     if ($removeanswers) {
 
-        // evp esto ya no hace falta, lo que no entiendo es por qu� se ha incluire $typesql
-        // $questssql = str_replace("mdl_",$CFG->prefix,"$allquestssql $typesql");
-        // $answerssql = str_replace("mdl_",$CFG->prefix,"$allanswerssql $typesql");
-        // remove assessments
-
         $DB->delete_records_select('quest_elements_assesments', "questid $insql", $inparams);
         $DB->delete_records_select('quest_elements_assesments_autor', "questid $insql", $inparams);
         $DB->delete_records_select('quest_assesments', "questid $insql", $inparams);
         $DB->delete_records_select('quest_assesments_autor', "questid $insql", $inparams);
-        // remove califications
+        // ...remove califications.
         $DB->delete_records_select('quest_calification_users', "questid $insql", $inparams);
         $DB->delete_records_select('quest_calification_teams', "questid $insql", $inparams);
-        // delete all teams
+        // ...delete all teams.
         $DB->delete_records_select('quest_teams', "questid $insql", $inparams);
 
-        // now get rid of all attachments
+        // ...now get rid of all attachments.
         if ($answers = $DB->get_records_sql($answerssql, $answerparams)) {
             foreach ($answers as $answerid => $unused) {
                 fulldelete($CFG->dataroot . '/' . $data->courseid . '/moddata/quest/answers/' . $answerid);
-                // print("delete:".$CFG->dataroot.'/'.$data->courseid.'/moddata/quest/answers/'.$answerid);
             }
         }
 
-        // delete all answers
+        // ...delete all answers.
         $DB->delete_records_select('quest_answers', "questid $insql", $inparams);
 
-        // reset counters
-        // $DB->set_field('quest','maxcalification',0,'course',$data->courseid);
+        // ...reset counters.
         // evp hay que pensar si sustituir la siguiente consulta ya que no recomienda untilizar
-        // execute
+        // execute.
         $resetsubmissions = "UPDATE {quest_submissions} SET
 			nanswers = 0,
 			nanswerscorrect = 0,
@@ -1459,7 +1430,7 @@ function quest_reset_userdata($data) {
         $status[] = array('component' => $componentstr, 'item' => $typesstr, 'error' => false);
     }
 
-    // updating dates - shift may be negative too
+    // ...updating dates - shift may be negative too.
 
     if ($data->timeshift) {
 
@@ -1495,7 +1466,7 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
     $questnode->add('Questournaments', new moodle_url('/mod/quest/index.php', array('id' => $PAGE->course->id)),
             navigation_node::TYPE_SETTING);
 
-    // manage Teams
+    // ...manage Teams.
     if (has_capability('mod/quest:manage', $PAGE->cm->context)) {
         if ($questobject->allowteams) {
             $questnode->add(get_string('changeteamteacher', 'quest'),

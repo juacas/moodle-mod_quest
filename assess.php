@@ -24,9 +24,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
- *         
+ *
  *          Show the page that allow to do the assess of a answer
- *         
+ *
  *          **************************************** */
 require ("../../config.php");
 require ("lib.php");
@@ -55,22 +55,21 @@ $strassess = get_string("assess", "quest");
 
 $strsubmission = "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
-$url = new moodle_url('/mod/quest/assess.php', 
-        array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 
+$url = new moodle_url('/mod/quest/assess.php',
+        array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
                         'sesskey' => sesskey()));
 $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add(get_string('submission', 'quest') . ': ' . $submission->title, 
+$PAGE->navbar->add(get_string('submission', 'quest') . ': ' . $submission->title,
         new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
 $PAGE->navbar->add(get_string('answername', 'quest', $answer));
-
 echo $OUTPUT->header();
 
 // ...there can be an assessment record , if there isn't...
 if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id, "questid" => $quest->id))) {
-    
+
     $now = time();
     // ...create one and set timecreated way in the future, this is reset when record is updated.
     $assessment = new stdClass();
@@ -82,12 +81,12 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
     } else {
         print_error('assess_forbidden', 'quest');
     }
-    
+
     $assessment->answerid = $answer->id;
     $assessment->dateassessment = $now;
     $assessment->commentsforteacher = '';
     $assessment->commentsteacher = '';
-    
+
     if (!$assessment->id = $DB->insert_record("quest_assessments", $assessment)) {
         print_error('inserterror', 'quest', null, "quest_assessments");
     }

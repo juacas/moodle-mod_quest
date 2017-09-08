@@ -41,7 +41,7 @@ $string['alreadyinphase'] = 'Già in fase';
 $string['amendassessmentelements'] = 'Rettificare elementi di valutazione';
 $string['amendtitle'] = 'Titoli modificati';
 $string['answer'] = 'Rispondere';
-;
+
 $string['answercontent'] = 'Contenuto della risposta';
 $string['answerexisty'] = 'C\'è una risposta alla sfida';
 $string['answername'] = 'Risposta';
@@ -51,20 +51,19 @@ $string['approve'] = 'Approvare';
 $string['approvesubmission'] = 'Approvare/rifiutare sfida/domanda';
 $string['assess'] = 'Valutare';
 $string['assessedon'] = 'Valutata il';
-;
+
 $string['assessment'] = 'Valutazione';
 $string['assessmentby'] = 'Valutata da';
-;
+
 $string['assessmentglobal'] = 'Qualificazione globale';
-;
+
 $string['assessmentgrade'] = 'Qualificazione della valutazione';
-;
+
 $string['assessmentnotyetagreed'] = 'Valutazione ancora non accettata';
-;
+
 $string['assessmentof'] = 'Valutazione di';
 $string['assessmentofthissubmission'] = 'Valutazione di questo invio';
 $string['assessments'] = 'Valutazioni';
-// $string['assessments'] = 'Valutazioni';
 $string['assessmentsareok'] = 'Le valutazioni sono giusti';
 $string['assessmentsby'] = 'Valutati da';
 $string['assessmentsdone'] = 'Valutazioni fatti';

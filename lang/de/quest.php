@@ -58,7 +58,6 @@ $string['assessmentnotyetagreed'] = 'Einschätzung noch nicht akzeptiert';
 $string['assessmentof'] = 'Bewertung von {$a}';
 $string['assessmentofthissubmission'] = 'Einschätzung dieser gesendeten Aufträge';
 $string['assessments'] = 'Bew.';
-// $string['assessments'] = 'Einschätzungen';
 $string['assessmentsareok'] = 'Die Einschätzungen sind richtig';
 $string['assessmentsby'] = 'eingeschätzt durch {$a} ';
 $string['assessmentsdone'] = 'Einschätzungen gemacht';

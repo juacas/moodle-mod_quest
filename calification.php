@@ -155,7 +155,7 @@ if (!empty($_GET['frameset']) and $_GET['frameset'] == "top") {
     exit();
 }
 
-// print bottom frame with the submission.
+// Print bottom frame with the submission.
 
 print_header('', '', '', '', '<base target="_parent" />');
 
@@ -202,7 +202,7 @@ if ($action == 'global') {
     $tablesort->data = array();
     $tablesort->sortdata = array();
     foreach ($users as $user) {
-        // skip if student not in group.
+        // Skip if student not in group.
         if ($currentgroup) {
             if (!groups_is_member($currentgroup, $user->id)) {
                 continue;
@@ -265,16 +265,7 @@ if ($action == 'global') {
         }
     }
 
-    /*
-     * function quest_sortfunction($a, $b) {
-     * global $sort, $dir;
-     * if ($dir == 'ASC') {
-     * return ($a[$sort] > $b[$sort]);
-     * } else {
-     * return ($a[$sort] < $b[$sort]);
-     * }
-     * }
-     */
+
     uasort($tablesort->sortdata, 'quest_sortfunction');
     $table->data = array();
     foreach ($tablesort->sortdata as $key => $row) {

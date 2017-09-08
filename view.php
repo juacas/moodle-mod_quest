@@ -76,17 +76,17 @@ $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 // $PAGE->set_context($context);
 $PAGE->set_heading($course->fullname);
-
+$PAGE->requires->jquery();
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
 
 $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
-$currentgroup = groups_get_activity_group($cm); // evp esto de los grupos hay que comprobar que
-                                                // funciona bien
-$groupmode = $currentgroup = false; // JPC group support desactivation
+$currentgroup = groups_get_activity_group($cm);
+$groupmode = $currentgroup = false; // JPC group support desactivation.
 
+$teamname = optional_param('team', null, PARAM_RAW);
 if (($quest->usepassword) && (!$ismanager)) {
     quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW));
 }
@@ -119,10 +119,10 @@ if (has_capability('mod/quest:manage', $context)) {
             redirect("assessments.php?action=editelements&id=$cm->id&sesskey=" . sesskey());
         }
     }
-} else if (has_capability('mod/quest:preview', $context)) { // It's a non-editing teacher
+} else if (has_capability('mod/quest:preview', $context)) { // It's a non-editing teacher.
     $action = 'teachersview';
 } else if (has_capability('mod/quest:attempt', $context)) {
-    // it's a student then
+    // He's a student then...
     // Create a grade record and register the user as active in the quest.
 
     if (!$cm->visible) {
@@ -142,21 +142,17 @@ if (has_capability('mod/quest:manage', $context)) {
     if ($calificationuser = $DB->get_record("quest_calification_users", array("userid" => $USER->id, "questid" => $quest->id))) {
         if ($quest->allowteams == 1) {
             if (empty($calificationuser->teamid)) {
-                if (empty($_POST['team'])
-                        /*
-                          JPC: 20-11-2008: prevent creation of teams without name.
-                         */ || trim($_POST['team']) == '') {
+                if (empty($teamname) || trim($teamname) == '') { // JPC: 20-11-2008: prevent
+                                                                 // creation of teams without name.
                     echo $OUTPUT->header();
                     echo "<br><br>";
                     echo $OUTPUT->box_start("center");
                     echo "<form name=\"teams\" method=\"post\" action=\"view.php\">\n";
                     echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />\n";
                     echo "<table cellpadding=\"7px\">";
-
                     echo "<tr align=\"center\"><td>" . get_string("teamforquest", "quest", format_string($quest->name)) . "</td></tr>";
                     echo "<tr align=\"center\"><td>" . get_string("enterteam", "quest") .
                              " <input type=\"text\" name=\"team\" /></td></tr>";
-
                     echo "<tr align=\"center\"><td>";
                     echo "<input type=\"button\" value=\"" . get_string("continue") . "\" onclick=\"document.teams.submit();\" />";
                     echo "</td></tr></table>";
@@ -166,10 +162,10 @@ if (has_capability('mod/quest:manage', $context)) {
                     quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam);
                     echo $OUTPUT->footer();
                     exit();
-                } else if (!empty($_POST['team']) && trim($_POST['team']) != '') {
+                } else if (!empty($teamname) && trim($teamname) != '') {
                     // team assignation or creation
                     if ($team = $DB->get_record("quest_teams",
-                            array("name" => $_POST['team'], "questid" => $quest->id, "currentgroup" => $currentgroup))) {
+                            array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {
                         if ($quest->ncomponents > $team->ncomponents) {
                             $team->ncomponents++;
                             $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, array("id" => $team->id));
@@ -187,7 +183,7 @@ if (has_capability('mod/quest:manage', $context)) {
                         $team->ncomponents = 1;
                         $team->questid = $quest->id;
                         $team->currentgroup = $currentgroup;
-                        $team->name = trim($_POST['team']);
+                        $team->name = trim($teamname);
                         // JPC: 20-11-2008: prevent creation of teams without name.
                         if ($team->name == '') {
                             $team->name = 'Team_user(' . $calificationuser->id . ")";
@@ -213,14 +209,14 @@ if (has_capability('mod/quest:manage', $context)) {
         $calificationuser->questid = $quest->id;
         $calificationuser->id = $DB->insert_record("quest_calification_users", $calificationuser);
         if ($quest->allowteams == 1) {
-            if (!isset($_POST['team']) || trim($_POST['team']) == '') {
+            if (!isset($teamname) || trim($teamname) == '') {
                 echo $OUTPUT->header();
                 echo "<br><br>";
                 echo $OUTPUT->box_start("center");
                 echo "<form name=\"teams\" method=\"post\" action=\"view.php\">\n";
                 echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />\n";
                 echo "<table cellpadding=\"7px\">";
-                if (isset($_POST['team'])) {
+                if (isset($teamname)) {
                     echo "<tr align=\"center\" style='color:#DF041E;'><td>" . get_string("wrongteam", "quest") . "</td></tr>";
                 }
                 echo "<tr align=\"center\"><td>" . get_string("teamforquest", "quest", format_string($quest->name)) . "</td></tr>";
@@ -240,7 +236,7 @@ if (has_capability('mod/quest:manage', $context)) {
                 exit();
             } else if (null !== optional_param('team', null, PARAM_INT)) {
                 if ($team = $DB->get_record("quest_teams",
-                        array("name" => $_POST['team'], "questid" => $quest->id, "currentgroup" => $currentgroup))) {
+                        array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {
                     if ($quest->ncomponents > $team->ncomponents) {
                         $team->ncomponents++;
                         $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, array("id" => $teamid));
@@ -261,7 +257,7 @@ if (has_capability('mod/quest:manage', $context)) {
 }
 // Log event.
 if ($CFG->version >= 2014051200) {
-    require_once 'classes/event/quest_viewed.php';
+    require_once ('classes/event/quest_viewed.php');
     \mod_quest\event\quest_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 } else {
     $url = "view.php?id=$cm->id";
@@ -269,18 +265,18 @@ if ($CFG->version >= 2014051200) {
 }
 echo $OUTPUT->header();
 
-/* * **************** display final grade (for students) *********************************** */
+// Display final grade (for students).
 if ($action == 'displayfinalgrade') {
     // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group
+    // and if so, set $currentgroup to reflect the current group.
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation
-                                        // Print settings and things in a table across the top
+    $groupmode = $currentgroup = false; // JPC group support desactivation.
+                                        // Print settings and things in a table across the top.
     echo '<table align="center" width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
 
-    // Allow the teacher to change groups (for this session)
+    // Allow the teacher to change groups (for this session).
     if ($groupmode and $ismanager) {
         if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
             echo '<td>';
@@ -288,15 +284,12 @@ if ($action == 'displayfinalgrade') {
             echo '</td>';
         }
     }
-    // Print admin links
+    // Print admin links.
     echo "<td align=\"right\">";
     echo '</td></tr>';
     echo "</table>";
-
     quest_print_quest_heading($quest);
-
     $text = "<center><b>";
-
     $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;sid=&amp;action=displaygradingform\">" .
              get_string("specimenassessmentformsubmission", "quest") . "</a>";
     $text .= $OUTPUT->help_icon('specimensubmission', 'quest');
@@ -346,20 +339,20 @@ if ($action == 'displayfinalgrade') {
     echo "<br><b><a href=\"myplace.php?id=$cm->id\">" . get_string('myplace', 'quest') . "</a></b>";
     echo "<br>";
 
-    // Get all the students
+    // Get all the students.
     if (!$users) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
         echo $OUTPUT->footer();
         exit();
     }
 
-    // Now prepare table with student assessments and submissions
+    // Now prepare table with student assessments and submissions.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
 
     foreach ($users as $user) {
-        // skip if student not in group
+        // Skip if student not in group.
         if (!has_capability('mod/quest:manage', $context, $user->id) && ($groupmode == 1)) {
             if ($currentgroup) {
                 if (!groups_is_member($currentgroup, $user->id)) {
@@ -466,13 +459,13 @@ if ($action == 'displayfinalgrade') {
 } else if ($action == 'notavailable') {
     // ... assignment not available (for students).
     // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group
+    // and if so, set $currentgroup to reflect the current group.
     $groupmode = groups_get_activity_groupmode($cm, $course); // Groups are being used?
     $currentgroup = groups_get_course_group($course, true);
-    $groupmode = $currentgroup = false; // JPC group support desactivation
-                                        // Print settings and things in a table across the top
+    $groupmode = $currentgroup = false; // JPC group support desactivation.
+                                        // Print settings and things in a table across the top.
     echo '<table align="center" width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-    // Allow the teacher to change groups (for this session)
+    // Allow the teacher to change groups (for this session).
     if ($groupmode and has_capability('mod/quest:manage', $context)) {
         if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
             echo '<td>';
@@ -480,7 +473,7 @@ if ($action == 'displayfinalgrade') {
             echo '</td>';
         }
     }
-    // Print admin links
+    // Print admin links.
     echo "<td align=\"right\">";
     echo '</td></tr>';
     echo "</table>";
@@ -493,11 +486,11 @@ if ($action == 'displayfinalgrade') {
     $canviewauthors = has_capability('mod/quest:viewotherattemptsowners', $context);
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
+    $changegroup = optional_param('group', -1, PARAM_BOOL);
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
                                                  // $currentgroup =
                                                  // get_and_set_current_group($course, $groupmode,
-                                                 // $changegroup);
+                                                 // $changegroup).
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation
                                         // Print settings and things in a table across the top.
@@ -568,146 +561,8 @@ if ($action == 'displayfinalgrade') {
 
     echo $OUTPUT->help_icon('submitchallengeassignment', 'quest');
     echo '<br/>';
-    // Javascript support.
-    $servertime = time();
-    $jscript = <<<JCODE
-<script language="JavaScript">
-        var servertime = $servertime * 1000;
-        var browserDate = new Date();
-        var browserTime = browserDate.getTime();
-        var correccion = servertime - browserTime;
 
-        function redondear(cantidad, decimales) {
-            var cantidad = parseFloat(cantidad);
-            var decimales = parseFloat(decimales);
-            decimales = (!decimales ? 2 : decimales);
-            var valor = Math.round(cantidad * Math.pow(10, decimales)) / Math.pow(10, decimales);
-            return valor.toFixed(4);
-        }
-        function puntuacion(indice, incline, pointsmax, initialpoints, tinitial, datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios, type, nmaxanswers, pointsnmaxanswers) {
-
-            for (i = 0; i < indice; i++) {
-
-                tiempoactual = new Date();
-                tiempo = parseInt((tiempoactual.getTime() + correccion) / 1000);
-
-                if ((dateend[i] - datestart[i] - tinitial[i]) == 0) {
-                    incline[i] = 0;
-                }
-                else {
-                    if (type == 0) {
-                        incline[i] = (pointsmax[i] - initialpoints[i]) / (dateend[i] - datestart[i] - tinitial[i]);
-                    }
-                    else {
-                        if (initialpoints[i] == 0) {
-                            initialpoints[i] = 0.0001;
-                        }
-                        incline[i] = (1 / (dateend[i] - datestart[i] - tinitial[i])) * Math.log(pointsmax[i] / initialpoints[i]);
-
-                    }
-                }
-
-                if (state[i] < 2) {
-                    grade = initialpoints[i];
-                    formularios[i].style.color = "#cccccc";
-                }
-                else {
-
-                    if (datestart[i] > tiempo) {
-                        grade = initialpoints[i];
-                        formularios[i].style.color = "#cccccc";
-                    }
-                    else {
-                        if (nanswerscorrect[i] >= nmaxanswers) {
-                            grade = 0;
-                            formularios[i].style.color = "#cccccc";
-                        }
-                        else {
-                            if (dateend[i] < tiempo) {
-                                if (nanswerscorrect[i] == 0) {
-                                    t = dateend[i] - datestart[i];
-                                    if (t <= tinitial[i]) {
-                                        grade = initialpoints[i];
-                                        formularios[i].style.color = "#cccccc";
-                                    }
-                                    else {
-                                        grade = pointsmax[i];
-                                        formularios[i].style.color = "#cccccc";
-                                    }
-
-                                }
-                                else {
-
-                                    grade = 0;
-                                    formularios[i].style.color = "#cccccc";
-                                }
-                            }
-                            else {
-                                if (nanswerscorrect[i] == 0) {
-                                    t = tiempo - datestart[i];
-                                    if (t < tinitial[i]) {
-                                        grade = initialpoints[i];
-                                        formularios[i].style.color = "#000000";
-                                    }
-                                    else {
-                                        if (t >= (dateend[i] - datestart[i])) {
-                                            grade = pointsmax[i];
-                                            formularios[i].style.color = "#000000";
-                                        }
-                                        else {
-                                            if (type == 0) {
-                                                grade = (t - tinitial[i]) * incline[i] + initialpoints[i];
-                                                formularios[i].style.color = "#000000";
-                                            }
-                                            else {
-                                                grade = initialpoints[i] * Math.exp(incline[i] * (t - tinitial[i]));
-                                                formularios[i].style.color = "#000000";
-                                            }
-                                        }
-                                    }
-                                }
-                                else {
-                                    t = tiempo - dateanswercorrect[i];
-                                    if ((dateend[i] - dateanswercorrect[i]) == 0) {
-                                        incline[i] = 0;
-                                    }
-                                    else {
-                                        if (type == 0) {
-                                            incline[i] = (-pointsanswercorrect[i]) / (dateend[i] - dateanswercorrect[i]);
-                                        }
-                                        else {
-                                            incline[i] = (1 / (dateend[i] - dateanswercorrect[i])) * Math.log(0.0001 / pointsanswercorrect[i]);
-                                        }
-                                    }
-                                    if (type == 0) {
-                                        grade = pointsanswercorrect[i] + incline[i] * t;
-                                        formularios[i].style.color = "#000000";
-                                    }
-                                    else {
-                                        grade = pointsanswercorrect[i] * Math.exp(incline[i] * t);
-                                        formularios[i].style.color = "#000000";
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                }
-                if (grade < 0) {
-                    grade = 0;
-                }
-                grade = redondear(grade, 4);
-                formularios[i].value = grade;
-            }
-            setTimeout("puntuacion(indice,incline,pointsmax,initialpoints,tinitial,datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers)", 100);
-        }
-    </script>
-JCODE;
-    echo $jscript;
-    /*
-     * **
-     * Now prepare table with student assessments and submissions
-     */
+    // Now prepare table with student assessments and submissions.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
@@ -745,8 +600,8 @@ JCODE;
             }
             // Skip challenge for student if the challenge is not started...
             if (!has_capability('mod/quest:manage', $context) && // manage permission
-                $submission->datestart > $timenow && // Challenge in StartPending
-                $submission->userid != $USER->id) { // USER is not the author
+$submission->datestart > $timenow && // Challenge in StartPending
+$submission->userid != $USER->id) { // USER is not the author
                 continue; // Omit it...
             }
             $mineicon = $submission->userid == $USER->id && !$canviewauthors ? $OUTPUT->user_picture($USER) : '';
@@ -811,20 +666,20 @@ JCODE;
             $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
             $sortdata['dateend'] = $submission->dateend;
 
-            $grade = "<form name=\"puntos$indice\"><input name=\"calificacion\" type=\"text\" value=\"0.000\" size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; font-family : Verdana, Arial, Helvetica; font-size : 14pt; text-align : center;\" ></form>";
+            $grade = "<form ><input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"0.000\" size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; font-family : Verdana, Arial, Helvetica; font-size : 14pt; text-align : center;\" ></form>";
 
-            $initialpoints[] = $submission->initialpoints;
-            $nanswerscorrect[] = $submission->nanswerscorrect;
-            $datesstart[] = $submission->datestart;
-            $datesend[] = $submission->dateend;
+            $initialpoints[] = (float) $submission->initialpoints;
+            $nanswerscorrect[] = (int) $submission->nanswerscorrect;
+            $datesstart[] = (int) $submission->datestart;
+            $datesend[] = (int) $submission->dateend;
             $dateanswercorrect[] = $submission->dateanswercorrect;
-            $pointsmax[] = $submission->pointsmax;
-            $pointsanswercorrect[] = $submission->pointsanswercorrect;
-            $tinitial[] = $quest->tinitial * 86400;
-            $state[] = $submission->state;
+            $pointsmax[] = (float) $submission->pointsmax;
+            $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
+            $tinitial[] = $quest->tinitial * 86400 * 1000;
+            $state[] = (int) $submission->state;
             $type = $quest->typecalification;
-            $nmaxanswers = $quest->nmaxanswers;
-            $pointsnmaxanswers[] = $submission->points;
+            $nmaxanswers = (int) $quest->nmaxanswers;
+            $pointsnmaxanswers[] = (float) $submission->points;
 
             $data[] = $grade;
             $sortdata['calification'] = quest_get_points($submission, $quest, '');
@@ -892,40 +747,17 @@ JCODE;
     echo get_string('legend', 'quest', $grafic);
     echo "</center>";
 
-    echo "<script language=\"JavaScript\">\n";
-    echo "var initialpoints = new Array($indice);\n";
-    echo "var nanswerscorrect = new Array($indice);\n";
-    echo "var datestart = new Array($indice);\n";
-    echo "var dateend = new Array($indice);\n";
-    echo "var dateanswercorrect = new Array($indice);\n";
-    echo "var pointsmax = new Array($indice);\n";
-    echo "var formularios = new Array($indice);\n";
-    echo "var state = new Array($indice);\n";
-    echo "var tinitial = new Array($indice);\n";
-    echo "var pointsanswercorrect = new Array($indice);\n";
-    echo "var incline = new Array($indice);\n";
-    echo "var pointsnmaxanswers = new Array($indice);\n";
-
+    // Javascript counter support.
     for ($i = 0; $i < $indice; $i++) {
-        echo "initialpoints[$i] = $initialpoints[$i];\n";
-        echo "nanswerscorrect[$i] = $nanswerscorrect[$i];\n";
-        echo "datestart[$i] = $datesstart[$i];\n";
-        echo "dateend[$i] = $datesend[$i];\n";
-        echo "dateanswercorrect[$i] = $dateanswercorrect[$i];\n";
-        echo "pointsmax[$i] = $pointsmax[$i];\n";
-        echo "state[$i] = $state[$i];\n";
-        echo "tinitial[$i] = $tinitial[$i];\n";
-        echo "pointsanswercorrect[$i] = $pointsanswercorrect[$i];\n";
-        echo "formularios[$i] = document.forms.puntos$i.calificacion;\n";
-        echo "incline[$i] = 0;\n";
-        echo "pointsnmaxanswers[$i] = $pointsnmaxanswers[$i];\n";
+        $forms[$i] = "#formscore$i";
+        $incline[$i] = 0;
     }
-    echo "var indice = $indice;\n";
-    echo "var type = $type;\n";
-    echo "var nmaxanswers = $nmaxanswers;\n";
-    echo "puntuacion(indice,incline,pointsmax,initialpoints,tinitial,datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers);\n";
-    echo "</script>\n";
-    echo '</td></tr>';
+    $servertime = time();
+    $params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
+
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+
     if ($repeatactionsbelow) {
         if ($quest->dateend > $timenow) {
             echo ("<center><b><a href=\"view.php?action=submitchallenge&amp;id=$cm->id\">" . get_string('addsubmission', 'quest') .

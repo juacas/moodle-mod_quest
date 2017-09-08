@@ -28,18 +28,18 @@
 require_once ("../../config.php");
 require_once ("lib.php");
 require ("locallib.php");
-$id = required_param('id', PARAM_INT); // course
+$id = required_param('id', PARAM_INT); // Course...
 global $DB, $OUTPUT;
 $course = get_course($id);
 require_login($course);
 
 $context = context_course::instance($course->id);
-// Get all required strings
+// Get all required strings.
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strinfo = get_string("phase", "quest");
 $strdeadline = get_string("deadline", "quest");
-// print the header
+// Print the header.
 $url = new moodle_url('/mod/quest/index.php', array('id' => $id));
 $PAGE->set_url($url);
 $PAGE->navbar->add($strquests, "index.php?id=$course->id");
@@ -47,13 +47,13 @@ $PAGE->set_title($strquests);
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
-// Get all the appropriate data
+// Get all the appropriate data.
 if (!$quests = get_all_instances_in_course("quest", $course)) {
     notice("There are no quests", "../../course/view.php?id=$course->id");
     die();
 }
 
-// Print the list of instances
+// Print the list of instances.
 
 $timenow = time();
 $strname = get_string("name");
@@ -78,10 +78,10 @@ foreach ($quests as $quest) {
     $due = userdate($quest->dateend);
 
     if (!$quest->visible && has_capability('moodle/course:viewhiddenactivities', $context)) {
-        // Show dimmed if the mod is hidden
+        // Show dimmed if the mod is hidden.
         $link = "<a class=\"dimmed\" href=\"view.php?id=$quest->coursemodule\">" . format_string($quest->name, true) . "</a>";
     } else {
-        // Show normal if the mod is visible
+        // Show normal if the mod is visible.
         $link = "<a href=\"view.php?id=$quest->coursemodule\">" . format_string($quest->name, true) . "</a>";
     }
 
@@ -96,6 +96,6 @@ echo "<BR>";
 
 echo html_writer::table($table);
 
-// Finish the page
+// Finish the page.
 
 echo $OUTPUT->footer();

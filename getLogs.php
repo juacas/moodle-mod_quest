@@ -100,10 +100,6 @@ setlocale(LC_ALL, $localelang . ".utf8");
 
 $localeconfig = localeconv();
 
-// print_object($LocaleConfig);
-// print(number_format(-123.23, 20 , $LocaleConfig[decimal_point],''));
-// exit;
-
 if ($query) {
 
     header("Content-Type: text/csv");
@@ -116,10 +112,10 @@ if ($query) {
         $els = array();
         $elsk = array();
         foreach ($log as $key => $value) {
-            // detect other fields not numeric like IPs
-            if (is_numeric($value) && round($value) == $value) { // integer
+            // Detect other fields not numeric like IPs.
+            if (is_numeric($value) && round($value) == $value) {
                 $els[] = $value;
-            } else if (is_numeric($value) && abs($value - round($value)) < 1) { // number
+            } else if (is_numeric($value) && abs($value - round($value)) < 1) {
                 $val = number_format($value, 10, $localeconfig[decimal_point], '');
                 $els[] = $val;
             } else {
@@ -144,29 +140,11 @@ if ($query) {
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-    /*
-     * if (function_exists('build_navigation'))
-     * {
-     * $navlinks = array();
-     * $navlinks[] = array('name' => 'QUESTournament Reports', 'link' => '', 'type' => 'activity');
-     * $navigation = build_navigation($navlinks,$cm);
-     * //$navigation = build_navigation($quest->name.': '.$strsubmission);
-     * print_header($course->shortname, $course->fullname, $navigation, '', '',
-     * true, null, navmenu($course, $cm));
-     * }
-     * else
-     * {
-     * print_header_simple(format_string($quest->name)." Log page.", "",
-     * "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-     * <a href=\"view.php?id=$cm->id\">".format_string($quest->name,true)."</a> -> QUESTournament
-     * Reports",
-     * "", "", true);
-     * }
-     */
-    print
-            ("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" <b>$localeconfig[decimal_point]</b> \". Check that your SpreadSheet interprets correctly this character.</p>");
-    if (!empty($$$$sqlquery)) {
-        print("Last query with no results.<br/>"); // "<pre>".$querySQL."</pre>");
+
+    print("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" ".
+          "<b>$localeconfig[decimal_point]</b> \". Check that your SpreadSheet interprets correctly this character.</p>");
+    if (!empty($sqlquery)) {
+        print("Last query with no results.<br/>");
     }
 
     echo '<p>Generate CSV report for:';

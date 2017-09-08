@@ -47,16 +47,17 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once $CFG->libdir . '/ddllib.php';
-
+/**
+ * @global moodle_database $DB
+ * @param number $oldversion
+ * @return boolean
+ */
 function xmldb_quest_upgrade($oldversion = 0) {
     global $CFG, $USER, $THEME, $DB;
-    /** @var database_manager dbman */
-    $dbman = $DB->get_manager(); // loads DDL libs
+    $dbman = $DB->get_manager();
 
-    // And upgrade begins here. For each one, you'll need one
-                                 // block of code similar to the next one. Please, delete
-                                 // this comment lines once this file start handling proper
-                                 // upgrade code.
+    // And upgrade begins here. For each one, you'll need one block of code similar to the next one. Please, delete
+    // this comment lines once this file start handling proper upgrade code.
 
     if ($oldversion < 2013100400) {
         $table = new xmldb_table('quest_answers');
@@ -64,8 +65,6 @@ function xmldb_quest_upgrade($oldversion = 0) {
         $dbman->change_field_notnull($table, $field);
 
         $table = new xmldb_table('quest_submissions');
-        // <FIELD NAME="attachment" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"
-        // PREVIOUS="descriptiontrust" NEXT="date"/>
         $field = new xmldb_field('attachment', XMLDB_TYPE_CHAR, '100', null, false, false, null, null);
         $dbman->change_field_notnull($table, $field);
     }

@@ -41,15 +41,16 @@ $newform = optional_param('newform', null, PARAM_INT); // Flag: if you want new 
                                                        // ...submission...newform=1. If form is.
                                                        // ...general...newform=0..
 $numelemswhenchange = optional_param('num_elems_when_change', '', PARAM_INT); // New number of.
-                                                                              // ...elements when you.
+                                                                              // ...elements when
+                                                                              // you.
                                                                               // ...add or remove.
                                                                               // ...elements..
 $changeform = optional_param('change_form', null, PARAM_INT); // Flag: if you change the number of.
-                                                              // ...elements in forms, change_form=1,.
-                                                              // ...else 0..
+                                                              // ...elements in forms,
+                                                              // change_form=1, else 0..
 $viewgeneral = optional_param('viewgeneral', -1, PARAM_INT); // Flag: view general form =1,.
-                                                             // ...particular form view of one.
-                                                             // ...submission = 0.
+                                                             // ...particular form view of one
+                                                             // submission = 0.
 
 global $DB, $OUTPUT, $PAGE;
 list($course, $cm) = quest_get_course_and_cm($id);
@@ -85,13 +86,13 @@ $PAGE->set_title(format_string($quest->name));
 $PAGE->set_context($context);
 $PAGE->set_heading($course->fullname);
 
-// ......display grading form (viewed by student) ..
+// ...display grading form (viewed by student) ..
 if ($action == 'displaygradingform') {
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string("specimenassessmentformanswer", "quest"), 'specimenanswer', "quest");
 
     quest_print_assessment($quest, $sid, false, null);
-    // ......called with no assessment..
+    // ...called with no assessment..
     echo '<p>';
     if ($viewgeneral == 1) {
         echo $OUTPUT->continue_button(new moodle_url("view.php", array('id' => $id)));
@@ -104,7 +105,7 @@ if ($action == 'displaygradingform') {
         }
     }
 } else if ($action == 'editelements') {
-    // ...... edit assessment elements (for teachers)..
+    // ... edit assessment elements (for teachers)..
     require_sesskey();
     $authorid = isset($sid) ? $DB->get_field('quest_submissions', 'userid', array('id' => $sid)) : null;
     if (!$isteacher && $authorid != $USER->id) {
@@ -114,7 +115,7 @@ if ($action == 'displaygradingform') {
     if ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) == 0) {
         $newform = 0;
     }
-    // ......set up heading, form and table..
+    // ...set up heading, form and table..
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string("editingassessmentelements", "quest"), "elements", "quest");
     if (quest_count_submission_assessments($sid) > 0) {
@@ -160,7 +161,8 @@ if ($action == 'displaygradingform') {
         $num = $quest->nelements;
     }
     $changeform = 0;
-    // ......check for missing elements (this happens either the first time round or when the number of.
+    // ...check for missing elements (this happens either the first time round or when the number
+    // of.
     // ...elements is increased)..
     for ($i = 0; $i < $num; $i++) {
         if (!isset($elements[$i])) {
@@ -171,13 +173,13 @@ if ($action == 'displaygradingform') {
             $elements[$i]->weight = 11;
         }
     }
-    if ($elements[0]->description == '') { // ......to return view.php when complete general elements.
+    if ($elements[0]->description == '') { // ...to return view.php when complete general elements.
                                            // ...the first time..
         $viewgeneral = 1;
     }
     // TODO: replace with quest_print_assessment from locallib.php!.
     switch ($quest->gradingstrategy) {
-        case 0: // ......no grading..
+        case 0: // ...no grading..
             for ($i = 0; $i < $num; $i++) {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
@@ -195,8 +197,8 @@ if ($action == 'displaygradingform') {
                 $DB->set_field("quest", "nelements", $num, array("id" => $var));
             }
             break;
-        case 1: // ......accumulative grading..
-                // ......set up scales name..
+        case 1: // ...accumulative grading..
+                // ...set up scales name..
 
             foreach ($questscales as $key => $scale) {
                 $scales[] = $scale['name'];
@@ -211,7 +213,7 @@ if ($action == 'displaygradingform') {
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
                 echo "<td valign=\"top\">\n";
-                // ......choose_from_menu($SCALES, "scale[]", $elements[$i]->scale, "");..
+                // ...choose_from_menu($SCALES, "scale[]", $elements[$i]->scale, "");..
                 echo html_writer::select($scales, "scale[]", $elements[$i]->scale, "");
                 if ($elements[$i]->weight == '') { // ...not set.
                     $elements[$i]->weight = 11; // ...unity.
@@ -233,15 +235,15 @@ if ($action == 'displaygradingform') {
             }
             break;
 
-        case 2: // ......error banded grading..
+        case 2: // ...error banded grading..
             for ($i = 0; $i < $num; $i++) {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
                 echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
-                if ($elements[$i]->weight == '') { // ......not set..
-                    $elements[$i]->weight = 11; // ......unity..
+                if ($elements[$i]->weight == '') { // ...not set..
+                    $elements[$i]->weight = 11; // ...unity..
                 }
                 echo "</tr>\n";
                 echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
@@ -262,7 +264,7 @@ if ($action == 'displaygradingform') {
             }
             for ($i = 0; $i <= $num; $i++) {
                 echo "<tr><td align=\"CENTER\">$i</td><td align=\"CENTER\">";
-                if (!isset($elements[$i])) { // ......the "last one" will be!.
+                if (!isset($elements[$i])) { // ...the "last one" will be!.
                     $elements[$i]->description = "";
                     $elements[$i]->maxscore = 0;
                 }
@@ -278,7 +280,7 @@ if ($action == 'displaygradingform') {
             }
             break;
 
-        case 3: // ......criterion grading..
+        case 3: // ...criterion grading..
             for ($j = $quest->maxcalification; $j >= 0; $j--) {
                 $numbers[$j] = $j;
             }
@@ -303,7 +305,7 @@ if ($action == 'displaygradingform') {
             }
             break;
 
-        case 4: // ......rubric..
+        case 4: // ...rubric..
             for ($j = $quest->maxcalification; $j >= 0; $j--) {
                 $numbers[$j] = $j;
             }
@@ -316,15 +318,15 @@ if ($action == 'displaygradingform') {
             if ($rubricsraw = $DB->get_records_select("quest_rubrics", "questid = ? AND submissionsid = ?", array($quest->id, $var),
                     "elementno ASC")) {
                 foreach ($rubricsraw as $rubric) {
-                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // ......reindex.
-                                                                                                // ...0,1,2....
+                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // ...reindex 0,1,2....
                 }
             }
             for ($i = 0; $i < $num; $i++) {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description .
+                     "</textarea>\n";
                 echo "  </td></tr>\n";
                 echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
                 quest_choose_from_menu($questeweights, "weight[]", $elements[$i]->weight, "");
@@ -353,7 +355,7 @@ if ($action == 'displaygradingform') {
             }
             break;
     }
-    // ......close table and form..
+    // ...close table and form..
     if ($newform == 0) {
         $nf = 0;
     } else if ($newform == 1) {
@@ -411,7 +413,7 @@ if ($action == 'displaygradingform') {
 FORM;
     echo $formfragment;
 } else if ($action == 'insertelements') {
-    // ...... insert/update assignment elements (for teachers)..
+    // ... insert/update assignment elements (for teachers)..
     require_sesskey();
     $authorid = $DB->get_field('quest_submissions', 'userid', array('id' => $sid));
     if (!$isteacher && $authorid != $USER->id) {
@@ -483,8 +485,9 @@ FORM;
             break;
 
         case 2: // ...error banded grading....
-        case 3: // ......and criterion grading.
-                // Insert all the elements that contain something, the number of descriptions is one.
+        case 3: // ...and criterion grading.
+                // Insert all the elements that contain something, the number of descriptions is
+                // one.
                 // ...less than the number of grades.
             foreach ($form->maxscore as $key => $themaxscore) {
                 unset($element);
@@ -508,7 +511,7 @@ FORM;
             }
             break;
 
-        case 4: // ......and criteria grading.
+        case 4: // ...and criteria grading.
                 // Insert all the elements that contain something.
             foreach ($form->description as $key => $description) {
                 unset($element);
@@ -592,16 +595,19 @@ FORM;
     }
     $timenow = time();
     $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php..
-    $isvalidating = false; // ...marca si se está validando la pregunta en cuyo caso no hay puntuacion.
+    $isvalidating = false; // ...marca si se está validando la pregunta en cuyo caso no hay
+                           // puntuacion.
                            // ...previa que restar.
     if ($quest->validateassessment == 1) {
         // ...necesita validar evaluacion.
         if ($isteacher) {
             // El profesor puede validar pasando a phase=1.
-            if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) { // ...contabiliza la nueva.
+            if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) { // ...contabiliza la
+                                                                           // nueva.
                                                                            // ...evaluación.
                 $isvalidating = true;
-                $assessment->phase = 1; // ...ya está validada ahora OJO: ¿se había sumado esta nota?.
+                $assessment->phase = 1; // ...ya está validada ahora OJO: ¿se había sumado esta
+                                        // nota?.
             }
             // END profesor valida....
         } else { // Si no es profesor la fase siempre será phase=0. La nota queda pendiente....
@@ -613,7 +619,7 @@ FORM;
         if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
             $isvalidating = true;
             $assessment->phase = ASSESSMENT_PHASE_APPROVED; // Pasa directamente a phase=1.
-                                                                // ...(validada).
+                                                            // (validada).
         }
     }
     if ($answer->phase == ANSWER_PHASE_UNGRADED) {
@@ -643,7 +649,7 @@ FORM;
 
     if (($percent) >= 0.5000) {
         $answer->phase = ANSWER_PHASE_PASSED;
-        // ......hay respuestas correctas posteriores o no hay ninguna.
+        // ...hay respuestas correctas posteriores o no hay ninguna.
         // ...la actual es la nueva correcta y hay que recalificar el resto..
         if ($submission->nanswerscorrect > 0) {
             if ($answer->date < $submission->dateanswercorrect) {
@@ -657,7 +663,7 @@ FORM;
         }
         // FIN comprobación respuestas correctas..
         $submission->points = $grade;
-        // ......no hay resp.correctas y la evaluacion esta aprobada..
+        // ...no hay resp.correctas y la evaluacion esta aprobada..
         if (($submission->nanswerscorrect == 0) && ($assessment->phase == ASSESSMENT_PHASE_APPROVED)) {
             $submission->dateanswercorrect = $answer->date;
             $submission->pointsanswercorrect = $points;
@@ -668,16 +674,16 @@ FORM;
         }
     } else { // La respuesta no ha aprobado..
         $submission->points = $grade;
-        if ($answer->phase == 2) { // ......ya estaba calificada por lo que es una recalificacion..
+        if ($answer->phase == 2) { // ...ya estaba calificada por lo que es una recalificacion..
             $submission->nanswerscorrect--;
         }
         $answer->phase = 1;
 
-        if ($answer->date == $submission->dateanswercorrect) { // ......si es la primera correcta hay.
+        if ($answer->date == $submission->dateanswercorrect) { // ...si es la primera correcta hay.
                                                                // ...que recalificar todas..
             $submission->nanswerscorrect = 0;
             $submission->dateanswercorrect = 0;
-            $recalification = true; // ......recalifica todas..
+            $recalification = true; // ...recalifica todas..
         }
     }
 
@@ -685,16 +691,16 @@ FORM;
     // ...0 sin realizar.
     // ...1 realizada autor.
     // ...2 realizada profesor.
-    // ...    // assessment->phase.
+    // ... // assessment->phase.
     // ...0 sin aprobar.
     // ...1 aprobada.
-    $answer->pointsmax = number_format($points, 4); // ......weird bug with mysql if $points is double.
+    $answer->pointsmax = number_format($points, 4); // ...weird bug with mysql if $points is double.
                                                     // ...of numeric..
-                                                    // ......update the time of the assessment record.
+                                                    // ...update the time of the assessment record.
                                                     // ...(may be re-edited)....
     $assessment->dateassessment = $timenow;
 
-    // ......update submission.
+    // ...update submission.
     // ...get first answer correct.
     // ...update pointsanswercorrect..
     if ($query = $DB->get_record_select("quest_answers", "submissionid=? and grade>=50", array($submission->id), "date,pointsmax",
@@ -747,15 +753,16 @@ FORM;
     quest_update_submission($submission);
     quest_update_assessment($assessment);
     quest_update_submission_counts($submission->id);
-    // ......points recalculation..
-    $recalification = true; // ......To disable this optimization it's not worth as evaluation is not a.
+    // ...points recalculation..
+    $recalification = true; // ...To disable this optimization it's not worth as evaluation is not
+                            // a.
                             // ...frequent action..
-                            // ......Recalcula los puntos de las respuestas del quest..
+                            // ...Recalcula los puntos de las respuestas del quest..
     if ($recalification) {
         quest_update_grade_for_answer($answer, $submission, $quest, $course);
     }
     $userid = $answer->userid;
-    // ......recalculate points and report to gradebook..
+    // ...recalculate points and report to gradebook..
     quest_grade_updated($quest, $userid);
     // NOTIFICATIONS..
     if ($isteacher) {
@@ -775,32 +782,33 @@ FORM;
             exit();
         }
         // JPC 2013-11-28 disable excesive notifications..
-        // ...foreach($users as $user){.
-        // ...if(!has_capability('mod/quest:manage',$context,$user->id)){.
-        // ...continue;.
-        // ...}.
-        // ...quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment',.
-        // ...$quest, $submission, $answer);.
-        // ...}.
+        if (false) {
+            foreach ($users as $user) {
+                if (has_capability('mod/quest:manage', $context, $user->id)) {
+                    quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment',
+                            $quest, $submission, $answer);
+                }
+            }
+        }
     }
     // Log the event.
     if ($CFG->version >= 2014051200) {
-        require_once 'classes/event/answer_assessed.php';
+        require_once ('classes/event/answer_assessed.php');
         \mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
     } else {
         add_to_log($course->id, "quest", "assess_answer", "viewassessment.php?id=$cm->id&amp;asid=$assessment->id",
                 "$assessment->id", "$cm->id");
     }
-    // ......set up return address..
+    // ...set up return address..
     $returnto = $_POST['returnto'];
     if (!$returnto) {
         $returnto = "view.php?id=$cm->id";
     }
-    // ......show grade if grading strategy is not zero..
+    // ...show grade if grading strategy is not zero..
     if ($quest->gradingstrategy) {
         echo $OUTPUT->redirect_message($returnto,
-                get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" . get_string("maximumgrade") . " " . number_format(
-                        $points, 4) . ")", 10, false);
+                get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" . get_string("maximumgrade") .
+                        " " . number_format($points, 4) . ")", 10, false);
     } else {
         echo $OUTPUT->redirect_message($returnto, '', 1, false);
     }

@@ -59,7 +59,6 @@ $string['assessmentnotyetagreed'] = 'baliospena oraindik ez onestuta';
 $string['assessmentof'] = '...-ren balioztapena';
 $string['assessmentofthissubmission'] = 'bidaltze honen balioespena';
 $string['assessments'] = 'Balioztat.';
-// $string['assessments'] = 'Balioespenak';
 $string['assessmentsareok'] = 'balioespenak zuzenak dira';
 $string['assessmentsby'] = '... -rengatik balioztatuak';
 $string['assessmentsdone'] = 'balioespenak eginak';

@@ -62,7 +62,6 @@ $string['assessmentnotyetagreed'] = 'Assessment not yet agreed';
 $string['assessmentof'] = 'Assessment of {$a}';
 $string['assessmentofthissubmission'] = 'Assessment of this challenge';
 $string['assessments'] = 'Assessments';
-// $string['assessments'] = 'Valoraciones';
 $string['assessmentsareok'] = 'Assessments are ok';
 $string['assessmentsby'] = 'Assessments by {$a}';
 $string['assessmentsdone'] = 'Assessments done';
@@ -365,11 +364,8 @@ $string['nsubmissionsassessment'] = 'Assessed challenges';
 $string['nocapabilityaddchallenge'] = 'You have not enough permissions to add a challenge';
 $string['numbercomponents'] = 'Components';
 $string['numbermaxofanswers'] = 'Max number of right answers';
-$string['numberofassessmentelements'] = 'Number of Assessment Elements'; // evp esta o nelements
-                                                                         // sobra, que es lo mismo
-$string['numberofassessmentelementsautor'] = 'Number Assessment Elements for Authors'; // evp esta
-                                                                                       // le pasa
-                                                                                       // igual
+$string['numberofassessmentelements'] = 'Number of Assessment Elements'; // TODO evp esta o nelements sobra, que es lo mismo.
+$string['numberofassessmentelementsautor'] = 'Number Assessment Elements for Authors'; // TODO evp esta le pasa igual.
 $string['numberofassessments'] = 'Number of Assessments';
 $string['numberofassessmentsofstudentsubmissions'] = 'Number of Assessments of Student Submissions';
 $string['numberofassessmentsofteachersexamples'] = 'Number of Assessments of Examples from Teacher';
@@ -430,8 +426,7 @@ $string['pleaseassesstheseexamplesfromtheteacher'] = 'Valore por favor estos eje
 $string['pleaseassessthesestudentsubmissions'] = 'Please assess these {$a} Submissions';
 $string['pleaseassessyoursubmissions'] = 'Please assess your Submission(s)';
 $string['pluginname'] = 'Questournament';
-$string['pluginadministration'] = 'Administrator'; // Evp este tengo que ver para qu� se usa para
-                                                   // ver qu� texto usar.
+$string['pluginadministration'] = 'Administrator';
 $string['points'] = 'Score';
 $string['pointsanswers'] = 'Ans.Score';
 
@@ -547,15 +542,15 @@ $string['studentsubmissions'] = '{$a} Submissions';
 $string['studentsubmissionsforassessment'] = '{$a} Student Submissions for Assessment';
 $string['subject'] = 'Subject: ';
 $string['submission'] = 'Challenge';
-$string['submissionendlabel'] = 'Challenge ends on {$a}'; // evp buscar uso de submissionend en el
+$string['submissionendlabel'] = 'Challenge ends on {$a}'; // TODO evp buscar uso de submissionend en el
                                                           // codigo y cambiarlo por
-                                                          // submissionendlabel
+                                                          // submissionendlabel.
 $string['submissionexisty'] = 'There is another challenge with that title already. Enter another title.';
 $string['submissions'] = 'Challenges';
 $string['submissionsnolongerallowed'] = 'Submissions no longer allowed';
-$string['submissionstartlabel'] = 'Challenge starts on {$a}'; // evp buscar submissionstart en el
+$string['submissionstartlabel'] = 'Challenge starts on {$a}'; // TODO evp buscar submissionstart en el
                                                               // código y cambiarlo por
-                                                              // submissionstartlabel
+                                                              // submissionstartlabel.
 $string['submitassignment'] = 'Submit new challenge';
 $string['submitchallenge'] = 'Submit new challenge';
 
@@ -620,10 +615,7 @@ $string['weightsusedforsubmissions'] = 'Weights used for Submissions';
 $string['wrongpassword'] = 'Incorrect password for this QUESTOURnament';
 $string['yourassessments'] = 'Your assessments';
 $string['yourfeedbackgoeshere'] = 'Your Feedback goes Here';
-// ////////////////////////////////////
-// HELP TEXTS
-// /////////////////////////////////////
-
+// HELP TEXTS.
 $string['allowteams'] = 'Allow workteams';
 $string['allowteams_help'] = '<P align="justify">This parameter obliges to that each student taking part in this QUESTOURnament belongs to a team. In such a case, when a student access the QUESTOURnament for the first time, he will have to enter the name of the team to which he belongs.</P>
 <P align="justify">Moreover, in this case, besides the individual ranking, the team ranking is presented.</P>
@@ -703,7 +695,7 @@ $string['dateend_help'] = '<P align="justify">This paramenter sets the closing d
 $string['dateofend'] = 'Closing date';
 $string['dateofend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
 <P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
-$string['datestart'] = 'Starting on'; // Evp quizás mejor poner Start DAte
+$string['datestart'] = 'Starting on'; // Evp quizás mejor poner Start DAte.
 $string['datestart_help'] = '<P align="justify">This parameter sets the starting date of this QUESTOURnament. After this date, the students of the course will be able to access the QUESTOURnament in order to add a challenge, submit an answer to a challenge or to do any other usual action.</P>
 <P align="justify">This date is checked when a QUESTOURnament is defined, so that if it is subsequent to the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a>, an error message is shown and the QUESTOURnament that is being defined will not be created.</P>';
 $string['elements'] = 'Assessment Elements';
@@ -923,8 +915,7 @@ $string['typecalification_help'] = '<P align="justify">This parameter sets the w
 $string['teamporcent'] = 'Percentage of Team Scoring';
 $string['teamporcent_help'] = '<P align="justify">This parameter sets the percentage of the score of a team that will be added to the total individual score of each of its members, that is which determines the final score of a student in a QUESTOURnament.</P>
 <P align="justify">The goal is to promote team work in a way that it has an impact in the final score and ranking possition of each student.</P>';
-$string['teams'] = 'Team Classification'; // evp en la pagina de ayuda se titulaba View Summary by
-                                          // Teams
+$string['teams'] = 'Team Classification'; // TODO evp en la pagina de ayuda se titulaba View Summary by Teams.
 $string['teams_help'] = '<P align="justify">This page shows the score obtained by each team that belongs to the same group in a QUESTOURnament. A percentage of this score determined by the "<a href="help.php?component=quest&identifier=teamporcent"">Percentage of Team Scoring</a>" parameter of the QUESTOURnament will contribute to the individual score of each member of the team.</P>
 <P align="justify">The following parameters are shown:</P>
 <div align="justify">
@@ -941,7 +932,7 @@ $string['teams_help'] = '<P align="justify">This page shows the score obtained b
   <p>By default, the ranking is ordered according to the total score obtained by each team, although this order can be modified by choosing another ordering parameter and pressing its name.</p>
   <p>It is also possible to access the individual ranking through the option <a href="help.php?component=quest&identifier=global"">View Global Classification</a>.</p>
 </div>';
-$string['timemaxquestion'] = 'Maximum Time of Life'; // evp esta sobra, vale la siguiente
+$string['timemaxquestion'] = 'Maximum Time of Life'; // TODO evp esta sobra, vale la siguiente.
 $string['timemaxquestion_help'] = '<P align="justify">This parameter sets the length (in days) of the challenges added to this QUESTOURnament</P>
 <P align="justify">A student can not modify the length of a challenge that he adds to the QUESTOURnament. However, teachers will be able to modify the starting and closing dates of each challenge of the QUESTOURnament, both of the ones proposed by them and of the ones proposed by the students.</P>';
 $string['tinitial'] = 'Initial time';
@@ -982,7 +973,7 @@ $string['windowpreviewsubmission'] = 'Preview Challenge Window';
 $string['windowpreviewsubmission_help'] = '<p align="justify">This page shows the aspect of a challenge that is being edited with the Moodle editor after the different filters provided by the platform are applied.</p>
 <p align="justify">This way, it will be able to preview the aspect of the challenge before its submission. This posibility is specially useful when a mathematical equation must be inserted for which it is necessary to introduce an expression with the adequate format that will be transformed by the filters provided by Moodle and whose final aspect can not be previewed in the editor of the platform.</p>';
 
-// MEssage provider
+// Message provider.
 
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';

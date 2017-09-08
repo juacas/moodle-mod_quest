@@ -397,8 +397,8 @@ foreach ($columns as $column) {
     $$column = "<a href=\"myplace.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
 }
 
-$table->head = array("$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart", "$dateend", /* get_string('actions','quest'), */ "$calification",
-                "Grade");
+$table->head = array("$title", "$phase",
+                "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart", "$dateend", "$calification", "Grade");
 
 echo '<tr><td>';
 echo html_writer::table($table);
