@@ -28,9 +28,9 @@
  *          Show the page that allow to do the assess of a answer
  *
  *          **************************************** */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
 $aid = required_param('aid', PARAM_INT); // Answer ID..
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
@@ -108,7 +108,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
                 print_error('inserterror', 'quest', null, "quest_elements_assessments");
             }
         }
-        // now set the adjustment
+        // ...now set the adjustment.
         unset($element);
         $i = $num;
         $element->questid = $quest->id;
@@ -134,7 +134,8 @@ if (has_capability('mod/quest:preview', $context)) {
 }
 
 $title .= " " . get_string('tothechallenge', 'quest') .
-         "<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+         "<a name=\"sid_$submission->id\" href=\"submissions.php?" .
+        "id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
 echo $OUTPUT->heading($title);
 

@@ -30,10 +30,10 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  *          ***************************************************** */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
-require_once ('scores_lib.php');
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
+require_once('scores_lib.php');
 $id = required_param('id', PARAM_INT); // Course Module ID..
 $action = required_param('action', PARAM_ALPHA);
 $sid = optional_param('sid', null, PARAM_INT); // Quest Submission ID..
@@ -139,7 +139,7 @@ if ($action == 'displaygradingform') {
     if ($elementsraw = $DB->get_records("quest_elements", array("submissionsid" => $sidtarget), "elementno ASC")) {
         foreach ($elementsraw as $element) {
             if ($element->questid == $quest->id) {
-                $elements[] = $element; // ...to renumber index 0,1,2....
+                $elements[] = $element; // ...to renumber index.
             }
         }
     }
@@ -149,11 +149,11 @@ if ($action == 'displaygradingform') {
     if (($newform == 1) && ($changeform == 1)) {
         $num = $numelemswhenchange;
     }
-    if (($DB->get_field("quest_submissions", "numelements", array("id" => $sidtarget)) != 0) && ($changeform == 0) && ($newform == 1)) {
+    if (($DB->get_field("quest_submissions", "numelements",
+            array("id" => $sidtarget)) != 0) && ($changeform == 0) && ($newform == 1)) {
         $num = $DB->get_field("quest_submissions", "numelements", array("id" => $sidtarget));
     }
-    // TODO check this if (($DB->get_field ("quest_submissions", "numelements", "id",.
-    // ...$sid)!=0)&&($changeform==1)&&($newform==0))..
+
     if (($changeform == 1) && ($newform == 0)) {
         $num = $numelemswhenchange;
     }
@@ -213,7 +213,6 @@ if ($action == 'displaygradingform') {
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
                 echo "<td valign=\"top\">\n";
-                // ...choose_from_menu($SCALES, "scale[]", $elements[$i]->scale, "");..
                 echo html_writer::select($scales, "scale[]", $elements[$i]->scale, "");
                 if ($elements[$i]->weight == '') { // ...not set.
                     $elements[$i]->weight = 11; // ...unity.
@@ -240,7 +239,8 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
+                        $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
                 if ($elements[$i]->weight == '') { // ...not set..
                     $elements[$i]->weight = 11; // ...unity..
@@ -288,7 +288,8 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("criterion", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
+                        $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
                 echo "<tr><td><b>" . get_string("suggestedgrade", "quest") . ":</b></td><td>\n";
                 echo html_writer::select($numbers, "maxscore[$i]", $elements[$i]->maxscore, "");
@@ -318,7 +319,7 @@ if ($action == 'displaygradingform') {
             if ($rubricsraw = $DB->get_records_select("quest_rubrics", "questid = ? AND submissionsid = ?", array($quest->id, $var),
                     "elementno ASC")) {
                 foreach ($rubricsraw as $rubric) {
-                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // ...reindex 0,1,2....
+                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // ...reindex.
                 }
             }
             for ($i = 0; $i < $num; $i++) {
@@ -793,7 +794,7 @@ FORM;
     }
     // Log the event.
     if ($CFG->version >= 2014051200) {
-        require_once ('classes/event/answer_assessed.php');
+        require_once('classes/event/answer_assessed.php');
         \mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
     } else {
         add_to_log($course->id, "quest", "assess_answer", "viewassessment.php?id=$cm->id&amp;asid=$assessment->id",

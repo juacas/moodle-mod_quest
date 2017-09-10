@@ -15,7 +15,7 @@
 // along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 define('CLI_SCRIPT', 1);
-require (dirname(__FILE__) . '/../../../../config.php');
-require_once ($CFG->dirroot . '/backup/util/helper/convert_helper.class.php');
+require_once(dirname(__FILE__) . '/../../../../config.php');
+require_once($CFG->dirroot . '/backup/util/helper/convert_helper.class.php');
 $testcoursebackup = 'quest_answers_source';
 convert_helper::to_moodle2_format($testcoursebackup, 'moodle1');

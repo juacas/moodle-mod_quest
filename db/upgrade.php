@@ -67,6 +67,7 @@ function xmldb_quest_upgrade($oldversion = 0) {
         $table = new xmldb_table('quest_submissions');
         $field = new xmldb_field('attachment', XMLDB_TYPE_CHAR, '100', null, false, false, null, null);
         $dbman->change_field_notnull($table, $field);
+        upgrade_mod_savepoint(true, 2013100400, 'quest');
     }
     if ($oldversion < 2016060900) {
         $table = new xmldb_table('quest');
@@ -76,6 +77,7 @@ function xmldb_quest_upgrade($oldversion = 0) {
         $table = new xmldb_table('quest');
         $field = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, null);
         $dbman->add_field($table, $field);
+        upgrade_mod_savepoint(true, 2016060900, 'quest');
     }
     return true;
 }

@@ -15,8 +15,8 @@
 // along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 define('CLI_SCRIPT', 1);
-require_once (dirname(__FILE__) . '/../../../../config.php');
-require_once ($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+require_once(dirname(__FILE__) . '/../../../../config.php');
+require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 $fullname = "restore test course";
 $shortname = "restoretest";
 $categoryid = 3;

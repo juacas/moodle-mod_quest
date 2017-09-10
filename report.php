@@ -9,26 +9,22 @@
 // Questournament for Moodle is distributed in the hope that it will be useful,.
 // but WITHOUT ANY WARRANTY; without even the implied warranty of.
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the.
-// GNU General Public License for more details..
-//
+// GNU General Public License for more details..//
 // You should have received a copy of the GNU General Public License.
 // along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>..
 
-/*
- * ****************************************************
- * Module developed at the University of Valladolid
+/* Module developed at the University of Valladolid.
  * Designed and directed by Juan Pablo de Castro with the effort of many other
  * students of telecommunciation engineering
  * this module is provides as-is without any guarantee. Use it as your own risk.
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
  * @package quest
- * *************************************
  */
 // This page prints a long report of this QUEST.
-require_once ("../../config.php");
-require_once ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
 $cmid = required_param('id', PARAM_INT); // Course Module ID.
 
@@ -57,7 +53,7 @@ $strquest = get_string("modulename", "quest");
 // Log..
 
 if ($CFG->version >= 2014051200) {
-    require_once 'classes/event/quest_viewed.php';
+    require_once( 'classes/event/quest_viewed.php');
     \mod_quest\event\briefting_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 } else {
     add_to_log($course->id, "quest", "report", "report.php?id=$cm->id", "$quest->id", "$cm->id");
@@ -124,7 +120,6 @@ if ($submissions = quest_get_submissions($quest)) {
                 echo $OUTPUT->heading("Answer: " . $answer->title, 3);
                 quest_print_answer_info($quest, $answer);
 
-                // echo $OUTPUT->heading(get_string('answercontent','quest'));.
                 quest_print_answer($quest, $answer);
                 echo '</td></tr></table>';
             }
@@ -134,5 +129,3 @@ if ($submissions = quest_get_submissions($quest)) {
         echo '<br/>';
     }
 }
-
-

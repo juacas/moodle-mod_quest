@@ -27,6 +27,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
+defined('MOODLE_INTERNAL') || die();
+
 class backup_quest_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
@@ -62,15 +64,18 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $challenges = new backup_nested_element('challenges');
         $challenge = new backup_nested_element('challenge', array('id'),
                 array('userid', 'numelements', 'title', 'timecreated', 'description', 'descriptionformat', 'descriptiontrust',
-                                'attachment', 'points', 'phase', 'commentteacherpupil', 'commentteacherauthor', 'dateend', 'nanswers',
+                                'attachment', 'points', 'phase', 'commentteacherpupil', 'commentteacherauthor',
+                                'dateend', 'nanswers',
                                 'nanswerscorrect', 'state', 'datestart', 'pointsmax', 'dateanswercorrect', 'initialpoints',
                                 'pointsanswercorrect', 'mailed', 'maileduser', 'predictedduration', 'preceiveddifficulty',
                                 'evaluated'));
 
         $answers = new backup_nested_element('answers');
         $answer = new backup_nested_element('answer', array('id'),
-                array('userid', 'title', 'description', 'descriptionformat', 'descriptiontrust', 'attachment', 'date',
-                                'pointsmax', 'grade', 'commentforteacher', 'phase', 'state', 'permitsubmit', 'perceiveddifficulty'));
+                array('userid', 'title', 'description', 'descriptionformat', 'descriptiontrust',
+                                'attachment', 'date',
+                                'pointsmax', 'grade', 'commentforteacher', 'phase', 'state',
+                                'permitsubmit', 'perceiveddifficulty'));
         $assessments = new backup_nested_element('assessments');
         $assessment = new backup_nested_element('assessment', array('id'),
                 array('questid', 'userid', 'teacherid', 'pointsautor', 'pointsteacher', 'dateassessment', 'pointsmax',
@@ -131,7 +136,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $calificationsusers->add_child($calificationusers);
         // Define sources.
         $quest->set_source_table('quest', array('id' => backup::VAR_ACTIVITYID));
-        // default element has submissionsid=0.
+        // ...default element has submissionsid=0.
         $defaultelement->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid=0',
                 array(backup::VAR_PARENTID));
         $particularelement->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid= ?',
@@ -139,12 +144,10 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $elementautor->set_source_table('quest_elementsautor', array('questid' => backup::VAR_PARENTID));
 
         $rubric->set_source_sql(
-                'SELECT * FROM {quest_rubrics} WHERE
- 								 questid = ? and submissionsid=0 and elementno = ? ORDER BY elementno',
+                'SELECT * FROM {quest_rubrics} WHERE questid = ? and submissionsid=0 and elementno = ? ORDER BY elementno',
                 array(backup::VAR_ACTIVITYID, '../../elementno'));
         $rubricautor->set_source_sql(
-                'SELECT * FROM {quest_rubrics_autor} WHERE
- 								 questid = ? and elementno = ? ORDER BY elementno',
+                'SELECT * FROM {quest_rubrics_autor} WHERE questid = ? and elementno = ? ORDER BY elementno',
                 array(backup::VAR_ACTIVITYID, '../../elementno'));
 
         $challenge->set_source_table('quest_submissions', array('questid' => backup::VAR_PARENTID));

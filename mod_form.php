@@ -48,8 +48,8 @@
  *          function for more info */
 defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot . '/course/moodleform_mod.php');
-require_once ($CFG->dirroot. "/mod/quest/locallib.php");
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot. "/mod/quest/locallib.php");
 
 class mod_quest_mod_form extends moodleform_mod {
 
@@ -73,7 +73,7 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addHelpButton('introattachments', 'introattachments', 'quest');
         $arraynattachments = array(0, 1, 2, 3, 4, 5);
         $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $arraynattachments);
-        $mform->addHelpButton('nattachments', "numberofattachments", "quest"); // ???
+        $mform->addHelpButton('nattachments', "numberofattachments", "quest");
 
         $mform->addElement('selectyesno', 'validateassessment', get_string('validateassessment', 'quest'));
         $mform->addHelpButton('validateassessment', "validateassessment", "quest");
@@ -165,7 +165,7 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->setDefault('nmaxanswers', 25);
 
         $questtypepoints = array(0 => get_string('linear', 'quest'));
-        // Currently disabled: 1 => get_string('exponential', 'quest') ).
+        // Currently disabled: 1 => get_string('exponential', 'quest') ). This scoring pattern is not enabled by now.
         $mform->addElement('select', 'typecalification', get_string('typecalification', 'quest'), $questtypepoints);
         $mform->addHelpButton('typecalification', "typecalification", "quest");
 
@@ -191,84 +191,71 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addHelpButton('teamporcent', "teamporcent", "quest");
         $mform->setDefault('teamporcent', 25);
 
-        /* Mod_cluster support */
-        /*
-         * if
-         * ($clusterers_mods=get_all_instances_in_courses("clusterer",array($COURSE->id=>$COURSE)))//
-         * get clusterer instances available in the course
-         * {
-         * $mform->addElement('header', 'general', get_string('clusterer', 'questournament'));
-         * $mform->addElement('selectyesno', 'clustererleagues',
-         * get_string('createligasfromclusterer', 'questournament'));
-         * $mform->setHelpButton('clustererleagues', array("clustererleagues",
-         * get_string("createligasfromclusterer","questournament"), "questournament"));
-         * $mform->setDefault('clustererleagues',$CFG->questournament_clustererleagues);
-         * $mform->disabledIf('clustererleagues', 'allowteams','eq', 1);
-         * $ARRAY_CLUSTERERS=array();
-         * foreach($clusterers_mods as $clusterer_mod)
-         * {
-         * $modName="$clusterer_mod->name :";
-         * if ($clusterers=
-         * $DB->get_records("clusterer_clusterers","moduleinstanceid",$clusterer_mod->id))
-         * foreach ($clusterers as $clusterer)
-         * {
-         * $clustererName="$clusterer->name :";
-         * if ($clusterer_instances =
-         * $DB->get_records("clusterer_clusterer_instances","clustererid",$clusterer->id))
-         * {
-         * foreach ($clusterer_instances as $clusterer_instance)
-         * {
-         * $date = date("d\.m\.y => g\:i\:s",$clusterer_instance->version);
-         * $ARRAY_CLUSTERERS[$clusterer_instance->id] = "$modName $clustererName version: $date";
-         * $clustererName="&nbsp;".str_repeat("-", strlen($clustererName)).">"; // clear the name
-         * for a list more tidy
-         * }
-         * $modName="-".str_repeat("-", strlen($modName)).">";// clear the name for a list more tidy
-         * }
-         * }
-         * }
-         * $mform->addElement('select', 'clustererid', get_string('selectclusterer',
-         * 'questournament'), $ARRAY_CLUSTERERS);
-         * $mform->setHelpButton('clustererid', array("clustererid",
-         * get_string("selectclusterer","questournament"), "questournament"));
-         * $mform->disabledIf('clustererid', 'allowteams','eq', 1);
-         * ?>
-         * <script>
-         * function pasarvariable()
-         * {
-         * var valor=document.forms[0].clustererid.value;
-         * var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
-         * scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
-         * window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
-         * }
-         * </script>
-         * <?php
-         * $strshowselectedcluster = get_string("showselectedcluster","questournament");
-         * $mform->addElement('html','<br/><center><a
-         * onClick="javascript:pasarvariable()">'.$strshowselectedcluster.'</a>');
-         * $mform->addElement('selectyesno', 'visibleleagues', get_string('visibleleagues',
-         * 'questournament'));
-         * $mform->setHelpButton('visibleleagues', array("visibleleagues",
-         * get_string("visibleleagues","questournament"), "questournament"));
-         * $mform->setDefault('visibleleagues',$CFG->questournament_visibleleagues);
-         * $mform->disabledIf('visibleleagues', 'allowteams','eq', 1);
-         * $mform->addElement('selectyesno', 'anonymousleague', get_string('anonymousleague',
-         * 'questournament'));
-         * $mform->setHelpButton('anonymousleague', array("anonymousleague",
-         * get_string("anonymousleague","questournament"), "questournament"));
-         * $mform->setDefault('anonymousleague',$CFG->questournament_anonymousleague);
-         * $mform->disabledIf('anonymousleague', 'allowteams','eq', 1);
-         * }
-         * else
-         * {
-         * $ARRAY_CLUSTERERS = null;
-         * $mform->addElement('html',get_string('clustererModuleNotFound','questournament'));
-         * $mform->addElement('hidden', 'clustererleagues', 0);
-         * $mform->addElement('hidden', 'visibleleagues', 1);
-         * $mform->addElement('hidden', 'anonymousleague', 1);
-         * }
-         */
-
+        // Mod_cluster support disabled by now.
+        if (false) {
+            // Get clusterer instances available in the course.
+            if ($clusterersmods = get_all_instances_in_courses("clusterer", array($COURSE->id => $COURSE))) {
+                  $mform->addElement('header', 'general', get_string('clusterer', 'questournament'));
+                  $mform->addElement('selectyesno', 'clustererleagues',
+                  get_string('createligasfromclusterer', 'questournament'));
+                  $mform->setHelpButton('clustererleagues', array("clustererleagues",
+                  get_string("createligasfromclusterer", "questournament"), "questournament"));
+                  $mform->setDefault('clustererleagues', $CFG->questournament_clustererleagues);
+                  $mform->disabledIf('clustererleagues', 'allowteams', 'eq', 1);
+                  $arrayclusterers = array();
+                foreach ($clusterersmods as $clusterermod) {
+                    $modname = $clusterermod->name . " :";
+                    if ($clusterers = $DB->get_records("clusterer_clusterers", "moduleinstanceid", $clusterermod->id)) {
+                        foreach ($clusterers as $clusterer) {
+                            $clusterername = "$clusterer->name :";
+                            if ($clustererinstances = $DB->get_records("clusterer_clusterer_instances",
+                                    "clustererid", $clusterer->id)) {
+                                foreach ($clustererinstances as $clustererinstance) {
+                                    $date = date("d\.m\.y => g\:i\:s", $clustererinstance->version);
+                                    $arrayclusterers[$clustererinstance->id] = "$modname $clusterername version: $date";
+                                    // ...clear the name for a tidier list.
+                                    $clusterername = "&nbsp;".str_repeat("-", strlen($clusterername)) . ">";
+                                }
+                                $modname = "-" . str_repeat("-", strlen($modname)) . ">";// ...clear the name for a list more tidy.
+                            }
+                        }
+                    }
+                }
+                  $mform->addElement('select', 'clustererid', get_string('selectclusterer',
+                  'questournament'), $arrayclusterers);
+                  $mform->setHelpButton('clustererid', array("clustererid",
+                  get_string("selectclusterer", "questournament"), "questournament"));
+                  $mform->disabledIf('clustererid', 'allowteams', 'eq', 1);
+                  echo '
+                  function pasarvariable()
+                  {
+                  var valor=document.forms[0].clustererid.value;
+                  var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
+                  scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
+                  window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
+                  }
+                  </script>';
+                  $strshowselectedcluster = get_string("showselectedcluster", "questournament");
+                  $mform->addElement('html', '<br/><center><a onClick="javascript:pasarvariable()">' .
+                                    $strshowselectedcluster . '</a>');
+                  $mform->addElement('selectyesno', 'visibleleagues', get_string('visibleleagues', 'questournament'));
+                  $mform->setHelpButton('visibleleagues', array("visibleleagues",
+                                        get_string("visibleleagues", "questournament"), "questournament"));
+                  $mform->setDefault('visibleleagues', $CFG->questournament_visibleleagues);
+                  $mform->disabledIf('visibleleagues', 'allowteams', 'eq', 1);
+                  $mform->addElement('selectyesno', 'anonymousleague', get_string('anonymousleague', 'questournament'));
+                  $mform->setHelpButton('anonymousleague', array("anonymousleague",
+                  get_string("anonymousleague", "questournament"), "questournament"));
+                  $mform->setDefault('anonymousleague', $CFG->questournament_anonymousleague);
+                  $mform->disabledIf('anonymousleague', 'allowteams', 'eq', 1);
+            } else {
+                $arrayclusterers = null;
+                $mform->addElement('html', get_string('clustererModuleNotFound', 'questournament'));
+                $mform->addElement('hidden', 'clustererleagues', 0);
+                $mform->addElement('hidden', 'visibleleagues', 1);
+                $mform->addElement('hidden', 'anonymousleague', 1);
+            }
+        } // Clusterer support.
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();

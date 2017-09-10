@@ -25,11 +25,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$aid = required_param('aid', PARAM_INT); // Assessment ID
+$aid = required_param('aid', PARAM_INT); // Assessment ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_URL);
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
@@ -94,7 +94,7 @@ if (isset($_POST['newcalification'])) {
     }
 }
 
-// show assessment but don't allow changes
+// Show assessment but don't allow changes.
 quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
 $submission = $DB->get_record("quest_submissions", array("id" => $submission->id));
 $title = '"' . $submission->title . '" ';
@@ -113,7 +113,8 @@ $OUTPUT->heading(get_string('description', 'quest'));
 quest_print_submission($quest, $submission);
 
 $timenow = time();
-if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) && ($submission->nanswerscorrect < $quest->nmaxanswers)) {
+if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
+    ($submission->nanswerscorrect < $quest->nmaxanswers)) {
     $submission->phase = SUBMISSION_PHASE_ACTIVE;
 }
 echo "<br><br>";

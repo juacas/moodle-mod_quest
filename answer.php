@@ -36,10 +36,10 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require_once ("../../config.php");
-require_once ("lib.php");
-require_once ("locallib.php");
-require_once ("scores_lib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
+require_once("scores_lib.php");
 
 global $DB, $OUTPUT;
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
@@ -158,7 +158,8 @@ if ($action == "answer") {
     $title = get_string('answername', 'quest', $answer);
 
     $subject = get_string('subject', 'quest');
-    $subject .= "<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+    $url = (new moodle_url('submissions.php', ['id' => $cm->id, 'action' => 'showsubmission', 'sid' => $submission->id]))->out();
+    $subject .= "<a name=\"sid_$submission->id\" href=\"$url\">$submission->title</a>";
 
     if (($ismanager) || ($answer->userid == $USER->id)) {
         $title .= get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
@@ -198,7 +199,7 @@ if ($action == "answer") {
 
     // ..... log the event.
     if ($CFG->version >= 2014051200) {
-        require_once ('classes/event/answer_viewed.php');
+        require_once('classes/event/answer_viewed.php');
         $viewevent = mod_quest\event\answer_viewed::create_from_parts($USER, $submission, $answer, $cm);
         $viewevent->trigger();
     } else {
@@ -277,12 +278,6 @@ if ($action == "answer") {
         print_error("notauthorizedtodeleteanswer", 'quest');
     }
 
-    // ...if($answer->phase == ANSWER_PHASE_PASSED).
-    // ...{.
-    // ...$submission->nanswerscorrect--;.
-    // ...$DB->set_field("quest_submissions","nanswerscorrect", $submission->nanswerscorrect,.
-    // ...array("id"=> $submission->id));.
-    // ...}.
     // ...first get any assessments....
     if ($assessments = quest_get_assessments($answer, 'ALL')) {
         foreach ($assessments as $assessment) {
@@ -342,7 +337,8 @@ if ($action == "answer") {
                                             // ...claro si es la mejor opci?n..
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
 
-    $answer = file_prepare_standard_editor($answer, 'description', $descriptionoptions, $context, 'mod_quest', 'answer', $answer->id);
+    $answer = file_prepare_standard_editor($answer, 'description', $descriptionoptions, $context, 'mod_quest',
+                                            'answer', $answer->id);
     $answer = file_prepare_standard_filemanager($answer, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'answer_attachment', $answer->id);
     $draftitemid = file_get_submitted_draft_itemid('answer_attachment');
@@ -374,8 +370,8 @@ if ($action == "answer") {
         // Print information about the submission..
         $title = '"' . $submission->title . '" ';
         echo $OUTPUT->heading($title);
-        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" . get_string(
-                "specimenassessmentform", "quest") . "</a></b></center>");
+        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" .
+                get_string("specimenassessmentform", "quest") . "</a></b></center>");
         quest_print_submission($quest, $submission);
         echo $OUTPUT->heading_with_help(get_string("answersubmission", "quest"), "answersubmission", "quest");
         $mform->display();
@@ -416,13 +412,13 @@ if ($action == "answer") {
     // TODO: Check if merge this code with uploadanswer.php..
 
     if ($quest->nattachments) {
-        require_once ($CFG->dirroot . '/lib/uploadlib.php');
+        require_once($CFG->dirroot . '/lib/uploadlib.php');
         $um = new upload_manager(null, false, false, $course, false, $quest->maxbytes);
         $dir = quest_file_area_name_answers($quest, $answer);
 
         if ($um->process_file_uploads($dir)) {
             if ($CFG->version >= 2014051200) {
-                require_once ('classes/event/answer_viewed.php');
+                require_once('classes/event/answer_viewed.php');
                 $updatedevent = mod_quest\event\answer_updated::create_from_parts($submission, $answer, $cm);
                 $updatedevent->trigger();
             } else {
@@ -460,26 +456,21 @@ if ($action == "answer") {
         print_footer($course);
         exit();
     }
-    /*
-     * JPC 2013-11-28 disable excesive notifications
-     * foreach($users as $user){ if($ismanager) {
-     * quest_send_message($user,
-     * "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer",
-     * 'answeradd',
-     * $quest, $submission, $answer, $USER); } }
-     */
-    // ...if(!isteacher($course->id,$submission->userid)).
-    // ...{.
+    // JPC 2013-11-28 disable excesive notifications.
+    if (false) {
+        foreach ($users as $user) {
+            if ($ismanager) {
+                quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer",
+                'answeradd', $quest, $submission, $answer, $USER);
+            }
+        }
+    }
+    // JPC block disabled.
     $user = get_complete_user_data('id', $submission->userid);
     if ($user) {
         quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer", 'answeradd',
                 $quest, $submission, $answer);
     }
-    // ...}.
-
-    // ...add_to_log($course->id, "quest", "modif_answer",.
-    // ..."answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer",.
-    // ..."$answer->id", "$cm->id");.
 
     print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
 
@@ -499,7 +490,6 @@ if ($action == "answer") {
     if (!($ismanager or (($USER->id == $answer->userid)))) {
         error("You are not authorized to delete these attachments");
     }
-
     // Check existence of title..
     if (empty($form->title)) {
         notify(get_string("notitlegiven", "quest"));
@@ -507,11 +497,9 @@ if ($action == "answer") {
         $DB->set_field("quest_answers", "title", $form->title, array("id" => $answer->id));
         $DB->set_field("quest_answers", "description", trim($form->description), array("id" => $answer->id));
     }
-    // Moodle 2.x has different mchanism for files... quest_delete_submitted_files_answers($quest,.
-    // ...$answer);.
-
+    // Moodle 2.x has different mchanism for files... quest_delete_submitted_files_answers($quest, $answer);.
     if ($CFG->version >= 2014051200) {
-        require_once ('classes/event/answer_updated.php');
+        require_once('classes/event/answer_updated.php');
         $updatedevent = mod_quest\event\answer_updated::create_from_parts($submission, $answer, $cm);
         $updatedevent->trigger();
     } else {
@@ -520,18 +508,13 @@ if ($action == "answer") {
     }
     echo $OUTPUT->continue_button("answer.php?id=$cm->id&amp;aid=$answer->id&amp;sid=$sid&amp;action=$form->beforeaction");
 } else if ($action == "preview") {
-
     print_header_simple(format_string($quest->name), "",
             "<a href=\"index.php?id=$course->id\">$strquests</a> ->
                       <a href=\"view.php?id=$cm->id\">" .
                      format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_parent" />', true);
-
     $form = data_submitted();
-
     echo "<hr size=\"1\" noshade=\"noshade\" />";
-
     print_heading_with_help(get_string('windowpreview', 'quest'), "windowpreview", "quest");
-
     $title = $form->title;
     echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
     echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
@@ -540,11 +523,8 @@ if ($action == "answer") {
     $temp = '\\';
     $temp1 = $temp . $temp;
     $answer->description = str_replace($temp1, $temp, $form->description);
-
     print_simple_box(format_text($answer->description), 'center');
-
     close_window_button();
-
     print_footer($course);
     exit();
 } else if ($action == "permitsubmit") {
@@ -553,6 +533,5 @@ if ($action == "answer") {
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid));
     $answer->permitsubmit = 1;
     $DB->set_field("quest_answers", "permitsubmit", $answer->permitsubmit, array("id" => $answer->id));
-
     redirect("answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer");
 }

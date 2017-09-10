@@ -13,29 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 /**
- * @module graphviz_social
- * @package mod_msocial/view/graphviz
+ * @module quest_counter
+ * @package mod_quest
  * @copyright 2017 Juan Pablo de Castro <jpdecastro@tel.uva.es>
  * @author Juan Pablo de Castro <jpdecastro@tel.uva.es>
  * @license http:// www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
  */
-define(['jquery'], function ($) {
-
-	var init = {
-		puntuacionarray:  function (indice, incline, pointsmax, initialpoints, tinitial, datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
-			puntuacionarray(indice, incline, pointsmax, initialpoints, tinitial, datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion);
-		},
-	};
-	return init;
-});
-
-function puntuacionarray( indice, incline, pointsmax, initialpoints, tinitial, datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
+function redondear(cantidad, decimales) {
+	cantidad = parseFloat(cantidad);
+	decimales = parseFloat(decimales);
+	decimales = (!decimales ? 2 : decimales);
+	var valor = Math.round(cantidad * Math.pow(10, decimales)) / Math.pow(10, decimales);
+	return valor.toFixed(4);
+}
+function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
+		datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend,
+		formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
 	var browserDate = new Date();
     var browserTime = browserDate.getTime();
     if (correccion == null) {
     	correccion = servertime - browserTime;
     }
-    for (i = 0; i < indice; i++) {
+    for (var i = 0; i < indice; i++) {
 
         var tiempoactual = new Date();
         var tiempo = parseInt((tiempoactual.getTime() + correccion));
@@ -52,7 +51,8 @@ function puntuacionarray( indice, incline, pointsmax, initialpoints, tinitial, d
                 incline[i] = (1 / (dateend[i] - datestart[i] - tinitial[i])) * Math.log(pointsmax[i] / initialpoints[i]);
             }
         }
-
+        var grade = null;
+        var t = 0;
         if (state[i] < 2) {
             grade = initialpoints[i];
             form.animate({color:"#cccccc"}, 1000);
@@ -108,7 +108,8 @@ function puntuacionarray( indice, incline, pointsmax, initialpoints, tinitial, d
                                 if (type == 0) {
                                     incline[i] = (-pointsanswercorrect[i]) / (dateend[i] - dateanswercorrect[i]);
                                 } else {
-                                    incline[i] = (1 / (dateend[i] - dateanswercorrect[i])) * Math.log(0.0001 / pointsanswercorrect[i]);
+                                    incline[i] = (1 / (dateend[i] - dateanswercorrect[i]))
+                                    			* Math.log(0.0001 / pointsanswercorrect[i]);
                                 }
                             }
                             if (type == 0) {
@@ -131,13 +132,22 @@ function puntuacionarray( indice, incline, pointsmax, initialpoints, tinitial, d
     }
 
     setTimeout(function (){
-    	puntuacionarray(indice,incline,pointsmax,initialpoints,tinitial,datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers,null, correccion);
+    	puntuacionarray($,indice,incline,pointsmax,initialpoints,tinitial,
+    					datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,
+    					dateend,formularios,type,nmaxanswers,pointsnmaxanswers,null, correccion);
     	}, 1000);
 }
-function redondear(cantidad, decimales) {
-	var cantidad = parseFloat(cantidad);
-	var decimales = parseFloat(decimales);
-	decimales = (!decimales ? 2 : decimales);
-	var valor = Math.round(cantidad * Math.pow(10, decimales)) / Math.pow(10, decimales);
-	return valor.toFixed(4);
-}
+
+define(['jquery'], function ($) {
+
+	var init = {
+		puntuacionarray:  function (indice, incline, pointsmax, initialpoints, tinitial, datestart,
+									state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
+									dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
+			puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial, datestart, state,
+							nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios,
+							type, nmaxanswers, pointsnmaxanswers,servertime, correccion);
+		},
+	};
+	return init;
+});

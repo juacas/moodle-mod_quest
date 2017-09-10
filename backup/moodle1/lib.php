@@ -53,18 +53,19 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
                         new convert_path('particular_elements',
                                 '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/PARTICULAR_ELEMENTS'),
                         new convert_path('particular_element',
-                                '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/PARTICULAR_ELEMENTS/PARTICULAR_ELEMENT'),
+                        '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/PARTICULAR_ELEMENTS/PARTICULAR_ELEMENT'),
 
                         new convert_path('answers', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS'),
                         new convert_path('answer', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER'),
                         new convert_path('assessments',
                                 '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS'),
                         new convert_path('assessment',
-                                '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS/ASSESSMENT'),
+                        '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS/ASSESSMENT'),
                         new convert_path('elements_assess',
-                                '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS/ASSESSMENT/ELEMENTS_ASSESS'),
+          '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS/ASSESSMENT/ELEMENTS_ASSESS'),
                         new convert_path('element_assess',
-                                '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER/ASSESSMENTS/ASSESSMENT/ELEMENTS_ASSESS/ELEMENT_ASSESS'),
+                                '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/SUBMISSIONS/SUBMISSION/ANSWERS/ANSWER' .
+                                '/ASSESSMENTS/ASSESSMENT/ELEMENTS_ASSESS/ELEMENT_ASSESS'),
                         new convert_path('califications_users', '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_USERS'),
                         new convert_path('calification_user',
                                 '/MOODLE_BACKUP/COURSE/MODULES/MOD/QUEST/CALIFICATIONS_USERS/CALIFICATION_USER'),
@@ -141,14 +142,13 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     public function process_submission($data) {
         $contextid = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
-        // get a fresh new file manager for this instance
+        // ...get a fresh new file manager for this instance.
         $this->fileman = $this->converter->get_file_manager($contextid, 'mod_quest');
-        // convert course files embedded into the intro
+        // ...convert course files embedded into the intro.
         $this->fileman->filearea = 'description';
         $this->fileman->itemid = 0;
         $data['description'] = moodle1_converter::migrate_referenced_files($data['description'], $this->fileman);
 
-        // $this->write_xml('challenge', $data, array('/submission/id'));
         $this->xmlwriter->begin_tag('challenge', array('id' => $data['id']));
 
         foreach ($data as $field => $value) {
@@ -238,14 +238,13 @@ class moodle1_mod_quest_handler extends moodle1_mod_handler {
     public function process_answer($data) {
         $contextid = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
-        // get a fresh new file manager for this instance
+        // ...get a fresh new file manager for this instance.
         $this->fileman = $this->converter->get_file_manager($contextid, 'mod_quest');
-        // convert course files embedded into the intro
+        // ...convert course files embedded into the intro.
         $this->fileman->filearea = 'description';
         $this->fileman->itemid = 0;
         $data['description'] = moodle1_converter::migrate_referenced_files($data['description'], $this->fileman);
 
-        // $this->write_xml('challenge', $data, array('/submission/id'));
         $this->xmlwriter->begin_tag('answer', array('id' => $data['id']));
 
         foreach ($data as $field => $value) {

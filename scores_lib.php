@@ -27,8 +27,8 @@
  * @package mod_quest
  *
  *          Debug functions */
-require_once ("../../config.php");
-require_once ("locallib.php");
+defined('MOODLE_INTERNAL') || die();
+require_once("locallib.php");
 
 // TODO use $quest record.
 function updateallteams($questid) {
@@ -61,7 +61,6 @@ function updateallusers($questid) {
     foreach ($query as $usercal) {
         print("<p>Updating user $usercal->userid on quest $questid: </p>  ");
         quest_update_user_scores($quest, $usercal->userid);
-        // test_update_team($questid, $team->id,false);.
     }
 }
 

@@ -38,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 abstract class base extends \core\event\base {
-    
+
     /** Legacy log data.
      *
      * @var array */
@@ -60,13 +60,14 @@ abstract class base extends \core\event\base {
         if (isset($this->legacylogdata)) {
             return $this->legacylogdata;
         }
-        
+
         return null;
     }
 
     /** Custom validation.
      *
-     * @throws \coding_exception */
+     * @throws \coding_exception
+     **/
     protected function validate_data() {
         parent::validate_data();
     }

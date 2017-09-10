@@ -26,11 +26,11 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  *          ************************************* */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$id = required_param('id', PARAM_INT); // CM ID
+$id = required_param('id', PARAM_INT); // CM ID.
 global $DB;
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
@@ -54,7 +54,7 @@ $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
 $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
-$groupmode = $currentgroup = false; // JPC group support desactivation
+$groupmode = $currentgroup = false; // JPC group support desactivation.
 
 $url = new moodle_url('/mod/quest/upload.php', array('id' => $id));
 
@@ -127,7 +127,8 @@ if (isset($form->operation)) {
 
                 $event = null;
                 $event->name = get_string('datestartsubmissionevent', 'quest', $newsubmission->title);
-                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" .
+                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?" .
+                        "id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" .
                          $newsubmission->title . "</a>";
                 $event->courseid = $quest->course;
                 $event->groupid = $idgroup;
@@ -163,7 +164,7 @@ if (isset($form->operation)) {
         echo $OUTPUT->continue_button("view.php?id=$cm->id");
         print_footer($course);
     } else if ($form->operation == get_string("save", "quest")) {
-        // add new submission record
+        // ...add new submission record.
         $newsubmission->id = $form->sid;
         $newsubmission->questid = $quest->id;
 
@@ -220,16 +221,19 @@ if (isset($form->operation)) {
             error("Submission id is incorrect");
         }
 
-        // students are only allowed to delete their own submission and only up to the deadline
-        if (!($ismanager or (($USER->id == $submission->userid) and ($timenow < $quest->dateend) and ($submission->nanswers == 0) and
-                 ($timenow < $submission->dateend)))) {
+        // ...students are only allowed to delete their own submission and only up to the deadline.
+        if (!($ismanager or (   ($USER->id == $submission->userid) and
+                                ($timenow < $quest->dateend) and
+                                ($submission->nanswers == 0) and
+                                ($timenow < $submission->dateend)))) {
             error("You are not authorized to delete this submission");
         }
 
         print_string("deleting", "quest");
-        if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", array($quest->id, $submission->id))) {
+        if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
+                                            array($quest->id, $submission->id))) {
             foreach ($answers as $answer) {
-                // first get any assessments...
+                // ...first get any assessments...
                 if ($assessments = quest_get_assessments($answer, 'ALL')) {
                     foreach ($assessments as $assessment) {
                         // ...and all the associated records...
@@ -248,7 +252,7 @@ if (isset($form->operation)) {
                 array('modulename' => 'quest', 'instance' => $quest->id, 'description' => $submission->description));
         // ...and the submission record...
         $DB->delete_records("quest_submissions", array("id" => $submission->id));
-        // ..and finally the submitted file
+        // ...and finally the submitted file.
 
         quest_delete_submitted_files_submissions($quest, $submission);
 
@@ -261,21 +265,21 @@ if (isset($form->operation)) {
     }
 } else {
     if ($form->save == "submitassignment") {
-        // don't be picky about not having a title
+        // ...don't be picky about not having a title.
 
         if (!$title = $form->title) {
             $title = get_string("notitle", "quest");
         }
 
-        // check that this is not a "rapid" second submission, caused by using the back button
-        // only check if a student, teachers may want to submit a set of quest examples rapidly
+        // Check that this is not a "rapid" second submission, caused by using the back button
+        // only check if a student, teachers may want to submit a set of quest examples rapidly.
         if (isstudent($course->id)) {
             if ($submissions = quest_get_user_submissions($quest, $USER)) {
-                // returns all submissions, newest on first
+                // Returns all submissions, newest on first.
                 foreach ($submissions as $submission) {
 
                     if ($submission->timecreated > $timenow) {
-                        // ignore this new submission
+                        // ...ignore this new submission.
                         redirect("view.php?id=$cm->id");
                         print_footer($course);
                         exit();
@@ -284,10 +288,10 @@ if (isset($form->operation)) {
             }
         }
 
-        // get the current set of submissions
+        // ...get the current set of submissions.
         $submissions = quest_get_user_submissions($quest, $USER);
 
-        // add new submission record
+        // ...add new submission record.
         $newsubmission->questid = $quest->id;
         $newsubmission->userid = $USER->id;
         $newsubmission->title = $title;
@@ -321,7 +325,7 @@ if (isset($form->operation)) {
         if ($ismanager || has_capability('quest:approvechallenge', $context)) {
             $newsubmission->state = 2;
         } else {
-            $newsubmission->state = 1; // approval pending
+            $newsubmission->state = 1; // ...approval pending.
         }
 
         if ($newsubmission->dateend > $quest->dateend) {
@@ -342,7 +346,8 @@ if (isset($form->operation)) {
             error("Quest submission: Failure to create new submission record!");
         }
 
-        if ($calificationuser = $DB->get_record("quest_calification_users", array("userid" => $USER->id, "questid" => $quest->id))) {
+        if ($calificationuser = $DB->get_record("quest_calification_users",
+                                        array("userid" => $USER->id, "questid" => $quest->id))) {
             $calificationuser->nsubmissions++;
             $DB->set_field("quest_calification_users", "nsubmissions", $calificationuser->nsubmissions,
                     array("id" => $calificationuser->id));
@@ -359,12 +364,13 @@ if (isset($form->operation)) {
 
         if ($ismanager || has_capability('quest:approvechallenge', $context)) {
             // TODO: Check. This avoids lo log a challenge
-            // if started retrospectively
+            // if started retrospectively.
             if ($newsubmission->datestart <= time()) {
 
                 $event = null;
                 $event->name = get_string('datestartsubmissionevent', 'quest', $newsubmission->title);
-                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" .
+                $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?" .
+                        "id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission\">" .
                          $newsubmission->title . "</a>";
                 $event->courseid = $quest->course;
                 $event->groupid = 0;
@@ -383,9 +389,9 @@ if (isset($form->operation)) {
             }
         }
 
-        // do something about the attachments, if there are any
+        // ...do something about the attachments, if there are any.
         if ($quest->nattachments) {
-            require_once ($CFG->dirroot . '/lib/uploadlib.php');
+            require_once($CFG->dirroot . '/lib/uploadlib.php');
             $um = new upload_manager(null, false, false, $course, false, $quest->maxbytes);
             if ($um->preprocess_files()) {
                 $dir = quest_file_area_name_submissions($quest, $newsubmission);
@@ -395,7 +401,7 @@ if (isset($form->operation)) {
                             "$cm->id");
                     print_heading(get_string("uploadsuccess", "quest"));
                 }
-                // um will take care of printing errors.
+                // ...um will take care of printing errors.
             }
         }
 
@@ -431,7 +437,7 @@ if (isset($form->operation)) {
         $title = $form->title;
         echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
         echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-        // print upload form
+        // ...print upload form.
         $submission->title = $form->title;
         $temp = '\\';
         $temp1 = $temp . $temp;

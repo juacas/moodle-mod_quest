@@ -26,11 +26,10 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  *          Draw the scoring graph */
-require_once ('../../config.php');
+require_once('../../config.php');
 global $CFG;
-require_once ('lib.php');
-
-require_once ('vendor/graphlib.php');
+require_once('lib.php');
+require_once('vendor/graphlib.php');
 
 function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
     if (($dateend - $datestart - $tinitial) == 0) {
@@ -67,11 +66,9 @@ function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $date
                 $pointscorrect = $initialpoints;
                 $incline2 = $pointscorrect / ($dateend - $dateanswercorrect);
                 $grade = $pointscorrect - $incline2 * $t;
-                // print($grade);
-                // exit();
-            } else {
-                // WARNING THIS MAY NOT WORK PROPERTLY
 
+            } else {
+                // TODO Check this. WARNING THIS MAY NOT WORK PROPERTLY.
                 $grade = $initialpoints * exp($incline * ($dateanswercorrect - $datestart - $tinitial));
                 $incline2 = (1 / ($dateend - $dateanswercorrect)) * log(0.0001 / $pointscorrect);
                 $grade = $pointsanswercorrect * exp($incline2 * $t);
@@ -94,7 +91,7 @@ function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $date
     return $grade;
 }
 
-// Sustituida por la version reducida anterior (no probada con type!=0
+// Sustituida por la version reducida anterior (no probada con type!=0.
 function quest_calculate_pointsb($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
     if (!$type) {
         $type = 0;
@@ -214,8 +211,8 @@ function graph_submissions() {
     $mygraph = new graph($width, $height);
     $mygraph->parameter['title'] = get_string("questgraphtitle", 'quest');
     $mygraph->parameter['output_format'] = 'PNG';
-    $mygraph->parameter['x_label'] = date('F', $datestart) . '-' . date('o', $datestart) . '  <---->  ' . date('F', $dateend) . '-' .
-             date('o', $dateend);
+    $mygraph->parameter['x_label'] = date('F', $datestart) . '-' . date('o', $datestart) .
+            '  <---->  ' . date('F', $dateend) . '-' . date('o', $dateend);
     $mygraph->parameter['y_label_left'] = get_string("questgraphYlegend", 'quest');
     $mygraph->parameter['x_label_angle'] = 0;
     $mygraph->parameter['inner_border_type'] = 'axis';
@@ -259,10 +256,9 @@ function graph_submissions() {
              // Then dateanswercorrect!=0 ...
 
         if (empty($datefirstanswer) || $datefirstanswer == 0 || $datefirstanswer > $dateanswercorrect) {
-            $datefirstanswer = $dateanswercorrect; // should not be necessary
+            $datefirstanswer = $dateanswercorrect; // ...should not be necessary.
         }
 
-        // $date_first_answer!=0
         if ($dateanswercorrect >= $datefirstanswer) {
             if ($dateanswercorrect <= ($datestart + $tinit) && $datefirstanswer <= ($datestart + $tinit)) {
 
@@ -313,18 +309,12 @@ function graph_submissions() {
                 $incline = ($pointsmax - $initialpoints) / ($dateend - ($datestart + $tinit));
                 $points2 = $initialpoints + $incline * ($dateanswercorrect - ($datestart + $tinit));
                 $mygraph->y_data['line1'] = array($initialpoints, $initialpoints, $points2, 0);
-                // $my_graph->y_data['line2']=
-                // array($initialpoints,$initialpoints,$points2,$pointsmax);
             }
         }
 
     }
-    // $my_graph->y_format['line2'] = array('colour' => 'blue','line' => 'line','legend' =>
-    // $param->line2);
 
     $mygraph->y_format['line2'] = array('colour' => 'blue', 'line' => 'line', 'legend' => '');
-    // $my_graph->y_format['line1'] = array('colour' => 'red','line' => 'line','legend' =>
-    // $param->line1);
     $mygraph->y_format['line1'] = array('colour' => 'red', 'line' => 'line', 'legend' => '');
 
     $mygraph->y_order = array('line1', 'line2');
@@ -333,13 +323,13 @@ function graph_submissions() {
 
     $mygraph->draw_stack();
     $xtoday = $mygraph->get_x_point($timenow);
-
     /*
      * Decorate graph adding references.
      */
     $label2 = $mygraph->calculated['x_label'];
 
-    $mygraph->line($xtoday, 0, $xtoday, $mygraph->calculated['boundary_box']['bottom'] - $mygraph->calculated['boundary_box']['top'],
+    $mygraph->line($xtoday, 0, $xtoday,
+            $mygraph->calculated['boundary_box']['bottom'] - $mygraph->calculated['boundary_box']['top'],
             'dash', 'circle', 1, 'black', 0);
 
     $todaymaxpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $dateanswercorrect, $initialpoints, $pointsmax,
@@ -367,4 +357,5 @@ function graph_submissions() {
 
     $mygraph->output();
 } // ...end graph_submissions.
+require_login($COURSE);
 graph_submissions();

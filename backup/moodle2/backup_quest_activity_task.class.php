@@ -27,8 +27,8 @@
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_stepslib.php');
-require_once ($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_settingslib.php');
+require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_stepslib.php');
+require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_settingslib.php');
 
 /** Choice backup task that provides all the settings and steps to perform one
  * complete backup of the activity */

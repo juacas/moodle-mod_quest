@@ -23,11 +23,11 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @package quest */
-require_once ("../../config.php");
-require_once ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$id = required_param('id', PARAM_INT); // Course Module ID, or
+$id = required_param('id', PARAM_INT); // Course Module ID.
 
 $action = optional_param('action', 'change', PARAM_ALPHA);
 $sort = optional_param('sort', 'lastname', PARAM_ALPHA);
@@ -43,7 +43,7 @@ quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 
-// Print the page header
+// Print the page header.
 
 $url = new moodle_url('/mod/quest/team.php', array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir));
 $PAGE->set_url($url);
@@ -62,9 +62,9 @@ if ($quest->allowteams != 1) {
 $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_course_group($course);
-$groupmode = $currentgroup = false; // JPC group support desactivation
+$groupmode = $currentgroup = false; // JPC group support desactivation.
 
-// Allow the teacher to change groups (for this session)
+// Allow the teacher to change groups (for this session).
 if ($groupmode and isteacheredit($course->id)) {
     if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
         print_group_menu($groups, $groupmode, $currentgroup, "team.php?id=$cm->id");
@@ -88,7 +88,6 @@ if ($ismanager) {
 
                     $teamfield = trim($teamfield);
                     if (!empty($teamfield)) {
-                        // JPC unused $user = get_complete_user_data('id', $form->userid[$i]);
                         $userid = $form->userid[$i];
                         if ($calificationuser = $DB->get_record("quest_calification_users",
                                 array("userid" => $userid, "questid" => $quest->id))) {
@@ -99,12 +98,9 @@ if ($ismanager) {
                             }
 
                             if ($team = $DB->get_record("quest_teams",
-                                    array("name" => $teamfield, "currentgroup" => $currentgroup, "questid" => $quest->id))) { // Exist
-                                                                                                                               // the
-                                                                                                                               // team
-                                                                                                                               // with
-                                                                                                                               // this
-                                                                                                                               // name
+                                    array("name" => $teamfield,
+                                          "currentgroup" => $currentgroup,
+                                          "questid" => $quest->id))) { // Exist the team with this name.
                                 if ($calificationuser->teamid == $team->id) {
                                     continue;
                                 }
@@ -123,9 +119,7 @@ if ($ismanager) {
                                 }
                                 // User change of team...
                                 if ($oldteam != null && $team->id != $oldteam->id) {
-                                    quest_update_team_scores($quest->id, $oldteam->id); // Update
-                                                                                        // stats for
-                                                                                        // oldteam...
+                                    quest_update_team_scores($quest->id, $oldteam->id); // Update stats for oldteam...
                                 }
                             } else {
                                 // The team exist with this name
@@ -174,7 +168,7 @@ if ($ismanager) {
         exit();
     }
 
-    // Now prepare table with student assessments and submissions
+    // Now prepare table with student assessments and submissions.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
@@ -182,7 +176,7 @@ if ($ismanager) {
 
     echo "<form enctype=\"multipart/form-data\" name=\"team\" method=\"POST\" action=\"team.php?id=$id\">";
     foreach ($users as $user) {
-        // skip if student not in group
+        // ...skip if student not in group.
         if ($ismanager) {
 
             if ($currentgroup) {
@@ -233,7 +227,8 @@ if ($ismanager) {
         } else {
             $data[] = "<input name=\"team[$i]\" type=\"text\"><input name=\"userid[$i]\" type=\"hidden\" value=\"$user->id\">";
         }
-        $sortdata['newteam'] = "<input name=\"team[$i]\" type=\"text\"><input name=\"userid[$i]\" type=\"hidden\" value=\"$user->id\">";
+        $sortdata['newteam'] = "<input name=\"team[$i]\" type=\"text\">" .
+                                "<input name=\"userid[$i]\" type=\"hidden\" value=\"$user->id\">";
 
         $i++;
 
@@ -275,9 +270,10 @@ if ($ismanager) {
     echo html_writer::table($table);
     echo "<input name=\"i\" type=\"hidden\" value=\"$i\">\n";
     echo "<input name=\"id\" type=\"hidden\" value=\"$cm->id\">\n";
-    echo "<center>\n<input name=\"action\" type=\"submit\" onClick=\"document.form=this.value;document.form.submit()\" value=\"change\" />\n</center>\n";
+    echo "<center>\n<input name=\"action\" type=\"submit\" " .
+         "onClick=\"document.form=this.value;document.form.submit()\" value=\"change\" />\n</center>\n";
     echo "</form>";
 }
 
-// Finish the page
+// Finish the page.
 echo $OUTPUT->footer($course);

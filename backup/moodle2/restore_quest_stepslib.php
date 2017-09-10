@@ -27,6 +27,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
+defined('MOODLE_INTERNAL') || die();
+
 class restore_quest_activity_structure_step extends restore_activity_structure_step {
 
     protected function define_structure() {
@@ -56,7 +58,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
                     '/activity/quest/teams/team/califications_teams/calification_team');
         }
 
-        // Return the paths wrapped into standard activity structure
+        // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
@@ -73,9 +75,9 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
             $data->intro = $data->description;
             $data->introformat = 0;
         }
-        // insert the quest record
+        // ...insert the quest record.
         $newitemid = $DB->insert_record('quest', $data);
-        // immediately after inserting "activity" record, call this
+        // ...immediately after inserting "activity" record, call this.
         $this->apply_activity_instance($newitemid);
     }
 
@@ -155,7 +157,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
             $data->maileduser = 0;
         }
         if ($data->initialpoints == null) {
-            $data->initialpoints = 0; // TODO JPC circunvents a bug with legacy backup
+            $data->initialpoints = 0; // TODO JPC circunvents a bug with legacy backup.
         }
         $newitemid = $DB->insert_record('quest_submissions', $data);
         $this->set_mapping('quest_challenge', $oldid, $newitemid, true);
@@ -170,9 +172,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('quest_elements_assessments', $data);
-
-        // $oldid = $data->id;
-        // $this->set_mapping('quest_element_assess', $oldid, $newitemid);
     }
 
     protected function process_quest_team($data) {
@@ -212,8 +211,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->teamid = $this->get_mappingid('quest_team', $data->teamid);
 
         $newitemid = $DB->insert_record('quest_calification_users', $data);
-        // $oldid = $data->id;
-        // $this->set_mapping('quest_calification_user', $oldid, $newitemid);
     }
 
     protected function process_quest_calification_team($data) {
@@ -224,9 +221,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->teamid = $this->get_new_parentid('quest_team', $data->teamid);
 
         $newitemid = $DB->insert_record('quest_calification_teams', $data);
-
-        // $oldid = $data->id;
-        // $this->set_mapping('quest_calification_team', $oldid, $newitemid);
     }
 
     protected function process_quest_assessment($data) {
@@ -263,7 +257,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
     }
 
     protected function after_execute() {
-        // Add quest related files, no need to match by itemname (just internally handled context)
+        // Add quest related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_quest', 'intro', null);
         $this->add_related_files('mod_quest', 'introattachment', null);
         $this->add_related_files('mod_quest', 'submission', 'quest_challenge');

@@ -25,11 +25,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$id = required_param('id', PARAM_INT); // CM ID
+$id = required_param('id', PARAM_INT); // CM ID.
 
 global $DB;
 list($course, $cm) = quest_get_course_and_cm($id);
@@ -52,19 +52,19 @@ $stranswer = get_string('answer', 'quest');
 $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
-$groupmode = $currentgroup = false; // JPC group support desactivation
+$groupmode = $currentgroup = false; // JPC group support desactivation.
 
 print_header_simple(format_string($quest->name) . " : $stranswer", "",
         "<a href=\"index.php?id=$course->id\">$strquests</a> ->
                   <a href=\"view.php?a=$quest->id\">" . format_string($quest->name, true) . "</a> -> $stranswer", "", "", true);
 $timenow = time();
 
-$form = data_submitted("nomatch"); // POST may come from two forms
+$form = data_submitted("nomatch"); // POST may come from two forms.
 
 $submission = $DB->get_record("quest_submissions", "id", $form->sid);
 
 if ($form->save == 'SaveAnswer') {
-    // don't be picky about not having a title
+    // Don't be picky about not having a title.
 
     if (!$title = $form->title) {
         $title = get_string("notitle", "quest");
@@ -73,7 +73,7 @@ if ($form->save == 'SaveAnswer') {
         error(get_string('answerexisty', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
     }
 
-    // add new answer record
+    // Add new answer record.
     $newanswer->questid = $quest->id;
     $newanswer->userid = $USER->id;
     $newanswer->submissionid = $submission->id;
@@ -95,10 +95,8 @@ if ($form->save == 'SaveAnswer') {
         error("Quest submission: Failure to create new submission record!");
     }
 
-    // TODO: elever ¿esta parte está actualizada al mecanismo nuevo de Moodle 2??
-    // do something about the attachments, if there are any
     if ($quest->nattachments) {
-        require_once ($CFG->dirroot . '/lib/uploadlib.php');
+        require_once($CFG->dirroot . '/lib/uploadlib.php');
         $um = new upload_manager(null, false, false, $course, false, $quest->maxbytes);
         $dir = quest_file_area_name_answers($quest, $newanswer);
 
@@ -106,7 +104,7 @@ if ($form->save == 'SaveAnswer') {
             add_to_log($course->id, "quest", "newattachment",
                     "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer", "$newanswer->id", "$cm->id");
             print_heading(get_string("uploadsuccess", "quest"));
-            // um will take care of printing errors.
+            // ...um will take care of printing errors.
         } else {
             print_heading(get_string('upload'));
             notify(get_string('uploaderror', 'quest'));
@@ -122,16 +120,12 @@ if ($form->save == 'SaveAnswer') {
         print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
     }
 
-    // ////////////////////////
-    // Update scores and statistics
-    // /////////////////////////
+    // Update scores and statistics.
     quest_update_submission_counts($answer->submissionid);
 
-    // /////////////////////////
-    // Update current User scores
+    // Update current User scores.
     quest_update_user_scores($quest, $newanswer->userid);
-    // /////////////////////////
-    // Update answer current team totals
+    // Update answer current team totals.
     if ($quest->allowteams) {
         quest_update_team_scores($quest->id, quest_get_user_team($quest->id, $newanswer->userid));
     }
@@ -167,7 +161,7 @@ if ($form->save == 'SaveAnswer') {
     $title = $form->title;
     echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
     echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-    // print upload form
+    // Print upload form.
     $answer->title = $form->title;
     $temp = '\\';
     $temp1 = $temp . $temp;

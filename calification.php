@@ -25,9 +25,9 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  *          ******************************************************* */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
 $id = required_param('id', PARAM_INT); // Submission ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
@@ -62,12 +62,13 @@ if (empty($_GET['frameset'])) {
     echo "<head><title>{$course->shortname}: " . format_string($quest->name, true) . "</title></head>\n";
     echo "<frameset rows=\"50%,*\" border=\"10\">";
     echo "<frame src=\"calification.php?id=$id&amp;frameset=top&amp;redirect=$redirect\" border=\"10\">";
-    echo "<frame src=\"calification.php?id=$id&amp;frameset=bottom&amp;redirect=$redirect&amp;action=global&amp;sort=points&amp;dir=DESC\">";
+    echo "<frame src=\"calification.php?id=$id&amp;frameset=bottom&amp;redirect=$redirect&amp;" .
+        "action=global&amp;sort=points&amp;dir=DESC\">";
     echo "</frameset>";
     exit();
 }
 
-// top frame with the navigation bar and the assessment form.
+// ...top frame with the navigation bar and the assessment form.
 
 if (!empty($_GET['frameset']) and $_GET['frameset'] == "top") {
 
@@ -218,7 +219,8 @@ if ($action == 'global') {
 
                 if ($canpreview) {
 
-                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
+                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?" .
+                            "id=$user->id&amp;course=$course->id\">" .
                              fullname($user) . '</a>';
                     $sortdata['firstname'] = $user->firstname;
                     $sortdata['lastname'] = $user->lastname;
@@ -273,14 +275,16 @@ if ($action == 'global') {
     }
 
     if ($canpreview) {
-        $table->align = array('left', 'left', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center');
+        $table->align = array('left', 'left', 'center', 'center', 'left', 'center', 'center', 'center',
+                        'center', 'center', 'center');
         $table->valign = array('center', 'center', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center',
                         'center');
         $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
                         'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'points');
     } else {
 
-        $table->align = array('left', 'left', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center');
+        $table->align = array('left', 'left', 'center', 'center', 'left', 'center', 'center', 'center',
+                        'center', 'center', 'center');
         $table->valign = array('center', 'center', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center',
                         'center');
         $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
@@ -415,7 +419,8 @@ if ($action == 'global') {
                 }
             }
 
-            if ($clasification = $DB->get_record("quest_calification_users", array("userid" => $user->id, "questid" => $quest->id))) {
+            if ($clasification = $DB->get_record("quest_calification_users",
+                    array("userid" => $user->id, "questid" => $quest->id))) {
 
                 if ($team->id == $clasification->teamid) {
 
@@ -495,7 +500,8 @@ if ($action == 'global') {
             }
             $columnicon = " <img src=\"" . $CFG->wwwroot . "pix/t/$columnicon.png\" alt=\"$columnicon\" />";
         }
-        $$column = "<a href=\"viewclasification.php?id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] .
+        $$column = "<a href=\"viewclasification.php?" .
+                "id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] .
                  "</a>$columnicon";
     }
 

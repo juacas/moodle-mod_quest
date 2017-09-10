@@ -28,7 +28,7 @@
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
-require_once 'base.php';
+require_once('base.php');
 
 
 /** The user modifies the Quest caracteristics

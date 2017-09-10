@@ -25,8 +25,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require_once ("../../config.php");
-require_once ("../scores_lib.php");
+require_once("../../config.php");
+require_once("../scores_lib.php");
 exit();
 $id = 403;
 if ($id) {

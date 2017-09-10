@@ -28,7 +28,7 @@
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
-require_once 'base.php';
+require_once('base.php');
 
 
 /** The user requests a briefting of the activity of the Quest
@@ -81,7 +81,8 @@ class briefting_viewed extends base {
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' entered Quest main page: '$this->objectid' " . "in the course '$this->courseid'. " .
+        return "The user with id '$this->userid' entered Quest main page: '$this->objectid' " .
+        "in the course '$this->courseid'. " .
                  $this->data['other']['info'];
     }
 

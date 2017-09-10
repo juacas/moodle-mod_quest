@@ -966,7 +966,6 @@ function quest_decode_content_links($content, $restore) {
     preg_match_all($searchstring, $content, $foundset);
     // If found, then we are going to look for its new id (in backup tables).
     if ($foundset[0]) {
-        // print_object($foundset); //Debug.
         // Iterate over foundset[2]. They are the old_ids.
         foreach ($foundset[2] as $oldid) {
             // We get the needed variables here (course id).
@@ -1038,7 +1037,8 @@ function quest_decode_content_links_caller($restore) {
                 $quest->description = $result;
                 $status = $DB->update_record("quest", $quest);
                 if ($CFG->debug > 7) {
-                    echo '<br /><hr />' . htmlentities($content) . '<br />changed to<br />' . htmlentities($result) . '<hr /><br />';
+                    echo '<br /><hr />' . htmlentities($content) . '<br />changed to<br />' .
+                    htmlentities($result) . '<hr /><br />';
                 }
             }
             // Do some output.

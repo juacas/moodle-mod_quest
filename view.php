@@ -25,12 +25,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-// This page prints a particular instance of QUEST
-require_once ("../../config.php");
-require_once ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$id = required_param('id', PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID.
 $sid = optional_param('sid', null, PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
 $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
@@ -49,7 +48,7 @@ if (empty($actionclasification)) {
 }
 global $DB, $PAGE, $OUTPUT, $USER;
 $timenow = time();
-// Print the page header
+// Print the page header.
 
 list($course, $cm) = quest_get_course_and_cm($id);
 
@@ -64,17 +63,13 @@ if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $
     error("Module hidden.");
 }
 
-// Mark as viewed
+// Mark as viewed.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
-$url = new moodle_url('/mod/quest/view.php', array('id' => $id)); // evp debería añadir los otros
-                                                                  // posibles parámetros tal y como
-                                                                  // se ha hecho en
-                                                                  // assessments_autors.php
+$url = new moodle_url('/mod/quest/view.php', array('id' => $id));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
-// $PAGE->set_context($context);
 $PAGE->set_heading($course->fullname);
 $PAGE->requires->jquery();
 $strquests = get_string("modulenameplural", "quest");
@@ -150,7 +145,8 @@ if (has_capability('mod/quest:manage', $context)) {
                     echo "<form name=\"teams\" method=\"post\" action=\"view.php\">\n";
                     echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />\n";
                     echo "<table cellpadding=\"7px\">";
-                    echo "<tr align=\"center\"><td>" . get_string("teamforquest", "quest", format_string($quest->name)) . "</td></tr>";
+                    echo "<tr align=\"center\"><td>" . get_string("teamforquest", "quest", format_string($quest->name)) .
+                        "</td></tr>";
                     echo "<tr align=\"center\"><td>" . get_string("enterteam", "quest") .
                              " <input type=\"text\" name=\"team\" /></td></tr>";
                     echo "<tr align=\"center\"><td>";
@@ -163,7 +159,7 @@ if (has_capability('mod/quest:manage', $context)) {
                     echo $OUTPUT->footer();
                     exit();
                 } else if (!empty($teamname) && trim($teamname) != '') {
-                    // team assignation or creation
+                    // Team assignation or creation.
                     if ($team = $DB->get_record("quest_teams",
                             array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {
                         if ($quest->ncomponents > $team->ncomponents) {
@@ -252,12 +248,12 @@ if (has_capability('mod/quest:manage', $context)) {
                     }
                 }
             }
-        } // allow teams
-    } // !is_siteadmin($USER)
+        } // Endif allow teams.
+    }
 }
 // Log event.
 if ($CFG->version >= 2014051200) {
-    require_once ('classes/event/quest_viewed.php');
+    require_once('classes/event/quest_viewed.php');
     \mod_quest\event\quest_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 } else {
     $url = "view.php?id=$cm->id";
@@ -319,12 +315,12 @@ if ($action == 'displayfinalgrade') {
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {
         if ($actionclasification == 'global') {
-            echo " <center><a href=\"view.php?actionclasification=teams&amp;id=$cm->id\">" . get_string('resumeteams', 'quest') .
-                     "</a></center>";
+            echo " <center><a href=\"view.php?actionclasification=teams&amp;id=$cm->id\">" .
+            get_string('resumeteams', 'quest') . "</a></center>";
             echo '<br>';
         } else {
-            echo " <center><a href=\"view.php?actionclasification=global&amp;id=$cm->id\">" . get_string('resumeindividual', 'quest') .
-                     "</a></center>";
+            echo " <center><a href=\"view.php?actionclasification=global&amp;id=$cm->id\">" .
+            get_string('resumeindividual', 'quest') . "</a></center>";
             echo '<br>';
         }
     }
@@ -389,8 +385,8 @@ if ($action == 'displayfinalgrade') {
                         $image = $OUTPUT->pix_icon('t/check', 'ok');
                     }
 
-                    $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' . $nanswerswhithoutassess .
-                             ']' . $image . '</b>';
+                    $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' .
+                            $nanswerswhithoutassess . ']' . $image . '</b>';
                     $sortdata['nanswersshort'] = $submission->nanswers;
                     $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
                     $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
@@ -404,7 +400,9 @@ if ($action == 'displayfinalgrade') {
                     $points = quest_get_points($submission, $quest);
                     $points = number_format($points, 4);
 
-                    $grade = "<form name=\"puntos\"><input name=\"calificacion\" type=\"text\" value=\"$points\" size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : #cccccc; font-family : Verdana, Arial, Helvetica; font-size : 14pt; text-align : center;\" ></form>";
+                    $grade = "<form name=\"puntos\"><input name=\"calificacion\" type=\"text\" value=\"$points\" " .
+                            "size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : #cccccc; " .
+                            "font-size : 14pt; text-align : center;\" ></form>";
                     $data[] = $grade;
                     $sortdata['calification'] = quest_get_points($submission, $quest, '');
 
@@ -488,9 +486,7 @@ if ($action == 'displayfinalgrade') {
     // and if so, set $currentgroup to reflect the current group.
     $changegroup = optional_param('group', -1, PARAM_BOOL);
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
-                                                 // $currentgroup =
-                                                 // get_and_set_current_group($course, $groupmode,
-                                                 // $changegroup).
+
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation
                                         // Print settings and things in a table across the top.
@@ -530,8 +526,8 @@ if ($action == 'displayfinalgrade') {
                      "</a></center>";
             echo '<br>';
         } else {
-            echo " <center><a href=\"view.php?actionclasification=global&amp;id=$cm->id\">" . get_string('resumeindividual', 'quest') .
-                     "</a></center>";
+            echo " <center><a href=\"view.php?actionclasification=global&amp;id=$cm->id\">" .
+                    get_string('resumeindividual', 'quest') . "</a></center>";
             echo '<br>';
         }
     }
@@ -569,13 +565,13 @@ if ($action == 'displayfinalgrade') {
     $indice = 0;
     if ($submissions = quest_get_submissions($quest)) {
         foreach ($submissions as $submission) {
-            // get the author of this submission
-            if ($submission->userid == 0) { // anonymous user
+            // Get the author of this submission.
+            if ($submission->userid == 0) { // Anonymous user.
                 $user = false;
-            } else { // Guest user
+            } else { // Guest user.
                 $user = $DB->get_record('user', array('id' => $submission->userid));
             }
-            // skip if student not in group
+            // Skip if student not in group.
             if (!has_capability('mod/quest:manage', $context)) {
                 if ($currentgroup) {
                     if ($user !== null && !groups_is_member($currentgroup, $user->id)) {
@@ -589,19 +585,20 @@ if ($action == 'displayfinalgrade') {
 
             if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
                      ($submission->nanswerscorrect < $quest->nmaxanswers) && $submission->phase != SUBMISSION_PHASE_ACTIVE) {
-                $submission->phase = SUBMISSION_PHASE_ACTIVE; // running
+                $submission->phase = SUBMISSION_PHASE_ACTIVE; // Running...
                 $DB->update_record('quest_submissions', $submission);
             }
 
             // Skip a submission not viewable by this user...
-            if ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING && !has_capability('mod/quest:approvechallenge', $context) &&
-                     !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id) {
+            if ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING &&
+                    !has_capability('mod/quest:approvechallenge', $context) &&
+                    !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id) {
                 continue;
             }
             // Skip challenge for student if the challenge is not started...
             if (!has_capability('mod/quest:manage', $context) && // manage permission
-$submission->datestart > $timenow && // Challenge in StartPending
-$submission->userid != $USER->id) { // USER is not the author
+                $submission->datestart > $timenow && // Challenge in StartPending
+                $submission->userid != $USER->id) { // USER is not the author
                 continue; // Omit it...
             }
             $mineicon = $submission->userid == $USER->id && !$canviewauthors ? $OUTPUT->user_picture($USER) : '';
@@ -609,12 +606,12 @@ $submission->userid != $USER->id) { // USER is not the author
 
             // Show or not the edit controls.
             if (((has_capability('mod/quest:editchallengeall', $context) or ($submission->userid == $USER->id)) and
-                    // and has_capability('mod/quest:editchallengemine', $context)
                     ($submission->nanswers == 0) and ($timenow < $submission->dateend) and
                      ($submission->state != SUBMISSION_STATE_APROVED)) or ($ismanager)) {
                 $editicon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
-                $titletext .= "<a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . $editicon . '</a>' .
+                $titletext .= "<a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . $editicon .
+                        '</a>' .
                          " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" . $deleteicon .
                          '</a>';
             }
@@ -666,7 +663,9 @@ $submission->userid != $USER->id) { // USER is not the author
             $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
             $sortdata['dateend'] = $submission->dateend;
 
-            $grade = "<form ><input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"0.000\" size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; font-family : Verdana, Arial, Helvetica; font-size : 14pt; text-align : center;\" ></form>";
+            $grade = "<form ><input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"\" " .
+                    "size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; " .
+                    "font-size : 14pt; text-align : center;\" ></form>";
 
             $initialpoints[] = (float) $submission->initialpoints;
             $nanswerscorrect[] = (int) $submission->nanswerscorrect;
@@ -704,11 +703,12 @@ $submission->userid != $USER->id) { // USER is not the author
     }
     if ($canviewauthors) {
         $columns = array('title', 'firstname', 'lastname', 'phase', 'nanswersshort', 'nanswerscorrectshort',
-                        'nanswerswhithoutassess', 'datestart', 'dateend', /* 'actions', */ 'calification');
-    } else { // removed personal info column
-        $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess', 'datestart', 'dateend', /* 'actions', */ 'calification');
+                        'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
+    } else { // Removed personal info column.
+        $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess',
+                        'datestart', 'dateend', 'calification');
     }
-    // Define a new variable for each column with heading texts
+    // Define a new variable for each column with heading texts.
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -729,15 +729,17 @@ $submission->userid != $USER->id) { // USER is not the author
     if ($canviewauthors) {
         $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
         $columns = array('title', 'firstname', 'lastname', 'phase', 'nanswersshort', 'nanswerscorrectshort',
-                        'nanswerswhithoutassess', 'datestart', 'dateend', /* 'actions', */ 'calification');
+                        'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
         $table->head = array("$title", "$firstname / $lastname", "$phase",
-                        "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart", "$dateend", /* get_string('actions','quest'), */ "$calification");
+                        "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
+                        "$dateend", "$calification");
         $table->headspan = array(1, 2, 1, 1, 1, 1, 1);
-    } else { // hide personal column
+    } else { // ...hide personal column.
         $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-        $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess', 'datestart', 'dateend', /* 'actions', */ 'calification');
+        $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess', 'datestart',
+                        'dateend', 'calification');
         $table->head = array("$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
-                        "$dateend", /* get_string('actions','quest'), */ "$calification");
+                        "$dateend", "$calification");
     }
     $table->width = "95%";
 
@@ -754,7 +756,8 @@ $submission->userid != $USER->id) { // USER is not the author
     }
     $servertime = time();
     $params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
+                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
+                    $pointsnmaxanswers, $servertime];
 
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 
@@ -773,6 +776,6 @@ $submission->userid != $USER->id) { // USER is not the author
 } else {
     print_error('unknownactionerror', 'quest', null, $action);
 }
-// Finish the page
+// Finish the page.
 echo $OUTPUT->footer();
 

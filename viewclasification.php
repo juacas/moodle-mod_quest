@@ -25,13 +25,13 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require_once ("../../config.php");
-require_once ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$id = required_param('id', PARAM_INT); // Course Module ID, or
+$id = required_param('id', PARAM_INT); // Course Module ID.
 
-$a = optional_param('a', '', PARAM_ALPHA); // quest ID
+$a = optional_param('a', '', PARAM_ALPHA); // Quest ID.
 
 $action = optional_param('action', 'global', PARAM_ALPHA);
 $sort = optional_param('sort', 'lastname', PARAM_ALPHA);
@@ -75,7 +75,7 @@ $PAGE->navbar->add(get_string('global', 'quest'));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-// Print the page header
+// Print the page header.
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
@@ -90,7 +90,7 @@ if (($quest->usepassword) && (!$ismanager)) {
  * Only to solve bugs.
  */
 if ($debugrecalculate == 'yes') {
-    require ("scores_lib.php");
+    require_once("scores_lib.php");
     print("<p>Recalculating...</p>");
     updateallusers($quest->id);
     updateallteams($quest->id);
@@ -162,8 +162,8 @@ if ($action == 'global') {
                 $sortdata['picture'] = 1;
                 // ...link to user profile or just fullname.
                 if ($ismanager) {
-                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
-                             fullname($user) . '</a>';
+                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?" .
+                            "id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
                 } else {
                     $data[] = "<b>" . fullname($user) . '</b>';
                 }
@@ -207,7 +207,7 @@ if ($action == 'global') {
                 if ($quest->allowteams) {
                     if ($clasificationteam = $DB->get_record("quest_calification_teams",
                             array("teamid" => $clasification->teamid, "questid" => $quest->id))) {
-                        // team points
+                        // Team points.
                         $data[] = number_format($clasificationteam->points * $quest->teamporcent / 100, 2);
                         $sortdata['pointsteam'] = $clasificationteam->points * $quest->teamporcent / 100;
                         // ...personal+team points.
@@ -311,15 +311,13 @@ if ($action == 'global') {
     // and if so, set $currentgroup to reflect the current group.
     $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
-                                                 // $currentgroup =
-                                                 // get_and_set_current_group($course, $groupmode,
-                                                 // $changegroup);
+
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
                                         // Print settings and things in a table across the top.
     echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
 
-    // Allow the teacher to change groups (for this session)
+    // Allow the teacher to change groups (for this session).
     if ($groupmode and isteacheredit($course->id)) {
         if ($groups = $DB->get_records_menu("groups", "courseid", $course->id, "name ASC", "id,name")) {
             echo '<td>';
@@ -328,7 +326,7 @@ if ($action == 'global') {
             echo '</td>';
         }
     }
-    // Print admin links
+    // Print admin links.
     echo "<td align=\"right\">";
 
     echo '</td></tr>';
@@ -387,7 +385,8 @@ if ($action == 'global') {
         $data = array();
         $sortdata = array();
 
-        if ($clasificationteam = $DB->get_record("quest_calification_teams", array("teamid" => $team->id, "questid" => $quest->id))) {
+        if ($clasificationteam = $DB->get_record("quest_calification_teams",
+                                    array("teamid" => $team->id, "questid" => $quest->id))) {
             // ...team name.
             $data[] = $team->name;
             $sortdata['team'] = strtolower($team->name);
@@ -463,8 +462,8 @@ if ($action == 'global') {
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $$column = "<a href=\"viewclasification.php?id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] .
-                 "</a>$columnicon";
+        $$column = "<a href=\"viewclasification.php?id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" .
+                    $string[$column] . "</a>$columnicon";
     }
 
     $table->head = array("$team", "$nanswers", "$nanswersassessment");

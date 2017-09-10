@@ -29,9 +29,9 @@
  *          Show the page that allow to do the assess of a submission
  *
  *          **************************************************** */
-require_once ("../../config.php");
-require_once ("lib.php");
-require_once ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
 $sid = required_param('sid', PARAM_INT); // Submission ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
@@ -57,7 +57,8 @@ $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
-$url = new moodle_url('/mod/quest/asses_autors.php', array('sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
+$url = new moodle_url('/mod/quest/asses_autors.php',
+                array('sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
@@ -127,7 +128,8 @@ if ($cangrade and ($quest->gradingstrategy == 2)) {
 echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "assessthissubmission", "quest");
 // ...show assessment autor and allow changes.
 quest_print_assessment_autor($quest, $assessment, true, $allowcomments,
-        new \moodle_url("/mod/quest/submissions.php", array("id" => $cm->id, "sid" => $submission->id, "action" => "showsubmission")));
+        new \moodle_url("/mod/quest/submissions.php",
+                array("id" => $cm->id, "sid" => $submission->id, "action" => "showsubmission")));
 
 echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'] . '#sid=' . $submission->id);
 echo $OUTPUT->footer();

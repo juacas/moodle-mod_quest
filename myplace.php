@@ -25,11 +25,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require_once ("../../config.php");
-require_once ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
-$id = required_param('id', PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID.
 $action = optional_param('action', '', PARAM_ALPHA);
 $sort = optional_param('sort', 'datestart', PARAM_ALPHA);
 $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
@@ -48,6 +48,8 @@ $url = new moodle_url('/mod/quest/myplace.php',
         array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer,
                         'diranswer' => $diranswer));
 $PAGE->set_url($url);
+$PAGE->requires->jquery();
+
 quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
@@ -74,7 +76,7 @@ if ($groupmode and $ismanager) {
     if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
 
         groups_print_activity_menu($cm, $CFG->wwwroot . "mod/quest/myplace.php?id=$cm->id", $return = false,
-                $hideallparticipants = false); // evp revise this
+                $hideallparticipants = false);
     }
 }
 
@@ -109,161 +111,22 @@ echo "</center>";
 $title = get_string('mysubmissions', 'quest');
 echo $OUTPUT->heading($title);
 
-// Get all the students
+// Get all the students.
 if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
     echo $OUTPUT->heading(get_string("nostudentsyet"));
     echo $OUTPUT->footer();
     exit();
 }
-$servertime = time();
-$jscript = <<<JCODE
-<script language="JavaScript">
 
-    function redondear(cantidad, decimales) {
-        var cantidad = parseFloat(cantidad);
-        var decimales = parseFloat(decimales);
-        decimales = (!decimales ? 2 : decimales);
-        var valor = Math.round(cantidad * Math.pow(10, decimales)) / Math.pow(10, decimales);
-        return valor.toFixed(4);
-    }
-    var servertime = $servertime * 1000;
-    var browserDate = new Date();
-    var browserTime = browserDate.getTime();
-    var correccion = servertime - browserTime;
-    function puntuacion(indice, incline, pointsmax, initialpoints, tinitial, datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios, type, nmaxanswers, pointsnmaxanswers) {
-
-        for (i = 0; i < indice; i++) {
-
-            tiempoactual = new Date();
-            tiempo = parseInt((tiempoactual.getTime() + correccion) / 1000);
-
-            if ((dateend[i] - datestart[i] - tinitial[i]) == 0) {
-                incline[i] = 0;
-            }
-            else {
-                if (type == 0) {
-                    incline[i] = (pointsmax[i] - initialpoints[i]) / (dateend[i] - datestart[i] - tinitial[i]);
-                }
-                else {
-                    if (initialpoints[i] == 0) {
-                        initialpoints[i] = 0.0001;
-                    }
-                    incline[i] = (1 / (dateend[i] - datestart[i] - tinitial[i])) * Math.log(pointsmax[i] / initialpoints[i]);
-
-                }
-            }
-
-            if (state[i] < 2) {
-                grade = initialpoints[i];
-                formularios[i].style.color = "#cccccc";
-            }
-            else {
-
-                if (datestart[i] > tiempo) {
-                    grade = initialpoints[i];
-                    formularios[i].style.color = "#cccccc";
-                }
-                else {
-                    if (nanswerscorrect[i] >= nmaxanswers) {
-                        grade = 0;
-                        formularios[i].style.color = "#cccccc";
-                    }
-                    else {
-                        if (dateend[i] < tiempo) {
-                            if (nanswerscorrect[i] == 0) {
-                                t = dateend[i] - datestart[i];
-                                if (t <= tinitial[i]) {
-                                    grade = initialpoints[i];
-                                    formularios[i].style.color = "#cccccc";
-                                }
-                                else {
-                                    grade = pointsmax[i];
-                                    formularios[i].style.color = "#cccccc";
-                                }
-
-                            }
-                            else {
-
-                                grade = 0;
-                                formularios[i].style.color = "#cccccc";
-                            }
-
-
-                        }
-                        else {
-                            if (nanswerscorrect[i] == 0) {
-                                t = tiempo - datestart[i];
-                                if (t < tinitial[i]) {
-                                    grade = initialpoints[i];
-                                    formularios[i].style.color = "#000000";
-                                }
-                                else {
-                                    if (t >= (dateend[i] - datestart[i])) {
-                                        grade = pointsmax[i];
-                                        formularios[i].style.color = "#000000";
-                                    }
-                                    else {
-                                        if (type == 0) {
-                                            grade = (t - tinitial[i]) * incline[i] + initialpoints[i];
-                                            formularios[i].style.color = "#000000";
-                                        }
-                                        else {
-                                            grade = initialpoints[i] * Math.exp(incline[i] * (t - tinitial[i]));
-                                            formularios[i].style.color = "#000000";
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                t = tiempo - dateanswercorrect[i];
-                                if ((dateend[i] - dateanswercorrect[i]) == 0) {
-                                    incline[i] = 0;
-                                }
-                                else {
-                                    if (type == 0) {
-                                        incline[i] = (-pointsanswercorrect[i]) / (dateend[i] - dateanswercorrect[i]);
-                                    }
-                                    else {
-                                        incline[i] = (1 / (dateend[i] - dateanswercorrect[i])) * Math.log(0.0001 / pointsanswercorrect[i]);
-                                    }
-                                }
-                                if (type == 0) {
-                                    grade = pointsanswercorrect[i] + incline[i] * t;
-                                    formularios[i].style.color = "#000000";
-                                }
-                                else {
-                                    grade = pointsanswercorrect[i] * Math.exp(incline[i] * t);
-                                    formularios[i].style.color = "#000000";
-                                }
-                            }
-
-                        }
-
-                    }
-
-                }
-            }
-            if (grade < 0) {
-                grade = 0;
-            }
-            grade = redondear(grade, 4);
-            formularios[i].value = grade;
-        }
-
-        setTimeout("puntuacion(indice,incline,pointsmax,initialpoints,tinitial,datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers)", 100);
-    }
-</script>
-JCODE;
-echo $jscript;
 // Now prepare table with student assessments and submissions...
 $tablesort = new stdClass();
 $tablesort->data = array();
 $tablesort->sortdata = array();
 $table = new html_table();
 $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-$columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess', 'datestart', 'dateend', /* 'actions', */ 'calification');
+$columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
+                'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
 
-$table->width = "95%";
 $indice = 0;
 
 if ($submissions = quest_get_user_submissions($quest, $USER)) {
@@ -283,8 +146,8 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                          " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" . "<img src=\"" .
-                         $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
+                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
+                         "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
             } else if (($submission->nanswers == 0) and ($timenow < $submission->dateend) and ($submission->state < 2)) {
@@ -293,8 +156,8 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                          " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" . "<img src=\"" .
-                         $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
+                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
+                         "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
             } else {
@@ -333,7 +196,10 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
             $sortdata['dateend'] = $submission->dateend;
 
-            $grade = "<form name=\"puntos$indice\"><input name=\"calificacion\" type=\"text\" value=\"0.0000\" size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; font-family : Verdana, Arial, Helvetica; font-size : 14pt; text-align : center;\" ></form>";
+            $grade = "<form><input name=\"calificacion\" id=\"formscore$indice\" type=\"text\" value=\"\" " .
+                    "size=\"10\" readonly=\"1\" " .
+                    "style=\"background-color : White; border : Black; color : Black; font-size : 14pt; " .
+                    "text-align : center;\" ></form>";
 
             $initialpoints[] = $submission->initialpoints;
             $nanswerscorrect[] = $submission->nanswerscorrect;
@@ -356,10 +222,10 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             if ($submission->evaluated != 0 && $assessment = $DB->get_record("quest_assessments_autors",
                     array("questid" => $quest->id, "submissionid" => $submission->id))) {
                 if ($submission->pointsanswercorrect > 0) {
-                    $data[] = number_format($assessment->points * 100 / $submission->pointsanswercorrect, 1) . '% (' . number_format(
-                            $assessment->points, 4) . ')';
+                    $data[] = number_format($assessment->points * 100 / $submission->pointsanswercorrect, 1) . '% (' .
+                              number_format($assessment->points, 4) . ')';
                 } else {
-                    $data[] = ''; // evp check this, to avoid division by 0
+                    $data[] = '';
                 }
                 $sortdata['grade'] = $submission->points;
             } else {
@@ -398,7 +264,8 @@ foreach ($columns as $column) {
 }
 
 $table->head = array("$title", "$phase",
-                "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart", "$dateend", "$calification", "Grade");
+                "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]",
+                "$datestart", "$dateend", "$calification", "Grade");
 
 echo '<tr><td>';
 echo html_writer::table($table);
@@ -407,42 +274,17 @@ $clearicon = $OUTPUT->pix_icon('t/check', '');
 echo "<center>";
 echo get_string('legend', 'quest', $clearicon);
 echo "</center>";
-echo "<script language=\"JavaScript\">\n";
-echo "var initialpoints = new Array($indice);\n";
-echo "var nanswerscorrect = new Array($indice);\n";
-echo "var datestart = new Array($indice);\n";
-echo "var dateend = new Array($indice);\n";
-echo "var dateanswercorrect = new Array($indice);\n";
-echo "var pointsmax = new Array($indice);\n";
-echo "var formularios = new Array($indice);\n";
-echo "var state = new Array($indice);\n";
-echo "var tinitial = new Array($indice);\n";
-echo "var pointsanswercorrect = new Array($indice);\n";
-echo "var incline = new Array($indice);\n";
-echo "var pointsnmaxanswers = new Array($indice);\n";
 
+// Javascript counter support.
 for ($i = 0; $i < $indice; $i++) {
-    echo "initialpoints[$i] = $initialpoints[$i];\n";
-    echo "nanswerscorrect[$i] = $nanswerscorrect[$i];\n";
-    echo "datestart[$i] = $datesstart[$i];\n";
-    echo "dateend[$i] = $datesend[$i];\n";
-    echo "dateanswercorrect[$i] = $dateanswercorrect[$i];\n";
-    echo "pointsmax[$i] = $pointsmax[$i];\n";
-    echo "state[$i] = $state[$i];\n";
-    echo "tinitial[$i] = $tinitial[$i];\n";
-    echo "pointsanswercorrect[$i] = $pointsanswercorrect[$i];\n";
-    echo "formularios[$i] = document.forms.puntos$i.calificacion;\n";
-    echo "incline[$i] = 0;\n";
-    echo "pointsnmaxanswers[$i] = $pointsnmaxanswers[$i];\n";
+    $forms[$i] = "#formscore$i";
+    $incline[$i] = 0;
 }
-echo "var indice = $indice;\n";
-echo "var type = $type;\n";
-echo "var nmaxanswers = $nmaxanswers;\n";
+$servertime = time();
+$params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+                $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
 
-echo "puntuacion(indice,incline,pointsmax,initialpoints,tinitial,datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,dateend,formularios,type,nmaxanswers,pointsnmaxanswers);\n";
-
-echo "</script>\n";
-
+$PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 echo '</td></tr>';
 
 $title = get_string('myanswers', 'quest');
@@ -467,30 +309,30 @@ if ($answers) {
         if ($answer->userid == $USER->id) {
             if ($canpreview) {
                 $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
-                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
-                         get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
-                         "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
-                         get_string('delete', 'quest') . '" /></a>';
+                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+                     "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
+                     get_string('modif', 'quest') . '" /></a>' .
+                     " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
+                     "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
+                     get_string('delete', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
             } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase == 0)) {
                 $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
-                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
-                         get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
-                         "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
-                         get_string('delete', 'quest') . '" /></a>';
+                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+                     "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
+                     get_string('modif', 'quest') . '" /></a>' .
+                     " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
+                     "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
+                     get_string('delete', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
             } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase > 0) &&
                              ($answer->permitsubmit == 1)) {
                         $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" . "<img src=\"" .
-                         $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' . get_string('modif', 'quest') .
-                         '" /></a>';
+                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+                         "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
+                         get_string('modif', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
             } else {
@@ -510,7 +352,8 @@ if ($answers) {
             $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
             $sortdata['tassmnt'] = 1;
 
-            $grade = number_format(quest_answer_grade($quest, $answer, 'ALL'), 4) . ' [max ' . number_format($answer->pointsmax, 4) . ']';
+            $grade = number_format(quest_answer_grade($quest, $answer, 'ALL'), 4) .
+                    ' [max ' . number_format($answer->pointsmax, 4) . ']';
             $data[] = $grade;
             $sortdata['calification'] = quest_answer_grade($quest, $answer, 'ALL');
 
@@ -568,8 +411,8 @@ if (!$ismanager) {
         $data[] = $OUTPUT->user_picture($USER, array('courseid' => $course->id));
         $sortdata['picture'] = 1;
 
-        $data[] = "<a name=\"userid$USER->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$USER->id&amp;course=$course->id\">" . fullname($USER) .
-                 '</a>';
+        $data[] = "<a name=\"userid$USER->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$USER->id&amp;course=$course->id\">" .
+                    fullname($USER) . '</a>';
         $sortdata['firstname'] = $USER->firstname;
         $sortdata['lastname'] = $USER->lastname;
 
@@ -616,17 +459,16 @@ if (!$ismanager) {
     }
 
     $table->align = array('left', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-    $table->valign = array('center', 'center', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center');
+    $table->valign = array('center', 'center', 'center', 'center', 'left', 'center', 'center',
+                            'center', 'center', 'center', 'center');
 
     if ($quest->allowteams) {
-        $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions', 'nsubmissionsassessment',
-                    'pointssubmission', 'pointsanswers', 'pointsteam', 'points');
+        $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
+                        'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'pointsteam', 'points');
     } else {
-        $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions', 'nsubmissionsassessment',
-                    'pointssubmission', 'pointsanswers', 'points');
+        $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
+                        'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'points');
     }
-
-    $table->width = "95%";
 
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
@@ -642,18 +484,20 @@ if (!$ismanager) {
             }
             $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/t/$columnicon.png\" alt=\"$columnicon\" />";
         }
-        $$column = "<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] .
-                 "</a>$columnicon";
+        $$column = "<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=$column&amp;dir=$columndir\">" .
+                    $string[$column] . "</a>$columnicon";
     }
 
     if ($quest->allowteams) {
-        $table->head = array("", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'), get_string('nanswers', 'quest'),
+        $table->head = array("", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
+                    get_string('nanswers', 'quest'),
                     get_string('nanswersassessment', 'quest'), get_string('nsubmissions', 'quest'),
                     get_string('nsubmissionsassessment', 'quest'), get_string('pointssubmission', 'quest'),
                     get_string('pointsanswers', 'quest'), get_string('pointsteam', 'quest'), get_string('points', 'quest'));
     } else {
 
-        $table->head = array("", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'), get_string('nanswers', 'quest'),
+        $table->head = array("", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
+                    get_string('nanswers', 'quest'),
                     get_string('nanswersassessment', 'quest'), get_string('nsubmissions', 'quest'),
                     get_string('nsubmissionsassessment', 'quest'), get_string('pointssubmission', 'quest'),
                     get_string('pointsanswers', 'quest'), get_string('points', 'quest'));
@@ -760,7 +604,8 @@ if ($repeatactionsbelow) {
     $text = '';
     $text = "<center><b>";
     if ($quest->dateend > $timenow) {
-        $text .= "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" . get_string('addsubmission', 'quest') . "</a>";
+        $text .= "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" .
+                    get_string('addsubmission', 'quest') . "</a>";
     }
     if ($quest->allowteams) {
         if ($ismanager) {
@@ -780,9 +625,11 @@ if ($repeatactionsbelow) {
 
     if (isteacheredit($course->id) and $quest->nelements) {
         $sesskey = sesskey();
-        echo "<center>(<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&amp;sesskey=$sesskey\">" . get_string('editelementsautor', 'quest') .
-                 "</a> / <a href=\"assessments.php?id=$cm->id&amp;action=editelements&amp;sesskey=$sesskey\">" . get_string('editelementsanswer', 'quest') .
-                 "</a>)</center>";
+        echo "<center>(<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&amp;sesskey=$sesskey\">" .
+             get_string('editelementsautor', 'quest') .
+             "</a> / <a href=\"assessments.php?id=$cm->id&amp;action=editelements&amp;sesskey=$sesskey\">" .
+             get_string('editelementsanswer', 'quest') .
+             "</a>)</center>";
     }
 }
 

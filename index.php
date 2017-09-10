@@ -25,9 +25,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require_once ("../../config.php");
-require_once ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 $id = required_param('id', PARAM_INT); // Course...
 global $DB, $OUTPUT;
 $course = get_course($id);

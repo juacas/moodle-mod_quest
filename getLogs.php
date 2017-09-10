@@ -26,9 +26,9 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  *          ******************************************************** */
-require_once ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
 global $CFG, $DB, $PAGE, $OUTPUT;
 
@@ -56,7 +56,7 @@ switch ($queryid) {
     case 'activity':
         list($insql, $inparams) = $DB->get_in_or_equal(array($cm->id));
         $allparams = array_merge(array($cm->module), $inparams);
-        $sqlquery = "
+        $sqlquery = <<<SQL
 SELECT {log}.id as id_log, {course_modules}.id AS id_QUEST_URL,
                 {course_modules}.course AS id_course,
                 {quest_answers}.submissionid AS id_desafio,
@@ -81,8 +81,8 @@ WHERE {log}.module = 'quest'
                 AND {log}.userid = {quest_answers}.userid /* Usuario */
                 AND {quest_answers}.id = {quest_assessments}.answerid /* mdl_quest_answersRespuesta QUEST */
                 AND {quest_answers}.date > {log}.time /* tpo_envio_respuesta > tpo_lectura => Slo datos entre lectura y envio */
-ORDER BY id_alumno ASC, id_desafio, tpo_lectura
-;";
+ORDER BY id_alumno ASC, id_desafio, tpo_lectura;
+SQL;
 
         $query = $DB->get_records_sql($sqlquery, $allparams);
         break;

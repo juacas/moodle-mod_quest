@@ -32,10 +32,10 @@
  *          - updateassessment
  *
  *          ************************************************* */
-require_once ("../../config.php");
-require_once ("lib.php");
-require_once ("locallib.php");
-require_once ("scores_lib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
+require_once("scores_lib.php");
 
 $id = required_param('id', PARAM_INT); // Course Module ID.
 $action = required_param('action', PARAM_ALPHA);
@@ -149,7 +149,8 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
+                        $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
                 if ($elements[$i]->weight == '') { // ...not set.
                     $elements[$i]->weight = 11; // ...unity.
@@ -190,7 +191,8 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("criterion", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
+                     $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
                 echo "<tr><td><b>" . get_string("suggestedgrade", "quest") . ":</b></td><td>\n";
                 echo html_writer::select($numbers, "maxscore[$i]", $elements[$i]->maxscore, "");
@@ -206,14 +208,15 @@ if ($action == 'displaygradingform') {
             }
             if ($rubricsraw = $DB->get_records("quest_rubrics_autor", array("questid" => $quest->id))) {
                 foreach ($rubricsraw as $rubric) {
-                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // Reindex 0,1,2...
+                    $rubrics[$rubric->elementno][$rubric->rubricno] = $rubric->description; // Reindex.
                 }
             }
             for ($i = 0; $i < $quest->nelementsautor; $i++) {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
+                     $elements[$i]->description . "</textarea>\n";
                 echo "  </td></tr>\n";
                 echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
                 quest_choose_from_menu($questeweights, "weight[]", $elements[$i]->weight, "");
@@ -251,8 +254,7 @@ if ($action == 'displaygradingform') {
     $DB->delete_records("quest_elementsautor", array("questid" => $quest->id));
     // Determine wich type of grading.
     switch ($quest->gradingstrategyautor) {
-        case 0: // no grading
-                // Insert all the elements that contain something
+        case 0: // ...no grading insert all the elements that contain something.
             foreach ($form->description as $key => $description) {
                 if ($description) {
                     unset($element);
@@ -266,7 +268,6 @@ if ($action == 'displaygradingform') {
                 }
             }
             break;
-
         case 1: // Accumulative grading.
                 // Insert all the elements that contain something.
             foreach ($form->description as $key => $description) {
@@ -397,7 +398,6 @@ if ($action == 'displaygradingform') {
                     $element->elementno = $i;
                     $element->answer = $form->{"feedback_$i"};
                     $element->commentteacher = $form->generalcomment;
-                    // print_object($form);die;
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                         print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                     }
@@ -480,7 +480,7 @@ if ($action == 'displaygradingform') {
                 $grade = $points * ($rawgrade / $quest->maxcalification);
                 break;
             case 3: // Criteria grading.
-                    // Save in the selected criteria value in element zero,
+                    // Save in the selected criteria value in element zero.
                 unset($element);
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;

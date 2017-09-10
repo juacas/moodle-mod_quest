@@ -30,6 +30,8 @@
 // ...quest mods.
 
 // This function executes all the backup procedure about this mod.
+defined('MOODLE_INTERNAL') || die();
+
 function quest_backup_mods($bf, $preferences) {
     global $CFG;
 

@@ -25,13 +25,13 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-require ("../../config.php");
-require ("lib.php");
-require ("locallib.php");
+require_once("../../config.php");
+require_once("lib.php");
+require_once("locallib.php");
 
 global $DB, $OUTPUT, $PAGE;
 
-$asid = required_param('asid', PARAM_INT); // Assessment ID
+$asid = required_param('asid', PARAM_INT); // Assessment ID.
 $sid = optional_param('sid', 0, PARAM_INT);
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
@@ -73,7 +73,7 @@ if (!$redirect) {
 echo $OUTPUT->heading_with_help(get_string('seeassessment', 'quest'), "seeassessment", "quest");
 
 if (($ismanager) || ($answer->userid == $USER->id) || ($assessment->userid == $USER->id)) {
-    // show assessment but don't allow changes
+    // Show assessment but don't allow changes.
     quest_print_assessment($quest, $sid, $assessment, false, $allowcomments);
 }
 
@@ -122,7 +122,8 @@ if (($ismanager || ($answer->userid == $USER->id))) {
 }
 
 $title .= " " . get_string('tothechallenge', 'quest') .
-         "<a name=\"sid_$submission->id\" href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+         "<a name=\"sid_$submission->id\" href=\"submissions.php?" .
+        "id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
 
 echo $OUTPUT->heading($title);
 

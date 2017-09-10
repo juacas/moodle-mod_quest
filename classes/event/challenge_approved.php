@@ -28,7 +28,7 @@
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
-require_once 'base.php';
+require_once('base.php');
 
 
 /** The user modifies the Quest caracteristics
@@ -80,7 +80,8 @@ class challenge_approved extends base {
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' created a new Challenge in the Quest activity '" . $this->data['other']['activityid'] .
+        return "The user with id '$this->userid' created a new Challenge in the Quest activity '" .
+        $this->data['other']['activityid'] .
                  "in the course '$this->courseid'. " . $this->data['other']['info'];
     }
 
