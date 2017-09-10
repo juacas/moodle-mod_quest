@@ -48,7 +48,6 @@ $url = new moodle_url('/mod/quest/myplace.php',
         array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer,
                         'diranswer' => $diranswer));
 $PAGE->set_url($url);
-$PAGE->requires->jquery();
 
 quest_check_visibility($course, $cm);
 
@@ -201,18 +200,18 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                     "style=\"background-color : White; border : Black; color : Black; font-size : 14pt; " .
                     "text-align : center;\" ></form>";
 
-            $initialpoints[] = $submission->initialpoints;
-            $nanswerscorrect[] = $submission->nanswerscorrect;
-            $datesstart[] = $submission->datestart;
-            $datesend[] = $submission->dateend;
-            $dateanswercorrect[] = $submission->dateanswercorrect;
-            $pointsmax[] = $submission->pointsmax;
-            $pointsanswercorrect[] = $submission->pointsanswercorrect;
-            $tinitial[] = $quest->tinitial * 86400;
-            $state[] = $submission->state;
+            $initialpoints[] = (float) $submission->initialpoints;
+            $nanswerscorrect[] = (int) $submission->nanswerscorrect;
+            $datesstart[] = (int) $submission->datestart;
+            $datesend[] = (int) $submission->dateend;
+            $dateanswercorrect[] = (int) $submission->dateanswercorrect;
+            $pointsmax[] = (float) $submission->pointsmax;
+            $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
+            $tinitial[] = (int) $quest->tinitial * 86400 * 1000;
+            $state[] = (int) $submission->state;
             $type = $quest->typecalification;
-            $nmaxanswers = $quest->nmaxanswers;
-            $pointsnmaxanswers[] = $submission->points;
+            $nmaxanswers = (int) $quest->nmaxanswers;
+            $pointsnmaxanswers[] = (float) $submission->points;
 
             $data[] = $grade;
             $sortdata['calification'] = quest_get_points($submission, $quest, '');

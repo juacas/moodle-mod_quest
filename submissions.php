@@ -334,7 +334,6 @@ if ($action == 'confirmdelete') {
     $PAGE->set_title(format_string($quest->name . ' ' . $submission->title));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(\format_string($submission->title));
-    $PAGE->requires->jquery();
 
     echo $OUTPUT->header();
 
@@ -607,7 +606,6 @@ if ($action == 'confirmdelete') {
 
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-    $PAGE->requires->jquery();
     echo $OUTPUT->header();
 
     // Now prepare table with student assessments and submissions.
@@ -890,7 +888,6 @@ if ($action == 'confirmdelete') {
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-    $PAGE->requires->jquery();
     echo $OUTPUT->header();
 
     // Now prepare table with student assessments and submissions...

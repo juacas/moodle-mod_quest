@@ -28,7 +28,7 @@ function redondear(cantidad, decimales) {
 }
 function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
 		datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend,
-		formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
+		formularios, type, nmaxanswers, pointsnmaxanswers, servertime, correccion) {
 	var browserDate = new Date();
     var browserTime = browserDate.getTime();
     if (correccion == null) {
@@ -132,9 +132,9 @@ function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
     }
 
     setTimeout(function (){
-    	puntuacionarray($,indice,incline,pointsmax,initialpoints,tinitial,
-    					datestart,state,nanswerscorrect,dateanswercorrect,pointsanswercorrect,
-    					dateend,formularios,type,nmaxanswers,pointsnmaxanswers,null, correccion);
+    	puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
+    					datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
+    					dateend, formularios, type, nmaxanswers, pointsnmaxanswers, null, correccion);
     	}, 1000);
 }
 

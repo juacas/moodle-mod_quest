@@ -71,7 +71,6 @@ $url = new moodle_url('/mod/quest/view.php', array('id' => $id));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-$PAGE->requires->jquery();
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
