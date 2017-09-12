@@ -26,18 +26,39 @@ function redondear(cantidad, decimales) {
 	var valor = Math.round(cantidad * Math.pow(10, decimales)) / Math.pow(10, decimales);
 	return valor.toFixed(4);
 }
+/**
+ * 
+ * @param $ jquery dep
+ * @param indice number of counters
+ * @param incline 
+ * @param pointsmax
+ * @param initialpoints
+ * @param tinitial stationary time (seconds)
+ * @param datestart start time (seconds)
+ * @param state
+ * @param nanswerscorrect
+ * @param dateanswercorrect
+ * @param pointsanswercorrect
+ * @param dateend end time (seconds)
+ * @param formularios
+ * @param type
+ * @param nmaxanswers
+ * @param pointsnmaxanswers
+ * @param servertime  seconds
+ * @param correccion seconds
+ * @returns
+ */
 function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
 		datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend,
 		formularios, type, nmaxanswers, pointsnmaxanswers, servertime, correccion) {
-	var browserDate = new Date();
-    var browserTime = browserDate.getTime();
+	var browserdate = new Date();
+    var browsertime = browserdate.getTime()/1000; // ...in seconds.
     if (correccion == null) {
-    	correccion = servertime - browserTime;
+    	correccion = servertime - browsertime;
     }
     for (var i = 0; i < indice; i++) {
 
-        var tiempoactual = new Date();
-        var tiempo = parseInt((tiempoactual.getTime() + correccion));
+        var tiempo = parseInt((browsertime + correccion));
         var form = $(formularios[i]);
         if ((dateend[i] - datestart[i] - tinitial[i]) == 0) {
             incline[i] = 0;

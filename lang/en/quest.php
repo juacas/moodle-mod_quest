@@ -426,7 +426,7 @@ $string['pleaseassesstheseexamplesfromtheteacher'] = 'Valore por favor estos eje
 $string['pleaseassessthesestudentsubmissions'] = 'Please assess these {$a} Submissions';
 $string['pleaseassessyoursubmissions'] = 'Please assess your Submission(s)';
 $string['pluginname'] = 'Questournament';
-$string['pluginadministration'] = 'Administrator';
+$string['pluginadministration'] = 'Questournament administration';
 $string['points'] = 'Score';
 $string['pointsanswers'] = 'Ans.Score';
 

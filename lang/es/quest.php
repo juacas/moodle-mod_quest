@@ -428,6 +428,7 @@ $string['pictureof'] = 'Foto de';
 $string['pleaseassesstheseexamplesfromtheteacher'] = 'Valore por favor estos ejemplos de la {$a}';
 $string['pleaseassessthesestudentsubmissions'] = 'Por favor valore estos  {$a} Envíos';
 $string['pleaseassessyoursubmissions'] = 'Por favor, evalúe su(s) envío(s)';
+$string['pluginadministration'] = 'Administración del Questournament';
 $string['points'] = 'Puntuación';
 $string['pointsanswers'] = 'Punt. Resp.';
 $string['pointsmax'] = 'Puntuación Máxima';

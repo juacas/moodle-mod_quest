@@ -693,7 +693,7 @@ if ($action == 'confirmdelete') {
             $dateanswercorrect[] = (int) $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-            $tinitial[] = (int) $quest->tinitial * 86400 * 1000;
+            $tinitial[] = (int) $quest->tinitial * 86400;
             $state[] = $submission->state;
             $type = $quest->typecalification;
             $nmaxanswers = (int) $quest->nmaxanswers;
@@ -993,7 +993,7 @@ if ($action == 'confirmdelete') {
                 $dateanswercorrect[] = (int) $submission->dateanswercorrect;
                 $pointsmax[] = (float) $submission->pointsmax;
                 $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-                $tinitial[] = (int) $quest->tinitial * 86400 * 1000;
+                $tinitial[] = (int) $quest->tinitial * 86400;
                 $state[] = $submission->state;
                 $type = $quest->typecalification;
                 $nmaxanswers = (int) $quest->nmaxanswers;

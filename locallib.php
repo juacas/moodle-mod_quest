@@ -622,7 +622,13 @@ function quest_print_attachments($context, $filearea, $itemid, $order) {
                 $path .= $itemid . '/';
             }
             $path .= $filename;
-            $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', $path);
+            $filepathurl = moodle_url::make_pluginfile_url($file->get_contextid(),
+                                            $file->get_component(),
+                                            $file->get_filearea(),
+                                            $file->get_itemid(),
+                                            $file->get_filepath(),
+                                            $file->get_filename());
+            $path = $filepathurl->out();
             echo "<tr><td><b>" . get_string("attachment", "quest") . " $n:</b> \n";
             echo $iconimage;
             echo format_text("<a href=\"$path\">" . s($filename) . "</a>", FORMAT_HTML, array('context' => $context));
@@ -697,7 +703,7 @@ function quest_print_submission_info($quest, $submission) {
     $dateanswercorrect[] = $submission->dateanswercorrect;
     $pointsmax[] = (float) $submission->pointsmax;
     $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-    $tinitial[] = $quest->tinitial * 86400 * 1000;
+    $tinitial[] = $quest->tinitial * 86400;
     $state[] = (int) $submission->state;
     $type = $quest->typecalification;
     $nmaxanswers = (int) $quest->nmaxanswers;
@@ -4681,58 +4687,6 @@ function quest_get_assessments($answer, $all = '', $order = '') {
     } else {
         return $DB->get_records_select("quest_assessments", "answerid = ? AND dateassessment < ?", array($answer->id, $timenow),
                 $order);
-    }
-}
-
-function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
-    global $CFG, $DB;
-
-    if ($context->contextlevel != CONTEXT_MODULE) {
-        return false;
-    }
-    require_course_login($course, true, $cm);
-    if (!has_capability('mod/quest:view', $context)) {
-        return false;
-    }
-    if (!$quest = get_coursemodule_from_id('quest', $cm->id)) {
-        return false;
-    }
-
-    if ($filearea === 'introattachment') {
-        $relativepath = implode('/', $args);
-        $entryid = 0;
-    } else {
-        $entryid = (int) array_shift($args);
-        if ($filearea === 'attachment' or $filearea === 'submission') {
-            if (!$entry = $DB->get_record('quest_submissions', array('id' => $entryid))) {
-                return false;
-            }
-        } else if ($filearea === 'answer_attachment' or $filearea === 'answer') {
-            if (!$entry = $DB->get_record('quest_answers', array('id' => $entryid))) {
-                return false;
-            }
-        } else {
-            return false; // ...unknown filearea.
-        }
-
-        $relativepath = implode('/', $args);
-    }
-    $fs = get_file_storage();
-    $hash = $fs->get_pathname_hash($context->id, 'mod_quest', $filearea, $entryid, '', '/' . $relativepath);
-    if (!$file = $fs->get_file_by_hash($hash) or $file->is_directory()) {
-        return false;
-    }
-
-    // ...finally send the file.
-    send_stored_file($file, 0, 0, true, $options); // ...download MUST be forced - security!.
-}
-
-/** Save the attachments in the draft areas.
- *
- * @param stdClass $formdata */
-function quest_save_intro_draft_files($formdata, $ctx) {
-    if (isset($formdata->introattachments)) {
-        file_save_draft_area_files($formdata->introattachments, $ctx->id, 'mod_quest', 'introattachment', 0);
     }
 }
 

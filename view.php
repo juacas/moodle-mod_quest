@@ -673,7 +673,7 @@ if ($action == 'displayfinalgrade') {
             $dateanswercorrect[] = $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-            $tinitial[] = $quest->tinitial * 86400 * 1000;
+            $tinitial[] = $quest->tinitial * 86400;
             $state[] = (int) $submission->state;
             $type = $quest->typecalification;
             $nmaxanswers = (int) $quest->nmaxanswers;
