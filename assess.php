@@ -148,8 +148,18 @@ echo "</center>";
 
 echo $OUTPUT->heading(get_string('answercontent', 'quest'));
 quest_print_answer($quest, $answer);
-
-$returnto = "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
+// If user has general assess privileges get next answer to evaluate.
+if ($cangrade) {
+    $nextanswer = quest_next_unassesed_answer($answer);
+} else {
+    // ... else redirect to answers list.
+    $nextanswer = null;
+}
+if ($nextanswer !== null ) {
+    $returnto = new moodle_url('assess.php', ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $nextanswer->id, 'sesskey' => sesskey() ]);
+} else {
+    $returnto = new moodle_url('submissions.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission' ]);
+}
 quest_print_assessment($quest, $submission->id, $assessment, true, $allowcomments, $returnto);
 
 echo $OUTPUT->footer();

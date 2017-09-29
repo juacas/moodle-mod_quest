@@ -127,9 +127,19 @@ if ($cangrade and ($quest->gradingstrategy == 2)) {
 
 echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "assessthissubmission", "quest");
 // ...show assessment autor and allow changes.
-quest_print_assessment_autor($quest, $assessment, true, $allowcomments,
-        new \moodle_url("/mod/quest/submissions.php",
-                array("id" => $cm->id, "sid" => $submission->id, "action" => "showsubmission")));
-
-echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'] . '#sid=' . $submission->id);
+// If user has general assess privileges get next answer to evaluate.
+if ($cangrade) {
+    $nextsubmission = quest_next_unassesed_submission($submission);
+} else {
+    // ... else redirect to answers list.
+    $nextsubmission = null;
+}
+if ($nextsubmission !== null ) {
+    $returnto = new moodle_url('assess_autors.php', ['id' => $cm->id, 'sid' => $nextsubmission->id, 'action' => 'evaluate', 'sesskey' => sesskey() ]);
+} else {
+    $returnto = new moodle_url('view.php', ['id' => $cm->id ]);
+}
+quest_print_assessment_autor($quest, $assessment, true, $allowcomments, $returnto);
+$continueto = new moodle_url('view.php', ['id' => $cm->id ]);
+echo $OUTPUT->single_button($continueto, get_string('cancel'));
 echo $OUTPUT->footer();

@@ -1461,8 +1461,8 @@ FORM;
 
     $elementsraw = $DB->get_records("quest_elements", array("submissionsid" => $condition), "elementno ASC");
     if (isset($nelements)) {
-        if (count($elementsraw) < $nelements) {
-            print_string("noteonassessmentelements", "quest");
+        if (count($elementsraw) < $nelements && $quest->gradingstrategyautor) {
+            echo $OUTPUT->notification("noteonassessmentelements", "quest");
         }
     }
     if ($elementsraw) {
@@ -2332,8 +2332,13 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
         $assessment->userid = 0;
         $assessment->dateassessment = null;
     }
+    // ...get the assignment elements....
+    $elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC");
+    if (count($elementsraw) < $quest->nelementsautor && $quest->gradingstrategyautor) {
+        echo $OUTPUT->notification("noteonassessmentelements", "quest");
+    }
+    $numelements = min(count($elementsraw), $quest->nelementsautor);
     // Now print the grading form with the grading grade if any.
-    // FORM is needed for Mozilla browsers, else radio bttons are not checked.
     $formfragment = <<<FORM
         <form name="assessmentform" method="post"
 		action="assessments_autors.php">
@@ -2341,7 +2346,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
 			type="hidden" name="aid" value="$assessment->id" /> <input
 			type="hidden" name="action" value="updateassessment" /> <input
 			type="hidden" name="returnto" value="$returnto" /> <input
-			type="hidden" name="elementno" value="" /> <input type="hidden"
+			type="hidden" name="elementno" value="$numelements" /> <input type="hidden"
 			name="stockcommentid" value="" />
 		<center>
 			<table cellpadding="2" border="1">
@@ -2363,11 +2368,8 @@ FORM;
     }
     echo "</tr>\n";
 
-    // ...get the assignment elements....
-    $elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC");
-    if (count($elementsraw) < $quest->nelementsautor) {
-        print_string("noteonassessmentelements", "quest");
-    }
+
+
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
             $elements[] = $element; // ...to renumber index.
@@ -2385,7 +2387,6 @@ FORM;
             }
         }
     }
-    $numelements = min(count($elementsraw), $quest->nelementsautor);
 
     if (empty($grades)) {
         // ...setup dummy grades array.
@@ -3280,9 +3281,9 @@ function quest_calculate_user_score($questid, $userid) {
     global $CFG, $DB;
     list($insql, $inparams) = $DB->get_in_or_equal($userid);
     $params = array_merge(array($questid), $inparams);
-    $sql = "select sum(ans.grade*ans.pointsmax/100) as points from {quest_answers} as ans, " .
-            "{quest_assessments} as assess WHERE " .
-             "ans.questid=? AND " . "ans.userid $insql AND " . "ans.id=assess.answerid AND " . "assess.phase=" .
+    $sql = "select sum(ans.grade*ans.pointsmax/100) points from {quest_answers} ans, " .
+            "{quest_assessments} assess WHERE " .
+             "ans.questid=? AND ans.userid $insql AND ans.id=assess.answerid AND assess.phase=" .
              ASSESSMENT_PHASE_APPROVED;
     if ($query = $DB->get_record_sql($sql, $params)) {
         if (isset($query->points)) {
@@ -4077,7 +4078,46 @@ function quest_get_answers($quest, $user) {
     global $DB;
     return $DB->get_records("quest_answers", array('userid' => $user->id, 'questid' => $quest->id));
 }
-
+/**
+ * Gets an unassessed answer ordered by time.
+ * @param stdClass $answer
+ * @return NULL | stdClass $answer next in the queue
+ */
+function quest_next_unassesed_answer($answer) {
+    global $DB;
+    $sql = <<<SQL
+SELECT answer.id, assess.id assid
+FROM {quest_answers} answer
+LEFT JOIN {quest_assessments} assess ON (answer.id = assess.answerid)
+WHERE answer.submissionid = ? and (assess.id IS NULL OR assess.phase = 0) and answer.id <> ? order by answer.date
+SQL;
+    $answers = $DB->get_records_sql($sql, [$answer->submissionid, $answer->id]);
+    if (count($answers) == 0 ) {
+        return null;
+    } else {
+        return reset($answers);
+    }
+}
+/**
+ * Gets an unassessed submission ordered by time.
+ * @param stdClass $submission
+ * @return NULL | stdClass $submission next in the queue
+ */
+function quest_next_unassesed_submission($submission) {
+    global $DB;
+    $sql = <<<SQL
+SELECT submission.id, assess.id assid
+FROM {quest_submissions} submission
+LEFT JOIN {quest_assessments_autors} assess ON (submission.id = assess.submissionid)
+WHERE submission.questid = ? and  (assess.id IS NULL OR assess.state = 0) and submission.id <> ? order by dateassessment
+SQL;
+    $submissions = $DB->get_records_sql($sql, [$submission->questid, $submission->id]);
+    if (count($submissions) == 0 ) {
+        return null;
+    } else {
+        return reset($submissions);
+    }
+}
 /** Get all users that act as student (i.e.
  * can 'mod/quest:attempt')
  * @param int $courseid
@@ -4350,7 +4390,7 @@ function quest_send_message($user, $file, $text, $quest, $field1, $field2 = '', 
     $messagehtml = text_to_html($message, false, false, true);
     $user->mailformat = 1; // Always send HTML version as well.
     global $CFG;
-    if (version_compare("3.2", $CFG->release, '>=')) { // ...messaging for Moodle 3.2+.
+    if (version_compare($CFG->release, "3.2", '>=')) { // ...messaging for Moodle 3.2+.
         $eventdata = new \core\message\message();
         $eventdata->component = 'mod_quest';
 
@@ -4385,7 +4425,7 @@ function quest_send_message($user, $file, $text, $quest, $field1, $field2 = '', 
         $eventdata->courseid = $quest->course;
         $msgid = message_send($eventdata);
         return $msgid;
-    } else if (version_compare("2.4", $CFG->release, '>=')) { // Messaging for Moodle 2.4+.
+    } else if (version_compare($CFG->release, "2.4", '>=')) { // Messaging for Moodle 2.4+.
         $eventdata = new stdClass();
         $eventdata->component = 'mod_quest';
 
@@ -4467,9 +4507,10 @@ function quest_send_message($user, $file, $text, $quest, $field1, $field2 = '', 
                 email_to_user($user, $userfrom, $messagesubject, $messagetext, $messagehtml);
             }
         }
-
-        add_to_log(SITEID, 'message', 'write', 'history.php?user1=' . $user->id .
+        if (false) { // TODO change to vew event API
+            add_to_log(SITEID, 'message', 'write', 'history.php?user1=' . $user->id .
                 '&amp;user2=' . $userfrom->id/* .'#m'.$messageid */, "$user->id");
+        }
         return $savemessage->id;
     } // ...end code Moodle 1.9.x.
 }

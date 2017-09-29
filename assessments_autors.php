@@ -358,16 +358,14 @@ if ($action == 'displaygradingform') {
     redirect("view.php?id=$cm->id", get_string("savedok", "quest"));
 } else if ($action == 'updateassessment') {
     // Update assessment (by teacher or student).
-    global $message;
+    $message = '';
 
     $aid = required_param('aid', PARAM_INT);
     $assessment = $DB->get_record("quest_assessments_autors", array("id" => $aid), '*', MUST_EXIST);
     $submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid), '*', MUST_EXIST);
     // First get the assignment elements for maxscores and weights...
     $elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC");
-    if (count($elementsraw) < $quest->nelementsautor) {
-        echo $OUTPUT->notification(get_string("noteonassessmentelements", "quest"));
-    }
+
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
             $elements[] = $element; // ...to renumber index 0,1,2...
@@ -386,7 +384,7 @@ if ($action == 'displaygradingform') {
              // don't fiddle about, delete all the old and add the new!
         $DB->delete_records("quest_items_assesments_autor", array("assessmentautorid" => $assessment->id));
         $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php.
-        $numelements = $quest->nelementsautor;
+        $numelements = count($elementsraw);
         // Determine what kind of grading we have.
         switch ($quest->gradingstrategyautor) {
             case 0: // No grading.
@@ -559,28 +557,24 @@ if ($action == 'displaygradingform') {
     }
     // Log the event.
     if ($CFG->version >= 2014051200) {
-        require_once 'classes/event/challenge_assessed.php';
+        require_once('classes/event/challenge_assessed.php');
         \mod_quest\event\challenge_assessed::create_from_parts($submission, $assessment, $cm)->trigger();
     } else {
         add_to_log($course->id, "quest", "assess_challenge", "viewassessmentautor.php?id=$cm->id&amp;aid=$assessment->id",
                 "$assessment->id", "$cm->id");
     }
-    // ...set up return address.
-    if (!isset($form->returnto)) {
-        $returnto = "view.php?id=$cm->id";
-    } else {
-        $returnto = $form->returnto;
-    }
-    echo $OUTPUT->header();
+    $returnto = optional_param('returnto', "view.php?id=$cm->id", PARAM_RAW);
     // ...show grade if grading strategy is not zero.
     if ($quest->gradingstrategyautor) {
-        echo $message . get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" .
+        if (count($elementsraw) < $quest->nelementsautor) {
+            echo $OUTPUT->notification(get_string("noteonassessmentelements", "quest"));
+        }
+        $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" .
                  get_string("initialpoints", 'quest') . " " . number_format($points, 2) . ")";
-        echo $OUTPUT->continue_button($returnto);
     } else {
-        echo $message . get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . "No grading.";
-        echo $OUTPUT->continue_button($returnto);
+        $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (Activity ignores this grading.)";
     }
+    echo $OUTPUT->redirect_message($returnto, $message, 10, false);
 } else {
     print_error('unkownactionerror', 'quest', null, $action);
 }
