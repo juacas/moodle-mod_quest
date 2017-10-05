@@ -810,7 +810,7 @@ function quest_cron() {
                                     $event->timeduration = 0;
                                     $event->visible = $DB->get_field('course_modules', 'visible',
                                             array('module' => $moduleid, 'instance' => $quest->id));
-                                    add_event($event);
+                                    calendar_event::create($event);
                                 }
                             }
                         }
@@ -1206,8 +1206,7 @@ function quest_refresh_events($courseid = 0) {
                     $event->timeduration = 0;
                     $event->visible = $DB->get_field('course_modules', 'visible',
                             array('module' => $moduleid, 'instance' => $quest->id));
-                    add_event($event);
-                }
+                    calendar_event::create($event);}
             }
         }
     }
