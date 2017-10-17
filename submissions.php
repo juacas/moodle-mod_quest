@@ -581,11 +581,11 @@ if ($action == 'confirmdelete') {
 
         if (isset($submission->submitbuttonapprove)) {
             quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions,
-                                    $attachmentoptions, $context, $action, $authorid);
+                                    $attachmentoptions, $context, 'approve', $authorid);
         } else { // ...save but not approve.
             $action = 'modif';
             quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions,
-                    $attachmentoptions, $context, $action, $authorid);
+                    $attachmentoptions, $context, 'modif', $authorid);
         }
     } else {
 
@@ -948,8 +948,9 @@ if ($action == 'confirmdelete') {
                 $sortdata['firstname'] = strtolower($user->firstname);
                 $sortdata['lastname'] = strtolower($user->lastname);
 
-                $data[] = quest_submission_phase($submission, $quest, $course);
-                $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
+                $phase = quest_submission_phase($submission, $quest, $course);
+                $data[] = $phase;
+                $sortdata['phase'] = $phase;
 
                 $nanswersassess = 0;
                 if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",

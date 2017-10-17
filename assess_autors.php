@@ -52,12 +52,13 @@ quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
+$canapprove = has_capability('mod/quest:approvechallenge', $context);
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
-$url = new moodle_url('/mod/quest/asses_autors.php',
+$url = new moodle_url('/mod/quest/assess_autors.php',
                 array('sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
@@ -128,17 +129,8 @@ if ($cangrade and ($quest->gradingstrategy == 2)) {
 echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "assessthissubmission", "quest");
 // ...show assessment autor and allow changes.
 // If user has general assess privileges get next answer to evaluate.
-if ($cangrade) {
-    $nextsubmission = quest_next_unassesed_submission($submission);
-} else {
-    // ... else redirect to answers list.
-    $nextsubmission = null;
-}
-if ($nextsubmission !== null ) {
-    $returnto = new moodle_url('assess_autors.php', ['id' => $cm->id, 'sid' => $nextsubmission->id, 'action' => 'evaluate', 'sesskey' => sesskey() ]);
-} else {
-    $returnto = new moodle_url('view.php', ['id' => $cm->id ]);
-}
+
+$returnto = quest_next_submission_url($submission, $cm);
 quest_print_assessment_autor($quest, $assessment, true, $allowcomments, $returnto);
 $continueto = new moodle_url('view.php', ['id' => $cm->id ]);
 echo $OUTPUT->single_button($continueto, get_string('cancel'));

@@ -482,7 +482,6 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
     }
 
     // ...management of files: save embedded images and attachments..
-
     $newsubmission = file_postupdate_standard_editor($newsubmission, 'description', $definitionoptions, $context, 'mod_quest',
             'submission', $newsubmission->id);
     $newsubmission = file_postupdate_standard_filemanager($newsubmission, 'attachment', $attachmentoptions, $context, 'mod_quest',
@@ -501,7 +500,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
 
     quest_update_challenge_calendar($cm, $quest, $newsubmission);
-
+    $redirecturl = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
     if ($action == 'submitchallenge') {
         require_once('classes/event/challenge_created.php');
         mod_quest\event\challenge_created::create_from_parts($newsubmission, $cm)->trigger();
@@ -523,12 +522,14 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
                     "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
                     "$cm->id");
         }
+        // Get next url: assess_autor.
+        $redirecturl = quest_next_submission_url($newsubmission, $cm);
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($COURSE->fullname);
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string("submitted", "quest") . " " . get_string("ok"));
-    echo $OUTPUT->continue_button("view.php?id=$cm->id");
+    echo $OUTPUT->continue_button($redirecturl);
 }
 
 function quest_get_durations() {
@@ -3100,8 +3101,8 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
     }
 
     if ($ismanager || ($submission->userid == $USER->id || $submission->phase != SUBMISSION_PHASE_ACTIVE)) {
-        if ($assessmentautor = $DB->get_record("quest_assessments_autors",
-                array("submissionid" => $submission->id, "questid" => $quest->id))) {
+        $assessmentautor = quest_get_submission_assessment($submission);
+        if ($assessmentautor) {
             if ($string != '') {
                 $string .= '&nbsp;/&nbsp;';
             }
@@ -3114,8 +3115,8 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
         if ($string != '') {
             $string .= '&nbsp;/&nbsp;';
         }
-        if ($assessmentautor = $DB->get_record("quest_assessments_autors",
-                array("submissionid" => $submission->id, "questid" => $quest->id))) {
+        $assessmentautor = quest_get_submission_assessment($submission);
+        if ($assessmentautor) {
             $string .= "<a href=\"assess_autors.php?id=$cm->id&amp;sid=$submission->id&amp;action=evaluate\">" .
                      get_string('reevaluate', 'quest') . "</a>";
             $string .= $OUTPUT->help_icon('assessthissubmission', 'quest');
@@ -4118,6 +4119,63 @@ SQL;
         return reset($submissions);
     }
 }
+/**
+ * Gets an unapproved submission ordered by time.
+ * @param stdClass $submission
+ * @return NULL | stdClass $submission next in the queue
+ */
+function quest_next_unapproved_submission($submission) {
+    global $DB;
+    // APPROVED_PENDING is 0...
+
+    $submissions = $DB->get_records('quest_submissions',
+            ['questid' => $submission->questid, 'state' => SUBMISSION_STATE_APPROVAL_PENDING],
+            'dateend ASC');
+    if (count($submissions) == 0 ) {
+        return null;
+    } else {
+        return reset($submissions);
+    }
+}
+/**
+ * Define the aproval/assessment workflow.
+ * @param \stdClass $submission
+ * @param context_module $context
+ * @return moodle_url
+ */
+function quest_next_submission_url($submission, $cm) {
+    $context = context_module::instance($cm->id);
+    $nextunapproved = null;
+    $nextunassessed = null;
+    $submissionassessment = quest_get_submission_assessment($submission);
+    // First own assesment. Then other approvals.
+    if (!$submissionassessment) {
+        $nextunassessed = $submission;
+    } else {
+        if (has_capability('mod/quest:approvechallenge', $context)) {
+            $nextunapproved = quest_next_unapproved_submission($submission);
+        } else {
+            $nextunapproved = null;
+        }
+        if (has_capability('mod/quest:grade', $context) && $nextunapproved === null) {
+            $nextunassessed = quest_next_unassesed_submission($submission);
+        } else {
+            // ... else redirect to answers list.
+            $nextunassessed = null;
+        }
+    }
+    // Apply priority of approval above assessment.
+    if ($nextunapproved !== null) {
+        $nexturl = new moodle_url('submissions.php',
+                ['id' => $cm->id, 'sid' => $nextunapproved->id, 'action' => 'approve', 'sesskey' => sesskey()]);
+    } else if ($nextunassessed !== null ) {
+        $nexturl = new moodle_url('assess_autors.php',
+                ['id' => $cm->id, 'sid' => $nextunassessed->id, 'action' => 'evaluate', 'sesskey' => sesskey()]);
+    } else {
+        $nexturl = new moodle_url('view.php', ['id' => $cm->id ]);
+    }
+    return $nexturl;
+}
 /** Get all users that act as student (i.e.
  * can 'mod/quest:attempt')
  * @param int $courseid
@@ -4730,7 +4788,11 @@ function quest_get_assessments($answer, $all = '', $order = '') {
                 $order);
     }
 }
-
+function quest_get_submission_assessment($submission) {
+    global $DB;
+    return $DB->get_record("quest_assessments_autors",
+            array("submissionid" => $submission->id, "questid" => $submission->questid));
+}
 function quest_fullname($userid, $courseid) {
     global $CFG, $DB;
     if (!$user = $DB->get_record('user', array('id' => $userid))) {
