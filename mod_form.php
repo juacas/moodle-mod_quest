@@ -184,7 +184,21 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addHelpButton('initialpoints', "initialpoints", "quest");
         $mform->setDefault('initialpoints', 10);
 
-        $mform->addElement('select', 'tinitial', get_string('tinitial', 'quest'), $arraydays);
+        $arrayinitialtime = [];
+        $arrayinitialtime['0'] = get_string('none');
+
+        $arrayinitialtime[strval(1.0 / 24)] = '1 ' . get_string('hour');
+        $arrayinitialtime[strval(2.0 / 24)] = '2 ' . get_string('hours');
+        $arrayinitialtime[strval(3.0 / 24)] = '3 ' . get_string('hours');
+        $arrayinitialtime[strval(4.0 / 24)] = '4 ' . get_string('hours');
+        $arrayinitialtime[strval(5.0 / 24)] = '5 ' . get_string('hours');
+        $arrayinitialtime[strval(6.0 / 24)] = '6 ' . get_string('hours');
+        $arrayinitialtime[strval(12.0 / 24)] = '12 ' . get_string('hours');
+        $arrayinitialtime['1'] = '1 ' . get_string('day');
+        for ($i = 2; $i <= 90; $i++) {
+            $arrayinitialtime[$i] = $i . ' ' . get_string('days');
+        }
+        $mform->addElement('select', 'tinitial', get_string('tinitial', 'quest'), $arrayinitialtime);
         $mform->addHelpButton('tinitial', "tinitial", "quest");
         $mform->setDefault('tinitial', 3);
 

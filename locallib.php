@@ -2855,7 +2855,7 @@ function quest_print_score_graph($quest, $submission) {
     global $CFG;
     global $DB;
     $datefirstanswer = $DB->get_field("quest_answers", "min(date)", array("submissionid" => $submission->id));
-    $tinit = $quest->tinitial * 86400;
+    $tinit = $quest->tinitial * 86400; // Days to seconds.
     $imgurl = new moodle_url('/mod/quest/graph_submission.php',
             ['dfirstansw' => $datefirstanswer, 'tinit' => $tinit, 'dst' => $submission->datestart, 'dend' => $submission->dateend,
              'ipoints' => $submission->initialpoints, 'daswcorr' => $submission->dateanswercorrect,
