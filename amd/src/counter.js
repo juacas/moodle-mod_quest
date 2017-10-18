@@ -28,10 +28,76 @@ function redondear(cantidad, decimales) {
 }
 /**
  * 
+ * @param timenow
+ * @param datestart
+ * @param dateend
+ * @param tinitial
+ * @param dateanswercorrect
+ * @param initialpoints
+ * @param pointsmax
+ * @param pointsmin
+ * @param type
+ * @returns
+ */
+function quest_calculate_points(timenow, datestart, dateend, tinitial, dateanswercorrect, initialpoints,
+								pointsmax, pointsmin, type) {
+    if (dateanswercorrect == 0) {
+        dateanswercorrect = Number.MAX_SAFE_INTEGER; // This regularize comparisons.
+    }
+    if (dateanswercorrect < datestart) {
+        dateanswercorrect = datestart;
+    }
+    var zone, points;
+    // Determine scoring zone.
+    if (timenow >= dateend) {
+        zone = 'ended';
+    } else if (timenow > dateanswercorrect) {
+       zone = 'deflaction';
+    } else if (timenow < (datestart + tinitial)) {
+        zone = 'stationary';
+    } else if (timenow >= (datestart + tinitial)) {
+        zone = 'inflaction';
+    }
+    // Only type 0 (linear) is supported.
+    if (type != 0 && typeof(type) != 'undefined') {
+    	return 0;
+    }
+    switch (zone) {
+        case 'stationary': // Stationary score.
+            points = initialpoints;
+            break;
+        case 'ended':
+            if (dateanswercorrect <= dateend) {
+                points = pointsmin;
+            } else {
+                points = pointsmax;
+            }
+            break;
+        case 'inflaction': // Inflactionary zone.
+            var dt = timenow - (datestart + tinitial);
+            points = dt * (pointsmax - initialpoints) / (dateend - datestart - tinitial) + initialpoints;
+            break;
+        case 'deflaction': // Deflactionary score.
+            var pointscorrect = quest_calculate_points(dateanswercorrect, datestart, dateend, tinitial, dateanswercorrect,
+            		initialpoints, pointsmax, pointsmin);
+            var incline2 = (pointscorrect - pointsmin) / (dateend - dateanswercorrect);
+            points = pointscorrect - incline2 * (timenow - dateanswercorrect);
+            break;
+    }
+
+
+    if (points < pointsmin) {
+        points = pointsmin;
+    }
+    return points;
+}
+/**
+ * 
  * @param $ jquery dep
  * @param indice number of counters
  * @param incline 
  * @param pointsmax
+ * @param pointsmin
  * @param initialpoints
  * @param tinitial stationary time (seconds)
  * @param datestart start time (seconds)
@@ -48,7 +114,7 @@ function redondear(cantidad, decimales) {
  * @param correccion seconds
  * @returns
  */
-function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
+function puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints, tinitial,
 		datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend,
 		formularios, type, nmaxanswers, pointsnmaxanswers, servertime, correccion) {
 	var browserdate = new Date();
@@ -59,101 +125,15 @@ function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
     for (var i = 0; i < indice; i++) {
 
         var tiempo = parseInt((browsertime + correccion));
-        var form = $(formularios[i]);
-        if ((dateend[i] - datestart[i] - tinitial[i]) == 0) {
-            incline[i] = 0;
-        } else {
-            if (type == 0) {
-                incline[i] = (pointsmax[i] - initialpoints[i]) / (dateend[i] - datestart[i] - tinitial[i]);
-            } else {
-                if (initialpoints[i] == 0) {
-                    initialpoints[i] = 0.0001;
-                }
-                incline[i] = (1 / (dateend[i] - datestart[i] - tinitial[i])) * Math.log(pointsmax[i] / initialpoints[i]);
-            }
-        }
-        var grade = null;
-        var t = 0;
-        if (state[i] < 2) {
-            grade = initialpoints[i];
-            form.animate({color:"#cccccc"}, 1000);
-        } else {
-
-            if (datestart[i] > tiempo) {
-                grade = initialpoints[i];
-                form.animate({color:"#cccccc"}, 1000);
-            }  else {
-                if (nanswerscorrect[i] >= nmaxanswers) {
-                    grade = 0;
-                    form.animate({color:"#cccccc"}, 1000);
-                }  else {
-                    if (dateend[i] < tiempo) {
-                        if (nanswerscorrect[i] == 0) {
-                            t = dateend[i] - datestart[i];
-                            if (t <= tinitial[i]) {
-                                grade = initialpoints[i];
-                                form.animate({color:"#cccccc"}, 1000);
-                            } else {
-                                grade = pointsmax[i];
-                                form.animate({color:"#cccccc"}, 1000);
-                            }
-                        }  else {
-                            grade = 0;
-                            form.animate({color:"#cccccc"}, 1000);
-                        }
-                    } else {
-                        if (nanswerscorrect[i] == 0) {
-                            t = tiempo - datestart[i];
-                            if (t < tinitial[i]) {
-                                grade = initialpoints[i];
-                                form.animate({color:"#000000"}, 1000);
-                            } else {
-                                if (t >= (dateend[i] - datestart[i])) {
-                                    grade = pointsmax[i];
-                                    form.animate({color:"#000000"}, 1000);
-                                } else {
-                                    if (type == 0) {
-                                        grade = (t - tinitial[i]) * incline[i] + initialpoints[i];
-	                                    form.animate({color:"#000000"}, 1000);
-                                    } else {
-                                        grade = initialpoints[i] * Math.exp(incline[i] * (t - tinitial[i]));
-	                                    form.animate({color:"#000000"}, 1000);
-                                    }
-                                }
-                            }
-                        } else {
-                            t = tiempo - dateanswercorrect[i];
-                            if ((dateend[i] - dateanswercorrect[i]) == 0) {
-                                incline[i] = 0;
-                            } else {
-                                if (type == 0) {
-                                    incline[i] = (-pointsanswercorrect[i]) / (dateend[i] - dateanswercorrect[i]);
-                                } else {
-                                    incline[i] = (1 / (dateend[i] - dateanswercorrect[i]))
-                                    			* Math.log(0.0001 / pointsanswercorrect[i]);
-                                }
-                            }
-                            if (type == 0) {
-                                grade = pointsanswercorrect[i] + incline[i] * t;
-                                form.animate({color:"#000000"}, 1000);
-                            } else {
-                                grade = pointsanswercorrect[i] * Math.exp(incline[i] * t);
-                                form.animate({color:"#000000"}, 1000);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (grade < 0) {
-            grade = 0;
-        }
+        var form = $(formularios[i]);    
+        var grade = quest_calculate_points(tiempo, datestart[i], dateend[i], tinitial[i], dateanswercorrect[i],
+        									initialpoints[i], pointsmax[i], pointsmin[i]);
         grade = redondear(grade, 4);
         form.val(grade);
     }
 
     setTimeout(function (){
-    	puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
+    	puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints, tinitial,
     					datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
     					dateend, formularios, type, nmaxanswers, pointsnmaxanswers, null, correccion);
     	}, 1000);
@@ -162,10 +142,10 @@ function puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial,
 define(['jquery'], function ($) {
 
 	var init = {
-		puntuacionarray:  function (indice, incline, pointsmax, initialpoints, tinitial, datestart,
+		puntuacionarray:  function (indice, incline, pointsmax, pointsmin, initialpoints, tinitial, datestart,
 									state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
 									dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
-			puntuacionarray($, indice, incline, pointsmax, initialpoints, tinitial, datestart, state,
+			puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints, tinitial, datestart, state,
 							nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios,
 							type, nmaxanswers, pointsnmaxanswers,servertime, correccion);
 		},

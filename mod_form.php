@@ -176,6 +176,10 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addHelpButton('maxcalification', "maxcalification", "quest");
         $mform->setDefault('maxcalification', 100);
 
+        $mform->addElement('select', 'mincalification', get_string('mincalification', 'quest'), $arraypoints);
+        $mform->addHelpButton('mincalification', "mincalification", "quest");
+        $mform->setDefault('mincalification', 0);
+
         $mform->addElement('select', 'initialpoints', get_string('initialpoints', 'quest'), $arraypoints);
         $mform->addHelpButton('initialpoints', "initialpoints", "quest");
         $mform->setDefault('initialpoints', 10);
@@ -268,7 +272,13 @@ class mod_quest_mod_form extends moodleform_mod {
         if ($data['datestart'] != 0 && $data['dateend'] != 0 && $data['dateend'] < $data['datestart']) {
             $errors['dateend'] = get_string('closebeforeopen', 'quest');
         }
-
+        if ($data['mincalification'] > $data['maxcalification']) {
+            $errors['mincalification'] = get_string('mincalification_help', 'quest');
+            $errors['maxcalification'] = get_string('maxcalification_help', 'quest');
+        }
+        if ($data['initialpoints'] > $data['maxcalification']) {
+            $errors['initialpoints'] = get_string('initialpoints_help', 'quest');
+        }
         if (count($errors) == 0) {
             return true;
         } else {

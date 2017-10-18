@@ -28,10 +28,10 @@
  *          Draw the scoring graph */
 require_once('../../config.php');
 global $CFG;
-require_once('lib.php');
+require_once('locallib.php');
 require_once('vendor/graphlib.php');
 
-function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
+function quest_calculate_pointsc($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
     if (($dateend - $datestart - $tinitial) == 0) {
         $incline = 0;
     } else {
@@ -195,24 +195,23 @@ function quest_calculate_pointsb($timenow, $datestart, $dateend, $tinitial, $dat
 }
 
 function graph_submissions() {
-    global $DB;
-    $sid = required_param('sid', PARAM_INT);
+
     $datestart = required_param('dst', PARAM_INT);
     $dateend = required_param('dend', PARAM_INT);
     $tinit = required_param('tinit', PARAM_INT);
     $initialpoints = required_param('ipoints', PARAM_INT);
     $dateanswercorrect = required_param('daswcorr', PARAM_INT);
+    $datefirstanswer = required_param('dfirstansw', PARAM_INT);
     $pointsmax = required_param('pointsmax', PARAM_INT);
-    $timenow = time();
+    $pointsmin = optional_param('pointsmin', 0, PARAM_INT);
     $width = optional_param('width', 300, PARAM_INT);
     $height = optional_param('height', 200, PARAM_INT);
 
-    $datefirstanswer = $DB->get_field("quest_answers", "min(date)", array("submissionid" => $sid));
     $mygraph = new graph($width, $height);
     $mygraph->parameter['title'] = get_string("questgraphtitle", 'quest');
     $mygraph->parameter['output_format'] = 'PNG';
-    $mygraph->parameter['x_label'] = date('F', $datestart) . '-' . date('o', $datestart) .
-            '  <---->  ' . date('F', $dateend) . '-' . date('o', $dateend);
+    $mygraph->parameter['x_label'] = userdate($datestart, '%x') .
+            '  <---->  ' . userdate($dateend, '%x');
     $mygraph->parameter['y_label_left'] = get_string("questgraphYlegend", 'quest');
     $mygraph->parameter['x_label_angle'] = 0;
     $mygraph->parameter['inner_border_type'] = 'axis';
@@ -220,106 +219,56 @@ function graph_submissions() {
     $mygraph->parameter['x_axis_gridlines'] = 6;
     $mygraph->parameter['x_min'] = $datestart;
     $mygraph->parameter['x_max'] = $dateend;
+    $mygraph->parameter['y_max_left'] = $pointsmax != $pointsmin ? $pointsmax : $pointsmax * 1.5;
+    $mygraph->parameter['y_min_left'] = 0;
     $mygraph->parameter['x_label_date'] = 1;
     $mygraph->parameter['outer_background'] = "none";
+    $mygraph->parameter['legend'] = 'top-left';
+
     $mygraph->y_tick_labels = null;
 
-    // Adjust $tinit to avoid overflow challenge duration...
+    // Singular points.
+    $timenow = time();
+    $dates = [$datestart, $datestart + $tinit,  $dateend];
+    $line1 = [];
+    $line2 = [];
+    $datesinflexion = [];
 
-    if ($tinit + $datestart > $dateend) {
-        $tinit = $dateend - $datestart;
+    if ($datefirstanswer == 0) {
+        $datefirstanswer = PHP_INT_MAX;
     }
-
     if ($dateanswercorrect == 0) {
-        if (empty($datefirstanswer) || $datefirstanswer == 0) {
-            $points = quest_calculate_points($datestart, $datestart, $dateend, $tinit, $dateanswercorrect, $initialpoints,
-                    $pointsmax, 0);
-
-            $mygraph->x_data = array($datestart, $datestart + $tinit, $dateend);
-            $mygraph->y_data['line1'] = array($initialpoints, $initialpoints, $pointsmax);
-            $mygraph->y_data['line2'] = array($initialpoints, $initialpoints, $pointsmax);
-        } else {
-            if ($datefirstanswer < ($datestart + $tinit)) {
-                $mygraph->x_data = array($datestart, $datefirstanswer, $datestart + $tinit, $dateend);
-                $points = (($dateend * $initialpoints) - (($datestart + $tinit) * $initialpoints)) / ($dateend - $datefirstanswer);
-                $mygraph->y_data['line1'] = array($initialpoints, $initialpoints, $points, 0);
-                $mygraph->y_data['line2'] = array($initialpoints, $initialpoints, $initialpoints, $pointsmax);
-            } else {
-                $incline = ($pointsmax - $initialpoints) / ($dateend - ($datestart + $tinit));
-                $points = $initialpoints + $incline * ($datefirstanswer - ($datestart + $tinit));
-                $mygraph->x_data = array($datestart, $datestart + $tinit, $datefirstanswer, $dateend);
-                $mygraph->y_data['line1'] = array($initialpoints, $initialpoints, $points, 0);
-                $mygraph->y_data['line2'] = array($initialpoints, $initialpoints, $points, $pointsmax);
-            }
-        }
-    } else { // End dateanswercorrect==0 ...
-             // Then dateanswercorrect!=0 ...
-
-        if (empty($datefirstanswer) || $datefirstanswer == 0 || $datefirstanswer > $dateanswercorrect) {
-            $datefirstanswer = $dateanswercorrect; // ...should not be necessary.
-        }
-
-        if ($dateanswercorrect >= $datefirstanswer) {
-            if ($dateanswercorrect <= ($datestart + $tinit) && $datefirstanswer <= ($datestart + $tinit)) {
-
-                $mygraph->x_data = array($datestart, $datefirstanswer, $dateanswercorrect, $datestart + $tinit, $dateend);
-                $mygraph->y_data['line1'] = array($initialpoints, $initialpoints,
-                                quest_calculate_points($dateanswercorrect, $datestart, $dateend, $tinit, $dateanswercorrect,
-                                        $initialpoints, $pointsmax, 0),
-                                quest_calculate_points($datestart + $tinit, $datestart, $dateend, $tinit, $dateanswercorrect,
-                                        $initialpoints, $pointsmax, 0), 0);
-                $mygraph->y_data['line2'] = array($initialpoints, $initialpoints, $initialpoints,
-                                quest_calculate_points($datestart + $tinit, $datestart, $dateend, $tinit, $datefirstanswer,
-                                        $initialpoints, $pointsmax, 0), 0);
-            } else if ($dateanswercorrect > ($datestart + $tinit) && $datefirstanswer < ($datestart + $tinit)) {
-                $incline = ($pointsmax - $initialpoints) / ($dateend - ($datestart + $tinit));
-                $points = $initialpoints + $incline * ($datefirstanswer - ($datestart + $tinit));
-                $points = quest_calculate_points($dateanswercorrect, $datestart, $dateend, $tinit, $dateanswercorrect,
-                        $initialpoints, $pointsmax, 0);
-                $points3 = quest_calculate_points($datefirstanswer, $datestart, $dateend, $tinit, $datefirstanswer,
-                        $initialpoints, $pointsmax, 0);
-                $points4 = quest_calculate_points($datestart + $tinit + 1, $datestart, $dateend, $tinit, $datefirstanswer,
-                        $initialpoints, $pointsmax, 0);
-                $points5 = quest_calculate_points($dateanswercorrect, $datestart, $dateend, $tinit, $datefirstanswer,
-                        $initialpoints, $pointsmax, 0);
-                $mygraph->x_data = array($datestart, $datefirstanswer, $datestart + $tinit, $dateanswercorrect, $dateend);
-                $mygraph->y_data['line1'] = array($initialpoints, $points3, $points4, $points5, 0);
-                $mygraph->y_data['line2'] = array($initialpoints, $initialpoints, $initialpoints, $points, 0);
-            } else if ($dateanswercorrect > ($datestart + $tinit) && $datefirstanswer > ($datestart + $tinit)) {
-                $mygraph->x_data = array($datestart, $datestart + $tinit, $datefirstanswer, $dateanswercorrect, $dateend);
-                $mygraph->y_data['line1'] = array($initialpoints, $initialpoints,
-                                quest_calculate_points($datefirstanswer, $datestart, $dateend, $tinit, $dateanswercorrect,
-                                        $initialpoints, $pointsmax, 0),
-                                quest_calculate_points($dateanswercorrect, $datestart, $dateend, $tinit, $dateanswercorrect,
-                                        $initialpoints, $pointsmax, 0), 0);
-                $mygraph->y_data['line2'] = array($initialpoints, $initialpoints,
-                                quest_calculate_points($datefirstanswer, $datestart, $dateend, $tinit, $datefirstanswer,
-                                        $initialpoints, $pointsmax, 0),
-                                quest_calculate_points($dateanswercorrect, $datestart, $dateend, $tinit, $datefirstanswer,
-                                        $initialpoints, $pointsmax, 0), 0);
-            }
-        } else { // End dateanswercorrect > date_first_answer...
-            // dateanswercorrect <= date_first_answer...
-            if ($dateanswercorrect < ($datestart + $tinit)) {
-                $mygraph->x_data = array($datestart, $dateanswercorrect, $datestart + $tinit, $dateend);
-                $points = (($dateend * $initialpoints) - (($datestart + $tinit) * $initialpoints)) / ($dateend - $dateanswercorrect);
-                $mygraph->y_data['line1'] = array($initialpoints, $initialpoints, $points, 0);
-            } else {
-                $mygraph->x_data = array($datestart, $datestart + $tinit, $dateanswercorrect, $dateend);
-                $incline = ($pointsmax - $initialpoints) / ($dateend - ($datestart + $tinit));
-                $points2 = $initialpoints + $incline * ($dateanswercorrect - ($datestart + $tinit));
-                $mygraph->y_data['line1'] = array($initialpoints, $initialpoints, $points2, 0);
-            }
-        }
-
+        $dateanswercorrect = PHP_INT_MAX;
+    }
+    if ($datefirstanswer > $datestart && $datefirstanswer < $dateend) {
+        $dates[] = $datefirstanswer;
+        $datesinflexion[] = $datefirstanswer;
+    }
+    if ($dateanswercorrect < $dateend && $dateanswercorrect > $datestart) {
+        $dates[] = $dateanswercorrect;
+        $datesinflexion[] = $dateanswercorrect;
     }
 
-    $mygraph->y_format['line2'] = array('colour' => 'blue', 'line' => 'line', 'legend' => '');
-    $mygraph->y_format['line1'] = array('colour' => 'red', 'line' => 'line', 'legend' => '');
+    $drawworstcase = count($datesinflexion) > 0;
+    $dateinflexion = $drawworstcase ? min($datesinflexion) : 0;
+    sort($dates);
+    foreach ($dates as $date) {
+        $line2[] = quest_calculate_points($date, $datestart, $dateend, $tinit, $dateanswercorrect, $initialpoints, $pointsmax, $pointsmin);
+        if ($drawworstcase) {
+            $line1[] = quest_calculate_points($date, $datestart, $dateend, $tinit, $dateinflexion, $initialpoints, $pointsmax, $pointsmin);
+        }
+    }
+    if ($drawworstcase) {
+        $mygraph->y_data['line1'] = $line1;
+        $mygraph->y_format['line1'] = array('colour' => 'red', 'line' => 'line', 'legend' => '');
+        $mygraph->y_order[] = 'line1';
+    }
 
-    $mygraph->y_order = array('line1', 'line2');
-    $mygraph->y_max_left = $pointsmax;
-    $mygraph->y_min_left = 0;
+    $mygraph->x_data = $dates;
+    $mygraph->y_data['line2'] = $line2;
+    $mygraph->y_format['line2'] = array('colour' => 'blue', 'line' => 'line', 'legend' => '');
+    $mygraph->y_order[] = 'line2';
+
 
     $mygraph->draw_stack();
     $xtoday = $mygraph->get_x_point($timenow);
@@ -332,14 +281,13 @@ function graph_submissions() {
             $mygraph->calculated['boundary_box']['bottom'] - $mygraph->calculated['boundary_box']['top'],
             'dash', 'circle', 1, 'black', 0);
 
-    $todaymaxpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $dateanswercorrect, $initialpoints, $pointsmax,
-            0);
+    $todaymaxpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $dateanswercorrect,
+                                            $initialpoints, $pointsmax, $pointsmin);
 
     $ymaxpointstoday = $mygraph->get_y_point($todaymaxpoints);
     $coords = array('x' => $xtoday - 16, 'y' => 24, 'reference' => 'top-left');
     $mygraph->update_boundaryBox($label2['boundary_box'], $coords);
     $label2['text'] = get_string("today", 'quest');
-    ;
     $mygraph->print_TTF($label2);
 
     $coords = array('x' => $xtoday + 2, 'y' => $ymaxpointstoday - 14, 'reference' => 'top-left');
@@ -347,13 +295,24 @@ function graph_submissions() {
     $label2['text'] = "Max:" . number_format($todaymaxpoints, 2);
     $mygraph->print_TTF($label2);
 
-    $todayminpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $datefirstanswer, $initialpoints, $pointsmax,
-            0);
-    $yminpointstoday = $mygraph->get_y_point($todayminpoints);
-    $coords = array('x' => $xtoday + 2, 'y' => $yminpointstoday, 'reference' => 'top-left');
-    $mygraph->update_boundaryBox($label2['boundary_box'], $coords);
-    $label2['text'] = "Min:" . number_format($todayminpoints, 2);
-    $mygraph->print_TTF($label2);
+    if ($drawworstcase) {
+        $todayminpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $dateinflexion, $initialpoints, $pointsmax, $pointsmin);
+        $yminpointstoday = $mygraph->get_y_point($todayminpoints);
+        $coords = array('x' => $xtoday + 2, 'y' => $yminpointstoday, 'reference' => 'top-left');
+        $mygraph->update_boundaryBox($label2['boundary_box'], $coords);
+        $label2['text'] = "Min:" . number_format($todayminpoints, 2);
+        $mygraph->print_TTF($label2);
+
+        if (count($datesinflexion) > 1) {
+            $inflexionpoints = quest_calculate_points($dateinflexion, $datestart, $dateend, $tinit, $dateinflexion, $initialpoints, $pointsmax, $pointsmin);
+            $yinflexionpoint = $mygraph->get_y_point($inflexionpoints);
+            $xinflexionpoint = $mygraph->get_x_point($dateinflexion);
+            $coords = array('x' => $xinflexionpoint + 2, 'y' => $yinflexionpoint, 'reference' => 'top-left');
+            $mygraph->update_boundaryBox($label2['boundary_box'], $coords);
+            $label2['text'] = get_string('answers', 'quest');
+            $mygraph->print_TTF($label2);
+        }
+    }
 
     $mygraph->output();
 } // ...end graph_submissions.

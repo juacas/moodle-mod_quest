@@ -828,6 +828,9 @@ $string['maxcalification'] = 'M&aacute;xima Puntuaci&oacute;n';
 $string['maxcalification_help'] = '<P align="justify">Este par&aacute;metro permite fijar la m&aacute;xima puntuaci&oacute;n que podr&aacute; alcanzar cada uno de los desaf&iacute;os propuestos, y por lo tanto la m&aacute;xima calificaci&oacute;n que se podr&aacute; obtener en un respuesta enviada.</P>
 <P align="justify"> Este valor puede ser diferente para cada uno de los desaf&iacute;os, no pudiendo sin embargo superar la puntuación establecida como máxima para el módulo QUESTOURnament al que pertenezcan. </P>
 ';
+$string['mincalification'] = 'Mínima Puntuación';
+$string['mincalification_help'] = '<P align="justify">Este par&aacute;metro permite fijar la mínima puntuaci&oacute;n que podr&aacute; alcanzar cada uno de los desaf&iacute;os propuestos, y por lo tanto la mínima calificaci&oacute;n que se podr&aacute; obtener en un respuesta enviada.</P>
+<P align="justify"> Este valor puede ser diferente para cada uno de los desaf&iacute;os, no pudiendo sin embargo ser inferior de la puntuación establecida como mínima para el módulo QUESTOURnament al que pertenezcan. </P>';
 $string['modifsubmission'] = 'Modificar Desaf&iacute;o';
 $string['modifsubmission_help'] = '<P align="justify">Esta opci&oacute;n permite a un profesor modificar un desaf&iacute;o propuesto por un alumno. Los alumnos podr&aacute;n modificar los desaf&iacute;os que hayan propuesto, siempre y cuando no hayan sido aprobados todav&iacute;a por el profesor. </P>
 <P align="justify">La información que se presenta sobre el desafío y que puede modificarse es la siguiente:</P>
@@ -888,8 +891,11 @@ $string['permitviewautors_help'] = '<P align="justify">Si se habilita esta opci&
 <P align="justify">En caso contrario, los alumnos no conocer&aacute;n nunca la identidad de los autores de los desaf&iacute;os independientemente de cuál sea el estado de los mismos. </P>
 ';
 $string['pointsmax'] = 'Puntuación máxima';
-$string['pointsmax_help'] = 'Este parámetro permite fijar la máxima puntuación que podrá alcanzar cada uno de los desafíos propuestos, y por lo tanto la máxima calificación que se podrá obtener en un respuesta enviada.
-Este valor puede ser diferente para cada uno de los desafíos, no pudiendo sin embargo superar la puntuación establecida como máxima para el módulo QUESTOURnament al que pertenezcan. ';
+$string['pointsmax_help'] = 'Este parámetro permite fijar la máxima puntuación que podrá alcanzar este desafío, y por lo tanto la máxima calificación que se podrá obtener en un respuesta enviada.
+Este valor puede ser diferente para cada uno de los desafíos. Sin embargo no puede superar la puntuación establecida como máxima para el módulo QUESTOURnament al que pertenezcan. ';
+$string['pointsmin'] = 'Puntuación mínima';
+$string['pointsmin_help'] = 'Este parámetro permite fijar la mínima puntuación que podrá alcanzar este desafío, y por lo tanto la mínima calificación cobre la que se calculará la nota de una respuesta enviada.
+Este valor puede ser diferente para cada uno de los desafíos. Sin embargo no puede ser inferior que la puntuación establecida como mínima para el módulo QUESTOURnament al que pertenezcan. ';
 $string['seeassessment'] = 'Ver Evaluaci&oacute;n de la Respuesta';
 $string['seeassessment_help'] = '<P align="justify">Esta página muestra la evaluaci&oacute;n de una respuesta enviada, de esta forma, si no se est&aacute; de acuerdo con la misma se podr&aacute; reclamar al profesor o al autor del desaf&iacute;o para que la revise, siendo posible indicar el motivo del desacuerdo con la evaluación realizada.
 <P align="justify">Además de la calificaci&oacute;n obtenida por el autor de la respuesta, tambi&eacute;n se muestra la m&aacute;xima puntuaci&oacute;n posible por dicha respuesta, que ser&aacute; la puntuaci&oacute;n del desaf&iacute;o en el instante en que se envi&oacute; la repuesta sobre la que se efectúa la reclamación. </P>

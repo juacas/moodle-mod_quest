@@ -461,6 +461,7 @@ function quest_submissions_restore_mods($oldquestid, $newquestid, $info, $restor
         $submission->state = backup_todb($subinfo['#']['STATE']['0']['#']);
         $submission->datestart = backup_todb($subinfo['#']['DATESTART']['0']['#']);
         $submission->pointsmax = backup_todb($subinfo['#']['POINTSMAX']['0']['#']);
+        $submission->pointsmin = backup_todb($subinfo['#']['POINTSMIN']['0']['#']);
         $submission->dateanswercorrect = backup_todb($subinfo['#']['DATEANSWERCORRECT']['0']['#']);
         $submission->initialpoints = backup_todb($subinfo['#']['INITIALPOINTS']['0']['#']);
         $submission->pointsanswercorrect = backup_todb($subinfo['#']['POINTSANSWERCORRECT']['0']['#']);

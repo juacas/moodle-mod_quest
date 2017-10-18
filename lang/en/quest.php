@@ -816,14 +816,17 @@ $string['groupmode_help'] = '<P align="justify">The group mode can be one of thr
       <li><strong>Activity Level</strong>: Each activity that supports groups can also define its own grouping mode. If the course is set to "<a href="help.php?module=moodle&amp;file=groupmodeforce"">force group mode</a>" then the setting for each activity is ignored.</li>
   </ul>
 </div>';
-$string['initialpoints'] = 'initial score';
+$string['initialpoints'] = 'Initial score';
 $string['initialpoints_help'] = '<P align="justify">This parameter sets the initial score of the challenge to be added.</P>
 <P align="justify">However, the teacher will be able to modify this value till the maximum score set for the QUESTOURnament where the challenge is to be added. A student can also modify this initial score when adding a challenge, but only by choosing a value equal or lower than the value set by the teacher as initial score of the QUESTOURnament where the challenge is to be added.
  </P>
 <P align="justify">Finally, it is important to emphasize that the value of this parameter can be different for each challenge in a QUESTOURnament.</P>';
 $string['maxcalification'] = 'Highest score';
 $string['maxcalification_help'] = '<P align="justify">This parameter sets the maximum score that each challenge of this QUESTOURnament will be able to reach, which means that it is also the maximum score that a submitted answer will be able to obtain.</P>
-<P align="justify">This value may be different for each challenge, but it can not be hihger that the maximum score set for the QUESTOURnament to which they belong.</P>';
+<P align="justify">This value may be different for each challenge, but it can not be higher than the maximum score set for the QUESTOURnament to which they belong.</P>';
+$string['mincalification'] = 'Lowest score';
+$string['mincalification_help'] = '<P align="justify">This parameter sets the minimum score that each challenge of this QUESTOURnament will be able to reach, which means that it is also the maximum score that a submitted answer will be able to obtain.</P>
+<P align="justify">This value may be different for each challenge, but it can not be lower than the minimum score set for the QUESTOURnament to which they belong.</P>';
 $string['modifsubmission'] = 'Modify challenge';
 $string['modified'] = 'modified';
 $string['modifsubmission_help'] = '<P align="justify">This page allows the teacher to modify a challenge proposed by a student. The students will be also able to modify the challenges that they have proposed, whenever they have not been yet aproved by the teacher.</P>
@@ -872,8 +875,9 @@ $string['permitviewautors'] = 'Show authoring details to the students of closed 
 $string['permitviewautors_help'] = '<P align="justify">If this option, that is unselected by default, is selected, the information about the authors of the challenges of the QUESTOURnament will be shown, oncen those challenges are closed and it is not possible to submit any more answers.</P>
 <P align="justify">If this option is unselected, the students will never know the identity of the authors of the challenges even if they are closed.</P>';
 $string['pointsmax'] = 'Max Score';
-$string['pointsmax_help'] = 'Este parámetro permite fijar la máxima puntuación que podrá alcanzar cada uno de los desafíos propuestos, y por lo tanto la máxima calificación que se podrá obtener en un respuesta enviada.
-Este valor puede ser diferente para cada uno de los desafíos, no pudiendo sin embargo superar la puntuación establecida como máxima para el módulo QUESTOURnament al que pertenezcan. ';
+$string['pointsmax_help'] = '<P align="justify">This parameter sets the maximum score that this challenge will be able to reach.<P align="justify">This value may be different for each challenge, but it can not be higher than the maximum score set for the QUESTOURnament to which they belong.</P>';
+$string['pointsmin'] = 'Min Score';
+$string['pointsmin_help'] = '<P align="justify">This parameter sets the minimum score that this challenge will be able to reach.<P align="justify">This value may be different for each challenge, but it can not be lower than the maximum score set for the QUESTOURnament to which they belong.</P>';
 $string['seeassessment'] = 'See Assesment';
 $string['seeassessment_help'] = '<P align="justify">This page shows the assessment of a submitted answer, this way, if the student does not agree with the assessment he can claim its revision to the teacher or to the author of the challenge, being it possible to explain the reason of his disagreement with the assessment.
 <P align="justify">Besides the score obtained by the author of the answer, the maximum possile score for that answer, that is, the score of the challenge when the answer for which the complaint is made was submitted, is also shown.</P>

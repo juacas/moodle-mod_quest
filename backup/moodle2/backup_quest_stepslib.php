@@ -40,7 +40,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $quest = new backup_nested_element('quest', array('id'),
                 array('name', 'intro', 'introformat', 'nattachments', 'validateassessment', 'usepassword', 'password', 'maxbytes',
                                 'datestart', 'dateend', 'gradingstrategy', 'nelements', 'timemaxquestion', 'nmaxanswers',
-                                'maxcalification', 'typecalification', 'allowteams', 'ncomponents', 'phase', 'format', 'visible',
+                                'maxcalification', 'mincalification', 'typecalification', 'allowteams', 'ncomponents', 'phase', 'format', 'visible',
                                 'tinitial', 'gradingstrategyautor', 'nelementsautor', 'initialpoints', 'teamporcent',
                                 'showclasifindividual', 'showauthoringdetails', 'typegrade', 'permitviewautors'));
         // Grading Elements for Submissions.
@@ -66,7 +66,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
                 array('userid', 'numelements', 'title', 'timecreated', 'description', 'descriptionformat', 'descriptiontrust',
                                 'attachment', 'points', 'phase', 'commentteacherpupil', 'commentteacherauthor',
                                 'dateend', 'nanswers',
-                                'nanswerscorrect', 'state', 'datestart', 'pointsmax', 'dateanswercorrect', 'initialpoints',
+                                'nanswerscorrect', 'state', 'datestart', 'pointsmax', 'pointsmin', 'dateanswercorrect', 'initialpoints',
                                 'pointsanswercorrect', 'mailed', 'maileduser', 'predictedduration', 'preceiveddifficulty',
                                 'evaluated'));
 

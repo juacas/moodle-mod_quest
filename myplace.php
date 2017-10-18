@@ -206,6 +206,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $datesend[] = (int) $submission->dateend;
             $dateanswercorrect[] = (int) $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
+            $pointsmin[] = (float) $submission->pointsmin;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
             $tinitial[] = (int) $quest->tinitial * 86400;
             $state[] = (int) $submission->state;
@@ -280,7 +281,7 @@ for ($i = 0; $i < $indice; $i++) {
     $incline[$i] = 0;
 }
 $servertime = time();
-$params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+$params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                 $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
 
 $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);

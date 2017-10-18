@@ -670,8 +670,9 @@ if ($action == 'displayfinalgrade') {
             $nanswerscorrect[] = (int) $submission->nanswerscorrect;
             $datesstart[] = (int) $submission->datestart;
             $datesend[] = (int) $submission->dateend;
-            $dateanswercorrect[] = $submission->dateanswercorrect;
+            $dateanswercorrect[] = (int) $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
+            $pointsmin[] = (float) $submission->pointsmin;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
             $tinitial[] = $quest->tinitial * 86400;
             $state[] = (int) $submission->state;
@@ -754,7 +755,7 @@ if ($action == 'displayfinalgrade') {
         $incline[$i] = 0;
     }
     $servertime = time();
-    $params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                     $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
                     $pointsnmaxanswers, $servertime];
 
