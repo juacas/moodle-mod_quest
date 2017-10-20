@@ -59,7 +59,7 @@ if ($quest->allowteams != 1) {
     print_error('nopermissions', 'error', null, 'It is not allowed teams for this Questournament.');
 }
 
-$changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
+$changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; // JPC group support desactivation.

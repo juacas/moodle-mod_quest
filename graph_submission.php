@@ -223,7 +223,6 @@ function graph_submissions() {
     $mygraph->parameter['y_min_left'] = 0;
     $mygraph->parameter['x_label_date'] = 1;
     $mygraph->parameter['outer_background'] = "none";
-    $mygraph->parameter['legend'] = 'top-left';
 
     $mygraph->y_tick_labels = null;
 

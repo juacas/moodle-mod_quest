@@ -57,8 +57,8 @@ $strquest = get_string("modulename", "quest");
 $strcalification = get_string("calification", "quest");
 
 // Now check whether we need to display a frameset.
-
-if (empty($_GET['frameset'])) {
+$frameset = optional_param('frameset', null, PARAM_ALPHA);
+if (empty($frameset)) {
     echo "<head><title>{$course->shortname}: " . format_string($quest->name, true) . "</title></head>\n";
     echo "<frameset rows=\"50%,*\" border=\"10\">";
     echo "<frame src=\"calification.php?id=$id&amp;frameset=top&amp;redirect=$redirect\" border=\"10\">";
@@ -70,7 +70,7 @@ if (empty($_GET['frameset'])) {
 
 // ...top frame with the navigation bar and the assessment form.
 
-if (!empty($_GET['frameset']) and $_GET['frameset'] == "top") {
+if (!empty($frameset) and $frameset == "top") {
 
     print_header_simple(format_string($quest->name), "",
             "<a href=\"index.php?id=$course->id\">$strquests</a> ->
@@ -164,7 +164,7 @@ if ($action == 'global') {
 
     // Check to see if groups are being used in this workshop.
     // and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?.
+    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
@@ -339,7 +339,7 @@ if ($action == 'global') {
 
     // Check to see if groups are being used in this workshop.
     // and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?.
+    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode = $currentgroup = false; // JPC group support desactivation.

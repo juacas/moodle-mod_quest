@@ -571,10 +571,9 @@ FORM;
     } // ...end of switch.
 
     if ($viewgeneral == 1) {
-        echo $OUTPUT->redirect_message("view.php?id=$cm->id", '<center>' . get_string("savedok", "quest") . '</center>', 1, false);
+        echo $OUTPUT->continue_button("view.php?id=$cm->id", '<center>' . get_string("savedok", "quest") . '</center>');
     } else {
-        echo $OUTPUT->redirect_message("submissions.php?id=$cm->id&sid=$sid&action=showsubmission", get_string("savedok", "quest"),
-                1, false);
+        echo $OUTPUT->continue_button("submissions.php?id=$cm->id&sid=$sid&action=showsubmission", get_string("savedok", "quest"));
     }
 } else if ($action == 'updateassessment') {
     // Update assessment (by teacher or student)....
@@ -807,9 +806,9 @@ FORM;
     }
     // ...show grade if grading strategy is not zero..
     if ($quest->gradingstrategy) {
-        echo $OUTPUT->redirect_message($returnto,
-                get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" . get_string("maximumgrade") .
-                        " " . number_format($points, 4) . ")", 10, false);
+        echo $OUTPUT->notification(get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" . get_string("maximumgrade") .
+        " " . number_format($points, 4) . ")", 'info');
+        echo $OUTPUT->continue_button($returnto);
     } else {
         echo $OUTPUT->redirect_message($returnto, '', 1, false);
     }

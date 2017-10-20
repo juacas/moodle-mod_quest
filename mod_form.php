@@ -169,8 +169,8 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('select', 'typecalification', get_string('typecalification', 'quest'), $questtypepoints);
         $mform->addHelpButton('typecalification', "typecalification", "quest");
 
-        // Points from 1 to 300.
-        $arraypoints = array_combine(range(1, 300), range(1, 300));
+        // Points from 0 to 300.
+        $arraypoints = array_combine(range(0, 300), range(0, 300));
 
         $mform->addElement('select', 'maxcalification', get_string('maxcalification', 'quest'), $arraypoints);
         $mform->addHelpButton('maxcalification', "maxcalification", "quest");

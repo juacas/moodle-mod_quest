@@ -321,8 +321,9 @@ if ($action == "answer") {
         }
     }
 
-    echo $OUTPUT->redirect_message($submissionurl, get_string('emailanswerdeletesubject', 'quest'), 3, false);
     echo $OUTPUT->header();
+    echo $OUTPUT->notification(get_string('emailanswerdeletesubject', 'quest'), 'info');
+    echo $OUTPUT->continue_button($submissionurl);
     print_string("deleting", "quest");
     echo $OUTPUT->footer;
 } else if ($action == 'modif') {

@@ -993,7 +993,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
 
     // Check to see if groups are being used in this quest.
     // ...and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?.
+    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
@@ -3889,7 +3889,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
     global $CFG, $USER, $DB;
 
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?.
+    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.

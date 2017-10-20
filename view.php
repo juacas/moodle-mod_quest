@@ -264,7 +264,7 @@ echo $OUTPUT->header();
 if ($action == 'displayfinalgrade') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
+    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
