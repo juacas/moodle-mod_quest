@@ -141,7 +141,7 @@ if ($action == "answer") {
     }
 } else if ($action == "showanswer") {
     if (($quest->usepassword) && (!$ismanager)) {
-        quest_require_password($quest, $course, $_POST['userpassword']);
+        quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
     }
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", array("id" => $aid));

@@ -61,15 +61,16 @@ $ismanager = has_capability('mod/quest:manage', $context);
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("viewassessmentautor", "quest");
-if (isset($_POST['newcalification'])) {
+$newcalification = optional_param('newcalification', null, PARAM_FLOAT);
+if (isset($newcalification)) {
 
     if (($ismanager) && ($assessment->state != 0)) {
 
         if ($calificationuser = $DB->get_record("quest_calification_users", "userid", $submission->userid, "questid", $quest->id)) {
             $calificationuser->points -= $assessment->points;
             $calificationuser->pointssubmission -= $assessment->points;
-            $calificationuser->points += $_POST['newcalification'];
-            $calificationuser->pointssubmission += $_POST['newcalification'];
+            $calificationuser->points += $newcalification;
+            $calificationuser->pointssubmission += $newcalification;
             $DB->set_field("quest_calification_users", "points", $calificationuser->points, array("id" => $calificationuser->id));
             $DB->set_field("quest_calification_users", "pointssubmission", $calificationuser->pointssubmission,
                     array("id" => $calificationuser->id));
@@ -79,8 +80,8 @@ if (isset($_POST['newcalification'])) {
                         array("teamid" => $calificationuser->teamid, "questid" => $quest->id))) {
                     $calificationteam->points -= $assessment->points;
                     $calificationteam->pointssubmission -= $assessment->points;
-                    $calificationteam->points += $_POST['newcalification'];
-                    $calificationteam->pointssubmission += $_POST['newcalification'];
+                    $calificationteam->points += $newcalification;
+                    $calificationteam->pointssubmission += $newcalification;
                     $DB->set_field("quest_calification_teams", "points", $calificationteam->points,
                             array("id" => $calificationteam->id));
                     $DB->set_field("quest_calification_teams", "pointssubmission", $calificationteam->pointssubmission,
@@ -88,7 +89,7 @@ if (isset($_POST['newcalification'])) {
                 }
             }
         }
-        $assessment->points = $_POST['newcalification'];
+        $assessment->points = $newcalification;
         $DB->set_field("quest_assessments_autors", "points", $assessment->points, array("id" => $assessment->id));
         $DB->set_field("quest_assessments_autors", "dateassessment", time(), array("id" => $assessment->id));
     }

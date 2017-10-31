@@ -82,7 +82,7 @@ $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, $_POST['userpassword']);
+    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
 }
 
 /*

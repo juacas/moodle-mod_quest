@@ -498,7 +498,6 @@ if ($action == 'displayfinalgrade') {
         }
     }
     quest_print_quest_heading($quest);
-
     echo "<b>";
     quest_print_challenge_grading_link($cm, $context, $quest);
     echo "<br/>";
@@ -688,6 +687,15 @@ if ($action == 'displayfinalgrade') {
             $tablesort->data[] = $data;
             $tablesort->sortdata[] = $sortdata;
         }
+        // Javascript counter support.
+        for ($i = 0; $i < $indice; $i++) {
+            $forms[$i] = "#formscore$i";
+        }
+        $servertime = time();
+        $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+                        $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
+                        $pointsnmaxanswers, $servertime];
+        $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
     }
     if ($canviewauthors) {
         $sort = optional_param('sort', 'dateend', PARAM_ALPHA);
@@ -748,18 +756,6 @@ if ($action == 'displayfinalgrade') {
     echo "<center>";
     echo get_string('legend', 'quest', $grafic);
     echo "</center>";
-
-    // Javascript counter support.
-    for ($i = 0; $i < $indice; $i++) {
-        $forms[$i] = "#formscore$i";
-        $incline[$i] = 0;
-    }
-    $servertime = time();
-    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                    $pointsnmaxanswers, $servertime];
-
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 
     if ($repeatactionsbelow) {
         if ($quest->dateend > $timenow) {

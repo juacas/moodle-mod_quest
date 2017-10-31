@@ -63,7 +63,7 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, $_POST['userpassword']);
+    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
 }
 
 $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?

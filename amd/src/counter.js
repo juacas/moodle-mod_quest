@@ -114,7 +114,7 @@ function quest_calculate_points(timenow, datestart, dateend, tinitial, dateanswe
  * @param correccion seconds
  * @returns
  */
-function puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints, tinitial,
+function puntuacionarray($, indice, pointsmax, pointsmin, initialpoints, tinitial,
 		datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend,
 		formularios, type, nmaxanswers, pointsnmaxanswers, servertime, correccion) {
 	var browserdate = new Date();
@@ -133,7 +133,7 @@ function puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints
     }
 
     setTimeout(function (){
-    	puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints, tinitial,
+    	puntuacionarray($, indice, pointsmax, pointsmin, initialpoints, tinitial,
     					datestart, state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
     					dateend, formularios, type, nmaxanswers, pointsnmaxanswers, null, correccion);
     	}, 1000);
@@ -142,10 +142,10 @@ function puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints
 define(['jquery'], function ($) {
 
 	var init = {
-		puntuacionarray:  function (indice, incline, pointsmax, pointsmin, initialpoints, tinitial, datestart,
+		puntuacionarray:  function (indice, pointsmax, pointsmin, initialpoints, tinitial, datestart,
 									state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
 									dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
-			puntuacionarray($, indice, incline, pointsmax, pointsmin, initialpoints, tinitial, datestart, state,
+			puntuacionarray($, indice, pointsmax, pointsmin, initialpoints, tinitial, datestart, state,
 							nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios,
 							type, nmaxanswers, pointsnmaxanswers,servertime, correccion);
 		},

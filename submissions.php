@@ -78,7 +78,7 @@ $url = new moodle_url('/mod/quest/submissions.php',
 $PAGE->set_url($url);
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, $_POST['userpassword']);
+    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
 }
 // Confirm delete.
 if ($action == 'confirmdelete') {

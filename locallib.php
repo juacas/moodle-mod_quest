@@ -220,7 +220,7 @@ function quest_print_answer_grading_link($cm, $context, $quest) {
     if (has_capability('mod/quest:manage', $context) and $quest->nelements) {
         $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
         $url = new moodle_url('assessments.php', ['id' => $cm->id, 'newform' => 0, 'cambio' => 0, 'viewgeneral' => 1,
-                        'action' => 'editelement', 'sesskey' => sesskey()]);
+                        'action' => 'editelements', 'sesskey' => sesskey()]);
         $text .= "&nbsp;<a href=\"" . $url->out() . "\">" . $editicon . '</a>';
     }
     echo ($text);
