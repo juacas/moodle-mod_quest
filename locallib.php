@@ -839,6 +839,9 @@ class quest_print_answer_form extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sid', $currententry->submissionid);
         $mform->setType('sid', PARAM_INT);
+        $mform->addElement('hidden', 'sesskey', sesskey());
+        $mform->setType('sesskey', PARAM_ALPHA);
+
         $mform->addElement('hidden', 'submissionid', $currententry->submissionid);
         $mform->setType('submissionid', PARAM_INT);
 
@@ -1037,11 +1040,12 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
                 $mineicon = $answer->userid == $USER->id && !$ismanager ? $OUTPUT->user_picture($USER) : '';
                 $answertitle = $mineicon . quest_print_answer_title($quest, $answer, $submission);
+                $sesskey = sesskey();
                 $editlink = " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
                          $editicon . '</a>';
                 $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'confirmdelete',
                                          'aid' => $answer->id]))->out();
-             $deletelink = " <a href=\"$url\">$deleteicon</a>";
+                $deletelink = " <a href=\"$url\">$deleteicon</a>";
                 if ($ismanager) {
                     $data[] = $answertitle . $editlink . $deletelink;
                 } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase == 0) &&
@@ -2299,7 +2303,6 @@ function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $date
             break;
     }
 
-
     if ($points < $pointsmin) {
         $points = $pointsmin;
     }
@@ -2385,8 +2388,6 @@ FORM;
         echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
     }
     echo "</tr>\n";
-
-
 
     if ($elementsraw) {
         foreach ($elementsraw as $element) {

@@ -50,10 +50,6 @@ $strquest = get_string('modulename', 'quest');
 $strsubmission = get_string('submission', 'quest');
 $action = 'upload';
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
-
-$changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?
-$groupmode = groups_get_activity_group($cm); // Groups are being used?
-$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
 $url = new moodle_url('/mod/quest/upload.php', array('id' => $id));

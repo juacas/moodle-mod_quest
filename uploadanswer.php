@@ -48,10 +48,6 @@ if (!has_capability('moodle/legacy:admin', $context) && has_capability('moodle/l
 $strquests = get_string('modulenameplural', 'quest');
 $strquest = get_string('modulename', 'quest');
 $stranswer = get_string('answer', 'quest');
-
-$changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
-$groupmode = groups_get_activity_group($cm); // Groups are being used?
-$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
 print_header_simple(format_string($quest->name) . " : $stranswer", "",

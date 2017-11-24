@@ -89,6 +89,7 @@ if ($answer->userid == $USER->id) {
     echo "<input type=\"hidden\" name=\"redirect\" value=\"$redirect\"/>";
     echo "<input type=\"hidden\" name=\"sid\" value=\"$submission->id\" /> ";
     echo "<input type=\"hidden\" name=\"aid\" value=\"$answer->id\" /> ";
+    echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" /> ";
     echo "<center>";
     echo "<table cellpadding=\"5\" border=\"1\">";
     echo "<tr valign=\"top\">";

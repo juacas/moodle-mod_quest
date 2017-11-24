@@ -161,14 +161,7 @@ if (!empty($frameset) and $frameset == "top") {
 print_header('', '', '', '', '<base target="_parent" />');
 
 if ($action == 'global') {
-
-    // Check to see if groups are being used in this workshop.
-    // and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?.
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?.
-    $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
-
     // Print settings and things in a table across the top.
     echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
 
@@ -336,12 +329,6 @@ if ($action == 'global') {
 
     echo '</table>';
 } else if ($action == 'teams') {
-
-    // Check to see if groups are being used in this workshop.
-    // and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?.
-    $currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
 
     // Print settings and things in a table across the top.

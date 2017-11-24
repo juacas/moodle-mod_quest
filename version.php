@@ -25,15 +25,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-// ////////////////////////////////////////////////////
-// Code fragment to define the version of QUEST
-// This fragment is called by moodle_needs_upgrading() and /admin/index.php
-// ////////////////////////////////////////////////////
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017101800;
+$plugin->version = 2017110200;
 $plugin->requires = 2013111800; // Moodle 2.6 at least.
 $plugin->component = 'mod_quest';
 $plugin->cron = 600; // Period for cron to check this module (secs).
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.3.2';
+$plugin->release = 'v1.3.3';

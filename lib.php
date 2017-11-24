@@ -1206,7 +1206,8 @@ function quest_refresh_events($courseid = 0) {
                     $event->timeduration = 0;
                     $event->visible = $DB->get_field('course_modules', 'visible',
                             array('module' => $moduleid, 'instance' => $quest->id));
-                    calendar_event::create($event);}
+                    calendar_event::create($event);
+                }
             }
         }
     }

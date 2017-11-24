@@ -268,7 +268,6 @@ function graph_submissions() {
     $mygraph->y_format['line2'] = array('colour' => 'blue', 'line' => 'line', 'legend' => '');
     $mygraph->y_order[] = 'line2';
 
-
     $mygraph->draw_stack();
     $xtoday = $mygraph->get_x_point($timenow);
     /*
