@@ -220,7 +220,7 @@ function quest_print_answer_grading_link($cm, $context, $quest) {
     if (has_capability('mod/quest:manage', $context) and $quest->nelements) {
         $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
         $url = new moodle_url('assessments.php', ['id' => $cm->id, 'newform' => 0, 'cambio' => 0, 'viewgeneral' => 1,
-                        'action' => 'editelement', 'sesskey' => sesskey()]);
+                        'action' => 'editelements', 'sesskey' => sesskey()]);
         $text .= "&nbsp;<a href=\"" . $url->out() . "\">" . $editicon . '</a>';
     }
     echo ($text);
@@ -319,21 +319,25 @@ class quest_print_upload_form extends moodleform {
         }
         $mform->setType('dateend', PARAM_INT);
 
-        for ($i = 0; $i <= $quest->maxcalification; $i++) {
+        for ($i = $quest->mincalification; $i <= $quest->maxcalification; $i++) {
             $numbers[$i] = $i;
         }
         $pointsmax = $quest->maxcalification;
 
         $mform->addElement('select', 'pointsmax', get_string("pointsmax", "quest"), $numbers);
         $mform->setDefault('pointsmax', $quest->maxcalification);
-        $mform->addHelpButton('pointsmax', 'pointsmax', 'quest'); // TODO: evp create help doc.
+        $mform->addHelpButton('pointsmax', 'pointsmax', 'quest');
+        $mform->addElement('select', 'pointsmin', get_string("pointsmin", "quest"), $numbers);
+        $mform->setDefault('pointsmin', $quest->mincalification);
+        $mform->addHelpButton('pointsmin', 'pointsmin', 'quest');
+
         unset($numbers);
         if ($ismanager) {
-            for ($i = 0; $i <= $quest->maxcalification; $i++) {
+            for ($i = $quest->mincalification; $i <= $quest->maxcalification; $i++) {
                 $numbers[$i] = $i;
             }
         } else {
-            for ($i = 0; $i <= $quest->initialpoints; $i++) {
+            for ($i = $quest->mincalification; $i <= $quest->initialpoints; $i++) {
                 $numbers[$i] = $i;
             }
         }
@@ -393,9 +397,6 @@ class quest_print_upload_form extends moodleform {
     }
 
     public function validation($data, $files) {
-        // TODO evp el tema de las fechas se podrÃ­a tratar de ver si se puede mejorar de tal
-        // manera.
-        // ...que no se pueda seleccionar una fecha posterior a la del fin del quest....
         $errors = parent::validation($data, $files);
         $a = new stdClass();
         $quest = $this->_customdata['quest'];
@@ -411,7 +412,28 @@ class quest_print_upload_form extends moodleform {
         if ($data['datestart'] >= $data['dateend']) {
             $errors['datestart'] = get_string('invaliddates', 'quest', $a);
         }
+        if ($data['pointsmax'] > $quest->maxcalification) {
+            $errors['pointsmax'] = get_string('pointsmax_help', 'quest') .
+            '(' . get_string('pointsmin', 'quest') . ' < ' . get_string('pointsmax', 'quest') . ' < ' . $quest->maxcalification . ')';
+        }
+        if ($data['pointsmin'] < $quest->mincalification) {
+            $errors['pointsmin'] = get_string('pointsmin_help', 'quest') .
+            '(' . $quest->mincalification . ' < ' . get_string('pointsmin', 'quest') . ' < ' . get_string('pointsmax', 'quest') . ')';
 
+        }
+        if ($data['pointsmax'] < $data['pointsmin']) {
+            $errors['pointsmax'] = get_string('pointsmax_help', 'quest') .
+            '(' . get_string('pointsmin', 'quest') . ' < ' . get_string('pointsmax', 'quest') . ' < ' . $quest->maxcalification . ')';
+            $errors['pointsmin'] = get_string('pointsmin_help', 'quest').
+            '(' . $quest->mincalification . ' < ' . get_string('pointsmin', 'quest') . ' < ' . get_string('pointsmax', 'quest') . ')';
+
+        }
+        if ($data['pointsmax'] < $data['initialpoints']) {
+            $errors['initialpoints'] = get_string('initialpoints', 'quest') . ' < ' . $data['pointsmax'] . '(' . get_string('pointsmax', 'quest') . ')';
+        }
+        if ($data['pointsmin'] > $data['initialpoints']) {
+            $errors['initialpoints'] = get_string('initialpoints', 'quest') . ' > ' . $data['pointsmin'] . '(' . get_string('pointsmin', 'quest') . ')';
+        }
         return $errors;
     }
 }
@@ -500,7 +522,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
 
     quest_update_challenge_calendar($cm, $quest, $newsubmission);
-    $redirecturl = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
+    $redirecturl = new moodle_url('/mod/quest/submissions.php', ['id' => $cm->id, 'sid' => $newsubmission->id, 'action' => 'showsubmission']);
     if ($action == 'submitchallenge') {
         require_once('classes/event/challenge_created.php');
         mod_quest\event\challenge_created::create_from_parts($newsubmission, $cm)->trigger();
@@ -513,6 +535,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
                     "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
                     "$cm->id");
         }
+
     } else if ($action == 'approve') {
         if ($CFG->version >= 2014051200) {
             require_once('classes/event/challenge_approved.php');
@@ -522,7 +545,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
                     "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
                     "$cm->id");
         }
-        // Get next url: assess_autor.
+        // Get next url: assess_autor or approve.
         $redirecturl = quest_next_submission_url($newsubmission, $cm);
     }
     $PAGE->set_title(format_string($quest->name));
@@ -701,8 +724,9 @@ function quest_print_submission_info($quest, $submission) {
     $nanswerscorrect[] = (int) $submission->nanswerscorrect;
     $datesstart[] = (int) $submission->datestart;
     $datesend[] = (int) $submission->dateend;
-    $dateanswercorrect[] = $submission->dateanswercorrect;
+    $dateanswercorrect[] = (int) $submission->dateanswercorrect;
     $pointsmax[] = (float) $submission->pointsmax;
+    $pointsmin[] = (float) $submission->pointsmin;
     $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
     $tinitial[] = $quest->tinitial * 86400;
     $state[] = (int) $submission->state;
@@ -713,7 +737,7 @@ function quest_print_submission_info($quest, $submission) {
     $forms[] = "#formscore";
     $incline[] = 0;
     $servertime = time();
-    $params = [1, $incline, $pointsmax, $initialpoints, $tinitial,
+    $params = [1, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial,
                     $datesstart, $state, $nanswerscorrect, $dateanswercorrect,
                     $pointsanswercorrect, $datesend,
                     $forms, $type, $nmaxanswers, $pointsnmaxanswers,
@@ -815,6 +839,9 @@ class quest_print_answer_form extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'sid', $currententry->submissionid);
         $mform->setType('sid', PARAM_INT);
+        $mform->addElement('hidden', 'sesskey', sesskey());
+        $mform->setType('sesskey', PARAM_ALPHA);
+
         $mform->addElement('hidden', 'submissionid', $currententry->submissionid);
         $mform->setType('submissionid', PARAM_INT);
 
@@ -969,7 +996,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
 
     // Check to see if groups are being used in this quest.
     // ...and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?.
+    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
@@ -1013,11 +1040,12 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
                 $mineicon = $answer->userid == $USER->id && !$ismanager ? $OUTPUT->user_picture($USER) : '';
                 $answertitle = $mineicon . quest_print_answer_title($quest, $answer, $submission);
+                $sesskey = sesskey();
                 $editlink = " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
                          $editicon . '</a>';
                 $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'confirmdelete',
                                          'aid' => $answer->id]))->out();
-             $deletelink = " <a href=\"$url\">$deleteicon</a>";
+                $deletelink = " <a href=\"$url\">$deleteicon</a>";
                 if ($ismanager) {
                     $data[] = $answertitle . $editlink . $deletelink;
                 } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase == 0) &&
@@ -2215,6 +2243,7 @@ function quest_get_points($submission, $quest, $answer = '') {
     $dateend = $submission->dateend;
     $dateanswercorrect = $submission->dateanswercorrect;
     $pointsmax = $submission->pointsmax;
+    $pointsmin = $submission->pointsmin;
 
     $tinitial = $quest->tinitial * 86400;
     $type = $quest->typecalification;
@@ -2225,68 +2254,59 @@ function quest_get_points($submission, $quest, $answer = '') {
     if ($state < 2) {
         $grade = $initialpoints;
     } else {
-        $grade = quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax,
-                $type);
+        $grade = quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect,
+                $initialpoints, $pointsmax, $pointsmin, $type);
     }
 
     return $grade;
 }
 
-function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
-    if (($dateend - $datestart - $tinitial) == 0) {
-        $incline = 0;
-    } else {
-        if ($type == 0) {
-            $incline = ($pointsmax - $initialpoints) / ($dateend - $datestart - $tinitial);
-        } else {
-            if ($initialpoints == 0) {
-                $initialpoints = 0.0001;
-            }
-            $incline = (1 / ($dateend - $datestart - $tinitial)) * log($pointsmax / $initialpoints);
-        }
+function quest_calculate_points($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $pointsmin=0, $type = 0) {
+    if (!$dateanswercorrect) {
+        $dateanswercorrect = PHP_INT_MAX; // This regularize comparisons.
     }
-    if ($timenow < $datestart) { // ...start pending.
-        $grade = $initialpoints;
-    } else if ($dateend < $timenow) {
-        $grade = 0;
-    } else if ($timenow < ($datestart + $tinitial) && ($dateanswercorrect == 0 || $timenow <= $dateanswercorrect)) {
-        // Stationary score....
-        $grade = $initialpoints;
-    } else if ($dateanswercorrect == 0 || $timenow <= $dateanswercorrect) { // ...there is no inflexion point.
-        $t = $timenow - $datestart;
-        if ($type == 0) {
-            $grade = ($t - $tinitial) * $incline + $initialpoints;
-        } else {
-            $grade = $initialpoints * exp($incline * ($t - $tinitial));
-        }
+    if ($dateanswercorrect < $datestart) {
+        $dateanswercorrect = $datestart;
+    }
+    // Determine scoring zone.
+    if ($timenow >= $dateend) {
+        $zone = 'ended';
+    } else if ($timenow > $dateanswercorrect) {
+        $zone = 'deflaction';
+    } else if ($timenow < ($datestart + $tinitial)) {
+        $zone = 'stationary';
+    } else if ($timenow >= ($datestart + $tinitial)) {
+        $zone = 'inflaction';
     } else {
-        // ...deflactionary score: is in decreasing zone.
-        $t = $timenow - $dateanswercorrect;
-        if ($type == 0) {
-            if ($dateanswercorrect <= $datestart + $tinitial) {
-                // ...correct answer is in stationary part.
-                $pointscorrect = $initialpoints;
-            } else {
-                // ...correct answer was in inflactionary part.
-                $pointscorrect = $incline * ($dateanswercorrect - $datestart - $tinitial) + $initialpoints;
-            }
-            $incline2 = $pointscorrect / ($dateend - $dateanswercorrect);
-            $grade = $pointscorrect - $incline2 * $t;
-        } else { // ...type =1 deprecated.
-            if ($dateanswercorrect <= $datestart + $tinitial) {
-                $pointscorrect = $initialpoints;
-            } else {
-                $pointscorrect = $initialpoints * exp($incline * ($dateanswercorrect - $datestart - $tinitial));
-            }
-            $incline2 = (1 / ($dateend - $dateanswercorrect)) * log(0.0001 / $pointscorrect);
-            $grade = $pointsanswercorrect * exp($incline2 * $t);
-        }
+        print_error('error');
     }
 
-    if ($grade < 0) {
-        $grade = 0;
+    switch ($zone) {
+        case 'stationary': // Stationary score.
+            $points = $initialpoints;
+            break;
+        case 'ended':
+            if ($dateanswercorrect <= $dateend) {
+                $points = $pointsmin;
+            } else {
+                $points = $pointsmax;
+            }
+            break;
+        case 'inflaction': // Inflactionary zone.
+            $dt = $timenow - ($datestart + $tinitial);
+            $points = $dt * ($pointsmax - $initialpoints) / ($dateend - $datestart - $tinitial) + $initialpoints;
+            break;
+        case 'deflaction': // Deflactionary score.
+            $pointscorrect = quest_calculate_points($dateanswercorrect, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $pointsmin);
+            $incline2 = ($pointscorrect - $pointsmin) / ($dateend - $dateanswercorrect);
+            $points = $pointscorrect - $incline2 * ($timenow - $dateanswercorrect);
+            break;
     }
-    return $grade;
+
+    if ($points < $pointsmin) {
+        $points = $pointsmin;
+    }
+    return $points;
 }
 
 function quest_print_assessment_autor($quest, $assessment = false, $allowchanges = false,
@@ -2368,8 +2388,6 @@ FORM;
         echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
     }
     echo "</tr>\n";
-
-
 
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
@@ -2836,11 +2854,15 @@ function quest_sortfunction_calification($a, $b) {
 /** Insert scoring graph */
 function quest_print_score_graph($quest, $submission) {
     global $CFG;
-    $tinit = $quest->tinitial * 86400;
-    echo "<center><img src = '" . $CFG->wwwroot .
-            "/mod/quest/graph_submission.php?sid=$submission->id&amp;tinit=$tinit" .
-            "&amp;dst=$submission->datestart&amp;dend=$submission->dateend&amp;ipoints=$submission->initialpoints" .
-            "&amp;daswcorr=$submission->dateanswercorrect&amp;pointsmax=$submission->pointsmax'></center>";
+    global $DB;
+    $datefirstanswer = $DB->get_field("quest_answers", "min(date)", array("submissionid" => $submission->id));
+    $tinit = $quest->tinitial * 86400; // Days to seconds.
+    $imgurl = new moodle_url('/mod/quest/graph_submission.php',
+            ['dfirstansw' => $datefirstanswer, 'tinit' => $tinit, 'dst' => $submission->datestart, 'dend' => $submission->dateend,
+             'ipoints' => $submission->initialpoints, 'daswcorr' => $submission->dateanswercorrect,
+             'pointsmax' => $submission->pointsmax, 'pointsmin' => $submission->pointsmin
+            ]);
+    echo "<center><img src = '" . $imgurl->out() . "'></center>";
 }
 
 function quest_print_simple_calification($quest, $course, $currentgroup, $actionclasification) {
@@ -3868,7 +3890,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
     global $CFG, $USER, $DB;
 
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?.
+    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.

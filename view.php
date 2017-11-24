@@ -264,7 +264,7 @@ echo $OUTPUT->header();
 if ($action == 'displayfinalgrade') {
     // Check to see if groups are being used in this quest
     // and if so, set $currentgroup to reflect the current group.
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
+    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $currentgroup = groups_get_course_group($course);
     $groupmode = $currentgroup = false; // JPC group support desactivation.
@@ -498,7 +498,6 @@ if ($action == 'displayfinalgrade') {
         }
     }
     quest_print_quest_heading($quest);
-
     echo "<b>";
     quest_print_challenge_grading_link($cm, $context, $quest);
     echo "<br/>";
@@ -670,8 +669,9 @@ if ($action == 'displayfinalgrade') {
             $nanswerscorrect[] = (int) $submission->nanswerscorrect;
             $datesstart[] = (int) $submission->datestart;
             $datesend[] = (int) $submission->dateend;
-            $dateanswercorrect[] = $submission->dateanswercorrect;
+            $dateanswercorrect[] = (int) $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
+            $pointsmin[] = (float) $submission->pointsmin;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
             $tinitial[] = $quest->tinitial * 86400;
             $state[] = (int) $submission->state;
@@ -687,6 +687,15 @@ if ($action == 'displayfinalgrade') {
             $tablesort->data[] = $data;
             $tablesort->sortdata[] = $sortdata;
         }
+        // Javascript counter support.
+        for ($i = 0; $i < $indice; $i++) {
+            $forms[$i] = "#formscore$i";
+        }
+        $servertime = time();
+        $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+                        $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
+                        $pointsnmaxanswers, $servertime];
+        $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
     }
     if ($canviewauthors) {
         $sort = optional_param('sort', 'dateend', PARAM_ALPHA);
@@ -747,18 +756,6 @@ if ($action == 'displayfinalgrade') {
     echo "<center>";
     echo get_string('legend', 'quest', $grafic);
     echo "</center>";
-
-    // Javascript counter support.
-    for ($i = 0; $i < $indice; $i++) {
-        $forms[$i] = "#formscore$i";
-        $incline[$i] = 0;
-    }
-    $servertime = time();
-    $params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                    $pointsnmaxanswers, $servertime];
-
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 
     if ($repeatactionsbelow) {
         if ($quest->dateend > $timenow) {

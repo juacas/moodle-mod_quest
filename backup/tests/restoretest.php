@@ -22,8 +22,6 @@ $shortname = "restoretest";
 $categoryid = 3;
 $folder = 'd5441abf95d594bbfff05dd83c7f6b74';
 $userid = 2;
-// Transaction
-// $transaction = $DB->start_delegated_transaction();
 $courseid = 16; // reuse a course
               // Create new course
 if (!isset($courseid)) {
@@ -37,5 +35,3 @@ $controller = new restore_controller($folder, $courseid, backup::INTERACTIVE_NO,
         backup::TARGET_NEW_COURSE);
 $controller->execute_precheck();
 $controller->execute_plan();
-// Commit
-// $transaction->allow_commit();

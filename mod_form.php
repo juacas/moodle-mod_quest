@@ -169,18 +169,36 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('select', 'typecalification', get_string('typecalification', 'quest'), $questtypepoints);
         $mform->addHelpButton('typecalification', "typecalification", "quest");
 
-        // Points from 1 to 300.
-        $arraypoints = array_combine(range(1, 300), range(1, 300));
+        // Points from 0 to 300.
+        $arraypoints = array_combine(range(0, 300), range(0, 300));
 
         $mform->addElement('select', 'maxcalification', get_string('maxcalification', 'quest'), $arraypoints);
         $mform->addHelpButton('maxcalification', "maxcalification", "quest");
         $mform->setDefault('maxcalification', 100);
 
+        $mform->addElement('select', 'mincalification', get_string('mincalification', 'quest'), $arraypoints);
+        $mform->addHelpButton('mincalification', "mincalification", "quest");
+        $mform->setDefault('mincalification', 0);
+
         $mform->addElement('select', 'initialpoints', get_string('initialpoints', 'quest'), $arraypoints);
         $mform->addHelpButton('initialpoints', "initialpoints", "quest");
         $mform->setDefault('initialpoints', 10);
 
-        $mform->addElement('select', 'tinitial', get_string('tinitial', 'quest'), $arraydays);
+        $arrayinitialtime = [];
+        $arrayinitialtime['0'] = get_string('none');
+
+        $arrayinitialtime[strval(1.0 / 24)] = '1 ' . get_string('hour');
+        $arrayinitialtime[strval(2.0 / 24)] = '2 ' . get_string('hours');
+        $arrayinitialtime[strval(3.0 / 24)] = '3 ' . get_string('hours');
+        $arrayinitialtime[strval(4.0 / 24)] = '4 ' . get_string('hours');
+        $arrayinitialtime[strval(5.0 / 24)] = '5 ' . get_string('hours');
+        $arrayinitialtime[strval(6.0 / 24)] = '6 ' . get_string('hours');
+        $arrayinitialtime[strval(12.0 / 24)] = '12 ' . get_string('hours');
+        $arrayinitialtime['1'] = '1 ' . get_string('day');
+        for ($i = 2; $i <= 90; $i++) {
+            $arrayinitialtime[$i] = $i . ' ' . get_string('days');
+        }
+        $mform->addElement('select', 'tinitial', get_string('tinitial', 'quest'), $arrayinitialtime);
         $mform->addHelpButton('tinitial', "tinitial", "quest");
         $mform->setDefault('tinitial', 3);
 
@@ -268,7 +286,13 @@ class mod_quest_mod_form extends moodleform_mod {
         if ($data['datestart'] != 0 && $data['dateend'] != 0 && $data['dateend'] < $data['datestart']) {
             $errors['dateend'] = get_string('closebeforeopen', 'quest');
         }
-
+        if ($data['mincalification'] > $data['maxcalification']) {
+            $errors['mincalification'] = get_string('mincalification_help', 'quest');
+            $errors['maxcalification'] = get_string('maxcalification_help', 'quest');
+        }
+        if ($data['initialpoints'] > $data['maxcalification']) {
+            $errors['initialpoints'] = get_string('initialpoints_help', 'quest');
+        }
         if (count($errors) == 0) {
             return true;
         } else {

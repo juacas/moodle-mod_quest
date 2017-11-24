@@ -574,7 +574,8 @@ if ($action == 'displaygradingform') {
     } else {
         $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (Activity ignores this grading.)";
     }
-    echo $OUTPUT->redirect_message($returnto, $message, 10, false);
+    echo $OUTPUT->notification($message, 'info');
+    echo $OUTPUT->continue_button($returnto);
 } else {
     print_error('unkownactionerror', 'quest', null, $action);
 }

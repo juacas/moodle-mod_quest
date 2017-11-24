@@ -50,10 +50,6 @@ $strquest = get_string('modulename', 'quest');
 $strsubmission = get_string('submission', 'quest');
 $action = 'upload';
 $straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
-
-$changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
-$groupmode = groups_get_activity_group($cm); // Groups are being used?
-$currentgroup = get_and_set_current_group($course, $groupmode, $changegroup);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
 $url = new moodle_url('/mod/quest/upload.php', array('id' => $id));
@@ -91,6 +87,7 @@ if (isset($form->operation)) {
 
         $newsubmission->initialpoints = $form->initialpoints;
         $newsubmission->pointsmax = $form->pointsmax;
+        $newsubmission->pointsmin = $form->pointsmin;
         $newsubmission->tinitial = $quest->tinitial;
 
         if ($newsubmission->dateend > $quest->dateend) {
@@ -99,7 +96,9 @@ if (isset($form->operation)) {
         if ($newsubmission->initialpoints > $newsubmission->pointsmax) {
             $newsubmission->initialpoints = $newsubmission->pointsmax;
         }
-
+        if ($newsubmission->initialpoints < $newsubmission->pointsmin) {
+            $newsubmission->initialpoints = $newsubmission->pointsmin;
+        }
         if (!quest_check_submission_dates($newsubmission, $quest)) {
             error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
         }
@@ -178,6 +177,7 @@ if (isset($form->operation)) {
                 $form->submissionendhour, $form->submissionendminute);
 
         $newsubmission->pointsmax = $form->pointsmax;
+        $newsubmission->pointsmin = $form->pointsmin;
         $newsubmission->initialpoints = $form->initialpoints;
         $newsubmission->tinitial = $quest->tinitial;
 
@@ -190,7 +190,9 @@ if (isset($form->operation)) {
         if ($newsubmission->initialpoints > $newsubmission->pointsmax) {
             $newsubmission->initialpoints = $newsubmission->pointsmax;
         }
-
+        if ($newsubmission->initialpoints < $newsubmission->pointsmin) {
+            $newsubmission->initialpoints = $newsubmission->pointsmin;
+        }
         if (!quest_check_submission_dates($newsubmission, $quest)) {
             error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
         }
@@ -320,6 +322,7 @@ if (isset($form->operation)) {
 
         $newsubmission->initialpoints = $form->initialpoints;
         $newsubmission->pointsmax = $form->pointsmax;
+        $newsubmission->pointsmin = $form->pointsmin;
         $newsubmission->tinitial = $quest->tinitial;
 
         if ($ismanager || has_capability('quest:approvechallenge', $context)) {
@@ -334,7 +337,9 @@ if (isset($form->operation)) {
         if ($newsubmission->initialpoints > $newsubmission->pointsmax) {
             $newsubmission->initialpoints = $newsubmission->pointsmax;
         }
-
+        if ($newsubmission->initialpoints < $newsubmission->pointsmin) {
+            $newsubmission->initialpoints = $newsubmission->pointsmin;
+        }
         if (!quest_check_submission_dates($newsubmission, $quest)) {
             error(get_string('invaliddates', 'quest'), "view.php?id=$cm->id&amp;action=submitchallenge");
         }

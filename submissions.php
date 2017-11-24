@@ -78,7 +78,7 @@ $url = new moodle_url('/mod/quest/submissions.php',
 $PAGE->set_url($url);
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, $_POST['userpassword']);
+    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
 }
 // Confirm delete.
 if ($action == 'confirmdelete') {
@@ -267,8 +267,8 @@ if ($action == 'confirmdelete') {
         redirect("view.php?id=$cm->id");
     } else if ($modifsubmission = $mform->get_data()) {
         $authorid = $submission->userid;
-        quest_upload_challenge($quest, $modifsubmission, $caneditchallenges, $cm, $descriptionoptions, $attachmentoptions, $context,
-                $action, $authorid);
+        quest_upload_challenge($quest, $modifsubmission, $caneditchallenges, $cm, $descriptionoptions,
+                $attachmentoptions, $context, $action, $authorid);
     } else {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
@@ -394,7 +394,7 @@ if ($action == 'confirmdelete') {
      */
     quest_print_submission($quest, $submission);
 
-    $changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
+    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
     $currentgroup = groups_get_course_group($COURSE);
 
@@ -471,6 +471,7 @@ if ($action == 'confirmdelete') {
     }
     $submission->mailed = 0;
     $submission->pointsmax = required_param('pointsmax', PARAM_INT);
+    $submission->pointsmin = required_param('pointsmin', PARAM_INT);
     $submission->initialpoints = required_param('initialpoints', PARAM_INT);
 
     if ($caneditchallenges) {
@@ -692,6 +693,7 @@ if ($action == 'confirmdelete') {
             $datesend[] = (int) $submission->dateend;
             $dateanswercorrect[] = (int) $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
+            $pointsmin[] = (float) $submission->pointsmin;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
             $tinitial[] = (int) $quest->tinitial * 86400;
             $state[] = $submission->state;
@@ -757,7 +759,7 @@ if ($action == 'confirmdelete') {
         $forms[$i] = "#formscore$i";
         $incline[$i] = 0;
     }
-    $params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                     $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
                     $pointsnmaxanswers, $servertime];
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
@@ -993,6 +995,7 @@ if ($action == 'confirmdelete') {
                 $datesend[] = (int) $submission->dateend;
                 $dateanswercorrect[] = (int) $submission->dateanswercorrect;
                 $pointsmax[] = (float) $submission->pointsmax;
+                $pointsmin[] = (float) $submission->pointsmin;
                 $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
                 $tinitial[] = (int) $quest->tinitial * 86400;
                 $state[] = $submission->state;
@@ -1060,7 +1063,7 @@ if ($action == 'confirmdelete') {
         $forms[$i] = "#formscore$i";
         $incline[$i] = 0;
     }
-    $params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                     $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
                     $pointsnmaxanswers, $servertime];
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);

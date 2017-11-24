@@ -10,8 +10,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of.
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the.
 // GNU General Public License for more details..//
-// You should have received a copy of the GNU General Public License.
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>..
+// You should have received a copy of the GNU General Public License
 
 /* Module developed at the University of Valladolid.
  * Designed and directed by Juan Pablo de Castro with the effort of many other

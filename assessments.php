@@ -109,11 +109,13 @@ if ($action == 'displaygradingform') {
     require_sesskey();
     $authorid = isset($sid) ? $DB->get_field('quest_submissions', 'userid', array('id' => $sid)) : null;
     if (!$isteacher && $authorid != $USER->id) {
-        error("Only teachers or author can look at this page");
+        print_error("Only teachers or author can look at this page");
     }
     // If the elements have not been defined for the questournament $newform=0..
     if ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) == 0) {
         $newform = 0;
+    } else {
+        $newform = 1;
     }
     // ...set up heading, form and table..
     echo $OUTPUT->header();
@@ -124,46 +126,46 @@ if ($action == 'displaygradingform') {
     echo '<form name="form" method="post" action="assessments.php">';
     echo '<input type="hidden" name="id" value="' . $cm->id . '" /> <input type="hidden" name="action" value="insertelements" />';
     echo '<center> <table cellpadding="5" border="1">';
+
     // Get existing elements, if none set up appropriate default ones..
-
-    if ($newform == 0) {
-        $sidtarget = 0;
-    } else {
-        if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid)) != 0)) {
-            $sidtarget = $sid;
-        } else {
-            $sidtarget = 0;
-        }
+    $elementstemplate = [];
+    if ($sid) {
+        $elementstemplate = $DB->get_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid),
+                "elementno ASC");
     }
-
-    if ($elementsraw = $DB->get_records("quest_elements", array("submissionsid" => $sidtarget), "elementno ASC")) {
-        foreach ($elementsraw as $element) {
-            if ($element->questid == $quest->id) {
-                $elements[] = $element; // ...to renumber index.
-            }
-        }
+    if (count($elementstemplate) == 0) {
+        // Template elements.
+        $elementstemplate = $DB->get_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0),
+                "elementno ASC");
     }
-    if ($DB->count_records('quest_elements', array('submissionsid' => $sidtarget)) == 0) {
+    // Reindex the array.
+    $elements = array_values($elementstemplate);
+
+    $num = count($elements);
+    if ($num == 0 && $DB->count_records('quest_elements', array('submissionsid' => $sid, 'questid' => $quest->id)) == 0) {
         $num = $quest->nelements;
     }
     if (($newform == 1) && ($changeform == 1)) {
         $num = $numelemswhenchange;
     }
-    if (($DB->get_field("quest_submissions", "numelements",
-            array("id" => $sidtarget)) != 0) && ($changeform == 0) && ($newform == 1)) {
-        $num = $DB->get_field("quest_submissions", "numelements", array("id" => $sidtarget));
+    if ($sid) {
+        $submissionnumelements = $DB->get_field("quest_submissions", "numelements", array("id" => $sid));
+        if (($submissionnumelements != 0) && ($changeform == 0) && ($newform == 1)) {
+            $num = $submissionnumelements;
+        }
     }
 
-    if (($changeform == 1) && ($newform == 0)) {
-        $num = $numelemswhenchange;
+    if ($newform == 0) {
+        if ($changeform == true) {
+            $num = $numelemswhenchange;
+        } else {
+            $num = $quest->nelements;
+        }
     }
-    if (($newform == 0) && ($changeform == 0)) {
-        $num = $quest->nelements;
-    }
-    $changeform = 0;
+    // If form is to be empty create an empty element as template.
+    $num = max([1, $num]);
     // ...check for missing elements (this happens either the first time round or when the number
-    // of.
-    // ...elements is increased)..
+    // of elements is increased)..
     for ($i = 0; $i < $num; $i++) {
         if (!isset($elements[$i])) {
             $elements[$i] = new stdClass();
@@ -173,7 +175,7 @@ if ($action == 'displaygradingform') {
             $elements[$i]->weight = 11;
         }
     }
-    if ($elements[0]->description == '') { // ...to return view.php when complete general elements.
+    if (empty($elements[0]->description)) { // ...to return view.php when complete general elements.
                                            // ...the first time..
         $viewgeneral = 1;
     }
@@ -378,7 +380,8 @@ if ($action == 'displaygradingform') {
 		type="hidden" name="viewgeneral" value="$viewgeneral" />
 	<input type="hidden" name="n_elem_when_change"
 		value="$num" /> <input type="submit"
-		value="$stringsavechanges" /> <input type="submit"
+		value="$stringsavechanges" />
+    <input type="submit"
 		name="cancel" value="$stringcancel" /> <input
 		type="hidden" name="sesskey" value="$sesskey" />
 </center>
@@ -414,27 +417,83 @@ if ($action == 'displaygradingform') {
 FORM;
     echo $formfragment;
 } else if ($action == 'insertelements') {
-    // ... insert/update assignment elements (for teachers)..
-    require_sesskey();
-    $authorid = $DB->get_field('quest_submissions', 'userid', array('id' => $sid));
-    if (!$isteacher && $authorid != $USER->id) {
-        error("Only teachers or author can look at this page");
-    }
-    $form = data_submitted();
-    // ...let's not fool around here, dump the junk!.
-    if ($newform == 0) {
-        $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0));
-    } else {
-        $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid));
-    }
-    // ...determine wich type of grading.
-    switch ($quest->gradingstrategy) {
-        case 0: // ...no grading.
-                // Insert all the elements that contain something.
-            foreach ($form->description as $key => $description) {
-                if ($description) {
+    if (!optional_param('cancel', null, PARAM_ALPHA)) {
+        // ... insert/update assignment elements (for teachers)..
+        require_sesskey();
+        $authorid = $DB->get_field('quest_submissions', 'userid', array('id' => $sid));
+        if (!$isteacher && $authorid != $USER->id) {
+            print_error("Only teachers or author can look at this page");
+        }
+        $form = data_submitted();
+        // ...let's not fool around here, dump the junk!.
+        if ($newform == 0) {
+            $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0));
+        } else {
+            $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid));
+        }
+        // ...determine wich type of grading.
+        switch ($quest->gradingstrategy) {
+            case 0: // ...no grading.
+                    // Insert all the elements that contain something.
+                foreach ($form->description as $key => $description) {
+                    if ($description) {
+                        unset($element);
+                        $element->description = $description;
+                        $element->questid = $quest->id;
+                        if ($newform == 0) {
+                            $element->submissionsid = 0;
+                        } else if ($newform == 1) {
+                            $element->submissionsid = $sid;
+                        }
+                        $element->elementno = $key;
+                        if (!$element->id = $DB->insert_record("quest_elements", $element)) {
+                            error("Could not insert quest element!");
+                        }
+                    }
+                }
+                break;
+            case 1: // ...accumulative grading.
+                    // Insert all the elements that contain something.
+                foreach ($form->description as $key => $description) {
+                    if ($description) {
+                        unset($element);
+                        $element = new stdClass();
+                        $element->description = $description;
+                        $element->questid = $quest->id;
+                        if ($newform == 1) {
+                            $element->submissionsid = $sid;
+                        } else if (($newform == 0) || (($DB->count_records("quest_elements",
+                                array("questid" => $quest->id, "submissionsid" => 0)) == 0))) {
+                            $element->submissionsid = 0;
+                        }
+                        $element->elementno = $key;
+                        if (isset($form->scale[$key])) {
+                            $element->scale = $form->scale[$key];
+                            switch ($questscales[$form->scale[$key]]['type']) {
+                                case 'radio':
+                                    $element->maxscore = $questscales[$form->scale[$key]]['size'] - 1;
+                                    break;
+                                case 'selection':
+                                    $element->maxscore = $questscales[$form->scale[$key]]['size'];
+                                    break;
+                            }
+                        }
+                        if (isset($form->weight[$key])) {
+                            $element->weight = $form->weight[$key];
+                        }
+                        if (!$element->id = $DB->insert_record("quest_elements", $element)) {
+                            error("Could not insert quest element!");
+                        }
+                    }
+                }
+                break;
+            case 2: // ...error banded grading....
+            case 3: // ...and criterion grading.
+                    // Insert all the elements that contain something, the number of descriptions is
+                    // one.
+                    // ...less than the number of grades.
+                foreach ($form->maxscore as $key => $themaxscore) {
                     unset($element);
-                    $element->description = $description;
                     $element->questid = $quest->id;
                     if ($newform == 0) {
                         $element->submissionsid = 0;
@@ -442,38 +501,9 @@ FORM;
                         $element->submissionsid = $sid;
                     }
                     $element->elementno = $key;
-                    if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                        error("Could not insert quest element!");
-                    }
-                }
-            }
-            break;
-
-        case 1: // ...accumulative grading.
-                // Insert all the elements that contain something.
-            foreach ($form->description as $key => $description) {
-                if ($description) {
-                    unset($element);
-                    $element = new stdClass();
-                    $element->description = $description;
-                    $element->questid = $quest->id;
-                    if ($newform == 1) {
-                        $element->submissionsid = $sid;
-                    } else if (($newform == 0) || (($DB->count_records("quest_elements",
-                            array("questid" => $quest->id, "submissionsid" => 0)) == 0))) {
-                        $element->submissionsid = 0;
-                    }
-                    $element->elementno = $key;
-                    if (isset($form->scale[$key])) {
-                        $element->scale = $form->scale[$key];
-                        switch ($questscales[$form->scale[$key]]['type']) {
-                            case 'radio':
-                                $element->maxscore = $questscales[$form->scale[$key]]['size'] - 1;
-                                break;
-                            case 'selection':
-                                $element->maxscore = $questscales[$form->scale[$key]]['size'];
-                                break;
-                        }
+                    $element->maxscore = $themaxscore;
+                    if (isset($form->description[$key])) {
+                        $element->description = $form->description[$key];
                     }
                     if (isset($form->weight[$key])) {
                         $element->weight = $form->weight[$key];
@@ -482,114 +512,83 @@ FORM;
                         error("Could not insert quest element!");
                     }
                 }
-            }
-            break;
-
-        case 2: // ...error banded grading....
-        case 3: // ...and criterion grading.
-                // Insert all the elements that contain something, the number of descriptions is
-                // one.
-                // ...less than the number of grades.
-            foreach ($form->maxscore as $key => $themaxscore) {
-                unset($element);
-                $element->questid = $quest->id;
-                if ($newform == 0) {
-                    $element->submissionsid = 0;
-                } else if ($newform == 1) {
-                    $element->submissionsid = $sid;
-                }
-                $element->elementno = $key;
-                $element->maxscore = $themaxscore;
-                if (isset($form->description[$key])) {
-                    $element->description = $form->description[$key];
-                }
-                if (isset($form->weight[$key])) {
-                    $element->weight = $form->weight[$key];
-                }
-                if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                    error("Could not insert quest element!");
-                }
-            }
-            break;
-
-        case 4: // ...and criteria grading.
-                // Insert all the elements that contain something.
-            foreach ($form->description as $key => $description) {
-                unset($element);
-                $element->questid = $quest->id;
-                if ($newform == 0) {
-                    $element->submissionsid = 0;
-                } else if ($newform == 1) {
-                    $element->submissionsid = $sid;
-                }
-                $element->elementno = $key;
-                $element->description = $description;
-                $element->weight = $form->weight[$key];
-                for ($j = 0; $j < 5; $j++) {
-                    if (empty($form->rubric[$key][$j])) {
-                        break;
-                    }
-                }
-                $element->maxscore = $j - 1;
-                if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                    error("Could not insert quest element!");
-                }
-            }
-            // ...let's not fool around here, dump the junk!.
-            if ($newform == 0) {
-                $num = $quest->nelements;
-                $var = 0;
-            } else if ($newform == 1) {
-                $var = $sid;
-                $num = $DB->get_field("quest_submissions", "numelements", array("id" => $sid));
-            }
-            $DB->delete_records("quest_rubrics", array("questid" => $quest->id, "submissionsid" => $var));
-
-            for ($i = 0; $i < $num; $i++) {
-                for ($j = 0; $j < 5; $j++) {
-
+                break;
+            case 4: // ...and criteria grading.
+                    // Insert all the elements that contain something.
+                foreach ($form->description as $key => $description) {
                     unset($element);
-                    if (empty($form->rubric[$i][$j])) { // OK to have an element with fewer than 5.
-                                                        // ...items.
-                        break;
-                    }
                     $element->questid = $quest->id;
                     if ($newform == 0) {
                         $element->submissionsid = 0;
                     } else if ($newform == 1) {
                         $element->submissionsid = $sid;
                     }
-                    $element->elementno = $i;
-                    $element->rubricno = $j;
-                    $element->description = $form->rubric[$i][$j];
-                    if (!$element->id = $DB->insert_record("quest_rubrics", $element)) {
+                    $element->elementno = $key;
+                    $element->description = $description;
+                    $element->weight = $form->weight[$key];
+                    for ($j = 0; $j < 5; $j++) {
+                        if (empty($form->rubric[$key][$j])) {
+                            break;
+                        }
+                    }
+                    $element->maxscore = $j - 1;
+                    if (!$element->id = $DB->insert_record("quest_elements", $element)) {
                         error("Could not insert quest element!");
                     }
                 }
-            }
-            break;
-    } // ...end of switch.
+                // ...let's not fool around here, dump the junk!.
+                if ($newform == 0) {
+                    $num = $quest->nelements;
+                    $var = 0;
+                } else if ($newform == 1) {
+                    $var = $sid;
+                    $num = $DB->get_field("quest_submissions", "numelements", array("id" => $sid));
+                }
+                $DB->delete_records("quest_rubrics", array("questid" => $quest->id, "submissionsid" => $var));
+                for ($i = 0; $i < $num; $i++) {
+                    for ($j = 0; $j < 5; $j++) {
 
-    if ($viewgeneral == 1) {
-        echo $OUTPUT->redirect_message("view.php?id=$cm->id", '<center>' . get_string("savedok", "quest") . '</center>', 1, false);
+                        unset($element);
+                        if (empty($form->rubric[$i][$j])) { // OK to have an element with fewer than 5.
+                                                            // ...items.
+                            break;
+                        }
+                        $element->questid = $quest->id;
+                        if ($newform == 0) {
+                            $element->submissionsid = 0;
+                        } else if ($newform == 1) {
+                            $element->submissionsid = $sid;
+                        }
+                        $element->elementno = $i;
+                        $element->rubricno = $j;
+                        $element->description = $form->rubric[$i][$j];
+                        if (!$element->id = $DB->insert_record("quest_rubrics", $element)) {
+                            error("Could not insert quest element!");
+                        }
+                    }
+                }
+                break;
+        } // ...end of switch.
+        $msg = get_string("savedok", "quest");
     } else {
-        echo $OUTPUT->redirect_message("submissions.php?id=$cm->id&sid=$sid&action=showsubmission", get_string("savedok", "quest"),
-                1, false);
+        $msg = '';
     }
+    if ($viewgeneral == 1) {
+        $urlto = new moodle_url("view.php", ['id' => $cm->id]);
+    } else {
+        $urlto = new moodle_url("submissions.php",
+                ['id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission']);
+    }
+    redirect($urlto, $msg);
+
 } else if ($action == 'updateassessment') {
     // Update assessment (by teacher or student)....
     $aid = required_param('aid', PARAM_INT);
     $sid = optional_param('sid', 0, PARAM_INT);
     require_sesskey();
-    if (!$answer = $DB->get_record("quest_answers", array("id" => $aid))) {
-        error("quest answer is misconfigured");
-    }
-    if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id))) {
-        error("quest assessment is misconfigured");
-    }
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-        error("quest submission is misconfigured");
-    }
+    $answer = $DB->get_record("quest_answers", array("id" => $aid), '*', MUST_EXIST);
+    $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     // Check access.
     if (!$isteacher && $USER->id != $submission->userid) {
         error("Can't access this script. You should be teacher or challenge's author.");
@@ -801,18 +800,15 @@ FORM;
                 "$assessment->id", "$cm->id");
     }
     // ...set up return address..
-    $returnto = $_POST['returnto'];
-    if (!$returnto) {
-        $returnto = "view.php?id=$cm->id";
-    }
+    $returnto = optional_param('returnto', "view.php?id=$cm->id", PARAM_URL);
     // ...show grade if grading strategy is not zero..
     if ($quest->gradingstrategy) {
-        echo $OUTPUT->redirect_message($returnto,
-                get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" . get_string("maximumgrade") .
-                        " " . number_format($points, 4) . ")", 10, false);
+        $msg = get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" . get_string("maximumgrade") .
+                " " . number_format($points, 4) . ")";
     } else {
-        echo $OUTPUT->redirect_message($returnto, '', 1, false);
+        $msg = "";
     }
+    redirect($returnto, $msg);
 } else {
     print_error('unkownactionerror', 'quest', null, $action);
 }

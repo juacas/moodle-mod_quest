@@ -87,7 +87,7 @@ $submissionurl = "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=
 
 // Now check whether we need to display a frameset..
 if ($action == "answer") {
-
+    require_sesskey();
     $answer = new stdClass();
     $answer->id = null;
     $answer->submissionid = $sid;
@@ -141,7 +141,7 @@ if ($action == "answer") {
     }
 } else if ($action == "showanswer") {
     if (($quest->usepassword) && (!$ismanager)) {
-        quest_require_password($quest, $course, $_POST['userpassword']);
+        quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
     }
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", array("id" => $aid));
@@ -213,7 +213,7 @@ if ($action == "answer") {
 
     echo $OUTPUT->footer();
 } else if ($action == 'updatecomment') {
-
+    require_sesskey();
     $aid = required_param('aid', PARAM_INT); // Answer ID..
 
     $answer = $DB->get_record("quest_answers", array("id" => $aid));
@@ -259,6 +259,7 @@ if ($action == "answer") {
             "answer.php?action=delete&amp;id=$id&amp;aid=$aid", "submissions.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
     echo $OUTPUT->footer();
 } else if ($action == 'delete') { // Deletion..
+    require_sesskey();
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
 
@@ -321,8 +322,9 @@ if ($action == "answer") {
         }
     }
 
-    echo $OUTPUT->redirect_message($submissionurl, get_string('emailanswerdeletesubject', 'quest'), 3, false);
     echo $OUTPUT->header();
+    echo $OUTPUT->notification(get_string('emailanswerdeletesubject', 'quest'), 'info');
+    echo $OUTPUT->continue_button($submissionurl);
     print_string("deleting", "quest");
     echo $OUTPUT->footer;
 } else if ($action == 'modif') {
@@ -354,6 +356,7 @@ if ($action == "answer") {
 
         redirect("view.php?id=$cm->id");
     } else if ($answer = $mform->get_data()) {
+        require_sesskey();
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
@@ -379,6 +382,7 @@ if ($action == "answer") {
     }
 } else if ($action == 'updateanswer') { // Evp esta acción es la que actualiza la respuesta y esto.
                                         // ...se sustituye en la función quest_uploadanswer..
+    require_sesskey();
     print_header_simple(format_string($quest->name), "",
             "<a href=\"index.php?id=$course->id\">$strquests</a> ->
                       <a href=\"view.php?id=$cm->id\">" .
@@ -476,7 +480,7 @@ if ($action == "answer") {
 
     echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
 } else if ($action == 'removeattachments') {
-
+    require_sesskey();
     print_header_simple(format_string($quest->name), "",
             "<a href=\"index.php?id=$course->id\">$strquests</a> ->
                       <a href=\"view.php?id=$cm->id\">" .
@@ -528,6 +532,7 @@ if ($action == "answer") {
     print_footer($course);
     exit();
 } else if ($action == "permitsubmit") {
+    require_sesskey();
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", array("id" => $aid));
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid));

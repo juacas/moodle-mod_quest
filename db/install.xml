@@ -52,6 +52,9 @@
 					NEXT="maxcalification" />
 				<FIELD NAME="maxcalification" TYPE="int" LENGTH="3" NOTNULL="true"
 					UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="nmaxanswers"
+					NEXT="mincalification" />
+				<FIELD NAME="mincalification" TYPE="int" LENGTH="3" NOTNULL="true"
+					UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="nmaxanswers"
 					NEXT="typecalification" />
 				<FIELD NAME="typecalification" TYPE="int" LENGTH="2" NOTNULL="true"
 					UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="maxcalification"
@@ -569,10 +572,12 @@
 				<FIELD NAME="datestart" TYPE="int" LENGTH="10" NOTNULL="true"
 					UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="state" NEXT="pointsmax" />
 				<FIELD NAME="pointsmax" TYPE="float" NOTNULL="true" UNSIGNED="false"
-					DEFAULT="0" SEQUENCE="false" PREVIOUS="datestart" NEXT="dateanswercorrect" />
+					DEFAULT="100" SEQUENCE="false" PREVIOUS="datestart" NEXT="pointsmin" />
+				<FIELD NAME="pointsmin" TYPE="float" NOTNULL="true" UNSIGNED="false"
+					DEFAULT="0" SEQUENCE="false" PREVIOUS="pointsmax" NEXT="dateanswercorrect" />
 				<FIELD NAME="dateanswercorrect" TYPE="int" LENGTH="10"
 					NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false"
-					PREVIOUS="pointsmax" NEXT="initialpoints" />
+					PREVIOUS="pointsmin" NEXT="initialpoints" />
 				<FIELD NAME="initialpoints" TYPE="float" NOTNULL="true"
 					UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="dateanswercorrect"
 					NEXT="pointsanswercorrect" />

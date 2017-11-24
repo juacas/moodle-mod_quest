@@ -79,5 +79,17 @@ function xmldb_quest_upgrade($oldversion = 0) {
         $dbman->add_field($table, $field);
         upgrade_mod_savepoint(true, 2016060900, 'quest');
     }
+
+    if ($oldversion < 2017101800) {
+        $table = new xmldb_table('quest_submissions');
+        $field = new xmldb_field('pointsmin', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, $table->getField('pointsmax'));
+        $dbman->add_field($table, $field);
+
+        $table = new xmldb_table('quest');
+        $field = new xmldb_field('mincalification', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, $table->getField('maxcalification'));
+        $dbman->add_field($table, $field);
+        upgrade_mod_savepoint(true, 2017101800, 'quest');
+    }
+
     return true;
 }

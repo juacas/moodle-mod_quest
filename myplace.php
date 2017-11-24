@@ -63,10 +63,10 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, $_POST['userpassword']);
+    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
 }
 
-$changegroup = isset($_GET['group']) ? $_GET['group'] : -1; // Group change requested?
+$changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; // JPC group support desactivation in this version.
@@ -206,6 +206,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $datesend[] = (int) $submission->dateend;
             $dateanswercorrect[] = (int) $submission->dateanswercorrect;
             $pointsmax[] = (float) $submission->pointsmax;
+            $pointsmin[] = (float) $submission->pointsmin;
             $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
             $tinitial[] = (int) $quest->tinitial * 86400;
             $state[] = (int) $submission->state;
@@ -280,7 +281,7 @@ for ($i = 0; $i < $indice; $i++) {
     $incline[$i] = 0;
 }
 $servertime = time();
-$params = [$indice, $incline, $pointsmax, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+$params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                 $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
 
 $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
