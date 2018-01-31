@@ -1110,26 +1110,17 @@ function quest_get_participants($questid) {
 
     // Get students from quest_submissions.
     $stsubmissions = $DB->get_records_sql(
-            "SELECT DISTINCT u.id, u.id
-                                       FROM {user} u,
-                                            {quest_submissions} s
-                                       WHERE s.questid = ? and
-                                             u.id = s.userid", array($questid));
+            "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_submissions} s " .
+            "WHERE s.questid = ? and u.id = s.userid", array($questid));
     // Get students from quest_assessments.
     $stassessments = $DB->get_records_sql(
-            "SELECT DISTINCT u.id, u.id
-                                 FROM {user} u,
-                                      {quest_assessments} a
-                                 WHERE a.questid = ? and ( u.id = a.userid or u.id = a.teacherid )",
-            array($questid));
+            "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_assessments} a " .
+            "WHERE a.questid = ? and ( u.id = a.userid or u.id = a.teacherid )", array($questid));
 
     // Get students from quest_comments.
     $stanswers = $DB->get_records_sql(
-            "SELECT DISTINCT u.id, u.id
-                                   FROM {user} u,
-                                        {quest_answers} c
-                                   WHERE c.questid = ? and
-                                         u.id = c.userid", array($questid));
+            "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_answers} c " .
+            "WHERE c.questid = ? and u.id = c.userid", array($questid));
 
     // Add st_answers to st_submissions.
     if ($stanswers) {
@@ -1468,7 +1459,7 @@ function quest_reset_userdata($data) {
 			pointsanswercorrect = 0,
 			mailed = 0,
 			maileduser = 0
-                        WHERE questid $insql";
+            WHERE questid $insql";
 
         $DB->execute($resetsubmissions, $inparams);
 
@@ -1480,9 +1471,9 @@ function quest_reset_userdata($data) {
     if ($data->timeshift) {
 
         shift_course_mod_dates('quest', array('datestart', 'dateend'), $data->timeshift, $data->courseid);
-        $shifttimesql = "UPDATE {quest_submissions}
-                          SET datestart = datestart + ($data->timeshift), dateend = dateend + ($data->timeshift)
-                        WHERE questid  $insql and datestart<>0";
+        $shifttimesql = "UPDATE {quest_submissions} " .
+                        "SET datestart = datestart + ($data->timeshift), dateend = dateend + ($data->timeshift) " .
+                        "WHERE questid  $insql and datestart<>0";
 
         $DB->execute($shifttimesql, $inparams);
 

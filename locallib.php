@@ -697,9 +697,9 @@ function quest_print_submission_info($quest, $submission) {
     }
     // Form field for the countdown of score.
     $string .= '<form name="puntos"><b>' . get_string('points', 'quest') .
-                ":&nbsp;&nbsp;<input name=\"calificacion\" id=\"formscore\" type=\"text\"' .
-                'value=\"0.000\" size=\"10\" readonly=\"1\"' .
-                'style=\"background-color:White; border:black; color:Black; font-size:14pt; text-align : center;\"></form></b><br>";
+                ";&nbsp;&nbsp;<input name=\"calificacion\" id=\"formscore\" type=\"text\" " .
+                "value=\"0.000\" size=\"10\" readonly=\"1\" " .
+                "style=\"background-color:White; border:black; color:Black; font-size:14pt; text-align : center;\"></form></b><br>";
     if (($USER->id == $submission->userid) || ($canpreview) || ($submission->dateend < time())) {
         if ($submission->evaluated == 1 && $assessment = $DB->get_record("quest_assessments_autors",
                 array("questid" => $quest->id, "submissionid" => $submission->id))) {
@@ -1452,8 +1452,7 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
 		name="stockcommentid" value="" />
 FORM;
     echo $formfragment;
-    echo '<center>
-<table cellpadding="2" border="1">';
+    echo '<center> <table cellpadding="2" border="1">';
 
     echo "<tr valign=\"top\">\n";
     echo "  <td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
@@ -4926,13 +4925,13 @@ function quest_get_approvesubmission_logs($course, $timestart) {
     $timethen = time() - $CFG->maxeditingtime;
     return $DB->get_records_sql(
             "SELECT l.time, l.url, u.firstname, u.lastname, s.questid, s.userid, s.title
-                             FROM {log} l,
-                                {quest} e,
-                                {quest_submissions} s,
-                                {user} u
-                            WHERE l.time > :timestart AND l.time < :timethen
-                                AND l.course = :course AND l.module = 'quest' AND l.action = 'approve_submiss'
-                                AND l.info = s.id AND s.userid = :user AND u.id = s.userid AND e.id = s.questid",
+             FROM {log} l,
+                {quest} e,
+                {quest_submissions} s,
+                {user} u
+            WHERE l.time > :timestart AND l.time < :timethen
+                AND l.course = :course AND l.module = 'quest' AND l.action = 'approve_submiss'
+                AND l.info = s.id AND s.userid = :user AND u.id = s.userid AND e.id = s.questid",
             array('timestart' => $timestart, 'timethen' => $timethen, 'course' => $course->id, 'user' => $USER->id));
 }
 
@@ -4945,13 +4944,13 @@ function quest_get_submitanswer_logs($course, $timestart) {
     $timethen = time() - $CFG->maxeditingtime;
     return $DB->get_records_sql(
             "SELECT l.time, l.url, u.firstname, u.lastname, a.questid, a.userid, a.title
-                             FROM {log} l,
-                                {quest} e,
-                                {quest_answers} a,
-                                {user} u
-                            WHERE l.time > :timestart AND l.time < :timethen
-                                AND l.course = :course AND l.module = 'quest' AND l.action = 'submit_answer'
-                                AND l.info = a.id AND a.userid = :user AND u.id = a.userid AND e.id = a.questid",
+             FROM {log} l,
+                {quest} e,
+                {quest_answers} a,
+                {user} u
+            WHERE l.time > :timestart AND l.time < :timethen
+                AND l.course = :course AND l.module = 'quest' AND l.action = 'submit_answer'
+                AND l.info = a.id AND a.userid = :user AND u.id = a.userid AND e.id = a.questid",
             array('timestart' => $timestart, 'timethen' => $timethen, 'course' => $course->id, 'user' => $USER->id));
 }
 
@@ -4985,15 +4984,15 @@ function quest_get_assessmentsautor_logs($course, $timestart) {
     $timethen = time() - $CFG->maxeditingtime;
     return $DB->get_records_sql(
             "SELECT l.time, l.url, u.firstname, u.lastname, a.questid, a.userid, s.title
-                             FROM {log} l,
-                                {quest} e,
-                                {quest_submissions} s,
-                                {quest_assessments_autors} a,
-                                {user} u
-                            WHERE l.time > :timestart AND l.time < :timethen
-                                AND l.course = :course AND l.module = 'quest' AND l.action = 'assess_submissi'
-                                AND a.id = l.info AND s.id = a.submissionid AND s.userid = :user
-                                AND u.id = a.userid AND e.id = a.questid",
+             FROM {log} l,
+                {quest} e,
+                {quest_submissions} s,
+                {quest_assessments_autors} a,
+                {user} u
+            WHERE l.time > :timestart AND l.time < :timethen
+                AND l.course = :course AND l.module = 'quest' AND l.action = 'assess_submissi'
+                AND a.id = l.info AND s.id = a.submissionid AND s.userid = :user
+                AND u.id = a.userid AND e.id = a.questid",
             array('timestart' => $timestart, 'timethen' => $timethen, 'course' => $course->id, 'user' => $USER->id));
 }
 

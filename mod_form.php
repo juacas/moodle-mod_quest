@@ -244,15 +244,16 @@ class mod_quest_mod_form extends moodleform_mod {
                   $mform->setHelpButton('clustererid', array("clustererid",
                   get_string("selectclusterer", "questournament"), "questournament"));
                   $mform->disabledIf('clustererid', 'allowteams', 'eq', 1);
-                  echo '
-                  function pasarvariable()
-                  {
-                  var valor=document.forms[0].clustererid.value;
-                  var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
-                  scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
-                  window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
-                  }
-                  </script>';
+                  echo <<< SCRIPT
+function pasarvariable()
+{
+var valor=document.forms[0].clustererid.value;
+var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
+scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
+window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
+}
+</script>'
+SCRIPT;
                   $strshowselectedcluster = get_string("showselectedcluster", "questournament");
                   $mform->addElement('html', '<br/><center><a onClick="javascript:pasarvariable()">' .
                                     $strshowselectedcluster . '</a>');

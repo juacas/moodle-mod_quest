@@ -384,8 +384,7 @@ if ($action == "answer") {
                                         // ...se sustituye en la función quest_uploadanswer..
     require_sesskey();
     print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                      <a href=\"view.php?id=$cm->id\">" .
+            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
                      format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_self" />', true);
     $form = data_submitted();
     $aid = required_param('aid', PARAM_INT); // Answer ID..
@@ -482,8 +481,7 @@ if ($action == "answer") {
 } else if ($action == 'removeattachments') {
     require_sesskey();
     print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                      <a href=\"view.php?id=$cm->id\">" .
+            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
                      format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_parent" />', true);
 
     $form = data_submitted();
@@ -513,8 +511,7 @@ if ($action == "answer") {
     echo $OUTPUT->continue_button("answer.php?id=$cm->id&amp;aid=$answer->id&amp;sid=$sid&amp;action=$form->beforeaction");
 } else if ($action == "preview") {
     print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                      <a href=\"view.php?id=$cm->id\">" .
+            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
                      format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_parent" />', true);
     $form = data_submitted();
     echo "<hr size=\"1\" noshade=\"noshade\" />";

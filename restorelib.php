@@ -920,14 +920,9 @@ function quest_restore_wiki2markdown($restore) {
 
     // Convert quest->description.
     if ($records = $DB->get_records_sql(
-            "SELECT q.id, q.description, q.format
-                                         FROM {quest} q,
-                                              {backup_ids} b
-                                         WHERE q.course = ? AND
-                                               format = " . FORMAT_WIKI . " AND
-                                               b.backup_code = ? AND
-                                               b.table_name = 'quest' AND
-                                               b.new_id = q.id",
+            "SELECT q.id, q.description, q.format FROM {quest} q, {backup_ids} b " .
+            "WHERE q.course = ? AND format = " . FORMAT_WIKI . " AND b.backup_code = ? " .
+            "AND b.table_name = 'quest' AND b.new_id = q.id",
             array($restore->course_id, $restore->backup_unique_code))) {
         foreach ($records as $record) {
             // Rebuild wiki links.
@@ -1022,10 +1017,8 @@ function quest_decode_content_links_caller($restore) {
     $status = true;
 
     // Process every QUEST (description) in the course.
-    if ($quests = $DB->get_records_sql(
-            "SELECT q.id, q.description
-                                           FROM {quest} q
-                                           WHERE q.course = ?", array($restore->course_id))) {
+    $quests = $DB->get_records_sql("SELECT q.id, q.description FROM {quest} q WHERE q.course = ?", array($restore->course_id));
+    if ($quests) {
         // Iterate over each quest->description.
         $i = 0; // Counter to send some output to the browser to avoid timeouts.
         foreach ($quests as $quest) {

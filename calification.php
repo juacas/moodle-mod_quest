@@ -73,8 +73,7 @@ if (empty($frameset)) {
 if (!empty($frameset) and $frameset == "top") {
 
     print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                      <a href=\"view.php?id=$cm->id\">" .
+            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
                      format_string($quest->name, true) . "</a> -> $strcalification", "", '<base target="_parent" />', true);
 
     print_heading_with_help(get_string("calificationthisquest", "quest"), "grading", "quest");

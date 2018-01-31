@@ -51,8 +51,7 @@ $stranswer = get_string('answer', 'quest');
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
 print_header_simple(format_string($quest->name) . " : $stranswer", "",
-        "<a href=\"index.php?id=$course->id\">$strquests</a> ->
-                  <a href=\"view.php?a=$quest->id\">" . format_string($quest->name, true) . "</a> -> $stranswer", "", "", true);
+        "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?a=$quest->id\">" . format_string($quest->name, true) . "</a> -> $stranswer", "", "", true);
 $timenow = time();
 
 $form = data_submitted("nomatch"); // POST may come from two forms.
