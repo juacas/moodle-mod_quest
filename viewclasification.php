@@ -51,6 +51,8 @@ $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST)
 
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
+$thispageurl = new moodle_url('/mod/quest/viewclasification.php', $_GET);
+$PAGE->set_url($thispageurl);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
@@ -73,13 +75,9 @@ $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->navbar->add(get_string('global', 'quest'));
 $PAGE->set_heading($course->fullname);
-echo $OUTPUT->header();
-
-// Print the page header.
-
-$strquests = get_string("modulenameplural", "quest");
-$strquest = get_string("modulename", "quest");
-$straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
+if ($action != 'export') {
+    echo $OUTPUT->header();
+}
 
 if (($quest->usepassword) && (!$ismanager)) {
     quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
@@ -485,7 +483,28 @@ if ($action == 'global') {
     }
     echo '</td></tr>';
     echo '</table>';
+} else if ($action == 'export') {
+    require_capability('mod/quest:viewreports', $context);
+    // Get all the students.
+    if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
+        echo $OUTPUT->heading(get_string("nostudentsyet"));
+        echo $OUTPUT->footer();
+        exit();
+    }
+    $clasifications = quest_get_calification($quest);
+    $records = [];
+    foreach ($clasifications as $calif) {
+        if (isset($users[$calif->userid])) {
+            $user = $users[$calif->userid];
+            $record = ['firstname' => $user->firstname, 'lastname' => $user->lastname];
+            $record = array_merge($record, get_object_vars($calif));
+            $records[] = $record;
+        }
+    }
+    quest_export_csv($records, 'Classification', $cm);
 }
 // Finish the page.
 echo $OUTPUT->continue_button(new moodle_url('view.php', array('id' => $id)));
+$thispageurl->param('action', 'export');
+echo $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Download CSV'), null, null, true);
 echo $OUTPUT->footer();

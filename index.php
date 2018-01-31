@@ -29,9 +29,11 @@ require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
 $id = required_param('id', PARAM_INT); // Course...
-global $DB, $OUTPUT;
+global $DB, $PAGE, $OUTPUT;
 $course = get_course($id);
 require_login($course);
+$thispageurl = new moodle_url('/mod/quest/index.php', $_GET);
+$PAGE->set_url($thispageurl);
 
 $context = context_course::instance($course->id);
 // Get all required strings.

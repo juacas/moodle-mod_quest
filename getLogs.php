@@ -39,6 +39,8 @@ require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $candownloadlogs = has_capability('mod/quest:downloadlogs', $context);
+$thispageurl = new moodle_url('/mod/quest/getLogs.php', $_GET);
+$PAGE->set_url($thispageurl);
 
 if (!$candownloadlogs) {
     print_error('nopermissions', 'error', null, 'No enough permissions mod/quest:downloadlogs');
@@ -48,10 +50,10 @@ $queryid = optional_param('query', 'what', PARAM_ALPHA);
 
 switch ($queryid) {
     case 'ip':
-        $query = $DB->get_records_select("log", "module='quest' and cmid=?", array($cm->id), "time", "id,ip,time");
+        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?", array($context->id), "timecreated", "id,ip,timecreated");
         break;
     case 'logs':
-        $query = $DB->get_records_select("log", "module='quest' and cmid=?", array($cm->id), "time");
+        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?", array($context->id), "timecreated");
         break;
     case 'activity':
         list($insql, $inparams) = $DB->get_in_or_equal(array($cm->id));
@@ -90,46 +92,9 @@ SQL;
     default:
         $query = '';
 }
-// Generate CSV report with $query.
-$localelang = $CFG->locale;
-// Moodle's bug Spanish RFC code is ES not ESP.
-$localelang = str_replace("esp", "es", $localelang);
-$localelang = str_replace("ESP", "ES", $localelang);
-
-setlocale(LC_ALL, $localelang . ".utf8");
-
-$localeconfig = localeconv();
 
 if ($query) {
-
-    header("Content-Type: text/csv");
-    header(
-            'Content-Disposition: attachment; filename="' . date('Y-m-d', time()) . '_' . $queryid . '_questournament_' . $cm->id .
-                     '.csv"');
-    $firstrow = true;
-    foreach ($query as $log) {
-
-        $els = array();
-        $elsk = array();
-        foreach ($log as $key => $value) {
-            // Detect other fields not numeric like IPs.
-            if (is_numeric($value) && round($value) == $value) {
-                $els[] = $value;
-            } else if (is_numeric($value) && abs($value - round($value)) < 1) {
-                $val = number_format($value, 10, $localeconfig[decimal_point], '');
-                $els[] = $val;
-            } else {
-                $els[] = $value;
-            }
-
-            $elsk[] = $key;
-        }
-        if ($firstrow) {
-            echo implode(";", $elsk) . "\n";
-            $firstrow = false;
-        }
-        echo implode(";", $els) . "\n";
-    }
+    quest_export_csv($query, $queryid, $cm);
 } else {
     $strquests = get_string("modulenameplural", "quest");
     $strquest = get_string("modulename", "quest");
@@ -139,19 +104,23 @@ if ($query) {
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-
-
-    print("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" ".
-          "<b>$localeconfig[decimal_point]</b> \". Check that your SpreadSheet interprets correctly this character.</p>");
+    $localelang = current_language();
+    setlocale(LC_ALL, $localelang );
+    $localeconfig = localeconv();
+    echo $OUTPUT->notification("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" ".
+            "<b>{$localeconfig['decimal_point']}</b> \". Check that your SpreadSheet interprets correctly this character.</p>", 'info');
     if (!empty($sqlquery)) {
-        print("Last query with no results.<br/>");
+        echo $OUTPUT->notification("Last query with no results. Check if legacy log is enabled in this server.<br/>");
     }
 
     echo '<p>Generate CSV report for:';
     echo '<ul>';
-    echo '<li> <a href="getLogs.php?id=' . $cm->id . '&query=logs">Logs</a>';
-    echo '<li> <a href="getLogs.php?id=' . $cm->id . '&query=ip">IP Addresses Accesses</a>';
-    echo '<li> <a href="getLogs.php?id=' . $cm->id . '&query=activity">Activity</a>';
+    $thispageurl->param('query', 'logs');
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Logs '), null, null, true);
+    $thispageurl->param('query', 'ip');
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'IP Addresses Accesses '), null, null, true);
+    $thispageurl->param('query', 'activity');
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Activity '), null, null, true);
     echo '</ul>';
 
     echo $OUTPUT->footer();

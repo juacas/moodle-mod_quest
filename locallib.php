@@ -4815,6 +4815,50 @@ function quest_get_submission_assessment($submission) {
     return $DB->get_record("quest_assessments_autors",
             array("submissionid" => $submission->id, "questid" => $submission->questid));
 }
+/**
+ *
+ * @param array $records
+ */
+function quest_export_csv($records, $queryid, $cm) {
+    global $CFG;
+    // Generate CSV report with $records.
+    $localelang = current_language();
+    // Moodle's bug Spanish RFC code is ES not ESP.
+    $localelang = str_replace("esp", "es", $localelang);
+    $localelang = str_replace("ESP", "ES", $localelang);
+    setlocale(LC_ALL, $localelang);
+    $localeconfig = localeconv();
+    header("Content-Type: text/csv");
+    header('Content-Disposition: attachment; filename="' .
+            date('Y-m-d', time()) . '_' .
+            $queryid . '_questournament_' .
+            $cm->id .
+            '.csv"');
+    $firstrow = true;
+    foreach ($records as $log) {
+        $els = array();
+        $elsk = array();
+        foreach ($log as $key => $value) {
+            // Detect other fields not numeric like IPs.
+            if (is_numeric($value) && round($value) == $value) {
+                $els[] = $value;
+            } else if (is_numeric($value) && abs($value - round($value)) < 1) {
+                $val = number_format($value, 10, $localeconfig['decimal_point'], '');
+                $els[] = $val;
+            } else {
+                $els[] = $value;
+            }
+
+            $elsk[] = $key;
+        }
+        if ($firstrow) {
+            echo implode(";", $elsk) . "\n";
+            $firstrow = false;
+        }
+        echo implode(";", $els) . "\n";
+    }
+    die;
+}
 function quest_fullname($userid, $courseid) {
     global $CFG, $DB;
     if (!$user = $DB->get_record('user', array('id' => $userid))) {

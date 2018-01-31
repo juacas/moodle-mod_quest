@@ -81,7 +81,7 @@ function test_update_team($questid, $teamid, $update = true) {
     $nsubmissionassessed = quest_count_user_submissions_assesed($questid, $members);
     $points = $submissionpoints + $pointsanswers;
     if ($update) {
-        print("...actualizando... equipo $teamid en quest $questid");
+        print("Updating team $teamid on questournament $questid");
         $calificationteams = $DB->get_record('quest_calification_teams', array("questid" => $questid, "teamid" => $teamid));
         $calificationteams->nanswers = $nanswers;
         $calificationteams->nanswerassessment = $nanswersassessed;
