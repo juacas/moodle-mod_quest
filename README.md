@@ -18,3 +18,21 @@ The QUESTOURnament module shows all the time the current summarized ranking with
 As a result, the QUESTOURnament module is a dynamic and changing environment in which the students are content generators and participate in the learning process in an active way.
 
 It is available in many languages: full translated to spanish and english and partial translation to german, frech, italian, catalan, galego and euskara. (Traslators are welcome.)
+
+Installation
+=============
+
+1. unzip, and copy into Moodle's /mod folder
+2. visit administration page to install module
+3. configure default settings for your site
+4. use in any course as wished
+
+Change log
+==========
+ - v1.3.3 Enforce sesskeys. Assessment workflow enhanced. Minimum and maximum points customizable.
+ - v1.3.1 Compatibility with Moodle 3.x. Support non-editing teacher role. Add more permissions.
+ - v1.3.0 Compatibility with Moodle 2.6. Manage anonymous authors after restore.
+ - v1.2.0 Compatibility with Moodle 2.x.
+
+(c) 2013 onwards. EDUVALab. University of Valladolid.
+
