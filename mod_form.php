@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** This file defines de main questournament configuration form
  *
@@ -25,6 +25,12 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
+ */
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot. "/mod/quest/locallib.php");
+/**
  *
  *          It uses the standard core Moodle (>1.8) formslib. For
  *          more info about them, please visit:
@@ -45,14 +51,16 @@
  *          manually selected if the htmleditor is not used
  *          (standard formats are: MOODLE, HTML, PLAIN, MARKDOWN)
  *          See lib/weblib.php Constants and the format_text()
- *          function for more info */
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->dirroot. "/mod/quest/locallib.php");
-
+ *          function for more info
+ * @author juacas
+ *
+ */
 class mod_quest_mod_form extends moodleform_mod {
-
+    /**
+     *
+     * {@inheritDoc}
+     * @see moodleform::definition()
+     */
     public function definition() {
         global $COURSE;
         $mform = & $this->_form;
@@ -213,14 +221,14 @@ class mod_quest_mod_form extends moodleform_mod {
         if (false) {
             // Get clusterer instances available in the course.
             if ($clusterersmods = get_all_instances_in_courses("clusterer", array($COURSE->id => $COURSE))) {
-                  $mform->addElement('header', 'general', get_string('clusterer', 'questournament'));
-                  $mform->addElement('selectyesno', 'clustererleagues',
-                  get_string('createligasfromclusterer', 'questournament'));
-                  $mform->setHelpButton('clustererleagues', array("clustererleagues",
-                  get_string("createligasfromclusterer", "questournament"), "questournament"));
-                  $mform->setDefault('clustererleagues', $CFG->questournament_clustererleagues);
-                  $mform->disabledIf('clustererleagues', 'allowteams', 'eq', 1);
-                  $arrayclusterers = array();
+                $mform->addElement('header', 'general', get_string('clusterer', 'questournament'));
+                $mform->addElement('selectyesno', 'clustererleagues',
+                get_string('createligasfromclusterer', 'questournament'));
+                $mform->setHelpButton('clustererleagues', array("clustererleagues",
+                get_string("createligasfromclusterer", "questournament"), "questournament"));
+                $mform->setDefault('clustererleagues', $CFG->questournament_clustererleagues);
+                $mform->disabledIf('clustererleagues', 'allowteams', 'eq', 1);
+                $arrayclusterers = array();
                 foreach ($clusterersmods as $clusterermod) {
                     $modname = $clusterermod->name . " :";
                     if ($clusterers = $DB->get_records("clusterer_clusterers", "moduleinstanceid", $clusterermod->id)) {
@@ -239,34 +247,33 @@ class mod_quest_mod_form extends moodleform_mod {
                         }
                     }
                 }
-                  $mform->addElement('select', 'clustererid', get_string('selectclusterer',
-                  'questournament'), $arrayclusterers);
-                  $mform->setHelpButton('clustererid', array("clustererid",
-                  get_string("selectclusterer", "questournament"), "questournament"));
-                  $mform->disabledIf('clustererid', 'allowteams', 'eq', 1);
-                  echo <<< SCRIPT
-function pasarvariable()
-{
-var valor=document.forms[0].clustererid.value;
-var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
-scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
-window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
+                $mform->addElement('select', 'clustererid', get_string('selectclusterer',
+                'questournament'), $arrayclusterers);
+                $mform->setHelpButton('clustererid', array("clustererid",
+                get_string("selectclusterer", "questournament"), "questournament"));
+                $mform->disabledIf('clustererid', 'allowteams', 'eq', 1);
+                echo <<< SCRIPT
+function pasarvariable() {
+    var valor=document.forms[0].clustererid.value;
+    var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
+    scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
+    window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
 }
 </script>'
 SCRIPT;
-                  $strshowselectedcluster = get_string("showselectedcluster", "questournament");
-                  $mform->addElement('html', '<br/><center><a onClick="javascript:pasarvariable()">' .
-                                    $strshowselectedcluster . '</a>');
-                  $mform->addElement('selectyesno', 'visibleleagues', get_string('visibleleagues', 'questournament'));
-                  $mform->setHelpButton('visibleleagues', array("visibleleagues",
-                                        get_string("visibleleagues", "questournament"), "questournament"));
-                  $mform->setDefault('visibleleagues', $CFG->questournament_visibleleagues);
-                  $mform->disabledIf('visibleleagues', 'allowteams', 'eq', 1);
-                  $mform->addElement('selectyesno', 'anonymousleague', get_string('anonymousleague', 'questournament'));
-                  $mform->setHelpButton('anonymousleague', array("anonymousleague",
-                  get_string("anonymousleague", "questournament"), "questournament"));
-                  $mform->setDefault('anonymousleague', $CFG->questournament_anonymousleague);
-                  $mform->disabledIf('anonymousleague', 'allowteams', 'eq', 1);
+                $strshowselectedcluster = get_string("showselectedcluster", "questournament");
+                $mform->addElement('html', '<br/><center><a onClick="javascript:pasarvariable()">' .
+                                $strshowselectedcluster . '</a>');
+                $mform->addElement('selectyesno', 'visibleleagues', get_string('visibleleagues', 'questournament'));
+                $mform->setHelpButton('visibleleagues', array("visibleleagues",
+                                    get_string("visibleleagues", "questournament"), "questournament"));
+                $mform->setDefault('visibleleagues', $CFG->questournament_visibleleagues);
+                $mform->disabledIf('visibleleagues', 'allowteams', 'eq', 1);
+                $mform->addElement('selectyesno', 'anonymousleague', get_string('anonymousleague', 'questournament'));
+                $mform->setHelpButton('anonymousleague', array("anonymousleague",
+                get_string("anonymousleague", "questournament"), "questournament"));
+                $mform->setDefault('anonymousleague', $CFG->questournament_anonymousleague);
+                $mform->disabledIf('anonymousleague', 'allowteams', 'eq', 1);
             } else {
                 $arrayclusterers = null;
                 $mform->addElement('html', get_string('clustererModuleNotFound', 'questournament'));
@@ -279,7 +286,11 @@ SCRIPT;
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
     }
-
+    /**
+     *
+     * {@inheritDoc}
+     * @see moodleform_mod::validation()
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 

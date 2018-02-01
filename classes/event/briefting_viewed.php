@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle
  *
@@ -47,10 +47,12 @@ require_once('base.php');
 class briefting_viewed extends base {
 
     /**
-     * @param int $courseid
-     * @param int $userid
-     * @param string $cmId
-     * @return unknown */
+     *
+     * @param \stdClass $user
+     * @param \stdClass $quest
+     * @param \cm_info $cm
+     * @return \mod_quest\event\briefting_viewed
+     */
     public static function create_from_parts(\stdClass $user, \stdClass $quest, \cm_info $cm) {
         $url = "/mod/quest/report.php?id=$cm->id";
         $info = " Quest name: $quest->name";

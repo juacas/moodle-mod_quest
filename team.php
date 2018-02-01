@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -21,8 +21,9 @@
  * Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
+ * @copyright 2013 onwards EDUVALAB
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package quest */
+ * @package mod_quest */
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");

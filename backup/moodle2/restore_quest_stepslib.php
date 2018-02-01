@@ -1,19 +1,20 @@
 <?php
-// This file is part of Questournament activity for Moodle http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
-// Questournament for Moodle is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Questournament for Moodle is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
 /** Backup Questournament module
  *
  * Structure step to restore one quest activity
@@ -27,10 +28,12 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-defined('MOODLE_INTERNAL') || die();
-
 class restore_quest_activity_structure_step extends restore_activity_structure_step {
-
+    /**
+     *
+     * {@inheritDoc}
+     * @see restore_structure_step::define_structure()
+     */
     protected function define_structure() {
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
@@ -61,7 +64,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest($data) {
         global $DB;
 
@@ -80,7 +86,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         // ...immediately after inserting "activity" record, call this.
         $this->apply_activity_instance($newitemid);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_element($data) {
         global $DB;
 
@@ -88,7 +97,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->questid = $this->get_new_parentid('quest');
         $newitemid = $DB->insert_record('quest_elements', $data);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_particular_element($data) {
         global $DB;
 
@@ -98,7 +110,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $newitemid = $DB->insert_record('quest_elements', $data);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_element_autor($data) {
         global $DB;
 
@@ -107,7 +122,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $newitemid = $DB->insert_record('quest_elementsautor', $data);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_rubric_autor($data) {
         global $DB;
 
@@ -120,7 +138,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
         $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_rubric($data) {
         global $DB;
 
@@ -132,7 +153,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
         $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_challenge($data) {
         global $DB, $USER;
 
@@ -162,7 +186,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_submissions', $data);
         $this->set_mapping('quest_challenge', $oldid, $newitemid, true);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_element_assess($data) {
         global $DB;
 
@@ -173,7 +200,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $newitemid = $DB->insert_record('quest_elements_assessments', $data);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_team($data) {
         global $DB;
 
@@ -185,7 +215,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $this->set_mapping('quest_team', $oldid, $newitemid);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_answer($data) {
         global $DB;
 
@@ -200,7 +233,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $this->set_mapping('quest_answer', $oldid, $newitemid, true);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_calification_user($data) {
         global $DB;
 
@@ -212,7 +248,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $newitemid = $DB->insert_record('quest_calification_users', $data);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_calification_team($data) {
         global $DB;
 
@@ -222,7 +261,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $newitemid = $DB->insert_record('quest_calification_teams', $data);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_assessment($data) {
         global $DB;
 
@@ -239,7 +281,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $this->set_mapping('quest_assessment', $oldid, $newitemid);
     }
-
+    /**
+     *
+     * @param unknown $data
+     */
     protected function process_quest_assessment_autor($data) {
         global $DB;
 
@@ -255,7 +300,11 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $this->set_mapping('quest_assessment', $oldid, $newitemid);
     }
-
+    /**
+     *
+     * {@inheritDoc}
+     * @see restore_structure_step::after_execute()
+     */
     protected function after_execute() {
         // Add quest related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_quest', 'intro', null);

@@ -20,10 +20,10 @@
  * @license http:// www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
  */
 function redondear(cantidad, decimales) {
-	cantidad = parseFloat(cantidad);
-	decimales = parseFloat(decimales);
-	decimales = (!decimales ? 2 : decimales);
-	var valor = Math.round(cantidad * Math.pow(10, decimales)) / Math.pow(10, decimales);
+	var value = parseFloat(cantidad);
+	var decimals = parseFloat(decimales);
+	decimals = (!decimals ? 2 : decimals);
+	var valor = Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
 	return valor.toFixed(4);
 }
 /**
@@ -119,13 +119,13 @@ function puntuacionarray($, indice, pointsmax, pointsmin, initialpoints, tinitia
 		formularios, type, nmaxanswers, pointsnmaxanswers, servertime, correccion) {
 	var browserdate = new Date();
     var browsertime = browserdate.getTime()/1000; // ...in seconds.
-    if (correccion == null) {
-    	correccion = servertime - browsertime;
+    if (correccion === null) {
+		correccion = servertime - browsertime;
     }
     for (var i = 0; i < indice; i++) {
 
         var tiempo = parseInt((browsertime + correccion));
-        var form = $(formularios[i]);    
+        var form = $(formularios[i]);
         var grade = quest_calculate_points(tiempo, datestart[i], dateend[i], tinitial[i], dateanswercorrect[i],
         									initialpoints[i], pointsmax[i], pointsmin[i]);
         grade = redondear(grade, 4);
@@ -139,15 +139,15 @@ function puntuacionarray($, indice, pointsmax, pointsmin, initialpoints, tinitia
     	}, 1000);
 }
 
-define(['jquery'], function ($) {
+define(['jquery'], function($) {
 
 	var init = {
-		puntuacionarray:  function (indice, pointsmax, pointsmin, initialpoints, tinitial, datestart,
+		puntuacionarray:  function(indice, pointsmax, pointsmin, initialpoints, tinitial, datestart,
 									state, nanswerscorrect, dateanswercorrect, pointsanswercorrect,
-									dateend, formularios, type, nmaxanswers, pointsnmaxanswers,servertime, correccion) {
+									dateend, formularios, type, nmaxanswers, pointsnmaxanswers, servertime, correccion) {
 			puntuacionarray($, indice, pointsmax, pointsmin, initialpoints, tinitial, datestart, state,
 							nanswerscorrect, dateanswercorrect, pointsanswercorrect, dateend, formularios,
-							type, nmaxanswers, pointsnmaxanswers,servertime, correccion);
+							type, nmaxanswers, pointsnmaxanswers, servertime, correccion);
 		},
 	};
 	return init;

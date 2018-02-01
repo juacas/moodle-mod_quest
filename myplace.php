@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle
  *
@@ -637,7 +637,12 @@ echo $OUTPUT->continue_button('view.php?id=' . $cm->id);
 
 // Finish the page.
 echo $OUTPUT->footer();
-
+/**
+ *
+ * @param unknown $a
+ * @param unknown $b
+ * @return boolean
+ */
 function quest_sortfunction_answers($a, $b) {
     global $sortanswer, $diranswer;
     if ($diranswer == 'ASC') {

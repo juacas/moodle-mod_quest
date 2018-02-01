@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle
  *
@@ -48,6 +48,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once $CFG->libdir . '/ddllib.php';
 /**
+ *
  * @global moodle_database $DB
  * @param number $oldversion
  * @return boolean
@@ -86,7 +87,8 @@ function xmldb_quest_upgrade($oldversion = 0) {
         $dbman->add_field($table, $field);
 
         $table = new xmldb_table('quest');
-        $field = new xmldb_field('mincalification', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, $table->getField('maxcalification'));
+        $field = new xmldb_field('mincalification', XMLDB_TYPE_INTEGER, '4', true, true, false, 0,
+                $table->getField('maxcalification'));
         $dbman->add_field($table, $field);
         upgrade_mod_savepoint(true, 2017101800, 'quest');
     }

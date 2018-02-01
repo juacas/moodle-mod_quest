@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle
  *
@@ -100,7 +100,8 @@ if (has_capability('mod/quest:manage', $context)) {
         }
 
         if ($quest->gradingstrategy == 0 ||
-                 ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) >= $quest->nelements) ||
+                 ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) >= $quest->nelements)
+                 ||
                  (($elementsforthissubmission >= $numelementsexpectedinsubmission) && ($elementsforthissubmission != 0))) {
             $numelements = $DB->count_records("quest_elementsautor", array("questid" => $quest->id));
 
@@ -624,8 +625,9 @@ if ($action == 'displayfinalgrade') {
                     $sortdata['lastname'] = "Unknown";
                 } else {
                     $data[] = $OUTPUT->user_picture($user);
-                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
-                             fullname($user) . '</a>';
+                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?" .
+                              "id=$user->id&amp;course=$course->id\">" .
+                              fullname($user) . '</a>';
                     $sortdata['firstname'] = strtolower($user->firstname);
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }

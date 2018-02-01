@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
@@ -47,10 +47,15 @@ require_once('base.php');
 class quest_updated extends base {
 
     /**
-     * @param int $courseid
-     * @param int $userid
-     * @param string $cmid
-     * @return unknown */
+     *
+     * @param unknown $courseid
+     * @param unknown $userid
+     * @param unknown $cmid
+     * @param unknown $activityid
+     * @param unknown $url
+     * @param unknown $info
+     * @return \mod_quest\event\quest_updated
+     */
     public static function create_from_parts($courseid, $userid, $cmid, $activityid, $url, $info) {
         $data = array('relateduserid' => $userid, 'context' => \context_course::instance($courseid), 'userid' => $userid,
                         'courseid' => $courseid,

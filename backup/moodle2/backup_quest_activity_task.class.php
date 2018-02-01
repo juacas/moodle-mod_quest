@@ -1,20 +1,27 @@
 <?php
-// This file is part of Questournament activity for Moodle http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
-// Questournament for Moodle is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Questournament for Moodle is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Backup Questournament module
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_stepslib.php');
+require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_settingslib.php');
+
+/**
+ * Backup Questournament module
+ * backup task that provides all the settings and steps to perform one complete backup of the activity.
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,13 +32,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_stepslib.php');
-require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_settingslib.php');
-
-/** Choice backup task that provides all the settings and steps to perform one
- * complete backup of the activity */
 class backup_quest_activity_task extends backup_activity_task {
 
     /** Define (add) particular settings this activity can have */
@@ -45,8 +45,12 @@ class backup_quest_activity_task extends backup_activity_task {
         $this->add_step(new backup_quest_activity_structure_step('quest_structure', 'quest.xml'));
     }
 
-    /** Code the transformations to perform in the activity in
-     * order to get transportable (encoded) links */
+    /**
+     * Code the transformations to perform in the activity in
+     * order to get transportable (encoded) links
+     * @param unknown $content
+     * @return mixed
+     */
     static public function encode_content_links($content) {
         global $CFG;
 

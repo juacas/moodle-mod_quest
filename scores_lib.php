@@ -1,18 +1,18 @@
 <?php
-// This file is part of INTUITEL http://www.intuitel.eu as an adaptor for Moodle http://moodle.org/.
+// This file is part of Questournament activity for Moodle http://moodle.org/
 //
-// INTUITEL for Moodle is free software: you can redistribute it and/or modify.
-// it under the terms of the GNU General Public License as published by.
-// the Free Software Foundation, either version 3 of the License, or.
-// (at your option) any later version..
+// Questournament for Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-// INTUITEL for Moodle is distributed in the hope that it will be useful,.
-// but WITHOUT ANY WARRANTY; without even the implied warranty of.
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the.
-// GNU General Public License for more details..
+// Questournament for Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License.
-// along with INTUITEL for Moodle Adaptor. If not, see <http://www.gnu.org/licenses/>..
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle
  *
@@ -29,8 +29,10 @@
  *          Debug functions */
 defined('MOODLE_INTERNAL') || die();
 require_once("locallib.php");
-
-// TODO use $quest record.
+/**
+ * TODO use $quest record.
+ * @param unknown $questid
+ */
 function updateallteams($questid) {
     global $DB;
     $query = $DB->get_records_select("quest_teams", "questid=?", array($questid));
@@ -40,7 +42,6 @@ function updateallteams($questid) {
         $idteams[] = $team->id;
         print("<p>Updating team $team->id on quest $questid: </p>  ");
         quest_update_team_scores($quest->id, $team->id);
-        // test_update_team($questid, $team->id,false);.
     }
     // Clean orphan records.
     if (!empty($idteams)) {
@@ -52,7 +53,10 @@ function updateallteams($questid) {
     $DB->delete_records_select('quest_calification_teams', $select);
 }
 
-// TODO use $quest record.
+/**
+ * TODO use $quest record.
+ * @param unknown $questid
+ */
 function updateallusers($questid) {
     global $DB;
     $query = $DB->get_records_select("quest_calification_users", "questid=?", array($questid));
@@ -63,7 +67,12 @@ function updateallusers($questid) {
         quest_update_user_scores($quest, $usercal->userid);
     }
 }
-
+/**
+ *
+ * @param unknown $questid
+ * @param unknown $teamid
+ * @param string $update
+ */
 function test_update_team($questid, $teamid, $update = true) {
     global $DB;
     $query = $DB->get_records_select("quest_calification_users", "teamid=?", array($teamid));
@@ -143,7 +152,11 @@ function quest_count_submission_answers($sid) {
         return 0;
     }
 }
-
+/**
+ *
+ * @param unknown $sid
+ * @return unknown|number
+ */
 function quest_count_submission_answers_assesed($sid) {
     global $DB;
     if ($query = $DB->get_record_select("quest_answers", "submissionid=? and phase>0", array($sid), "count(*) as num")) {
@@ -152,7 +165,11 @@ function quest_count_submission_answers_assesed($sid) {
         return 0;
     }
 }
-
+/**
+ *
+ * @param unknown $sid
+ * @return unknown|number
+ */
 function quest_count_submission_answers_correct($sid) {
     global $DB;
     if ($query = $DB->get_record_select("quest_answers", "submissionid=? and grade>=50", array($sid), "count(grade) as num")) {
@@ -161,7 +178,9 @@ function quest_count_submission_answers_correct($sid) {
         return 0;
     }
 }
-
+/**
+ *
+ */
 function quest_recalculate_all_submissions_stats() {
     global $CFG;
     $sql = "update mdl_quest_submissions set nanswers=" .
@@ -170,7 +189,8 @@ function quest_recalculate_all_submissions_stats() {
              "(select count(*) from mdl_quest_answers as ans where ans.submissionid=mdl_quest_submissions.id and ans.grade>50 )";
     $sql3 = "update mdl_quest_submissions set nanswersassessed=" .
              "(select count(*) from mdl_quest_answers as ans where ans.submissionid=mdl_quest_submissions.id and ans.phase>0 )";
-    $sql4 = "update mdl_quest_submissions set dateanswercorrect=(select min(date) from mdl_quest_answers as ans where ans.submissionid=mdl_quest_submissions.id and ans.grade>=50)";
+    $sql4 = "update mdl_quest_submissions set dateanswercorrect=(select min(date) from mdl_quest_answers as ans where " .
+            "ans.submissionid=mdl_quest_submissions.id and ans.grade>=50)";
 
     echo "Recalculating nanwers, nanswerscorrect, dateanswercorrect";
 

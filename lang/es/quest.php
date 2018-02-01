@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle lang file
  *
@@ -24,7 +24,8 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification */
+ * @package mod_quest */
+
 $string['absent'] = 'Ausente';
 $string['accumulative'] = 'Acumulativa';
 $string['action'] = 'Acción';
@@ -73,7 +74,6 @@ $string['assessmentnotyetagreed'] = 'Valoración aún no aceptada';
 $string['assessmentof'] = 'Evaluación de {$a}';
 $string['assessmentofthissubmission'] = 'Valoración de este envío';
 $string['assessments'] = 'Eval.';
-// $string['assessments'] = 'Valoraciones';
 $string['assessmentsareok'] = 'Las valoraciones están correctas';
 $string['assessmentsby'] = 'Valoradas por {$a}';
 $string['assessmentsdone'] = 'Valoraciones hechas';
@@ -596,10 +596,7 @@ $string['windowpreviewsubmission'] = 'Vista de Previsualización del Desafío';
 $string['wrongpassword'] = 'Contraseña Errónea';
 $string['yourassessments'] = 'Sus Valoraciones';
 $string['yourfeedbackgoeshere'] = 'Su respuesta va aquí';
-// ////////////////////////////////////
-// HELP TEXTS
-// /////////////////////////////////////
-
+// HELP TEXTS.
 $string['allowteams'] = 'Permitir Equipos';
 $string['allowteams_help'] = '<P align="justify">Este par&aacute;metro obliga a que cada uno de los alumnos que participe en este m&oacute;dulo QUESTOURnament pertenezca a un equipo. Cuando un alumno acceda por primera vez a un m&oacute;dulo que tenga esta opci&oacute;n habilitada, tendr&aacute; que introducir el nombre del equipo al que pertenece para poder entrar. </P>
 <P align="justify">Cuando esta opci&oacute;n est&eacute; habilitada aparecer&aacute; en el m&oacute;dulo, adem&aacute;s de la clasificaci&oacute;n individual de todos los alumnos, la clasificaci&oacute;n por equipos. </P>
@@ -965,8 +962,7 @@ $string['teamporcent_help'] = '<P align="justify">Este par&aacute;metro establec
 <P align="justify">El porcentaje, establecido por este par&aacute;metro, de la puntuación obtenida por un equipo, se suma a la puntuación individual total de cada alumno que pertenezca a dicho equipo. </P>
 <P align="justify">El objetivo es premiar el trabajo en equipo de forma que &eacute;ste repercuta en la clasificaci&oacute;n final de cada alumno. </P>
 ';
-$string['teams'] = 'Ver Clasificaci&oacute;n por Equipos'; // evp en la pagina de ayuda se titulaba
-                                                           // View Summary by Teams
+$string['teams'] = 'Ver Clasificaci&oacute;n por Equipos'; // View Summary by Teams.
 $string['teams_help'] = '<P align="justify">Esta opción muestra la clasificaci&oacute;n obtenida por cada uno de los equipos formados en el m&oacute;dulo QUESTOURnament que pertenezcan al mismo grupo. Un porcentaje de esta clasificaci&oacute;n fijado al a&ntilde;adir el m&oacute;dulo QUESTOURnament (<a href="help.php?component=quest&identifier=teamporcent"">Porcentaje en la Calificaci&oacute;n de los Equipos</a>) contribuirá a la clasificaci&oacute;n indivual de cada componente del equipo.</P>
 <P align="justify">Los par&aacute;metros que se muestran son los siguientes:</P>
 <div align="justify">
@@ -1009,7 +1005,7 @@ $string['windowpreviewsubmission_help'] = '<p align="justify">Esta página muest
 <p align="justify">De esta manera se podr&aacute; comprobar el aspecto de un desaf&iacute;o antes de añadirlo. Esta posibilidad resulta sobre todo útil cuando se necesite introducir una ecuación matem&aacute;tica para lo cuál se tendr&aacute; que utilizar una expresión con el formato adecuado que transformar&aacute;n los filtros que proporciona Moodle y cuyo aspecto final no puede visualizarse en el editor de dicha plataforma.</p>
 ';
 
-// MEssage provider
+// Message provider.
 
 $string['messageprovider:challenge_update'] = 'Cambios en los desafios: nuevos desafíos, cambios de fase, modificaciones, etc.';
 $string['messageprovider:evaluation_update'] = 'Cambios que influyen en tu calificación.';

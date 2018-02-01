@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle
  *
@@ -25,7 +25,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
- *          ******************************************************** */
+ */
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -50,10 +50,12 @@ $queryid = optional_param('query', 'what', PARAM_ALPHA);
 
 switch ($queryid) {
     case 'ip':
-        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?", array($context->id), "timecreated", "id,ip,timecreated");
+        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
+                                        array($context->id), "timecreated", "id,ip,timecreated");
         break;
     case 'logs':
-        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?", array($context->id), "timecreated");
+        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
+                                        array($context->id), "timecreated");
         break;
     case 'activity':
         list($insql, $inparams) = $DB->get_in_or_equal(array($cm->id));
@@ -108,7 +110,8 @@ if ($query) {
     setlocale(LC_ALL, $localelang );
     $localeconfig = localeconv();
     echo $OUTPUT->notification("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" ".
-            "<b>{$localeconfig['decimal_point']}</b> \". Check that your SpreadSheet interprets correctly this character.</p>", 'info');
+            "<b>{$localeconfig['decimal_point']}</b> \". " .
+            "Check that your SpreadSheet interprets correctly this character.</p>", 'info');
     if (!empty($sqlquery)) {
         echo $OUTPUT->notification("Last query with no results. Check if legacy log is enabled in this server.<br/>");
     }

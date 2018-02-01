@@ -1,20 +1,21 @@
 <?php
-// This file is part of INTUITEL http://www.intuitel.eu as an adaptor for Moodle http://moodle.org/
+// This file is part of Questournament activity for Moodle http://moodle.org/
 //
-// INTUITEL for Moodle is free software: you can redistribute it and/or modify
+// Questournament for Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// INTUITEL for Moodle is distributed in the hope that it will be useful,
+// Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with INTUITEL for Moodle Adaptor. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+
+/** Questournament activity for Moodle: Draw the scoring graph.
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -25,12 +26,23 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
- *          Draw the scoring graph */
+ */
 require_once('../../config.php');
 global $CFG;
 require_once('locallib.php');
 require_once('vendor/graphlib.php');
-
+/**
+ * Calculate scoring.
+ * @param unknown $timenow
+ * @param unknown $datestart
+ * @param unknown $dateend
+ * @param unknown $tinitial
+ * @param unknown $dateanswercorrect
+ * @param unknown $initialpoints
+ * @param unknown $pointsmax
+ * @param unknown $type
+ * @return number
+ */
 function quest_calculate_pointsc($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
     if (($dateend - $datestart - $tinitial) == 0) {
         $incline = 0;
@@ -91,7 +103,18 @@ function quest_calculate_pointsc($timenow, $datestart, $dateend, $tinitial, $dat
     return $grade;
 }
 
-// Sustituida por la version reducida anterior (no probada con type!=0.
+/**
+ * Sustituida por la version reducida anterior (no probada con type!=0.
+ * @param unknown $timenow
+ * @param unknown $datestart
+ * @param unknown $dateend
+ * @param unknown $tinitial
+ * @param unknown $dateanswercorrect
+ * @param unknown $initialpoints
+ * @param unknown $pointsmax
+ * @param unknown $type
+ * @return number
+ */
 function quest_calculate_pointsb($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $type) {
     if (!$type) {
         $type = 0;
@@ -193,7 +216,9 @@ function quest_calculate_pointsb($timenow, $datestart, $dateend, $tinitial, $dat
     }
     return $grade;
 }
-
+/**
+ *
+ */
 function graph_submissions() {
 
     $datestart = required_param('dst', PARAM_INT);
@@ -252,9 +277,11 @@ function graph_submissions() {
     $dateinflexion = $drawworstcase ? min($datesinflexion) : 0;
     sort($dates);
     foreach ($dates as $date) {
-        $line2[] = quest_calculate_points($date, $datestart, $dateend, $tinit, $dateanswercorrect, $initialpoints, $pointsmax, $pointsmin);
+        $line2[] = quest_calculate_points($date, $datestart, $dateend, $tinit, $dateanswercorrect,
+                                        $initialpoints, $pointsmax, $pointsmin);
         if ($drawworstcase) {
-            $line1[] = quest_calculate_points($date, $datestart, $dateend, $tinit, $dateinflexion, $initialpoints, $pointsmax, $pointsmin);
+            $line1[] = quest_calculate_points($date, $datestart, $dateend, $tinit, $dateinflexion,
+                                        $initialpoints, $pointsmax, $pointsmin);
         }
     }
     if ($drawworstcase) {
@@ -294,7 +321,8 @@ function graph_submissions() {
     $mygraph->print_TTF($label2);
 
     if ($drawworstcase) {
-        $todayminpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $dateinflexion, $initialpoints, $pointsmax, $pointsmin);
+        $todayminpoints = quest_calculate_points($timenow, $datestart, $dateend, $tinit, $dateinflexion,
+                                                $initialpoints, $pointsmax, $pointsmin);
         $yminpointstoday = $mygraph->get_y_point($todayminpoints);
         $coords = array('x' => $xtoday + 2, 'y' => $yminpointstoday, 'reference' => 'top-left');
         $mygraph->update_boundaryBox($label2['boundary_box'], $coords);
@@ -302,7 +330,8 @@ function graph_submissions() {
         $mygraph->print_TTF($label2);
 
         if (count($datesinflexion) > 1) {
-            $inflexionpoints = quest_calculate_points($dateinflexion, $datestart, $dateend, $tinit, $dateinflexion, $initialpoints, $pointsmax, $pointsmin);
+            $inflexionpoints = quest_calculate_points($dateinflexion, $datestart, $dateend, $tinit, $dateinflexion,
+                                                $initialpoints, $pointsmax, $pointsmin);
             $yinflexionpoint = $mygraph->get_y_point($inflexionpoints);
             $xinflexionpoint = $mygraph->get_x_point($dateinflexion);
             $coords = array('x' => $xinflexionpoint + 2, 'y' => $yinflexionpoint, 'reference' => 'top-left');

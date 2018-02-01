@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Library of functions and constants for module quest
  * quest constants and standard Moodle functions plus the quest functions
@@ -31,7 +31,11 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->dirroot . '/enrol/locallib.php');
-
+/**
+ *
+ * @param unknown $quest
+ * @return boolean|number
+ */
 function quest_add_instance($quest) {
     // Given an object containing all the necessary data,
     // (defined by the form in mod.html) this function
@@ -120,19 +124,21 @@ function quest_supports($feature) {
             return null;
     }
 }
-
 /**
- * @param type $newsubmission
- * @return type */
+ *
+ * @param unknown $newsubmission
+ * @return boolean
+ */
 function quest_check_submission_dates($newsubmission) {
     return ($newsubmission->datestart >= $newsubmission->questdatestart and
             $newsubmission->dateend <= $newsubmission->questdateend and
              $newsubmission->questdateend > $newsubmission->questdatestart);
 }
-
 /**
- * @param type $newsubmission
- * @return boolean */
+ *
+ * @param unknown $newsubmission
+ * @return boolean
+ */
 function quest_check_submission_text($newsubmission) {
     $validate = true;
 
@@ -144,7 +150,6 @@ function quest_check_submission_text($newsubmission) {
     }
     return $validate;
 }
-
 /** Update the configuration of the Quest
  *
  * @global stdClass $CFG
@@ -209,7 +214,11 @@ function quest_update_instance($quest, $form) {
 
     return $returnid;
 }
-
+/**
+ *
+ * @param unknown $id
+ * @return boolean
+ */
 function quest_delete_instance($id) {
     global $CFG, $DB;
     require_once('locallib.php');
@@ -281,7 +290,17 @@ function quest_delete_instance($id) {
     $fs->delete_area_files($context->id);
     return $result;
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $cm
+ * @param unknown $context
+ * @param unknown $filearea
+ * @param unknown $args
+ * @param unknown $forcedownload
+ * @param array $options
+ * @return boolean
+ */
 function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
     global $CFG, $DB;
 
@@ -336,7 +355,14 @@ function quest_save_intro_draft_files($formdata, $ctx) {
         file_save_draft_area_files($formdata->introattachments, $ctx->id, 'mod_quest', 'introattachment', 0);
     }
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $user
+ * @param unknown $mod
+ * @param unknown $quest
+ * @return NULL
+ */
 function quest_user_outline($course, $user, $mod, $quest) {
     // Return a small object with summary information about what a
     // user has done with a given particular instance of this module
@@ -367,7 +393,13 @@ function quest_user_outline($course, $user, $mod, $quest) {
     }
     return $result;
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $user
+ * @param unknown $mod
+ * @param unknown $quest
+ */
 function quest_user_complete($course, $user, $mod, $quest) {
     // Print a detailed representation of what a user has done with
     // a given particular instance of this module, for user activity reports.
@@ -426,7 +458,12 @@ function quest_user_complete($course, $user, $mod, $quest) {
         print_string('notsubmittedanswers', 'quest');
     }
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $submission
+ * @param unknown $user
+ */
 function quest_print_feedback($course, $submission, $user) {
     global $CFG, $rating, $DB;
 
@@ -526,7 +563,13 @@ function quest_print_feedback($course, $submission, $user) {
         }
     }
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $isteacher
+ * @param unknown $timestart
+ * @return boolean
+ */
 function quest_is_recent_activity($course, $isteacher, $timestart) {
     // Given a course and a time, this module should find recent activity
     // that has occurred in QUEST activities and print it out.
@@ -559,7 +602,10 @@ function quest_get_teacher($courseid) {
     $members = get_users_by_capability($context, 'mod/quest:manage');
     return reset($members);
 }
-
+/**
+ *
+ * @return boolean
+ */
 function quest_cron() {
     // Function to be run periodically according to the moodle cron
     // This function searches for things that need to be done, such
@@ -824,7 +870,17 @@ function quest_cron() {
     mtrace("QUESTOURnament processed (" . (time() - $timestart) . " ms)");
     return true;
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $quest
+ * @param unknown $submission
+ * @param unknown $userfrom
+ * @param unknown $userto
+ * @param unknown $user
+ * @param unknown $cm
+ * @return string
+ */
 function quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, $user, $cm) {
     global $CFG;
 
@@ -865,7 +921,17 @@ function quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, 
 
     return $posttext;
 }
-
+/**
+ *
+ * @param unknown $course
+ * @param unknown $quest
+ * @param unknown $submission
+ * @param unknown $userfrom
+ * @param unknown $userto
+ * @param unknown $user
+ * @param unknown $cm
+ * @return string
+ */
 function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, $user, $cm) {
     global $CFG;
 
@@ -889,7 +955,17 @@ function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, 
 
     return $posthtml;
 }
-
+/**
+ *
+ * @param unknown $quest
+ * @param unknown $userfrom
+ * @param unknown $userto
+ * @param unknown $course
+ * @param unknown $user
+ * @param unknown $submission
+ * @param unknown $cm
+ * @return string
+ */
 function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submission, $cm) {
     // Given the data about a posting, builds up the HTML to display it and
     // returns the HTML in a string. This is designed for sending via HTML email.
@@ -1100,7 +1176,11 @@ function quest_update_grades($quest, $userid = 0, $nullifnone = true) {
         quest_grade_item_update($quest);
     }
 }
-
+/**
+ *
+ * @param unknown $questid
+ * @return unknown|array
+ */
 function quest_get_participants($questid) {
     // Must return an array of user records (all data) who are participants
     // for a given instance of QUEST. Must include every user involved
@@ -1152,7 +1232,11 @@ function quest_scale_used_anywhere($scaleid) {
     $return = false;
     return $return;
 }
-
+/**
+ *
+ * @param number $courseid
+ * @return boolean
+ */
 function quest_refresh_events($courseid = 0) {
     // This standard function will check all instances of this module
     // and make sure there are up-to-date events created for each of them.
@@ -1204,15 +1288,16 @@ function quest_refresh_events($courseid = 0) {
     }
     return true;
 }
-
 /**
+ *
  * @param unknown $activities
  * @param unknown $index
  * @param unknown $sincetime
  * @param unknown $courseid
- * @param string $questcmid cmid del modulo quest
+ * @param string $questcmid
  * @param string $user
- * @param string $groupid */
+ * @param string $groupid
+ */
 function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $courseid, $questcmid = "0", $user = "", $groupid = "") {
     // Returns all quest posts since a given time. If quest is specified then
     // this restricts the results.
@@ -1392,13 +1477,17 @@ function quest_reset_course_form_definition(&$mform) {
 
     $mform->addElement('checkbox', 'reset_quest_all_answers', get_string('resetquestallanswers', 'quest'));
 }
-
-/** Course reset form defaults. */
+/**
+ * Course reset form defaults.
+ * @param unknown $course
+ * @return number[]
+ */
 function quest_reset_course_form_defaults($course) {
     return array('reset_quest_all_answers' => 0);
 }
 
-/** This function is used by the reset_course_userdata function in moodlelib.
+/**
+ * This function is used by the reset_course_userdata function in moodlelib.
  * This function will remove all answers, teams, and evaluations from the specified questournament
  * and clean up any related data.
  * @param $data the data submitted from the reset course.
@@ -1514,36 +1603,58 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
                 navigation_node::TYPE_SETTING);
     }
 }
-
+/**
+ *
+ * @param unknown $submission
+ * @param unknown $user
+ * @return array
+ */
 function quest_get_user_answers($submission, $user) {
     global $DB;
     return $DB->get_records_select("quest_answers", "submissionid = ? AND userid = ? AND date > 0",
             array($submission->id, $user->id), "date DESC");
 }
-
+/**
+ *
+ * @param unknown $submission
+ * @return array
+ */
 function quest_get_submission_answers($submission) {
     global $DB;
     return $DB->get_records_select("quest_answers", "submissionid = ? AND date > 0", array($submission->id), "date DESC");
 }
-
+/**
+ *
+ * @param unknown $quest
+ * @param unknown $user
+ * @return array
+ */
 function quest_get_user_answer($quest, $user) {
     global $DB;
     return $DB->get_records_select("quest_answers", "questid = ? AND userid = ? AND date > 0", array($quest->id, $user->id),
             "date DESC");
 }
-
+/**
+ *
+ * @param unknown $quest
+ * @param unknown $user
+ * @return array
+ */
 function quest_get_user_assessments($quest, $user) {
     global $DB;
     return $DB->get_records_select("quest_assessments", "questid = ? AND userid = ? AND dateassessment > 0",
             array($quest->id, $user->id), "dateassessment DESC");
 }
-
+/**
+ *
+ * @param unknown $answer
+ * @return array
+ */
 function quest_get_user_assessment($answer) {
     global $DB;
     return $DB->get_records_select("quest_assessments", "answerid = ? AND dateassessment > 0", array($answer->id),
             "dateassessment DESC");
 }
-
 /**
  * @param stdClass $quest
  * @return Ambigous <number, unknown> */

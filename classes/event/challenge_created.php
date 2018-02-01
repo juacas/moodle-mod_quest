@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
@@ -47,10 +47,11 @@ require_once('base.php');
 class challenge_created extends base {
 
     /**
-     * @param int $courseid
-     * @param int $userid
-     * @param string $cmId
-     * @return unknown */
+     *
+     * @param unknown $challenge
+     * @param unknown $cm
+     * @return \mod_quest\event\challenge_created
+     */
     public static function create_from_parts($challenge, $cm) {
         $url = "/mod/quest/submissions.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showsubmission";
         $data = array('relateduserid' => $challenge->userid, 'context' => \context_module::instance($cm->id),
@@ -80,7 +81,8 @@ class challenge_created extends base {
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' created a new Challenge in the Quest activity '" . $this->data['other']['activityid'] .
+        return "The user with id '$this->userid' created a new Challenge in the Quest activity '" .
+                $this->data['other']['activityid'] .
                  "in the course '$this->courseid'. " . $this->data['other']['info'];
     }
 

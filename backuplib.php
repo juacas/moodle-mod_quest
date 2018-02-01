@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -31,7 +31,12 @@
 
 // This function executes all the backup procedure about this mod.
 defined('MOODLE_INTERNAL') || die();
-
+/**
+ *
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @return boolean
+ */
 function quest_backup_mods($bf, $preferences) {
     global $CFG;
 
@@ -53,8 +58,13 @@ function quest_backup_mods($bf, $preferences) {
     }
     return $status;
 }
-
-// ...function quest_backup_one_mod($bf,$preferences,$quest).
+/**
+ *  ...function quest_backup_one_mod($bf,$preferences,$quest).
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $number
+ * @return boolean|number
+ */
 function quest_backup_one_mod($bf, $preferences, $number) {
     $quest = $DB->get_record("quest", "id", $number);
     // Start mod.
@@ -122,8 +132,13 @@ function quest_backup_one_mod($bf, $preferences, $number) {
     $status = fwrite($bf, end_tag("MOD", 3, true));
     return $status;
 }
-
-/** Backup quest_elements contents */
+/**
+ * Backup quest_elements contents
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @return boolean|number
+ */
 function backup_quest_elements($bf, $preferences, $quest) {
     global $CFG, $DB;
 
@@ -159,8 +174,14 @@ function backup_quest_elements($bf, $preferences, $quest) {
     }
     return $status;
 }
-
-// Backup quest_rubrics contents.
+/**
+ * Backup quest_rubrics contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $elementno
+ * @return boolean|number
+ */
 function backup_quest_rubrics($bf, $preferences, $quest, $elementno) {
     global $CFG, $DB;
 
@@ -191,8 +212,13 @@ function backup_quest_rubrics($bf, $preferences, $quest, $elementno) {
     }
     return $status;
 }
-
-// Backup quest_elementsautor contents.
+/**
+ * Backup quest_elementsautor contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @return boolean|number
+ */
 function backup_quest_elementsautor($bf, $preferences, $quest) {
     global $CFG, $DB;
 
@@ -226,7 +252,14 @@ function backup_quest_elementsautor($bf, $preferences, $quest) {
     return $status;
 }
 
-// Backup quest_rubrics_autor contents.
+/**
+ * Backup quest_rubrics_autor contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $elementno
+ * @return boolean|number
+ */
 function backup_quest_rubrics_autor($bf, $preferences, $quest, $elementno) {
     global $CFG;
 
@@ -256,8 +289,13 @@ function backup_quest_rubrics_autor($bf, $preferences, $quest, $elementno) {
     }
     return $status;
 }
-
-// Backup quest_teams contents.
+/**
+ * Backup quest_teams contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @return boolean|number
+ */
 function backup_quest_teams($bf, $preferences, $quest) {
     global $CFG;
 
@@ -291,7 +329,14 @@ function backup_quest_teams($bf, $preferences, $quest) {
     return $status;
 }
 
-// Backup quest_calification_teams contents.
+/**
+ * Backup quest_calification_teams contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $teamid
+ * @return boolean|number
+ */
 function backup_quest_calification_teams($bf, $preferences, $quest, $teamid) {
     global $CFG;
 
@@ -328,7 +373,13 @@ function backup_quest_calification_teams($bf, $preferences, $quest, $teamid) {
     return $status;
 }
 
-// Backup quest_calification_users contents.
+/**
+ *Backup quest_calification_users contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @return boolean|number
+ */
 function backup_quest_calification_users($bf, $preferences, $quest) {
     global $CFG, $DB;
 
@@ -362,8 +413,13 @@ function backup_quest_calification_users($bf, $preferences, $quest) {
     }
     return $status;
 }
-
-// Backup quest_submissions contents.
+/**
+ * Backup quest_submissions contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @return boolean|number
+ */
 function backup_quest_submissions($bf, $preferences, $quest) {
     global $CFG, $DB;
 
@@ -415,13 +471,17 @@ function backup_quest_submissions($bf, $preferences, $quest) {
     }
     return $status;
 }
-
-// Backup particular submission quest_elements contents.
+/**
+ * Backup particular submission quest_elements contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $submission
+ * @return boolean|number
+ */
 function backup_quest_particular_elements($bf, $preferences, $quest, $submission) {
     global $CFG, $DB;
-
     $status = true;
-
     $questelements = $DB->get_records_sql(
             "SELECT * from {quest_elements} a
                                                  WHERE a.questid = ? and a.submissionsid = ?
@@ -430,10 +490,8 @@ function backup_quest_particular_elements($bf, $preferences, $quest, $submission
     if ($questelements) {
         // Write start tag.
         $status = fwrite($bf, start_tag("PARTICULAR_ELEMENTS", 6, true));
-
         // Iterate over each element.
         foreach ($questelements as $quepartele) {
-
             // Start particular element.
             $status = fwrite($bf, start_tag("PARTICULAR_ELEMENT", 7, true));
             // Print particular element contents.
@@ -443,7 +501,6 @@ function backup_quest_particular_elements($bf, $preferences, $quest, $submission
             fwrite($bf, full_tag("SCALE", 8, false, $quepartele->scale));
             fwrite($bf, full_tag("MAXSCORE", 8, false, $quepartele->maxscore));
             fwrite($bf, full_tag("WEIGHT", 8, false, $quepartele->weight));
-
             // End assessment autor.
             $status = fwrite($bf, end_tag("PARTICULAR_ELEMENT", 7, true));
         }
@@ -452,17 +509,21 @@ function backup_quest_particular_elements($bf, $preferences, $quest, $submission
     }
     return $status;
 }
-
+/**
+ *
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $submission
+ * @return boolean|number
+ */
 function backup_quest_assessments_autors($bf, $preferences, $quest, $submission) {
     global $CFG;
-
     $status = true;
-
     $questassessmentsautor = $DB->get_records_sql(
             "SELECT * from {quest_assessments_autors} a
                                                  WHERE a.questid = ? and a.submissionid = ?
                                                  ORDER BY a.id", array($quest, $submission));
-
     // If there is quest_assessments_autors.
     if ($questassessmentsautor) {
         // Write start tag.
@@ -483,7 +544,6 @@ function backup_quest_assessments_autors($bf, $preferences, $quest, $submission)
             fwrite($bf, full_tag("STATE", 8, false, $queass->state));
             // Now we backup quest elements assessments autor.
             $status = backup_quest_elements_assessments_autor($bf, $preferences, $quest, $queass->id);
-
             // End assessment autor.
             $status = fwrite($bf, end_tag("ASSESSMENT_AUTOR", 7, true));
         }
@@ -492,17 +552,21 @@ function backup_quest_assessments_autors($bf, $preferences, $quest, $submission)
     }
     return $status;
 }
-
+/**
+ *
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $assessmentid
+ * @return boolean|number
+ */
 function backup_quest_elements_assessments_autor($bf, $preferences, $quest, $assessmentid) {
     global $CFG, $DB;
-
     $status = true;
-
     $questelementsassessautor = $DB->get_records_sql(
             "SELECT * from {quest_items_assessments_autor} c
                                               WHERE c.questid = ? and c.assessmentautorid = ?
                                               ORDER BY c.id", array($quest, $assessmentid));
-
     // If there is quest_elements_assessments_autor.
     if ($questelementsassessautor) {
         // Write start tag.
@@ -518,7 +582,6 @@ function backup_quest_elements_assessments_autor($bf, $preferences, $quest, $ass
             fwrite($bf, full_tag("COMMENTTEACHER", 10, false, $queele->commentteacher));
             fwrite($bf, full_tag("CALIFICATION", 10, false, $queele->calification));
             fwrite($bf, full_tag("PHASE", 10, false, $queele->phase));
-
             // End element assessment autor.
             $status = fwrite($bf, end_tag("ELEMENT_ASSESS_AUTOR", 9, true));
         }
@@ -527,21 +590,23 @@ function backup_quest_elements_assessments_autor($bf, $preferences, $quest, $ass
     }
     return $status;
 }
-
-// Backup quest_answers contents.
+/**
+ * Backup quest_answers contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $submission
+ * @return boolean|number
+ */
 function backup_quest_answers($bf, $preferences, $quest, $submission) {
     global $CFG, $DB;
-
     $status = true;
-
     $questanswers = $DB->get_records_sql(
             "SELECT * from {quest_answers} a
                                                  WHERE a.questid = ? and a.submissionid = ?
                                                  ORDER BY a.id", array($quest, $submission));
-
     // If there is quest_answers.
     if ($questanswers) {
-
         // Write start tag.
         $status = fwrite($bf, start_tag("ANSWERS", 6, true));
         // Iterate over each answer.
@@ -564,7 +629,6 @@ function backup_quest_answers($bf, $preferences, $quest, $submission) {
             fwrite($bf, full_tag("STATE", 8, false, $queans->state));
             // Now we backup quest assessments.
             $status = backup_quest_assessments($bf, $preferences, $quest, $queans->id);
-
             // End answer.
             $status = fwrite($bf, end_tag("ANSWER", 7, true));
         }
@@ -573,18 +637,21 @@ function backup_quest_answers($bf, $preferences, $quest, $submission) {
     }
     return $status;
 }
-
-// Backup quest_assessments contents.
+/**
+ * Backup quest_assessments contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $answer
+ * @return boolean|number
+ */
 function backup_quest_assessments($bf, $preferences, $quest, $answer) {
     global $CFG, $DB;
-
     $status = true;
-
     $questassessments = $DB->get_records_sql(
             "SELECT * from {quest_assessments} a
                                                  WHERE a.questid = ? and a.answerid = ?
                                                  ORDER BY a.id", array($quest, $answer));
-
     // If there is quest_assessments.
     if ($questassessments) {
         // Write start tag.
@@ -607,7 +674,6 @@ function backup_quest_assessments($bf, $preferences, $quest, $answer) {
             fwrite($bf, full_tag("STATE", 8, false, $queass->state));
             // Now we backup quest elements assessments.
             $status = backup_quest_elements_assessments($bf, $preferences, $quest, $queass->id);
-
             // End assessment.
             $status = fwrite($bf, end_tag("ASSESSMENT", 7, true));
         }
@@ -616,18 +682,21 @@ function backup_quest_assessments($bf, $preferences, $quest, $answer) {
     }
     return $status;
 }
-
-// Backup quest_elements_assessments contents.
+/**
+ * Backup quest_elements_assessments contents.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @param unknown $quest
+ * @param unknown $assessmentid
+ * @return boolean|number
+ */
 function backup_quest_elements_assessments($bf, $preferences, $quest, $assessmentid) {
     global $CFG, $DB;
-
     $status = true;
-
     $questelementsassessautor = $DB->get_records_sql(
             "SELECT * from {quest_elements_assessments} c
                                               WHERE c.questid = ? and c.assessmentid = ?
                                               ORDER BY c.id", array($quest, $assessmentid));
-
     // If there is quest_elements_assessments.
     if ($questelementsassessautor) {
         // Write start tag.
@@ -643,7 +712,6 @@ function backup_quest_elements_assessments($bf, $preferences, $quest, $assessmen
             fwrite($bf, full_tag("COMMENTTEACHER", 10, false, $queele->commentteacher));
             fwrite($bf, full_tag("CALIFICATION", 10, false, $queele->calification));
             fwrite($bf, full_tag("PHASE", 10, false, $queele->phase));
-
             // End element assessment.
             $status = fwrite($bf, end_tag("ELEMENT_ASSESS", 9, true));
         }
@@ -652,9 +720,13 @@ function backup_quest_elements_assessments($bf, $preferences, $quest, $assessmen
     }
     return $status;
 }
-
-// Backup quest files because we've selected to backup user info.
-// ...and files are user info's level.
+/**
+ * Backup quest files because we've selected to backup user info.
+ * and files are user info's level.
+ * @param unknown $bf
+ * @param unknown $preferences
+ * @return unknown
+ */
 function backup_quest_files($bf, $preferences) {
     global $CFG;
 
@@ -674,8 +746,13 @@ function backup_quest_files($bf, $preferences) {
 
     return $status;
 }
-
-// Return an array of info (name,value).
+/**
+ * Return an array of info (name,value).
+ * @param unknown $course
+ * @param string $userdata
+ * @param unknown $backupuniquecode
+ * @return number
+ */
 function quest_check_backup_mods($course, $userdata = false, $backupuniquecode) {
     // First the course data.
     $info[0][0] = get_string("modulenameplural", "quest");
@@ -714,9 +791,13 @@ function quest_check_backup_mods($course, $userdata = false, $backupuniquecode) 
         return $info;
     }
 }
-
-// Return a content encoded to support interactivities linking. Every module.
-// ...should have its own. They are called automatically from the backup procedure..
+/**
+ * Return a content encoded to support interactivities linking. Every module.
+ * ...should have its own. They are called automatically from the backup procedure..
+ * @param unknown $content
+ * @param unknown $preferences
+ * @return mixed
+ */
 function quest_encode_content_links($content, $preferences) {
     global $CFG;
 
@@ -732,10 +813,11 @@ function quest_encode_content_links($content, $preferences) {
 
     return $result;
 }
-
-// INTERNAL FUNCTIONS. BASED IN THE MOD STRUCTURE.
-
-// Returns an array of quest id.
+/**
+ * Returns an array of quest id.
+ * @param unknown $course
+ * @return array
+ */
 function quest_ids($course) {
     global $CFG, $DB;
 
@@ -744,8 +826,11 @@ function quest_ids($course) {
                                  FROM {quest} q
                                  WHERE q.course = ?", array($course));
 }
-
-// Returns an array of quest_submissions id.
+/**
+ * Returns an array of quest_submissions id.
+ * @param unknown $course
+ * @return array
+ */
 function quest_submission_ids_by_course($course) {
     global $CFG, $DB;
 
@@ -756,7 +841,11 @@ function quest_submission_ids_by_course($course) {
                                  WHERE q.course = ? AND
                                        s.questid = q.id", array($course));
 }
-
+/**
+ *
+ * @param unknown $course
+ * @return array
+ */
 function quest_answer_ids_by_course($course) {
     global $CFG, $DB;
 
@@ -767,7 +856,11 @@ function quest_answer_ids_by_course($course) {
                                  WHERE q.course = ? AND
                                        a.questid = q.id", array($course));
 }
-
+/**
+ *
+ * @param unknown $course
+ * @return array
+ */
 function quest_elements_ids_by_course($course) {
     global $CFG, $DB;
 
@@ -778,7 +871,11 @@ function quest_elements_ids_by_course($course) {
                                  WHERE q.course = ? AND
                                        a.questid = q.id", array($course));
 }
-
+/**
+ *
+ * @param unknown $course
+ * @return array
+ */
 function quest_assessments_ids_by_course($course) {
     global $CFG, $DB;
 

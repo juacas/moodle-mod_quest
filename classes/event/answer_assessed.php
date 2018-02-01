@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
@@ -47,10 +47,13 @@ require_once('base.php');
 class answer_assessed extends base {
 
     /**
+     *
      * @param \stdClass $challenge
      * @param \stdClass $answer
-     * @param \stdClass $cm
-     * @return type */
+     * @param \stdClass $assessment
+     * @param unknown $cm
+     * @return \mod_quest\event\answer_assessed
+     */
     public static function create_from_parts(\stdClass $challenge, \stdClass $answer, \stdClass $assessment, $cm) {
         $url = "/mod/quest/answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer";
 

@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,.
 // but WITHOUT ANY WARRANTY; without even the implied warranty of.
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the.
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the.
 // GNU General Public License for more details..
 //
 // You should have received a copy of the GNU General Public License.
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>..
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>..
 
 /** Questournament activity for Moodle
  *
@@ -25,11 +25,17 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
- *          ********************************************************* */
+ */
 // This php script contains all the stuff to backup/restore.
 // quest mods.
+defined('MOODLE_INTERNAL') || die();
 
-// This function executes all the restore procedure about this mod.
+/**
+ * This function executes all the restore procedure about this mod for Moodle 1.x.
+ * @param unknown $mod
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_restore_mods($mod, $restore) {
     global $CFG;
 
@@ -112,7 +118,13 @@ function quest_restore_mods($mod, $restore) {
     return $status;
 }
 
-// This function restores the quest_teams.
+/**
+ * This function restores the quest_teams.
+ * @param unknown $questid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_teams_restore_mods($questid, $info, $restore) {
     global $CFG;
 
@@ -156,7 +168,14 @@ function quest_teams_restore_mods($questid, $info, $restore) {
     return $status;
 }
 
-// This function restores the quest_calification_teams.
+/**
+ * This function restores the quest_calification_teams.
+ * @param unknown $questid
+ * @param unknown $teamid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_calification_teams_restore_mods($questid, $teamid, $info, $restore) {
     global $CFG;
 
@@ -201,7 +220,14 @@ function quest_calification_teams_restore_mods($questid, $teamid, $info, $restor
     return $status;
 }
 
-// This function restores the quest_calification_users.
+/**
+ * This function restores the quest_calification_users.
+ * @param unknown $questid
+ * @param unknown $userid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_calification_users_restore_mods($questid, $userid, $info, $restore) {
     global $CFG;
 
@@ -257,7 +283,13 @@ function quest_calification_users_restore_mods($questid, $userid, $info, $restor
     return $status;
 }
 
-// This function restores the quest_elements.
+/**
+ * This function restores the quest_elements.
+ * @param unknown $questid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_elements_restore_mods($questid, $info, $restore) {
     global $CFG;
 
@@ -302,7 +334,14 @@ function quest_elements_restore_mods($questid, $info, $restore) {
     return $status;
 }
 
-// This function restores the quest_rubrics.
+/**
+ * This function restores the quest_rubrics.
+ * @param unknown $questid
+ * @param unknown $elementno
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_rubrics_restore_mods($questid, $elementno, $info, $restore) {
     global $CFG;
 
@@ -343,7 +382,13 @@ function quest_rubrics_restore_mods($questid, $elementno, $info, $restore) {
     return $status;
 }
 
-// This function restores the quest_elementsautor.
+/**
+ * This function restores the quest_elementsautor.
+ * @param unknown $questid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_elementsautor_restore_mods($questid, $info, $restore) {
     global $CFG;
 
@@ -387,7 +432,14 @@ function quest_elementsautor_restore_mods($questid, $info, $restore) {
     return $status;
 }
 
-// This function restores the quest_rubrics_autor.
+/**
+ * This function restores the quest_rubrics_autor.
+ * @param unknown $questid
+ * @param unknown $elementno
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_rubrics_autor_restore_mods($questid, $elementno, $info, $restore) {
     global $CFG;
 
@@ -427,7 +479,14 @@ function quest_rubrics_autor_restore_mods($questid, $elementno, $info, $restore)
     return $status;
 }
 
-// This function restores the quest_submissions.
+/**
+ * This function restores the quest_submissions.
+ * @param unknown $oldquestid
+ * @param unknown $newquestid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_submissions_restore_mods($oldquestid, $newquestid, $info, $restore) {
     global $CFG;
 
@@ -506,7 +565,14 @@ function quest_submissions_restore_mods($oldquestid, $newquestid, $info, $restor
     return $status;
 }
 
-// This function restores the quest_assessments_autors.
+/**
+ * This function restores the quest_assessments_autors.
+ * @param unknown $newquestid
+ * @param unknown $newsubmissionid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_assessments_autors_restore_mods($newquestid, $newsubmissionid, $info, $restore) {
     global $CFG;
 
@@ -567,7 +633,14 @@ function quest_assessments_autors_restore_mods($newquestid, $newsubmissionid, $i
     return $status;
 }
 
-// This function restores the quest_elements_assessments_autor.
+/**
+ * This function restores the quest_elements_assessments_autor.
+ * @param unknown $newquestid
+ * @param unknown $newassessmentid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_elements_assessments_autor_restore_mods($newquestid, $newassessmentid, $info, $restore) {
     global $CFG, $DB;
 
@@ -617,7 +690,14 @@ function quest_elements_assessments_autor_restore_mods($newquestid, $newassessme
     return $status;
 }
 
-// This function restores the quest_answers.
+/**
+ * This function restores the quest_answers.
+ * @param unknown $newquestid
+ * @param unknown $newsubmissionid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_answers_restore_mods($newquestid, $newsubmissionid, $info, $restore) {
     global $CFG, $DB;
 
@@ -683,7 +763,14 @@ function quest_answers_restore_mods($newquestid, $newsubmissionid, $info, $resto
     return $status;
 }
 
-// This function restores the quest_assessments.
+/**
+ * This function restores the quest_assessments.
+ * @param unknown $newquestid
+ * @param unknown $newid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_assessments_restore_mods($newquestid, $newid, $info, $restore) {
     global $CFG;
 
@@ -754,7 +841,14 @@ function quest_assessments_restore_mods($newquestid, $newid, $info, $restore) {
     return $status;
 }
 
-// This function restores the quest_elements_assessments.
+/**
+ * This function restores the quest_elements_assessments.
+ * @param unknown $newquestid
+ * @param unknown $newassessmentid
+ * @param unknown $info
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_elements_assessments_restore_mods($newquestid, $newassessmentid, $info, $restore) {
     global $CFG, $DB;
 
@@ -804,8 +898,14 @@ function quest_elements_assessments_restore_mods($newquestid, $newassessmentid, 
     return $status;
 }
 
-// This function copies the workshop related info from backup temp dir to course moddata folder,.
-// creating it if needed and recoding everything.
+/**
+ * This function copies the workshop related info from backup temp dir to course moddata folder,.
+ * creating it if needed and recoding everything.
+ * @param unknown $oldsubmiss
+ * @param unknown $newsubmiss
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_restore_submission_files($oldsubmiss, $newsubmiss, $restore) {
     global $CFG;
 
@@ -856,8 +956,14 @@ function quest_restore_submission_files($oldsubmiss, $newsubmiss, $restore) {
     return $status;
 }
 
-// This function copies the quest related info from backup temp dir to course moddata folder,.
-// creating it if needed and recoding everything.
+/**
+ * This function copies the quest related info from backup temp dir to course moddata folder,.
+ * creating it if needed and recoding everything.
+ * @param unknown $oldans
+ * @param unknown $newans
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_restore_answer_files($oldans, $newans, $restore) {
     global $CFG;
 
@@ -911,8 +1017,12 @@ function quest_restore_answer_files($oldans, $newans, $restore) {
     return $status;
 }
 
-// This function converts texts in FORMAT_WIKI to FORMAT_MARKDOWN for.
-// some texts in the module.
+/**
+ * This function converts texts in FORMAT_WIKI to FORMAT_MARKDOWN for.
+ * some texts in the module.
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_restore_wiki2markdown($restore) {
     global $CFG, $DB;
 
@@ -946,10 +1056,15 @@ function quest_restore_wiki2markdown($restore) {
     return $status;
 }
 
-// Return a content decoded to support interactivities linking. Every module.
-// should have its own. They are called automatically from.
-// quest_decode_content_links_caller() function in each module.
-// in the restore process.
+/**
+ * Return a content decoded to support interactivities linking. Every module.
+ * should have its own. They are called automatically from.
+ * quest_decode_content_links_caller() function in each module.
+ * in the restore process.
+ * @param unknown $content
+ * @param unknown $restore
+ * @return unknown|mixed
+ */
 function quest_decode_content_links($content, $restore) {
     global $CFG;
 
@@ -986,7 +1101,6 @@ function quest_decode_content_links($content, $restore) {
     preg_match_all($searchstring, $result, $foundset);
     // If found, then we are going to look for its new id (in backup tables).
     if ($foundset[0]) {
-        // print_object($foundset); //Debug.
         // Iterate over foundset[2]. They are the old_ids.
         foreach ($foundset[2] as $oldid) {
             // We get the needed variables here (course_modules id).
@@ -1007,11 +1121,15 @@ function quest_decode_content_links($content, $restore) {
     return $result;
 }
 
-// This function makes all the necessary calls to xxxx_decode_content_links().
-// function in each module, passing them the desired contents to be decoded.
-// from backup format to destination site/course in order to mantain inter-activities.
-// working in the backup/restore process. It's called from restore_decode_content_links().
-// function in restore process.
+/**
+ * This function makes all the necessary calls to xxxx_decode_content_links().
+ * function in each module, passing them the desired contents to be decoded.
+ * from backup format to destination site/course in order to mantain inter-activities.
+ * working in the backup/restore process. It's called from restore_decode_content_links().
+ * function in restore process.
+ * @param unknown $restore
+ * @return boolean
+ */
 function quest_decode_content_links_caller($restore) {
     global $CFG;
     $status = true;
@@ -1048,9 +1166,13 @@ function quest_decode_content_links_caller($restore) {
 
     return $status;
 }
-
-// This function returns a log record with all the necessay transformations.
-// done. It's used by restore_log_module() to restore modules log..
+/**
+ * This function returns a log record with all the necessay transformations.
+ * done. It's used by restore_log_module() to restore modules log..
+ * @param unknown $restore
+ * @param unknown $log
+ * @return boolean|unknown
+ */
 function quest_restore_logs($restore, $log) {
     $status = false;
 
@@ -1110,7 +1232,14 @@ function quest_restore_logs($restore, $log) {
     }
     return $status;
 }
-
+/**
+ *
+ * @param unknown $newquestid
+ * @param unknown $info
+ * @param unknown $restore
+ * @param unknown $newid
+ * @return boolean
+ */
 function quest_particular_elements_restore_mods($newquestid, $info, $restore, $newid) {
     global $CFG, $DB;
 

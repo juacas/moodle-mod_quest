@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
@@ -45,12 +45,13 @@ require_once('base.php');
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 class answer_created extends base {
-
     /**
+     *
      * @param \stdClass $challenge
      * @param \stdClass $answer
-     * @param \stdClass $cm
-     * @return type */
+     * @param unknown $cm
+     * @return \mod_quest\event\answer_created
+     */
     public static function create_from_parts(\stdClass $challenge, \stdClass $answer, $cm) {
         $url = "/mod/quest/answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer";
         $data = array('relateduserid' => $answer->userid, 'context' => \context_module::instance($cm->id),

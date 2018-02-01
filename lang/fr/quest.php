@@ -8,11 +8,11 @@
 //
 // Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Questournament for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Questournament activity for Moodle lang file
  *
@@ -24,7 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package block_quest_classification */
+ * @package mod_quest */
 $string['absent'] = 'Absent';
 $string['accumulative'] = 'Saccumulant';
 $string['action'] = 'Action';
@@ -58,7 +58,6 @@ $string['assessmentnotyetagreed'] = 'Évaluation pas encore acceptée';
 $string['assessmentof'] = 'Evaluation de {$a}';
 $string['assessmentofthissubmission'] = 'évaluation de lenvoi';
 $string['assessments'] = 'éval.';
-// $string['assessments'] = 'évaluations';
 $string['assessmentsareok'] = 'Les évaluations sont correctes';
 $string['assessmentsby'] = 'évaluées par {$a}';
 $string['assessmentsdone'] = 'évaluations effectuées';

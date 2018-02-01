@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <libraries>
 <library>
-    <location>graphlib.php</location>
+    <location>vendor/graphlib.php</location>
     <name>Graph Class-PHP</name>
     <license>LGPL</license>
     <version>1.6.3</version>
