@@ -646,7 +646,7 @@ function quest_cron() {
                 }
 
                 if ($cm->visible == 0) {
-                    mtrace("Coursemodule is disabled");
+                    mtrace("Coursemodule for quest no: $quest->id is disabled");
                     continue;
                 }
                 $context = context_course::instance($course->id);
@@ -718,6 +718,7 @@ function quest_cron() {
                             $posthtml .= "</body>";
 
                             $posttext = format_text($posttext, 1);
+                            mtrace("Mailing Daily briefing to user $userto->id .");
 
                             if (!$mailresult = email_to_user($userto, $userfrom, $postsubject, $posttext, $posthtml)) {
                                 mtrace(
@@ -765,12 +766,12 @@ function quest_cron() {
         foreach ($quests as $quest) {
 
             if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-                mtrace("Course is misconfigured");
-                return false;
+                mtrace("Course for Quest no: $quest->id is misconfigured");
+                continue;
             }
             if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-                mtrace("Coursemodule is misconfigured");
-                return false;
+                mtrace("Coursemodule for Quest no: $quest->id is misconfigured");
+                continue;
             }
 
             if ($cm->visible == 0) {
@@ -783,90 +784,46 @@ function quest_cron() {
             $userfrom = class_exists('core_user') ? core_user::get_noreply_user() : quest_get_teacher($course->id);
 
             if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
-                mtrace("Processing " . count($submissions) . "challenges for quest: $quest->id.");
-
-                // Imprimir cabecera del m�dulo QUEST en mensaje.
+                mtrace("Processing " . count($submissions) . " challenges for quest: $quest->id.");
+                // Imprimir cabecera del modulo QUEST en mensaje.
                 foreach ($submissions as $submission) {
-
-                    if (($submission->datestart < time()) && ($submission->maileduser == 0) && ($submission->state != 1)) {
+                    // The challenge has started and is approved and is not emailed yet to users.
+                    if (($submission->datestart <= time())
+                            && ($submission->maileduser == 0)
+                            && ($submission->state != SUBMISSION_STATE_APPROVAL_PENDING)) {
 
                         $submissionscount++;
                         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-                            mtrace("There is not users");
+                            mtrace("There is no users");
                             continue;
                         }
                         $userscount = 0;
                         mtrace("Challenge $submission->id has started. Mailing advice" . " to " . count($users) . " users.");
                         foreach ($users as $user) {
-
                             if (!has_capability('mod/quest:manage', $context, $user)) { // JPC: I get advices as teacher.
                                 $userscount++;
-                                print("Sending message to user $user->username in name of $userfrom->username\n");
+                                mtrace("Sending message to user $user->username in name of $userfrom->username\n");
                                 quest_send_message($user,
                                         "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
                                         'addsubmission', $quest, $submission, '', $userfrom);
                             }
                         }
+                        // Mark challenge as mailed.
                         $DB->set_field("quest_submissions", "maileduser", 1, array('id' => $submission->id));
 
-                        $dates = array('datestartsubmission' => $submission->datestart,
-                                        'dateendsubmission' => $submission->dateend);
-                        $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
-                        if (!has_capability('mod/quest:manage', $context, $submission->userid) &&
-                                 ($groupmember = $DB->get_record("groups_members", array("userid" => $submission->userid)))) {
-                            $idgroup = $groupmember->groupid;
-                        } else {
-                            $idgroup = 0;
-                        }
-
-                        foreach ($dates as $type => $date) {
-                            if ($submission->datestart <= time()) {
-                                if ($event = $DB->get_record('event',
-                                        array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type))) {
-                                    if ($type == 'datestartsubmission') {
-                                        $stringevent = 'datestartsubmissionevent';
-                                    } else if ($type == 'dateendsubmission') {
-                                        $stringevent = 'dateendsubmissionevent';
-                                    }
-                                    $event->name = get_string($stringevent, 'quest', $submission->title);
-                                    $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?" .
-                                            "id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">" .
-                                             $submission->title . "</a>";
-                                    $event->eventtype = $type;
-                                    $event->timestart = $date;
-                                    update_event($event);
-                                } else if ($date) {
-                                    if ($type == 'datestartsubmission') {
-                                        $stringevent = 'datestartsubmissionevent';
-                                    } else if ($type == 'dateendsubmission') {
-                                        $stringevent = 'dateendsubmissionevent';
-                                    }
-                                    $event = new stdClass();
-                                    $event->name = get_string($stringevent, 'quest', $submission->title);
-                                    $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?" .
-                                            "id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">" .
-                                             $submission->title . "</a>";
-                                    $event->courseid = $quest->course;
-                                    $event->groupid = $idgroup;
-                                    $event->userid = 0;
-                                    $event->modulename = 'quest';
-                                    $event->instance = $quest->id;
-                                    $event->eventtype = $type;
-                                    $event->timestart = $date;
-                                    $event->timeduration = 0;
-                                    $event->visible = $DB->get_field('course_modules', 'visible',
-                                            array('module' => $moduleid, 'instance' => $quest->id));
-                                    calendar_event::create($event);
-                                }
-                            }
-                        }
-                    } // ...if submission started an unmailed to students.
+                        // Update Calendar Events.
+                        quest_update_challenge_calendar($cm, $quest, $submission);
+                    } else if ($submission->maileduser == 0) {
+                        // Challenge is already mailed.
+                        mtrace("Challenge $submission->id already mailed.");
+                    }
                 } // ...for submissions.
+            } else {
+                mtrace("Quest id: $quest->id has no challenges.");
             }
-            mtrace("$submissionscount submissions mailed to $userscount users.\n");
+            mtrace("Quest id: $quest->id : $submissionscount submissions mailed to $userscount users.\n");
         }
     }
-
     mtrace("QUESTOURnament processed (" . (time() - $timestart) . " ms)");
     return true;
 }
