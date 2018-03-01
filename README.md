@@ -29,6 +29,9 @@ Installation
 
 Change log
 ==========
+
+ - v1.3.5 Remove Moodle 1.x support.
+ - v1.3.4 Export scores as CSV.
  - v1.3.3 Enforce sesskeys. Assessment workflow enhanced. Minimum and maximum points customizable.
  - v1.3.1 Compatibility with Moodle 3.x. Support non-editing teacher role. Add more permissions.
  - v1.3.0 Compatibility with Moodle 2.6. Manage anonymous authors after restore.

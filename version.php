@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -27,7 +26,7 @@
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2018020100;
+$plugin->version = 2018020101;
 $plugin->requires = 2013111800; // Moodle 2.6 at least.
 $plugin->component = 'mod_quest';
 $plugin->cron = 600; // Period for cron to check this module (secs).

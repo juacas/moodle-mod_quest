@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  *
@@ -46,7 +45,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once $CFG->libdir . '/ddllib.php';
+require_once($CFG->libdir . '/ddllib.php');
 /**
  *
  * @global moodle_database $DB
@@ -54,12 +53,11 @@ require_once $CFG->libdir . '/ddllib.php';
  * @return boolean
  */
 function xmldb_quest_upgrade($oldversion = 0) {
-    global $CFG, $USER, $THEME, $DB;
+    global  $DB;
     $dbman = $DB->get_manager();
 
     // And upgrade begins here. For each one, you'll need one block of code similar to the next one. Please, delete
     // this comment lines once this file start handling proper upgrade code.
-
     if ($oldversion < 2013100400) {
         $table = new xmldb_table('quest_answers');
         $field = new xmldb_field('attachment', XMLDB_TYPE_CHAR, '100', null, false, false, null, null);
