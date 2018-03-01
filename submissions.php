@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -798,6 +799,7 @@ if ($action == 'confirmdelete') {
     $tablesort->sortdata = array();
 
     // ...skip if student not in group.
+
     if ($answers = quest_get_answers($quest, $user)) {
         foreach ($answers as $answer) {
             $data = array();
@@ -924,6 +926,7 @@ if ($action == 'confirmdelete') {
     }
 
     // Skip if student not in group.
+
     foreach ($users as $user) {
 
         if ($submissions = quest_get_user_submissions($quest, $user)) {
@@ -1106,7 +1109,9 @@ if ($action == 'confirmdelete') {
     $tablesort->sortdata = array();
 
     foreach ($users as $user) {
+
         // ...skip if student not in group.
+
         if ($answers = quest_get_answers($quest, $user)) {
             foreach ($answers as $answer) {
                 $data = array();

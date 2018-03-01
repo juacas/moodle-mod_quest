@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -60,6 +61,7 @@ $submission = $DB->get_record("quest_submissions", "id", $form->sid);
 
 if ($form->save == 'SaveAnswer') {
     // Don't be picky about not having a title.
+
     if (!$title = $form->title) {
         $title = get_string("notitle", "quest");
     }

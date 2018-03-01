@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -25,8 +26,6 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 namespace mod_quest\event;
-
-use core\event\base;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('base.php');
@@ -59,8 +58,7 @@ class quest_viewed extends base {
                         'other' => array('info' => $info, 'cmid' => $cm->id, 'url' => $url));
         /** @var quest_viewed $event */
         $event = self::create($data);
-//         $event->set_legacy_logdata('view', $info, $url);
-
+        $event->set_legacy_logdata('view', $info, $url);
         return $event;
     }
 

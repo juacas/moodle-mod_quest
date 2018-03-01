@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Library of functions and constants for module quest
  * quest constants and standard Moodle functions plus the quest functions
  * called by the standard functions
@@ -635,15 +636,21 @@ function quest_cron() {
 
             foreach ($quests as $quest) {
 
-                $course = $DB->get_record("course", array("id" => $quest->course), '*', MUST_EXIST);
-                $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, false, MUST_EXIST);
+                if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
+                    mtrace("Course is misconfigured");
+                    continue;
+                }
+                if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
+                    mtrace("Coursemodule is misconfigured");
+                    continue;
+                }
 
                 if ($cm->visible == 0) {
                     mtrace("Coursemodule is disabled");
                     continue;
                 }
                 $context = context_course::instance($course->id);
-                $userfrom = class_exists('core_user') ? core_user::get_noreply_user() : quest_get_teacher($course->id);;
+                $userfrom = quest_get_teacher($course->id);
                 $mailcount = 0;
                 mtrace("DAILY TASKs for quest no: $quest->id");
                 mtrace(get_string('processingquest', 'quest', $quest->id));
@@ -1010,6 +1017,7 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
 }
 
 // Grading.
+
 /** Lists all gradable areas for the advanced grading methods framework
  *
  * @return array('string'=>'string') An array with area names as keys and descriptions as values */
@@ -1362,6 +1370,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
     }
 
     // ... get the answers submitted.
+
     $posts = $DB->get_records_sql(
             "SELECT a.*, u.firstname, u.lastname,
             u.picture, cm.instance, q.name, cm.section
@@ -1547,6 +1556,7 @@ function quest_reset_userdata($data) {
     }
 
     // ...updating dates - shift may be negative too.
+
     if ($data->timeshift) {
 
         shift_course_mod_dates('quest', array('datestart', 'dateend'), $data->timeshift, $data->courseid);

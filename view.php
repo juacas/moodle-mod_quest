@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -48,6 +49,7 @@ if (empty($actionclasification)) {
 global $DB, $PAGE, $OUTPUT, $USER;
 $timenow = time();
 // Print the page header.
+
 list($course, $cm) = quest_get_course_and_cm($id);
 
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
@@ -117,6 +119,7 @@ if (has_capability('mod/quest:manage', $context)) {
 } else if (has_capability('mod/quest:attempt', $context)) {
     // He's a student then...
     // Create a grade record and register the user as active in the quest.
+
     if (!$cm->visible) {
         notice(get_string("activityiscurrentlyhidden"));
     }

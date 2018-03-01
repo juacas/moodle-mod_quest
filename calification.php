@@ -69,6 +69,7 @@ if (empty($frameset)) {
 }
 
 // ...top frame with the navigation bar and the assessment form.
+
 if (!empty($frameset) and $frameset == "top") {
 
     print_header_simple(format_string($quest->name), "",
@@ -155,6 +156,7 @@ if (!empty($frameset) and $frameset == "top") {
 }
 
 // Print bottom frame with the submission.
+
 print_header('', '', '', '', '<base target="_parent" />');
 
 if ($action == 'global') {

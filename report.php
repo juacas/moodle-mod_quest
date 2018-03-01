@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Module developed at the University of Valladolid.
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -51,6 +52,8 @@ $PAGE->set_heading($course->fullname);
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
+// Log..
+
 if ($CFG->version >= 2014051200) {
     require_once( 'classes/event/quest_viewed.php');
     \mod_quest\event\briefting_viewed::create_from_parts($USER, $quest, $cm)->trigger();
@@ -63,7 +66,8 @@ quest_print_quest_heading($quest);
 echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
 
 echo '<br/>';
-// ...iterate through submissions.
+// ...iterate through submissions..
+
 if ($submissions = quest_get_submissions($quest)) {
     foreach ($submissions as $submission) {
         echo $OUTPUT->heading("Challenge: " . $submission->title, 1);
