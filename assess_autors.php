@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -129,7 +128,6 @@ if ($cangrade and ($quest->gradingstrategy == 2)) {
 echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "assessthissubmission", "quest");
 // ...show assessment autor and allow changes.
 // If user has general assess privileges get next answer to evaluate.
-
 $returnto = quest_next_submission_url($submission, $cm);
 quest_print_assessment_autor($quest, $assessment, true, $allowcomments, $returnto);
 $continueto = new moodle_url('view.php', ['id' => $cm->id ]);

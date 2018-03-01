@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle lang file
  * Traducción realizada en la Facultad de Traducción de Soria (Universidad de Valladolid) por Anna
  * Szybiak y Joanna Nowakowska, supervisada por Leticia * Santamaria Ciordia y tutelada por Antonio

@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -107,8 +106,7 @@ if ($action == "answer") {
             array('current' => $answer, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
                             'attachmentoptions' => $attachmentoptions, 'action' => $action));
     // The first parameter is $action, null will case the form action to be determined.
-    // ...automatically)..
-
+    // ...automatically).
     if ($mform->is_cancelled()) {
 
         redirect("view.php?id=$cm->id");
@@ -350,8 +348,7 @@ if ($action == "answer") {
             array('current' => $answer, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
                             'attachmentoptions' => $attachmentoptions, 'action' => $action));
     // ......the first parameter is $action, null will case the form action to be determined.
-    // ...automatically)..
-
+    // ...automatically).
     if ($mform->is_cancelled()) {
 
         redirect("view.php?id=$cm->id");
@@ -412,8 +409,7 @@ if ($action == "answer") {
         $answer->state = 2;
     }
     $DB->update_record("quest_answers", $answer);
-    // TODO: Check if merge this code with uploadanswer.php..
-
+    // TODO: Check if merge this code with uploadanswer.php.
     if ($quest->nattachments) {
         require_once($CFG->dirroot . '/lib/uploadlib.php');
         $um = new upload_manager(null, false, false, $course, false, $quest->maxbytes);
@@ -449,11 +445,9 @@ if ($action == "answer") {
     $submission = quest_update_submission_counts($submission->id);
     // Update current User and team scores..
     // ...recalculate points and report to gradebook..
-
     quest_grade_updated($quest, $answer->userid);
 
     // NOTIFICATIONS..
-
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         print_heading(get_string("nostudentsyet"));
         print_footer($course);

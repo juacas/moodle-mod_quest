@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** This page lists all the instances of QUEST in a particular course
  *
  * Module developed at the University of Valladolid
@@ -56,7 +55,6 @@ if (!$quests = get_all_instances_in_course("quest", $course)) {
 }
 
 // Print the list of instances.
-
 $timenow = time();
 $strname = get_string("name");
 $strweek = get_string("week");
@@ -99,5 +97,4 @@ echo "<BR>";
 echo html_writer::table($table);
 
 // Finish the page.
-
 echo $OUTPUT->footer();

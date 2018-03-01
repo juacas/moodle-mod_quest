@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 defined('MOODLE_INTERNAL') || die();
 /** Backup Questournament module
  *
@@ -72,7 +71,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         global $DB;
 
         $data = (object) $data;
-        $oldid = $data->id;
         $data->course = $this->get_courseid();
 
         $data->datestart = $this->apply_date_offset($data->datestart);
@@ -95,7 +93,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $data = (object) $data;
         $data->questid = $this->get_new_parentid('quest');
-        $newitemid = $DB->insert_record('quest_elements', $data);
+        $DB->insert_record('quest_elements', $data);
     }
     /**
      *
@@ -108,7 +106,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->questid = $this->get_new_parentid('quest');
         $data->submissionsid = $this->get_new_parentid('quest_challenge');
 
-        $newitemid = $DB->insert_record('quest_elements', $data);
+        $DB->insert_record('quest_elements', $data);
     }
     /**
      *
@@ -120,7 +118,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data = (object) $data;
         $data->questid = $this->get_new_parentid('quest');
 
-        $newitemid = $DB->insert_record('quest_elementsautor', $data);
+        $DB->insert_record('quest_elementsautor', $data);
     }
     /**
      *
@@ -198,7 +196,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->assessmentid = $this->get_mappingid('quest_assessment', $data->assessmentid);
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $newitemid = $DB->insert_record('quest_elements_assessments', $data);
+        $DB->insert_record('quest_elements_assessments', $data);
     }
     /**
      *
@@ -246,7 +244,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->teamid = $this->get_mappingid('quest_team', $data->teamid);
 
-        $newitemid = $DB->insert_record('quest_calification_users', $data);
+        $DB->insert_record('quest_calification_users', $data);
     }
     /**
      *
@@ -259,7 +257,7 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->questid = $this->get_new_parentid('quest');
         $data->teamid = $this->get_new_parentid('quest_team', $data->teamid);
 
-        $newitemid = $DB->insert_record('quest_calification_teams', $data);
+        $DB->insert_record('quest_calification_teams', $data);
     }
     /**
      *

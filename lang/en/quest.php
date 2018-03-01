@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
@@ -978,7 +977,6 @@ $string['windowpreviewsubmission_help'] = '<p align="justify">This page shows th
 <p align="justify">This way, it will be able to preview the aspect of the challenge before its submission. This posibility is specially useful when a mathematical equation must be inserted for which it is necessary to introduce an expression with the adequate format that will be transformed by the filters provided by Moodle and whose final aspect can not be previewed in the editor of the platform.</p>';
 
 // Message provider.
-
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
 $string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';

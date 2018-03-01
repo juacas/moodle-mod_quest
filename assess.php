@@ -126,7 +126,6 @@ echo $OUTPUT->heading_with_help(get_string("assessthisanswer", "quest"), "gradin
 
 // ...show assessment and allow changes.
 // ...print bottom frame with the submission.
-
 $title = get_string('answername', 'quest', $answer);
 
 if (has_capability('mod/quest:preview', $context)) {
@@ -156,9 +155,11 @@ if ($cangrade) {
     $nextanswer = null;
 }
 if ($nextanswer !== null ) {
-    $returnto = new moodle_url('assess.php', ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $nextanswer->id, 'sesskey' => sesskey() ]);
+    $returnto = new moodle_url('assess.php', ['id' => $cm->id, 'sid' => $submission->id,
+                    'aid' => $nextanswer->id, 'sesskey' => sesskey() ]);
 } else {
-    $returnto = new moodle_url('submissions.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission' ]);
+    $returnto = new moodle_url('submissions.php', ['id' => $cm->id, 'sid' => $submission->id,
+                    'action' => 'showsubmission' ]);
 }
 quest_print_assessment($quest, $submission->id, $assessment, true, $allowcomments, $returnto);
 

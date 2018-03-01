@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Library of extra functions and module quest
  *
  * quest constants and standard Moodle functions plus the quest functions
@@ -35,7 +34,6 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 $repeatactionsbelow = false; // Repeat actions at the bottom of pages to easy the access on long.
                              // ...pages..
-
 $questtype = array(0 => get_string('notgraded', 'quest'), 1 => get_string('accumulative', 'quest'),
                 2 => get_string('errorbanded', 'quest'), 3 => get_string('criterion', 'quest'), 4 => get_string('rubric', 'quest'));
 
@@ -127,7 +125,7 @@ define('SUBMISSION_PHASE_CLOSED', 0);
  * @param type $return
  * @return string */
 function quest_choose_from_menu($options, $name, $selected = "", $nothing = "choose", $script = "",
-                                $nothingvalue = "0", $return = false) {
+                                $nothingvalue = "0", $returnhtml = false) {
     // Given an array of value, creates a popup menu to be part of a form: $options["value"]["label"].
     if ($nothing == "choose") {
         $nothing = get_string("choose") . "...";
@@ -159,7 +157,7 @@ function quest_choose_from_menu($options, $name, $selected = "", $nothing = "cho
     }
     $output .= "</select>\n";
 
-    if ($return) {
+    if ($returnthml) {
         return $output;
     } else {
         echo $output;
@@ -283,7 +281,6 @@ function quest_print_submission_title($quest, $submission) {
 class quest_print_upload_form extends moodleform {
 
     public function definition() {
-        global $CFG;
         $mform = & $this->_form;
         $submission = $this->_customdata['submission'];
         $quest = $this->_customdata['quest'];
@@ -352,7 +349,6 @@ class quest_print_upload_form extends moodleform {
         for ($i = $quest->mincalification; $i <= $quest->maxcalification; $i++) {
             $numbers[$i] = $i;
         }
-        $pointsmax = $quest->maxcalification;
 
         $mform->addElement('select', 'pointsmax', get_string("pointsmax", "quest"), $numbers);
         $mform->setDefault('pointsmax', $quest->maxcalification);
@@ -559,8 +555,6 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
         quest_grade_updated($quest, $USER->id);
     }
 
-    $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
-
     quest_update_challenge_calendar($cm, $quest, $newsubmission);
     $redirecturl = new moodle_url('/mod/quest/submissions.php', ['id' => $cm->id, 'sid' => $newsubmission->id,
                     'action' => 'showsubmission']);
@@ -644,7 +638,7 @@ function quest_get_difficulty_levels() {
  */
 function quest_print_submission($quest, $submission) {
     // ...prints the submission with optional attachments.
-    global $CFG, $USER, $OUTPUT;
+    global $USER, $OUTPUT;
 
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
     $description = $submission->description;
@@ -659,7 +653,6 @@ function quest_print_submission($quest, $submission) {
     $options->overflowdiv = true;
     $description = format_text($description, $submission->descriptionformat, $options);
     echo $OUTPUT->box($description);
-    $ismanager = has_capability('mod/quest:manage', $context);
     $canpreview = has_capability('mod/quest:preview', $context);
 
     if (!empty($submission->comentteacherautor)) {
@@ -688,14 +681,13 @@ function quest_print_submission($quest, $submission) {
  * @param unknown $order
  */
 function quest_print_attachments($context, $filearea, $itemid, $order) {
-    global $OUTPUT, $CFG;
+    global $OUTPUT;
     $n = 1;
     echo "<table align=\"center\">\n";
     $fs = get_file_storage();
     if ($files = $fs->get_area_files($context->id, 'mod_quest', $filearea, $itemid, $order, false)) {
         foreach ($files as $file) {
             $filename = $file->get_filename();
-            $mimetype = $file->get_mimetype();
             $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle',
                     array('class' => 'icon'));
             $path = "/$context->id/mod_quest/$filearea/";
@@ -724,7 +716,7 @@ function quest_print_attachments($context, $filearea, $itemid, $order) {
  * @param unknown $submission
  */
 function quest_print_submission_info($quest, $submission) {
-    global $CFG, $USER, $DB, $OUTPUT;
+    global $USER, $DB, $OUTPUT;
 
     $timenow = time();
 
@@ -732,7 +724,6 @@ function quest_print_submission_info($quest, $submission) {
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
     // ...print standard assignment heading.
     $context = context_module::instance($cm->id);
-    $ismanager = has_capability('mod/quest:manage', $context);
     $canpreview = has_capability('mod/quest:preview', $context);
     echo $OUTPUT->box_start("center");
 
@@ -875,7 +866,6 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
 class quest_print_answer_form extends moodleform {
 
     public function definition() {
-        global $CFG;
         $mform = & $this->_form;
         $currententry = $this->_customdata['current'];
         $quest = $this->_customdata['quest'];
@@ -1003,7 +993,6 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     // ...do something about the attachments, if there are any.
     if ($quest->nattachments) {
         // ...management of files: save embedded images and attachments.
-
         $answer = file_postupdate_standard_filemanager($answer, 'attachment', $attachmentoptions, $context, 'mod_quest',
                 'answer_attachment', $answer->id);
     }
@@ -1272,7 +1261,6 @@ function quest_print_answer_title($quest, $answer, $submission) {
 function quest_print_actions_answers($cm, $answer, $submission, $course, $assessment) {
     global $USER;
     // Returns the teacher or peer grade and a hyperlinked list of grades for this submission..
-
     $str = '';
 
     $context = context_module::instance($cm->id);
@@ -2172,7 +2160,6 @@ function quest_get_answer_grade($quest, $answer, $form) {
 
         case 1: // ...accumulative grading.
                 // Insert all the elements that contain something.
-
             foreach ($form->grade as $key => $thegrade) {
                 $element = new stdclass();
                 $element->questid = $quest->id;
@@ -3651,6 +3638,45 @@ function quest_update_team_scores($quest, $teamid) {
 
     $DB->set_field("quest_teams", "ncomponents", count($members), array("questid" => $questid, "id" => $teamid));
 }
+function quest_print_error_banded_form($quest, $num, $elements, $questeweights) {
+    for ($i = 0; $i < $num; $i++) {
+        $iplus1 = $i + 1;
+        echo "<tr valign=\"top\">\n";
+        echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
+        echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
+        $elements[$i]->description . "</textarea>\n";
+        echo "  </td></tr>\n";
+        if ($elements[$i]->weight == '') { // ...not set..
+            $elements[$i]->weight = 11; // ...unity..
+        }
+        echo "</tr>\n";
+        echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
+        quest_choose_from_menu($questeweights, "weight[]", $elements[$i]->weight, "");
+        echo "      </td>\n";
+        echo "</tr>\n";
+        echo "<tr valign=\"top\">\n";
+        echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
+        echo "</tr>\n";
+    }
+    echo "</center></table><br />\n";
+    echo "<center><b>" . get_string("gradetable", "quest") . "</b></center>\n";
+    echo "<center><table cellpadding=\"5\" border=\"1\"><tr><td align=\"CENTER\">" .
+            get_string("numberofnegativeresponses", "quest");
+    echo "</td><td>" . get_string("suggestedgrade", "quest") . "</td></tr>\n";
+    for ($j = $quest->maxcalification; $j >= 0; $j--) {
+        $numbers[$j] = $j;
+    }
+    for ($i = 0; $i <= $num; $i++) {
+        echo "<tr><td align=\"CENTER\">$i</td><td align=\"CENTER\">";
+        if (!isset($elements[$i])) { // ...the "last one" will be!.
+            $elements[$i]->description = "";
+            $elements[$i]->maxscore = 0;
+        }
+        echo html_writer::select($numbers, "maxscore[$i]", $elements[$i]->maxscore, "");
+        echo "</td></tr>\n";
+    }
+    echo "</table></center>\n";
+}
 /**
  *
  * @param unknown $answer
@@ -3841,7 +3867,6 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 }
             }
             // ...now save the adjustment.
-
             $i = $quest->nelements;
 
             $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
@@ -3879,8 +3904,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             break;
 
         case 3: // ...criteria grading.
-                // ...save in the selected criteria value in element zero,.
-
+                // ...save in the selected criteria value in element zero.
             $rawgrade = ($elements[$form->grade[0]]->maxscore + $form->grade[1]);
             $points = quest_get_points($submission, $quest, $answer);
             $grade = $points * ($rawgrade / $quest->maxcalification);
@@ -4318,8 +4342,7 @@ SQL;
  */
 function quest_next_unapproved_submission($submission) {
     global $DB;
-    // APPROVED_PENDING is 0...
-
+    // APPROVED_PENDING is 0.
     $submissions = $DB->get_records('quest_submissions',
             ['questid' => $submission->questid, 'state' => SUBMISSION_STATE_APPROVAL_PENDING],
             'dateend ASC');
@@ -4744,7 +4767,6 @@ function quest_send_message($user, $file, $text, $quest, $field1, $field2 = '', 
         }
 
         // Check to see if anything else needs to be done with it.
-
         $preference = (object) get_user_preferences(null, null, $user->id);
 
         if (!empty($preference->message_emailmessages)) { // Receiver wants mail forwarding.
@@ -4771,7 +4793,6 @@ function quest_send_message($user, $file, $text, $quest, $field1, $field2 = '', 
 
                 $user->email = $preference->message_emailaddress; // Use custom messaging
                                                                   // address.
-
                 email_to_user($user, $userfrom, $messagesubject, $messagetext, $messagehtml);
             }
         }

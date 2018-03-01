@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -255,7 +254,6 @@ if (isset($form->operation)) {
         // ...and the submission record...
         $DB->delete_records("quest_submissions", array("id" => $submission->id));
         // ...and finally the submitted file.
-
         quest_delete_submitted_files_submissions($quest, $submission);
 
         $user = get_complete_user_data('id', $submission->userid);
@@ -268,7 +266,6 @@ if (isset($form->operation)) {
 } else {
     if ($form->save == "submitassignment") {
         // ...don't be picky about not having a title.
-
         if (!$title = $form->title) {
             $title = get_string("notitle", "quest");
         }

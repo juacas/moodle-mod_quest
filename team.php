@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
  * students of telecommunciation engineering
@@ -45,7 +44,6 @@ $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 
 // Print the page header.
-
 $url = new moodle_url('/mod/quest/team.php', array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));

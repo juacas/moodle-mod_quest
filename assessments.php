@@ -51,7 +51,6 @@ $changeform = optional_param('change_form', null, PARAM_INT); // Flag: if you ch
 $viewgeneral = optional_param('viewgeneral', -1, PARAM_INT); // Flag: view general form =1,.
                                                              // ...particular form view of one
                                                              // submission = 0.
-
 global $DB, $OUTPUT, $PAGE;
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
@@ -200,8 +199,7 @@ if ($action == 'displaygradingform') {
             }
             break;
         case 1: // ...accumulative grading..
-                // ...set up scales name..
-
+                // ...set up scales name.
             foreach ($questscales as $key => $scale) {
                 $scales[] = $scale['name'];
             }
@@ -237,46 +235,9 @@ if ($action == 'displaygradingform') {
             break;
 
         case 2: // ...error banded grading..
-            for ($i = 0; $i < $num; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[$i]\" rows=\"3\" cols=\"75\">" .
-                        $elements[$i]->description . "</textarea>\n";
-                echo "  </td></tr>\n";
-                if ($elements[$i]->weight == '') { // ...not set..
-                    $elements[$i]->weight = 11; // ...unity..
-                }
-                echo "</tr>\n";
-                echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
-                quest_choose_from_menu($questeweights, "weight[]", $elements[$i]->weight, "");
-                echo "      </td>\n";
-                echo "</tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
-            }
-            echo "</center></table><br />\n";
-            echo "<center><b>" . get_string("gradetable", "quest") . "</b></center>\n";
-            echo "<center><table cellpadding=\"5\" border=\"1\"><tr><td align=\"CENTER\">" .
-                     get_string("numberofnegativeresponses", "quest");
-            echo "</td><td>" . get_string("suggestedgrade", "quest") . "</td></tr>\n";
-            for ($j = $quest->maxcalification; $j >= 0; $j--) {
-                $numbers[$j] = $j;
-            }
-            for ($i = 0; $i <= $num; $i++) {
-                echo "<tr><td align=\"CENTER\">$i</td><td align=\"CENTER\">";
-                if (!isset($elements[$i])) { // ...the "last one" will be!.
-                    $elements[$i]->description = "";
-                    $elements[$i]->maxscore = 0;
-                }
-                echo html_writer::select($numbers, "maxscore[$i]", $elements[$i]->maxscore, "");
-                echo "</td></tr>\n";
-            }
-            echo "</table></center>\n";
-            if ($newform == 1) {
+            quest_print_error_banded_form($quest, $num, $elements, $questeweights);
+            if ($newform == 0) {
                 $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sid));
-            } else if ($newform == 0) {
                 $var = $DB->get_field("course_modules", "instance", array("id" => $id));
                 $DB->set_field("quest", "nelements", $num, array("id" => $var));
             }
