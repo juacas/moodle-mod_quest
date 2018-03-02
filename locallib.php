@@ -1122,7 +1122,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                 $user = get_complete_user_data('id', $answer->userid);
                 // User Name Surname.
                 if ($ismanager) {
-                    $data[] = $OUTPUT->user_picture($user);
+                    $data[] = $user ? $OUTPUT->user_picture($user) : '';
                     $data[] = "<a name=\"userid->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
                              fullname($user) . '</a>';
                     $sortdata['firstname'] = strtolower($user->firstname);
