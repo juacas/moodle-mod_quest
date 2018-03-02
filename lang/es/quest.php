@@ -229,7 +229,12 @@ Se han realizado la modificación de un Desafío en
 \'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
 Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
 <a href="{$a->link}">{$a->link}</a>';
-$string['emailmodifsubmissionsubject'] = 'Moodle. Modificación en Desafío de Módulo QUESTOURnament';
+$string['emailmodifsubmissionsubject'] = 'Moodle: Modificación en Desafío de Módulo QUESTOURnament';
+$string['emailchallenge_start'] = 'Hola, {$a->firstname}. Ha empezado el Desafío  <b>\'{$a->title}\'</b>
+ en la actividad QUESTOURnament \'{$a->name}\'. (En \'{$a->sitename}\'.)
+Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
+$string['emailchallenge_startsubject'] = 'Moodle: Inicio de Desafío de QUESTOURnament';
 $string['emailsave'] = 'Hola, {$a->firstname}.
 Se han realizado cambios en un Desafío en
 \'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
@@ -314,6 +319,7 @@ $string['mail7'] = 'Los comentarios realizados por \'{$a}\' pueden verse en su t
 $string['managingassignment'] = 'Administrar tarea';
 $string['maxcalification'] = 'Máxima Puntuación';
 $string['maximumsize'] = 'Tamaño máximo';
+$string['messageprovider:challengestart'] = 'Notification of a challenge start';
 $string['modif'] = 'Modificar';
 $string['modifanswersubmission'] = 'Modificar Respuesta {$a}';
 $string['modified'] = 'modificada';

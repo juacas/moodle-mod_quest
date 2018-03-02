@@ -251,9 +251,13 @@ To access the challenge, please click here:
 <a href="{$a->link}">{$a->link}</a>
 ';
 $string['emailmodifsubmissionsubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
+$string['emailchallenge_start'] = 'Hello, {$a->firstname}. The challenge <b>\'{$a->title}\'</b> has started in the QUESTOURnament \'{$a->name}\'. (At \'{$a->sitename}\'.)
+To access the site on which the challenge is, please click here:
+<a href="{$a->link}">{$a->link}</a>';
+$string['emailchallenge_startsubject'] = 'Moodle. QUESTOURnament Challenge Started';
+
 $string['emailsave'] = 'Hello, {$a->firstname}.
 
-n
 Challenge modified in
 \'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
 
@@ -261,6 +265,7 @@ To access the site on which the challenge is, please click here:
 
 <a href="{$a->link}">{$a->link}</a>
 ';
+
 $string['emailsavesubject'] = 'Moodle. Changes in challenge in module QUESTOURnament';
 $string['emailtagline'] = 'This e-mail is a copy of the message you sent on \"{$a} \"';
 $string['enternewteam'] = 'Enter new Team';
@@ -978,7 +983,7 @@ $string['windowpreviewsubmission_help'] = '<p align="justify">This page shows th
 <p align="justify">This way, it will be able to preview the aspect of the challenge before its submission. This posibility is specially useful when a mathematical equation must be inserted for which it is necessary to introduce an expression with the adequate format that will be transformed by the filters provided by Moodle and whose final aspect can not be previewed in the editor of the platform.</p>';
 
 // Message provider.
-
+$string['messageprovider:challenge_start'] = 'Challenges start: a challenge has started.';
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
 $string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';

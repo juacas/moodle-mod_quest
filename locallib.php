@@ -3354,7 +3354,40 @@ function quest_update_challenge_calendar($cm, $quest, $challenge) {
         }
     }
 }
+/**
+ *
+ * @param unknown $cm
+ * @param unknown $quest
+ * @param unknown $challenge
+ */
+function quest_update_quest_calendar($cm, $quest) {
+    global $DB;
+    $dates = array('datestart' => $quest->datestart, 'dateend' => $quest->dateend);
+    foreach ($dates as $type => $date) {
 
+        $eventdata = new stdClass();
+        $eventdata->name = get_string($type, 'quest', $quest->name);
+        $url = new moodle_url('/mod/quest/view.php', array('id' => $cm->id));
+        $eventdata->description = strip_pluginfile_content($quest->intro);
+        $eventdata->eventtype = $type;
+        $eventdata->timestart = $date;
+        $eventdata->modulename = 'quest';
+        $eventdata->instance = $quest->id;
+        $eventdata->timeduration = 0;
+        $eventdata->visible = $cm->visible;
+        $eventdata->courseid = $quest->course;
+        $eventdata->uuid = $quest->id;
+
+        $event = $DB->get_record('event',
+                array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type, 'uuid' => $quest->id));
+        if ($event) { // Update event..
+            $event = calendar_event::load($event->id);
+            $event->update($eventdata, false);
+        } else { // Create new event..
+            calendar_event::create($eventdata, false);
+        }
+    }
+}
 /** Update a assessment details in the database.
  * Trucate numeric values to workaround weird database truncation errors and decimal points with
  * Moodle 2.5
@@ -4402,7 +4435,7 @@ function get_course_students($courseid) {
 }
 /**
  *
- * @param unknown $id
+ * @param unknown $id cmid of activity.
  * @return array|unknown[]
  */
 function quest_get_course_and_cm($id) {
@@ -4639,169 +4672,108 @@ function quest_print_recent_activity($course, $isteacher, $timestart) {
  *
  * @param unknown $user
  * @param unknown $file
- * @param unknown $text
+ * @param unknown $msgtype challenge_start, evaluatecomment, addsubmission, save,
+ *                          deletesubmission, answeradd, answerdelete, modifsubmission
  * @param unknown $quest
- * @param unknown $field1
+ * @param stdClass $field1 the object that caused the message (i.e. challenge record)
  * @param string $field2
  * @param string $from
- * @return void|mixed|boolean|number|unknown|unknown
+ * @return mixed the integer ID of the new message or false if there was a problem with submitted data
  */
-function quest_send_message($user, $file, $text, $quest, $field1, $field2 = '', $from = '') {
-    global $CFG, $SITE, $DB, $COURSE;
-    if (!$user) {
-        return;
+function quest_send_message($user, $file, $msgtype, $quest, $object, $field2 = '', $from = '') {
+    $data = quest_compose_message_data($user, $file, $msgtype, $quest, $object, $field2, $from);
+    return quest_send_message_data($data);
+}
+
+function quest_send_message_data($data) {
+    // Actually send the message.
+    global $CFG;
+    if (version_compare($CFG->release, "3.2", '>=')) { // ...messaging for Moodle 3.2+.
+        $messagedata = new \core\message\message();
+    } else if (version_compare($CFG->release, "2.4", '>=')) { // Messaging for Moodle 2.4+.
+        $messagedata = new stdClass();
     }
-    $user = get_complete_user_data('id', $user->id);
+    $messagedata->component = 'mod_quest';
+    $messagedata->name = $data->msgtype;
+    $messagedata->userfrom = $data->userfrom;
+    $messagedata->userto = $data->userto;
+    $messagedata->subject = $data->subject;
+    $messagedata->fullmessage = $data->messagehtml;
+    $messagedata->fullmessagehtml = $data->messagehtml;
+    $messagedata->smallmessage = '';
+    $messagedata->fullmessageformat = FORMAT_HTML;
+    $messagedata->notification = true;
+    $messagedata->courseid = $data->courseid;
+    $msgid = message_send($messagedata);
+    return $msgid;
+}
+/**
+ *
+ * @param stdClass $user user record of the user
+ * @param unknown $file file part of the url that represents the subject
+ * @param unknown $msgtype
+ * @param unknown $quest
+ * @param unknown $object
+ * @param string $field2
+ * @param string $from
+ * @return null|stdClass
+ */
+function quest_compose_message_data($user, $file, $msgtype, $quest, $object, $field2 = '', $from = '') {
+    global $CFG, $SITE, $COURSE;
+    if (!$user) {
+        return null;
+    }
+    force_current_language($user->lang);
     $site = get_site();
     if (empty($from) || $from == null) {
         // If there are a "no_reply" user use him. otherwise submit from any teacher..
-        $userfrom = class_exists('core_user') ? core_user::get_noreply_user() : quest_get_teacher($COURSE->id);
+        $userfrom = class_exists('core_user') ? core_user::get_noreply_user() : quest_get_teacher($quest->course);
     } else {
         $userfrom = $from;
     }
-
+    // Translate message type.
+    switch ($msgtype) {
+        case 'challenge_start':
+            $msgtype = 'challenge_start';
+            break;
+        case 'evaluatecomment':
+            $msgtype = 'evaluation_update';
+            break;
+        case 'addsubmission':
+        case 'save':
+        case 'deletesubmission':
+        case 'answeradd':
+        case 'answerdelete':
+        case 'modifsubmission':
+            $msgtype = 'challenge_update';
+            break;
+        default:
+            $msgtype = 'challenge_update';
+    }
     $data = new stdClass();
     $data->firstname = fullname($user);
     $data->sitename = $site->fullname;
     $data->admin = $CFG->supportname . ' (' . $CFG->supportemail . ')';
-    $data->title = $field1->title;
+    $data->title = $object->title;
     $data->name = $quest->name;
     if (!empty($field2)) {
         $data->secondname = $field2->title;
     }
 
-    $subject = get_string('email' . $text . 'subject', 'quest', $data->title);
+    $data->subject = get_string('email' . $msgtype . 'subject', 'quest');
 
     // Make the text version a normal link for normal people.
     $data->link = $CFG->wwwroot . "/mod/quest/$file";
-    $message = get_string('email' . $text, 'quest', $data);
-
+    $message = get_string('email' . $msgtype, 'quest', $data);
+    $data->msgtype = $msgtype;
     // Make the HTML version more XHTML happy (&amp;).
     $data->link = $CFG->wwwroot . "/mod/quest/$file";
-    $messagehtml = text_to_html($message, false, false, true);
+    $data->messagehtml = text_to_html($message, false, false, true);
     $user->mailformat = 1; // Always send HTML version as well.
-    global $CFG;
-    if (version_compare($CFG->release, "3.2", '>=')) { // ...messaging for Moodle 3.2+.
-        $eventdata = new \core\message\message();
-        $eventdata->component = 'mod_quest';
-
-        // ...detect message type.
-        switch ($text) {
-            case 'assessment':
-            case 'assessmentautor':
-            case 'evaluatecomment':
-                $messagename = 'evaluation_update';
-                break;
-
-            case 'addsubmission':
-            case 'save':
-            case 'deletesubmission':
-            case 'answeradd':
-            case 'answerdelete':
-            case 'modifsubmission':
-                $messagename = 'challenge_update';
-                break;
-            default:
-                $messagename = 'challenge_update';
-        }
-        $eventdata->name = $messagename;
-        $eventdata->userfrom = $userfrom;
-        $eventdata->userto = $user;
-        $eventdata->subject = $subject;
-        $eventdata->fullmessage = $messagehtml;
-        $eventdata->fullmessagehtml = $messagehtml;
-        $eventdata->smallmessage = '';
-        $eventdata->fullmessageformat = FORMAT_HTML;
-        $eventdata->notification = true;
-        $eventdata->courseid = $quest->course;
-        $msgid = message_send($eventdata);
-        return $msgid;
-    } else if (version_compare($CFG->release, "2.4", '>=')) { // Messaging for Moodle 2.4+.
-        $eventdata = new stdClass();
-        $eventdata->component = 'mod_quest';
-
-        // ...detect message type.
-        switch ($text) {
-            case 'assessment':
-            case 'assessmentautor':
-            case 'evaluatecomment':
-                $messagename = 'evaluation_update';
-                break;
-
-            case 'addsubmission':
-            case 'save':
-            case 'deletesubmission':
-            case 'answeradd':
-            case 'answerdelete':
-            case 'modifsubmission':
-                $messagename = 'challenge_update';
-                break;
-            default:
-                $messagename = 'challenge_update';
-        }
-        $eventdata->name = $messagename;
-        $eventdata->userfrom = $userfrom;
-        $eventdata->userto = $user;
-        $eventdata->subject = $subject;
-        $eventdata->fullmessage = $messagehtml;
-        $eventdata->fullmessagehtml = $messagehtml;
-        $eventdata->smallmessage = '';
-        $eventdata->fullmessageformat = FORMAT_PLAIN;
-        $eventdata->notification = true;
-
-        $msgid = message_send($eventdata);
-        return $msgid;
-    } else { // ...old code for Moodle 1.9.x.
-             // Save the new message in the database.
-        $savemessage = new stdClass();
-        $savemessage->useridfrom = $userfrom->id;
-        $savemessage->useridto = $user->id;
-        $savemessage->message = $message;
-        $savemessage->format = 0;
-        $savemessage->timecreated = time();
-        $savemessage->messagetype = 'direct';
-        $savemessage->id = $DB->insert_record('message', $savemessage);
-
-        if (!$savemessage->id) {
-            print("Can not insert message in table message");
-        }
-
-        // Check to see if anything else needs to be done with it.
-        $preference = (object) get_user_preferences(null, null, $user->id);
-
-        if (!empty($preference->message_emailmessages)) { // Receiver wants mail forwarding.
-            if ((time() - $user->lastaccess) > ((int) $preference->message_emailtimenosee * 60)) { // Long.
-                                                                                                   // ...enough.
-                $message = stripslashes_safe($message);
-                $tagline = get_string('emailtagline', 'quest', userdate(time(), get_string('datestrmodel', 'quest')));
-
-                $messagesubject = $subject;
-
-                $format = 0;
-
-                $messagetext = format_text_email($message, $format) . "\n\n--\n" . $tagline . "\n" .
-                         "$CFG->wwwroot/message/index.php?popup=1";
-
-                if ($preference->message_emailformat == FORMAT_HTML) {
-                    $format = 1;
-                    $messagehtml = format_text_email($message, $format);
-                    $messagehtml .= '<hr /><p><a href="' . $CFG->wwwroot . '/message/index.php?popup=1">' . $tagline . '</a></p>';
-                    $messagehtml = quest_message_html($messagehtml, $quest->course, $userfrom, $subject);
-                } else {
-                    $messagehtml = null;
-                }
-
-                $user->email = $preference->message_emailaddress; // Use custom messaging
-                                                                  // address.
-                email_to_user($user, $userfrom, $messagesubject, $messagetext, $messagehtml);
-            }
-        }
-        if (false) { // TODO change to vew event API.
-            add_to_log(SITEID, 'message', 'write', 'history.php?user1=' . $user->id .
-                '&amp;user2=' . $userfrom->id/* .'#m'.$messageid */, "$user->id");
-        }
-        return $savemessage->id;
-    } // ...end code Moodle 1.9.x.
+    $data->userto = $user;
+    $data->courseid = $quest->course;
+    $data->userfrom = $userfrom;
+    return $data;
 }
 /**
  *
