@@ -1,4 +1,6 @@
 <?php
+use core_calendar\local\event\proxies\std_proxy;
+
 // This file is part of Questournament activity for Moodle http://moodle.org/
 //
 // Questournament for Moodle is free software: you can redistribute it and/or modify
@@ -64,24 +66,7 @@ function quest_add_instance($quest) {
     }
 
     if ($returnid = $DB->insert_record("quest", $quest)) {
-
-        $event = new stdClass();
-        $event->name = get_string('datestartevent', 'quest', $quest->name);
-        $event->description = strip_pluginfile_content($quest->intro);
-        $event->courseid = $quest->course;
-        $event->groupid = 0;
-        $event->userid = 0;
-        $event->modulename = 'quest';
-        $event->instance = $returnid;
-        $event->eventtype = 'open';
-        $event->timestart = $quest->datestart;
-        $event->timeduration = 0;
-        calendar_event::create($event);
-
-        $event->name = get_string('dateendevent', 'quest', $quest->name);
-        $event->eventtype = 'close';
-        $event->timestart = $quest->dateend;
-        calendar_event::create($event);
+       quest_update_quest_calendar($quest);
     }
     $ctx = context_module::instance($quest->coursemodule);
     quest_save_intro_draft_files($quest, $ctx);
@@ -179,36 +164,7 @@ function quest_update_instance($quest, $form) {
     }
     $quest->id = $quest->instance;
     if ($returnid = $DB->update_record("quest", $quest)) {
-
-        $dates = array('datestart' => $quest->datestart, 'dateend' => $quest->dateend);
-        // ...update the calendar.
-        foreach ($dates as $type => $date) {
-
-            $event = $DB->get_record('event', array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type));
-            if ($event) {
-                $event = calendar_event::load($event->id);
-                $eventdata = new stdClass();
-                $eventdata->name = get_string($type . 'event', 'quest', $quest->name);
-                $eventdata->description = strip_pluginfile_content($quest->intro);
-                $eventdata->eventtype = $type;
-                $eventdata->timestart = $date;
-                $event->update($eventdata);
-            } else if ($date) {
-                $event = new stdClass();
-                $event->name = get_string($type . 'event', 'quest', $quest->name);
-                $event->description = strip_pluginfile_content($quest->intro);
-                $event->courseid = $quest->course;
-                $event->groupid = 0;
-                $event->userid = 0;
-                $event->modulename = 'quest';
-                $event->instance = $quest->instance;
-                $event->eventtype = $type;
-                $event->timestart = $date;
-                $event->timeduration = 0;
-                $event->visible = instance_is_visible('quest', $quest);
-                calendar_event::create($event);
-            }
-        }
+        quest_update_quest_calendar($quest);
         $ctx = context_module::instance($quest->coursemodule);
         quest_save_intro_draft_files($quest, $ctx);
     }
@@ -721,17 +677,16 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
     $ismanagerto = has_capability('mod/quest:manage', $context, $userto->id);
 
     $fullname = fullname($user, $ismanagerto);
+    $by = new stdClass();
     $by->name = '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $user->id . '&amp;course=' . $course->id . '">' . $fullname .
              '</a>';
     $by->date = userdate($submission->timecreated, '', $user->timezone);
     $output .= '<div class="author">' . get_string('bynameondate', 'forum', $by) . '</div>';
-
     $output .= '</td></tr>';
-
     $output .= '<tr><td class="left side"> </td><td class="content">';
 
     $site = get_site();
-
+    $data = new stdClass();
     $data->admin = $CFG->supportname . ' (' . $CFG->supportemail . ')';
     $data->firstname = fullname($userto);
     $data->sitename = $site->fullname;
@@ -740,17 +695,11 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
     $data->link = $CFG->wwwroot . "/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission" .
              '&amp;p=' . $userto->secret . '&amp;s=' . $userto->username;
     $message = get_string('emailaddsubmission', 'quest', $data);
-
     $messagehtml = text_to_html($message, false, false, true);
-
     $output .= $messagehtml;
-
     $output .= '</td></tr></table>' . "\n\n";
-
     return $output;
 }
-
-// Grading.
 
 /** Lists all gradable areas for the advanced grading methods framework
  *
@@ -988,8 +937,7 @@ function quest_refresh_events($courseid = 0) {
         }
     }
     foreach ($quests as $quest) {
-        $cm = get_coursemodule_from_instance("quest", $quest->id, $courseid);
-        quest_update_quest_calendar($cm, $quest);
+        quest_update_quest_calendar($quest);
     }
     return true;
 }

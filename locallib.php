@@ -157,7 +157,7 @@ function quest_choose_from_menu($options, $name, $selected = "", $nothing = "cho
     }
     $output .= "</select>\n";
 
-    if ($returnthml) {
+    if ($returnhtml) {
         return $output;
     } else {
         echo $output;
@@ -3360,8 +3360,9 @@ function quest_update_challenge_calendar($cm, $quest, $challenge) {
  * @param unknown $quest
  * @param unknown $challenge
  */
-function quest_update_quest_calendar($cm, $quest) {
+function quest_update_quest_calendar($quest) {
     global $DB;
+    $cm = get_fast_modinfo($quest->course)->instances['quest'][$quest->id];
     $dates = array('datestart' => $quest->datestart, 'dateend' => $quest->dateend);
     foreach ($dates as $type => $date) {
 

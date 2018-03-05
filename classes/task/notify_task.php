@@ -21,8 +21,8 @@ namespace mod_quest\task;
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 global $CFG;
-require_once ($CFG->dirroot . '/mod/quest/lib.php');
-require_once ($CFG->dirroot . '/mod/quest/locallib.php');
+require_once($CFG->dirroot . '/mod/quest/lib.php');
+require_once($CFG->dirroot . '/mod/quest/locallib.php');
 
 class notify_task extends \core\task\scheduled_task {
 
@@ -60,7 +60,6 @@ class notify_task extends \core\task\scheduled_task {
             $sitetimezone = $CFG->timezone;
             $digesttime = usergetmidnight($timenow, $sitetimezone);
             $questdigestmailtimelast = get_config('quest', 'questdigestmailtimelast');
-            $questdigestmailtimelast = 0;
             if ($questdigestmailtimelast < $digesttime and $timenow > $digesttime) {
                 set_config('questdigestmailtimelast', $timenow, 'quest');
                 mtrace('Sending QUEST digests: ' . userdate($timenow, '', $sitetimezone));
@@ -123,11 +122,11 @@ class notify_task extends \core\task\scheduled_task {
                                         $userfrom->customheaders = array( // Headers to make emails
                                                                           // easier to track.
                                         'Precedence: Bulk',
-                                                        'List-Id: "' . $cleanquestname . '" <moodlequest' . $quest->id . '@' .
-                                                                 $hostname . '>',
-                                                                'List-Help: ' . $CFG->wwwroot . '/mod/quest/view.php?f=' . $quest->id,
-                                                                'X-Course-Id: ' . $course->id,
-                                                                'X-Course-Name: ' . strip_tags($course->fullname));
+                                        'List-Id: "' . $cleanquestname . '" <moodlequest' . $quest->id . '@' .
+                                         $hostname . '>',
+                                        'List-Help: ' . $CFG->wwwroot . '/mod/quest/view.php?f=' . $quest->id,
+                                        'X-Course-Id: ' . $course->id,
+                                        'X-Course-Name: ' . strip_tags($course->fullname));
                                         if (!empty($course->lang)) {
                                             $CFG->courselang = $course->lang;
                                         } else {
@@ -149,7 +148,6 @@ class notify_task extends \core\task\scheduled_task {
                             if ($indice > 0) {
 
                                 $posthtml .= "</body>";
-
                                 $posttext = format_text($posttext, 1);
                                 mtrace("Mailing Daily briefing to user $userto->id .");
 
@@ -157,11 +155,9 @@ class notify_task extends \core\task\scheduled_task {
                                     mtrace(
                                             "Error: mod/quest/cron.php: Could not send out mail to user $userto->id" .
                                                      " ($userto->email) .. not trying again.");
-                                    add_to_log($course->id, 'quest', 'mail error', "view.php?id=$cm->id",
-                                            substr(format_string($postsubject, true), 0, 30), $cm->id, $userto->id);
                                 } else if ($mailresult === 'emailstop') {
-                                    add_to_log($course->id, 'quest', 'mail blocked', "view.php?id=$cm->id",
-                                            substr(format_string($postsubject, true), 0, 30), $cm->id, $userto->id);
+                                    mtrace("Error: mod/quest/cron.php: Error 'emailstop' when mailing to user $userto->id" .
+                                            " ($userto->email) .. not trying again.");
                                 } else {
                                     $mailcount++;
                                 }
@@ -171,11 +167,9 @@ class notify_task extends \core\task\scheduled_task {
 
                     // Mark submissions as mailed...
                     if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
-
                         // Imprimir cabecera del m�dulo QUEST en mensaje.
                         foreach ($submissions as $submission) {
                             if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
-
                                 $submission->mailed = 1;
                                 $DB->set_field("quest_submissions", "mailed", $submission->mailed, array("id" => $submission->id));
                             }
@@ -257,7 +251,7 @@ class notify_task extends \core\task\scheduled_task {
                         }
                         $template = reset($usermsglist);
                         $template->messagehtml = $messagehtml;
-                        mtrace("Sending message (" . count($usermsglist) . " challenges) to user " .
+                        mtrace("Sending message (" . count($usermsglist) . " challenges: " . implode(',', array_keys($submissions)) .") to user " .
                                 $template->userto->username . " in name of " . $template->userfrom->username . "\n");
                         quest_send_message_data($template);
                     }
@@ -273,7 +267,7 @@ class notify_task extends \core\task\scheduled_task {
                 mtrace("Quest id: $quest->id : $submissionscount submissions mailed to $userscount users.\n");
             }
         }
-        mtrace("QUESTOURnament processed (" . (time() - $timestart) . " ms)");
+        mtrace("QUESTOURnament processed (" . (time() - $timestart) . " s)");
         return true;
     }
 }
