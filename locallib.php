@@ -789,11 +789,11 @@ function quest_print_submission_info($quest, $submission) {
     $forms[] = "#formscore";
     $incline[] = 0;
     $servertime = time();
-    $params = [1, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial,
+    $params = [1, $pointsmax, $pointsmin, $initialpoints, $tinitial,
                     $datesstart, $state, $nanswerscorrect, $dateanswercorrect,
                     $pointsanswercorrect, $datesend,
                     $forms, $type, $nmaxanswers, $pointsnmaxanswers,
-                    $servertime];
+                    $servertime, null];
     global $PAGE;
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 
@@ -4732,24 +4732,24 @@ function quest_compose_message_data($user, $file, $msgtype, $quest, $object, $fi
     } else {
         $userfrom = $from;
     }
-    // Translate message type.
+    // Translate quest msgtype to Moodle messages producer type messages.php.
+    $messagetype = 'challenge_update';
     switch ($msgtype) {
         case 'challenge_start':
-            $msgtype = 'challenge_start';
+            $messagetype = 'challenge_start';
             break;
         case 'evaluatecomment':
-            $msgtype = 'evaluation_update';
+            $messagetype = 'evaluation_update';
             break;
         case 'addsubmission':
         case 'save':
         case 'deletesubmission':
         case 'answeradd':
+            break;
         case 'answerdelete':
         case 'modifsubmission':
-            $msgtype = 'challenge_update';
+            $messagetype = 'challenge_update';
             break;
-        default:
-            $msgtype = 'challenge_update';
     }
     $data = new stdClass();
     $data->firstname = fullname($user);
@@ -4766,7 +4766,7 @@ function quest_compose_message_data($user, $file, $msgtype, $quest, $object, $fi
     // Make the text version a normal link for normal people.
     $data->link = $CFG->wwwroot . "/mod/quest/$file";
     $message = get_string('email' . $msgtype, 'quest', $data);
-    $data->msgtype = $msgtype;
+    $data->msgtype = $messagetype; // Producer msg type.
     // Make the HTML version more XHTML happy (&amp;).
     $data->link = $CFG->wwwroot . "/mod/quest/$file";
     $data->messagehtml = text_to_html($message, false, false, true);

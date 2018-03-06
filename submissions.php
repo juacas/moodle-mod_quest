@@ -759,9 +759,9 @@ if ($action == 'confirmdelete') {
         $forms[$i] = "#formscore$i";
         $incline[$i] = 0;
     }
-    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                     $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                    $pointsnmaxanswers, $servertime];
+                    $pointsnmaxanswers, $servertime, null];
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 
     $continueurl = new moodle_url('viewclasification.php', ['id' => $cm->id]);
@@ -1063,9 +1063,9 @@ if ($action == 'confirmdelete') {
         $forms[$i] = "#formscore$i";
         $incline[$i] = 0;
     }
-    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                     $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                    $pointsnmaxanswers, $servertime];
+                    $pointsnmaxanswers, $servertime, null];
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 
     $continueurl = new moodle_url('submissions.php', ['action' => 'showsubmission', 'sid' => $submission->id, 'id' => $cm->id]);

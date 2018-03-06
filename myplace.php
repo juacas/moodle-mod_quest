@@ -282,8 +282,9 @@ for ($i = 0; $i < $indice; $i++) {
 }
 $servertime = time();
 if ($indice > 0) {
-    $params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
+    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+                $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers,
+                $servertime, null];
     $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
 }
 echo '</td></tr>';

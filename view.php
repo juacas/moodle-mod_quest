@@ -696,7 +696,7 @@ if ($action == 'displayfinalgrade') {
         $servertime = time();
         $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
                         $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                        $pointsnmaxanswers, $servertime];
+                        $pointsnmaxanswers, $servertime, null];
         $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
     }
     if ($canviewauthors) {

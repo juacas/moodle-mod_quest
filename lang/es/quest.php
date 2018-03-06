@@ -224,12 +224,12 @@ Se ha modificado una respuesta en
 Para acceder a la respuesta en cuestión haga clic aquí:
 <a href="{$a->link}">{$a->link}</a>';
 $string['emailmodifanswersubject'] = 'Moodle. Respuesta Modificada en Módulo QUESTOURnament';
-$string['emailmodifsubmission'] = 'Hola, {$a->firstname}.
+$string['emailchallengeupdate'] = 'Hola, {$a->firstname}.
 Se han realizado la modificación de un Desafío en
 \'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
 Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
 <a href="{$a->link}">{$a->link}</a>';
-$string['emailmodifsubmissionsubject'] = 'Moodle: Modificación en Desafío de Módulo QUESTOURnament';
+$string['emailchallengeupdatesubject'] = 'Moodle: Modificación en Desafío de Módulo QUESTOURnament';
 $string['emailchallenge_start'] = 'Hola, {$a->firstname}. Ha empezado el Desafío  <b>\'{$a->title}\'</b>
  en la actividad QUESTOURnament \'{$a->name}\'. (En \'{$a->sitename}\'.)
 Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:

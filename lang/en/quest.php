@@ -241,7 +241,7 @@ To access this answer, please click here:
 <a href="{$a->link}">{$a->link}</a>
 ';
 $string['emailmodifanswersubject'] = 'Moodle. Answer modification in module QUESTOURnament';
-$string['emailmodifsubmission'] = 'Hello, {$a->firstname}.
+$string['emailchallengeupdate'] = 'Hello, {$a->firstname}.
 
 Challenge modified in
 \'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
@@ -250,7 +250,7 @@ To access the challenge, please click here:
 
 <a href="{$a->link}">{$a->link}</a>
 ';
-$string['emailmodifsubmissionsubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
+$string['emailchallengeupdatesubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
 $string['emailchallenge_start'] = 'Hello, {$a->firstname}. The challenge <b>\'{$a->title}\'</b> has started in the QUESTOURnament \'{$a->name}\'. (At \'{$a->sitename}\'.)
 To access the site on which the challenge is, please click here:
 <a href="{$a->link}">{$a->link}</a>';
