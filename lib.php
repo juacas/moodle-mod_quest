@@ -66,6 +66,7 @@ function quest_add_instance($quest) {
     }
 
     if ($returnid = $DB->insert_record("quest", $quest)) {
+        $quest->id = $returnid;
        quest_update_quest_calendar($quest);
     }
     $ctx = context_module::instance($quest->coursemodule);
