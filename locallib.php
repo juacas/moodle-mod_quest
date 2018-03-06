@@ -3336,16 +3336,19 @@ function quest_update_challenge_calendar($cm, $quest, $challenge) {
         $eventdata->eventtype = $type;
         $eventdata->timestart = $date;
         $eventdata->modulename = 'quest';
-        $eventdata->instance = $quest->id;
+        $eventdata->instance = $cm->instance;
         $eventdata->timeduration = 0;
         $eventdata->visible = $cm->visible;
         $eventdata->groupid = 0;
         $eventdata->userid = 0;
         $eventdata->courseid = $quest->course;
-        $eventdata->uuid = $challenge->id;
+        $eventdata->uuid = 'challenge-' . $challenge->id . '-' . $type;
 
         $event = $DB->get_record('event',
-                array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type, 'uuid' => $challenge->id));
+                array('modulename' => 'quest',
+                        'instance' => $eventdata->instance,
+                        'eventtype' => $eventdata->eventtype,
+                        'uuid' => $eventdata->uuid ));
         if ($event) { // Update event..
             $event = calendar_event::load($event->id);
             $event->update($eventdata, false);
@@ -3360,27 +3363,32 @@ function quest_update_challenge_calendar($cm, $quest, $challenge) {
  * @param unknown $quest
  * @param unknown $challenge
  */
-function quest_update_quest_calendar($quest) {
+function quest_update_quest_calendar($quest, $cm = null) {
     global $DB;
-    $cm = get_fast_modinfo($quest->course)->instances['quest'][$quest->id];
+    if ($cm === null) {
+        $cm = get_coursemodule_from_instance('quest', $quest->id);
+    }
     $dates = array('datestart' => $quest->datestart, 'dateend' => $quest->dateend);
     foreach ($dates as $type => $date) {
 
         $eventdata = new stdClass();
-        $eventdata->name = get_string($type, 'quest', $quest->name);
-        $url = new moodle_url('/mod/quest/view.php', array('id' => $cm->id));
+        $eventdata->name = get_string($type . 'event', 'quest', $quest->name);
+        $url = new moodle_url('/mod/quest/view.php', array('id' => $cm->coursemodule));
         $eventdata->description = strip_pluginfile_content($quest->intro);
         $eventdata->eventtype = $type;
         $eventdata->timestart = $date;
         $eventdata->modulename = 'quest';
-        $eventdata->instance = $quest->id;
+        $eventdata->instance = $cm->instance;
         $eventdata->timeduration = 0;
         $eventdata->visible = $cm->visible;
-        $eventdata->courseid = $quest->course;
-        $eventdata->uuid = $quest->id;
+        $eventdata->courseid = $cm->course;
+        $eventdata->uuid = 'quest-' . $cm->instance . '-' . $type;
 
         $event = $DB->get_record('event',
-                array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type, 'uuid' => $quest->id));
+                array('modulename' => $eventdata->modulename,
+                        'instance' => $eventdata->instance,
+                        'eventtype' => $eventdata->eventtype,
+                        'uuid' => $eventdata->uuid));
         if ($event) { // Update event..
             $event = calendar_event::load($event->id);
             $event->update($eventdata, false);

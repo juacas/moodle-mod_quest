@@ -121,7 +121,7 @@ $string['dateendsubmissionevent'] = 'End of challenge "{$a}"';
 
 $string['dateofstart'] = 'Starting date';
 
-$string['datestartevent'] = 'Starting of QUESTOURnament {$a}';
+$string['datestartevent'] = 'Starting of QUESTOURnament "{$a}"';
 $string['datestartsubmissionevent'] = 'Starting of challenge "{$a}"';
 $string['datestr'] = '%m/%d/%y<br />%H:%M';
 $string['datestrmodel'] = '%%m/%%d/%%y &nbsp;&nbsp;%%H:%%M';
