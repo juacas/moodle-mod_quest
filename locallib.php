@@ -3382,7 +3382,7 @@ function quest_update_quest_calendar($quest, $cm = null) {
         $eventdata->timeduration = 0;
         $eventdata->visible = $cm->visible;
         $eventdata->courseid = $cm->course;
-        $eventdata->uuid = 'quest-' . $cm->instance . '-' . $type;
+        $eventdata->uuid = 'quest-' . $cm->coursemodule. '-' . $type;
 
         $event = $DB->get_record('event',
                 array('modulename' => $eventdata->modulename,

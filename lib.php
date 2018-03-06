@@ -66,7 +66,7 @@ function quest_add_instance($quest) {
     }
 
     if ($returnid = $DB->insert_record("quest", $quest)) {
-        $quest->id = $returnid;
+        $quest->id = $quest->instance = $returnid;
         quest_update_quest_calendar($quest, $quest); // At this point $quest is a mix of quest and cminfo.
     }
     $ctx = context_module::instance($quest->coursemodule);
@@ -164,7 +164,7 @@ function quest_update_instance($quest, $form) {
         unset($quest->password);
     }
     $quest->id = $quest->instance;
-    if ($returnid = $DB->update_record("quest", $quest)) {
+    if ($DB->update_record("quest", $quest)) {
         quest_update_quest_calendar($quest, $quest);
         $ctx = context_module::instance($quest->coursemodule);
         quest_save_intro_draft_files($quest, $ctx);
