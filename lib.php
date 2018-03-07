@@ -67,10 +67,11 @@ function quest_add_instance($quest) {
 
     if ($returnid = $DB->insert_record("quest", $quest)) {
         $quest->id = $quest->instance = $returnid;
-        quest_update_quest_calendar($quest, $quest); // At this point $quest is a mix of quest and cminfo.
+        quest_update_quest_calendar($quest, $quest); // At this point $quest is a mix of quest record and cminfo.
+        $ctx = context_module::instance($quest->coursemodule);
+        quest_save_intro_draft_files($quest, $ctx);
+        quest_grade_item_update($quest);
     }
-    $ctx = context_module::instance($quest->coursemodule);
-    quest_save_intro_draft_files($quest, $ctx);
     return $returnid;
 }
 
@@ -92,7 +93,7 @@ function quest_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
         case FEATURE_COMPLETION_HAS_RULES:
-            return false;
+            return true;
         case FEATURE_GRADE_HAS_GRADE:
             return true;
         case FEATURE_GRADE_OUTCOMES:
@@ -170,7 +171,7 @@ function quest_update_instance($quest, $form) {
         quest_save_intro_draft_files($quest, $ctx);
     }
 
-    return $returnid;
+    return true;
 }
 /**
  *
@@ -1022,9 +1023,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
             }
         }
     }
-
     // ... get the answers submitted.
-
     $posts = $DB->get_records_sql(
             "SELECT a.*, u.firstname, u.lastname,
             u.picture, cm.instance, q.name, cm.section
@@ -1210,7 +1209,6 @@ function quest_reset_userdata($data) {
     }
 
     // ...updating dates - shift may be negative too.
-
     if ($data->timeshift) {
 
         shift_course_mod_dates('quest', array('datestart', 'dateend'), $data->timeshift, $data->courseid);
@@ -1226,6 +1224,39 @@ function quest_reset_userdata($data) {
     return $status;
 }
 
+/**
+ * Obtains the automatic completion state for this module based on any conditions in game settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ *
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function quest_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
+    if (($cm->completion == 0) or ($cm->completion == 1)) {
+        // Completion option is not enabled so just return $type.
+        return $type;
+    }
+    $quest = $DB->get_record('quest', array('id' => $cm->instance), '*', MUST_EXIST);
+    // Check for passing grade.
+    if ($quest->completionpass) {
+        require_once($CFG->libdir . '/gradelib.php');
+        $item = grade_item::fetch(array('courseid' => $course->id, 'itemtype' => 'mod',
+                        'itemmodule' => 'quest', 'iteminstance' => $cm->instance, 'outcomeid' => null));
+        if ($item) {
+            $grades = grade_grade::fetch_users_grades($item, array($userid), false);
+            if (!empty($grades[$userid])) {
+                $passed = $grades[$userid]->is_passed($item);
+                return $passed;
+            }
+        }
+    }
+
+    return $type;
+}
 /** Adds module specific settings to the settings block
  *
  * @param settings_navigation $settings The settings navigation object

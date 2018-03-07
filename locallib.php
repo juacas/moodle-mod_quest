@@ -3332,7 +3332,7 @@ function quest_update_challenge_calendar($cm, $quest, $challenge) {
         $eventdata->name = get_string($stringevent, 'quest', $challenge->title);
         $url = new moodle_url('/mod/quest/submissions.php',
                 array('id' => $cm->id, 'sid' => $challenge->id, 'action' => 'showsubmission'));
-        $eventdata->description = "<a href=\"$url\">$challenge->title</a>";
+        $eventdata->description = "<a href=\"$url\">$eventdata->name</a>";
         $eventdata->eventtype = $type;
         $eventdata->timestart = $date;
         $eventdata->modulename = 'quest';

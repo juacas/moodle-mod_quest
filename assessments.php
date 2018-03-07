@@ -104,6 +104,8 @@ if ($action == 'displaygradingform') {
                     new moodle_url("submissions.php", array('id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission')));
         }
     }
+    echo $OUTPUT->footer();
+
 } else if ($action == 'editelements') {
     // ... edit assessment elements (for teachers)..
     require_sesskey();
@@ -416,6 +418,8 @@ if ($action == 'displaygradingform') {
 </center>
 FORM;
     echo $formfragment;
+    echo $OUTPUT->footer();
+
 } else if ($action == 'insertelements') {
     if (!optional_param('cancel', null, PARAM_ALPHA)) {
         // ... insert/update assignment elements (for teachers)..
@@ -812,5 +816,3 @@ FORM;
 } else {
     print_error('unkownactionerror', 'quest', null, $action);
 }
-
-echo $OUTPUT->footer();

@@ -44,7 +44,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
                                 'datestart', 'dateend', 'gradingstrategy', 'nelements', 'timemaxquestion', 'nmaxanswers',
                                 'maxcalification', 'mincalification', 'typecalification', 'allowteams', 'ncomponents', 'phase', 'format', 'visible',
                                 'tinitial', 'gradingstrategyautor', 'nelementsautor', 'initialpoints', 'teamporcent',
-                                'showclasifindividual', 'showauthoringdetails', 'typegrade', 'permitviewautors'));
+                                'showclasifindividual', 'showauthoringdetails', 'typegrade', 'permitviewautors', 'completionpass'));
         // Grading Elements for Submissions.
         $defaultelements = new backup_nested_element('elements');
         $defaultelement = new backup_nested_element('element', null,

@@ -90,6 +90,17 @@ function xmldb_quest_upgrade($oldversion = 0) {
         $dbman->add_field($table, $field);
         upgrade_mod_savepoint(true, 2017101800, 'quest');
     }
+    if ($oldversion < 2018030701) {
+        // Define field anonymizeviewsbe added to msocial_.
+        $table = new xmldb_table('quest');
+        $field = new xmldb_field('completionpass', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0 , 'permitviewautors');
 
+        // Conditionally launch add field rejected.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Msocial savepoint reached.
+        upgrade_mod_savepoint(true, 2018030701, 'quest');
+    }
     return true;
 }
