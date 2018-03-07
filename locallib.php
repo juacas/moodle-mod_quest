@@ -443,32 +443,31 @@ class quest_print_upload_form extends moodleform {
             $errors['datestart'] = get_string('invaliddates', 'quest', $a);
         }
         if ($data['pointsmax'] > $quest->maxcalification) {
-            $errors['pointsmax'] = get_string('pointsmax_help', 'quest') .
-            '(' . get_string('pointsmin', 'quest') . ' < ' . get_string('pointsmax', 'quest') . ' < ' .
-            $quest->maxcalification . ')';
+            $errors['pointsmax'] = get_string('checkthat', 'quest'). ': ' . get_string('pointsmin', 'quest') .  ' (' . $data['pointsmin'] . ')' .
+                    ' < ' .get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')' . ' < ' . $quest->maxcalification;
         }
         if ($data['pointsmin'] < $quest->mincalification) {
-            $errors['pointsmin'] = get_string('pointsmin_help', 'quest') .
-            '(' . $quest->mincalification . ' < ' . get_string('pointsmin', 'quest') . ' < ' .
-            get_string('pointsmax', 'quest') . ')';
+            $errors['pointsmin'] = get_string('checkthat', 'quest'). ': ' .
+                   $quest->mincalification .
+                   ' < ' . get_string('pointsmin', 'quest') .  ' (' . $data['pointsmin'] . ')' . ' < ' .
+                    get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')';
 
         }
         if ($data['pointsmax'] < $data['pointsmin']) {
-            $errors['pointsmax'] = get_string('pointsmax_help', 'quest') .
-            '(' . get_string('pointsmin', 'quest') . ' < ' . get_string('pointsmax', 'quest') . ' < ' .
-            $quest->maxcalification . ')';
-            $errors['pointsmin'] = get_string('pointsmin_help', 'quest').
-            '(' . $quest->mincalification . ' < ' . get_string('pointsmin', 'quest') . ' < ' .
-            get_string('pointsmax', 'quest') . ')';
-
+            $errors['pointsmax'] = get_string('checkthat', 'quest'). ': ' .
+                    get_string('pointsmin', 'quest') . ' (' . $data['pointsmin'] . ')' .
+                    ' < ' . get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')' . ' < ' . $quest->maxcalification;
+            $errors['pointsmin'] = $errors['pointsmax'];
         }
         if ($data['pointsmax'] < $data['initialpoints']) {
-            $errors['initialpoints'] = get_string('initialpoints', 'quest') . ' < ' . $data['pointsmax'] .
-            '(' . get_string('pointsmax', 'quest') . ')';
+            $errors['initialpoints'] = get_string('checkthat', 'quest') . ': ' .
+                    get_string('initialpoints', 'quest') . ' (' . $data['initialpoints'] . ')' .
+                    ' < ' . get_string('pointsmax', 'quest') . ' (' .  $data['pointsmax'] . ')';
         }
         if ($data['pointsmin'] > $data['initialpoints']) {
-            $errors['initialpoints'] = get_string('initialpoints', 'quest') . ' > ' . $data['pointsmin'] .
-            '(' . get_string('pointsmin', 'quest') . ')';
+            $errors['initialpoints'] = get_string('checkthat', 'quest'). ': ' .
+                    get_string('initialpoints', 'quest') . ' (' . $data['initialpoints'] . ')' .
+                    ' > ' . get_string('pointsmin', 'quest') . ' (' . $data['pointsmin'] . ')';
         }
         return $errors;
     }

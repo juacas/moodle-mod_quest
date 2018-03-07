@@ -298,11 +298,20 @@ SCRIPT;
             $errors['dateend'] = get_string('closebeforeopen', 'quest');
         }
         if ($data['mincalification'] > $data['maxcalification']) {
-            $errors['mincalification'] = get_string('mincalification_help', 'quest');
-            $errors['maxcalification'] = get_string('maxcalification_help', 'quest');
+            $errors['maxcalification'] = get_string('checkthat', 'quest'). ': ' .
+                get_string('mincalification', 'quest') . ' (' . $data['mincalification'] . ') < ' .
+                get_string('maxcalification', 'quest') . ' (' . $data['maxcalification'] . ')';
+            $errors['mincalification'] = $errors['maxcalification'];
         }
         if ($data['initialpoints'] > $data['maxcalification']) {
-            $errors['initialpoints'] = get_string('initialpoints_help', 'quest');
+            $errors['initialpoints'] = get_string('checkthat', 'quest') . ': ' .
+                    get_string('initialpoints', 'quest') . ' (' .  $data['initialpoints']  . ')' .
+            ' < ' . get_string('maxcalification', 'quest') . ' (' .  $data['maxcalification']  . ')';
+        }
+        if ($data['initialpoints'] < $data['mincalification']) {
+            $errors['initialpoints'] = get_string('checkthat', 'quest'). ': ' .
+                    get_string('initialpoints', 'quest') . ' (' .  $data['initialpoints']  . ')' .
+                    ' > ' . get_string('mincalification', 'quest') . ' (' .  $data['mincalification'] . ')';
         }
         if (count($errors) == 0) {
             return true;

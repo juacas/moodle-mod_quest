@@ -93,7 +93,7 @@ $string['change'] = 'Save Changes';
 $string['changecalification'] = 'Change calification';
 $string['changemanualcalification'] = 'Change calification manually';
 $string['changeteam'] = 'Manage Teams';
-
+$string['checkthat'] = 'Check that';
 $string['change'] = 'Guardar Cambios';
 $string['clasification'] = 'Ranking';
 $string['closeassignment'] = 'Close challenge';
@@ -823,7 +823,7 @@ $string['groupmode_help'] = '<P align="justify">The group mode can be one of thr
 </div>';
 $string['initialpoints'] = 'Initial score';
 $string['initialpoints_help'] = '<P align="justify">This parameter sets the initial score of the challenge to be added.</P>
-<P align="justify">However, the teacher will be able to modify this value till the maximum score set for the QUESTOURnament where the challenge is to be added. A student can also modify this initial score when adding a challenge, but only by choosing a value equal or lower than the value set by the teacher as initial score of the QUESTOURnament where the challenge is to be added.
+<P align="justify">However, the teacher will be able to modify this value from minimum score up to the maximum score set for the QUESTOURnament where the challenge is to be added. A student can also modify this initial score when adding a challenge, but only by choosing a value equal or lower than the value set by the teacher as initial score of the QUESTOURnament where the challenge is to be added.
  </P>
 <P align="justify">Finally, it is important to emphasize that the value of this parameter can be different for each challenge in a QUESTOURnament.</P>';
 $string['maxcalification'] = 'Highest score';

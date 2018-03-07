@@ -114,6 +114,7 @@ $string['changecalification'] = 'Cambiar Calificación';
 $string['changemanualcalification'] = 'Cambiar Calificación Manualmente';
 $string['changeteam'] = 'Gestión Equipos';
 $string['changeteamteacher'] = 'Gestión de Equipos';
+$string['checkthat'] = 'Compruebe que';
 $string['clasification'] = 'Clasificación';
 $string['closeassignment'] = 'Cerrar la tarea';
 $string['comeback'] = 'Volver Atrás';
@@ -823,7 +824,7 @@ $string['groupmode_help'] = '<P align="justify">El modo de agrupación puede esc
 ';
 $string['initialpoints'] = 'Puntuaci&oacute;n Inicial';
 $string['initialpoints_help'] = '<P align="justify">Este par&aacute;metro permite establecer la puntuaci&oacute;n inicial del desaf&iacute;o que se va a añadir. </P>
-<P align="justify">No obstante, el profesor podr&aacute; modificar este valor hasta la m&aacute;xima puntuaci&oacute;n fijada para este m&oacute;dulo QUESTOURnament. </P>
+<P align="justify">No obstante, el profesor podr&aacute; modificar este valor desde la m$iacute;nima puntuaci&oacute;n hasta la m&aacute;xima puntuaci&oacute;n fijada para este m&oacute;dulo QUESTOURnament. </P>
 <P align="justify">Si al a&ntilde;adir o modificar un desafío en un m&oacute;dulo QUESTOURnament la puntuaci&oacute;n inicial fuese superior a la <a href="help.php?component=quest&identifier=maxcalification">M&aacute;xima Puntuaci&oacute;n</a> establecida para dicho módulo, se tomar&iacute;a como valor de la puntuaci&oacute;n inicial el de la m&aacute;xima puntuaci&oacute;n establecida.</P>
 <P align="justify">Finalmente destacar que el valor de este parámetro puede variar de un desaf&iacute;o a otro en un mismo módulo QUESTOURnament.</P>
 ';
