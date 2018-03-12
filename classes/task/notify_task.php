@@ -153,10 +153,10 @@ class notify_task extends \core\task\scheduled_task {
 
                                 if (!$mailresult = email_to_user($userto, $userfrom, $postsubject, $posttext, $posthtml)) {
                                     mtrace(
-                                            "Error: mod/quest/cron.php: Could not send out mail to user $userto->id" .
+                                            "Error: notify_task.php: Could not send out mail to user $userto->id" .
                                                      " ($userto->email) .. not trying again.");
                                 } else if ($mailresult === 'emailstop') {
-                                    mtrace("Error: mod/quest/cron.php: Error 'emailstop' when mailing to user $userto->id" .
+                                    mtrace("Error: notify_task.php: Error 'emailstop' when mailing to user $userto->id" .
                                             " ($userto->email) .. not trying again.");
                                 } else {
                                     $mailcount++;
@@ -221,8 +221,10 @@ class notify_task extends \core\task\scheduled_task {
                     foreach ($submissions as $submission) {
                         // The challenge has started and is approved and is not emailed yet to
                         // users.
-                        if (($submission->datestart <= time()) && ($submission->maileduser == 0) &&
-                                 ($submission->state != SUBMISSION_STATE_APPROVAL_PENDING)) {
+                        if (($submission->datestart <= time())
+                                && ($submission->dateend >= time())
+                                && ($submission->maileduser == 0)
+                                && ($submission->state != SUBMISSION_STATE_APPROVAL_PENDING)) {
                             $submissionscount++;
                             $submissionsmailed[] = $submission;
                             $userscount = 0;
@@ -238,9 +240,6 @@ class notify_task extends \core\task\scheduled_task {
                                 }
                             }
 
-                        } else if ($submission->maileduser == 0) {
-                            // Challenge is already mailed.
-                            mtrace("Challenge $submission->id already mailed.");
                         }
                     } // ...for submissions.
                     // Collect and send messages to users.
