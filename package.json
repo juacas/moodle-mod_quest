@@ -1,0 +1,11 @@
+{
+	"name": "moodle-mod_quest",
+	"version": "1.3.5",
+	"description": "QUESTournament for Moodle",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/juacas/moodle-mod_quest"
+	},
+	"autor": "Juan Pablo de Castro <jpdecastro@tel.uva.es>",
+	"license": "GPL-3.0"
+}

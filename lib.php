@@ -1,4 +1,6 @@
 <?php
+use core_calendar\local\event\proxies\std_proxy;
+
 // This file is part of Questournament activity for Moodle http://moodle.org/
 //
 // Questournament for Moodle is free software: you can redistribute it and/or modify
@@ -31,6 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->dirroot . '/enrol/locallib.php');
+require_once('locallib.php');
 /**
  *
  * @param unknown $quest
@@ -63,27 +66,12 @@ function quest_add_instance($quest) {
     }
 
     if ($returnid = $DB->insert_record("quest", $quest)) {
-
-        $event = new stdClass();
-        $event->name = get_string('datestartevent', 'quest', $quest->name);
-        $event->description = strip_pluginfile_content($quest->intro);
-        $event->courseid = $quest->course;
-        $event->groupid = 0;
-        $event->userid = 0;
-        $event->modulename = 'quest';
-        $event->instance = $returnid;
-        $event->eventtype = 'open';
-        $event->timestart = $quest->datestart;
-        $event->timeduration = 0;
-        calendar_event::create($event);
-
-        $event->name = get_string('dateendevent', 'quest', $quest->name);
-        $event->eventtype = 'close';
-        $event->timestart = $quest->dateend;
-        calendar_event::create($event);
+        $quest->id = $quest->instance = $returnid;
+        quest_update_quest_calendar($quest, $quest); // At this point $quest is a mix of quest record and cminfo.
+        $ctx = context_module::instance($quest->coursemodule);
+        quest_save_intro_draft_files($quest, $ctx);
+        quest_grade_item_update($quest);
     }
-    $ctx = context_module::instance($quest->coursemodule);
-    quest_save_intro_draft_files($quest, $ctx);
     return $returnid;
 }
 
@@ -105,7 +93,7 @@ function quest_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
         case FEATURE_COMPLETION_HAS_RULES:
-            return false;
+            return true;
         case FEATURE_GRADE_HAS_GRADE:
             return true;
         case FEATURE_GRADE_OUTCOMES:
@@ -154,7 +142,7 @@ function quest_check_submission_text($newsubmission) {
  *
  * @global stdClass $CFG
  * @global stdClass $DB
- * @param stdClass $quest
+ * @param stdClass $quest cminfo
  * @return type */
 function quest_update_instance($quest, $form) {
     // Given an object containing all the necessary data,
@@ -177,42 +165,13 @@ function quest_update_instance($quest, $form) {
         unset($quest->password);
     }
     $quest->id = $quest->instance;
-    if ($returnid = $DB->update_record("quest", $quest)) {
-
-        $dates = array('datestart' => $quest->datestart, 'dateend' => $quest->dateend);
-        // ...update the calendar.
-        foreach ($dates as $type => $date) {
-
-            $event = $DB->get_record('event', array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type));
-            if ($event) {
-                $event = calendar_event::load($event->id);
-                $eventdata = new stdClass();
-                $eventdata->name = get_string($type . 'event', 'quest', $quest->name);
-                $eventdata->description = strip_pluginfile_content($quest->intro);
-                $eventdata->eventtype = $type;
-                $eventdata->timestart = $date;
-                $event->update($eventdata);
-            } else if ($date) {
-                $event = new stdClass();
-                $event->name = get_string($type . 'event', 'quest', $quest->name);
-                $event->description = strip_pluginfile_content($quest->intro);
-                $event->courseid = $quest->course;
-                $event->groupid = 0;
-                $event->userid = 0;
-                $event->modulename = 'quest';
-                $event->instance = $quest->instance;
-                $event->eventtype = $type;
-                $event->timestart = $date;
-                $event->timeduration = 0;
-                $event->visible = instance_is_visible('quest', $quest);
-                calendar_event::create($event);
-            }
-        }
+    if ($DB->update_record("quest", $quest)) {
+        quest_update_quest_calendar($quest, $quest);
         $ctx = context_module::instance($quest->coursemodule);
         quest_save_intro_draft_files($quest, $ctx);
     }
 
-    return $returnid;
+    return true;
 }
 /**
  *
@@ -602,274 +561,7 @@ function quest_get_teacher($courseid) {
     $members = get_users_by_capability($context, 'mod/quest:manage');
     return reset($members);
 }
-/**
- *
- * @return boolean
- */
-function quest_cron() {
-    // Function to be run periodically according to the moodle cron
-    // This function searches for things that need to be done, such
-    // as sending out mail, toggling flags etc ...
-    global $CFG, $USER, $SITE, $DB;
-    require_once('locallib.php');
-    mtrace("\n===============================");
-    mtrace(" Starting CRON for module QUEST");
-    $timestart = time();
-    $timeref = time() - 24 * 3600;
-    $userfrom = null;
 
-    if ($quests = $DB->get_records("quest")) {
-
-        $urlinfo = parse_url($CFG->wwwroot);
-        $hostname = $urlinfo['host'];
-        // Daily actions  Day brief of QUESTs activities.
-        if (!isset($CFG->digestmailtimelast)) { // To catch the first time.
-            set_config('questdigestmailtimelast', 0, 'quest');
-        }
-        $timenow = time();
-        $sitetimezone = $CFG->timezone;
-        $digesttime = usergetmidnight($timenow, $sitetimezone);
-        $questdigestmailtimelast = get_config('quest', 'questdigestmailtimelast');
-        if ($questdigestmailtimelast < $digesttime and $timenow > $digesttime) {
-            set_config('questdigestmailtimelast', $timenow, 'quest');
-            mtrace('Sending QUEST digests: ' . userdate($timenow, '', $sitetimezone));
-
-            foreach ($quests as $quest) {
-
-                if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-                    mtrace("Course is misconfigured");
-                    continue;
-                }
-                if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-                    mtrace("Coursemodule is misconfigured");
-                    continue;
-                }
-
-                if ($cm->visible == 0) {
-                    mtrace("Coursemodule is disabled");
-                    continue;
-                }
-                $context = context_course::instance($course->id);
-                $userfrom = quest_get_teacher($course->id);
-                $mailcount = 0;
-                mtrace("DAILY TASKs for quest no: $quest->id");
-                mtrace(get_string('processingquest', 'quest', $quest->id));
-
-                if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-                    mtrace("ERROR!: There is no users");
-                    continue;
-                }
-
-                foreach ($users as $userto) {
-
-                    if (has_capability('mod/quest:manage', $context, $userto->id)) {
-
-                        $indice = 0;
-
-                        $postsubject = get_string('resumequest', 'quest', $quest);
-
-                        $posttext = get_string('resume24hours', 'quest', $quest);
-                        $posttext .= "\n\r------------------------------------------------------------\n\r";
-
-                        $posthtml = '<head>';
-
-                        $posthtml .= '</head>';
-                        $posthtml .= "\n<body id=\"email\">\n\n";
-                        $posthtml .= get_string('resume24hours', 'quest', $quest);
-                        $posthtml .= "<br>-------------------------------------------------------------<br>";
-
-                        if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
-
-                            // Imprimir cabecera del m�dulo QUEST en mensaje.
-                            foreach ($submissions as $submission) {
-                                // Challenge unnotified and recently created.
-                                if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
-
-                                    $indice++;
-                                    $user = get_complete_user_data('id', $submission->userid);
-
-                                    $cleanquestname = str_replace('"', "'", strip_tags($quest->name));
-                                    $userfrom->customheaders = array( // Headers to make emails
-                                                                      // easier to track.
-                                    'Precedence: Bulk',
-                                    'List-Id: "' . $cleanquestname . '" <moodlequest' . $quest->id . '@' . $hostname .
-                                             '>',
-                                            'List-Help: ' . $CFG->wwwroot . '/mod/quest/view.php?f=' . $quest->id,
-                                            'X-Course-Id: ' . $course->id,
-                                            'X-Course-Name: ' . strip_tags($course->fullname));
-                                    if (!empty($course->lang)) {
-                                        $CFG->courselang = $course->lang;
-                                    } else {
-                                        unset($CFG->courselang);
-                                    }
-                                    $USER->lang = $userto->lang;
-                                    $USER->timezone = $userto->timezone;
-
-                                    $posttext .= quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, $user, $cm);
-
-                                    $posthtml .= quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, $user, $cm);
-                                } // ...if teacher.
-                            } // ...for submissions.
-                        }
-
-                        // ...count of messages to send.
-                        if ($indice > 0) {
-
-                            $posthtml .= "</body>";
-
-                            $posttext = format_text($posttext, 1);
-
-                            if (!$mailresult = email_to_user($userto, $userfrom, $postsubject, $posttext, $posthtml)) {
-                                mtrace(
-                                        "Error: mod/quest/cron.php: Could not send out mail to user $userto->id" .
-                                                 " ($userto->email) .. not trying again.");
-                                add_to_log($course->id, 'quest', 'mail error', "view.php?id=$cm->id",
-                                        substr(format_string($postsubject, true), 0, 30), $cm->id, $userto->id);
-                            } else if ($mailresult === 'emailstop') {
-                                add_to_log($course->id, 'quest', 'mail blocked', "view.php?id=$cm->id",
-                                        substr(format_string($postsubject, true), 0, 30), $cm->id, $userto->id);
-                            } else {
-                                $mailcount++;
-                            }
-                        }
-                    } // ...if teacher.
-                } // ...foreach user.
-
-                // Mark submissions as mailed...
-                if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
-
-                    // Imprimir cabecera del m�dulo QUEST en mensaje.
-                    foreach ($submissions as $submission) {
-                        if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
-
-                            $submission->mailed = 1;
-                            $DB->set_field("quest_submissions", "mailed", $submission->mailed, array("id" => $submission->id));
-                        }
-                    }
-                }
-                mtrace(".... mailed to $mailcount users.");
-            } // ...foreach quests.
-        } else {
-            mtrace("Posponing Daily tasks.");
-        }
-
-        /*
-         * Process all quests
-         * Notify challenges recently started and unmailed
-         * to studens
-         * submissions already notified are marked with maileduser=1
-         * maileduser marks the instant notification (actually cron tick time)
-         * mailed marks the submissions mailed in a daily digest
-         */
-        mtrace("Searching events to notify to all users...");
-        foreach ($quests as $quest) {
-
-            if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
-                mtrace("Course is misconfigured");
-                return false;
-            }
-            if (!$cm = get_coursemodule_from_instance("quest", $quest->id, $course->id)) {
-                mtrace("Coursemodule is misconfigured");
-                return false;
-            }
-
-            if ($cm->visible == 0) {
-                mtrace("Coursemodule is disabled");
-                continue;
-            }
-            $context = context_course::instance($course->id);
-            $submissionscount = 0;
-            $userscount = 0;
-            $userfrom = class_exists('core_user') ? core_user::get_noreply_user() : quest_get_teacher($course->id);
-
-            if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
-                mtrace("Processing " . count($submissions) . "challenges for quest: $quest->id.");
-
-                // Imprimir cabecera del m�dulo QUEST en mensaje.
-                foreach ($submissions as $submission) {
-
-                    if (($submission->datestart < time()) && ($submission->maileduser == 0) && ($submission->state != 1)) {
-
-                        $submissionscount++;
-                        if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-                            mtrace("There is not users");
-                            continue;
-                        }
-                        $userscount = 0;
-                        mtrace("Challenge $submission->id has started. Mailing advice" . " to " . count($users) . " users.");
-                        foreach ($users as $user) {
-
-                            if (!has_capability('mod/quest:manage', $context, $user)) { // JPC: I get advices as teacher.
-                                $userscount++;
-                                print("Sending message to user $user->username in name of $userfrom->username\n");
-                                quest_send_message($user,
-                                        "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                                        'addsubmission', $quest, $submission, '', $userfrom);
-                            }
-                        }
-                        $DB->set_field("quest_submissions", "maileduser", 1, array('id' => $submission->id));
-
-                        $dates = array('datestartsubmission' => $submission->datestart,
-                                        'dateendsubmission' => $submission->dateend);
-                        $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
-                        if (!has_capability('mod/quest:manage', $context, $submission->userid) &&
-                                 ($groupmember = $DB->get_record("groups_members", array("userid" => $submission->userid)))) {
-                            $idgroup = $groupmember->groupid;
-                        } else {
-                            $idgroup = 0;
-                        }
-
-                        foreach ($dates as $type => $date) {
-                            if ($submission->datestart <= time()) {
-                                if ($event = $DB->get_record('event',
-                                        array('modulename' => 'quest', 'instance' => $quest->id, 'eventtype' => $type))) {
-                                    if ($type == 'datestartsubmission') {
-                                        $stringevent = 'datestartsubmissionevent';
-                                    } else if ($type == 'dateendsubmission') {
-                                        $stringevent = 'dateendsubmissionevent';
-                                    }
-                                    $event->name = get_string($stringevent, 'quest', $submission->title);
-                                    $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?" .
-                                            "id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">" .
-                                             $submission->title . "</a>";
-                                    $event->eventtype = $type;
-                                    $event->timestart = $date;
-                                    update_event($event);
-                                } else if ($date) {
-                                    if ($type == 'datestartsubmission') {
-                                        $stringevent = 'datestartsubmissionevent';
-                                    } else if ($type == 'dateendsubmission') {
-                                        $stringevent = 'dateendsubmissionevent';
-                                    }
-                                    $event = new stdClass();
-                                    $event->name = get_string($stringevent, 'quest', $submission->title);
-                                    $event->description = "<a href=\"{$CFG->wwwroot}/mod/quest/submissions.php?" .
-                                            "id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission\">" .
-                                             $submission->title . "</a>";
-                                    $event->courseid = $quest->course;
-                                    $event->groupid = $idgroup;
-                                    $event->userid = 0;
-                                    $event->modulename = 'quest';
-                                    $event->instance = $quest->id;
-                                    $event->eventtype = $type;
-                                    $event->timestart = $date;
-                                    $event->timeduration = 0;
-                                    $event->visible = $DB->get_field('course_modules', 'visible',
-                                            array('module' => $moduleid, 'instance' => $quest->id));
-                                    calendar_event::create($event);
-                                }
-                            }
-                        }
-                    } // ...if submission started an unmailed to students.
-                } // ...for submissions.
-            }
-            mtrace("$submissionscount submissions mailed to $userscount users.\n");
-        }
-    }
-
-    mtrace("QUESTOURnament processed (" . (time() - $timestart) . " ms)");
-    return true;
-}
 /**
  *
  * @param unknown $course
@@ -987,17 +679,16 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
     $ismanagerto = has_capability('mod/quest:manage', $context, $userto->id);
 
     $fullname = fullname($user, $ismanagerto);
+    $by = new stdClass();
     $by->name = '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $user->id . '&amp;course=' . $course->id . '">' . $fullname .
              '</a>';
     $by->date = userdate($submission->timecreated, '', $user->timezone);
     $output .= '<div class="author">' . get_string('bynameondate', 'forum', $by) . '</div>';
-
     $output .= '</td></tr>';
-
     $output .= '<tr><td class="left side"> </td><td class="content">';
 
     $site = get_site();
-
+    $data = new stdClass();
     $data->admin = $CFG->supportname . ' (' . $CFG->supportemail . ')';
     $data->firstname = fullname($userto);
     $data->sitename = $site->fullname;
@@ -1006,17 +697,11 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
     $data->link = $CFG->wwwroot . "/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission" .
              '&amp;p=' . $userto->secret . '&amp;s=' . $userto->username;
     $message = get_string('emailaddsubmission', 'quest', $data);
-
     $messagehtml = text_to_html($message, false, false, true);
-
     $output .= $messagehtml;
-
     $output .= '</td></tr></table>' . "\n\n";
-
     return $output;
 }
-
-// Grading.
 
 /** Lists all gradable areas for the advanced grading methods framework
  *
@@ -1253,38 +938,8 @@ function quest_refresh_events($courseid = 0) {
             return true;
         }
     }
-    $moduleid = $DB->get_field('modules', 'id', array('name' => 'quest'));
-
     foreach ($quests as $quest) {
-
-        $dates = array('datestart' => $quest->datestart, 'dateend' => $quest->dateend);
-
-        foreach ($dates as $type => $date) {
-
-            if ($date) {
-                if ($event = $DB->get_record('event', array('modulename' => 'quest', 'instance' => $quest->id,
-                                            'eventtype' => $type))) {
-                    $event->name = get_string($type . 'event', 'quest', $quest->name);
-                    $event->description = strip_pluginfile_content($quest->intro);
-                    $event->eventtype = $type;
-                    $event->timestart = $date;
-                    update_event($event);
-                } else {
-                    $event = new stdClass();
-                    $event->courseid = $quest->course;
-                    $event->modulename = 'quest';
-                    $event->instance = $quest->id;
-                    $event->name = get_string($type . 'event', 'quest', $quest->name);
-                    $event->description = strip_pluginfile_content($quest->intro);
-                    $event->eventtype = $type;
-                    $event->timestart = $date;
-                    $event->timeduration = 0;
-                    $event->visible = $DB->get_field('course_modules', 'visible',
-                            array('module' => $moduleid, 'instance' => $quest->id));
-                    calendar_event::create($event);
-                }
-            }
-        }
+        quest_update_quest_calendar($quest);
     }
     return true;
 }
@@ -1368,9 +1023,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
             }
         }
     }
-
     // ... get the answers submitted.
-
     $posts = $DB->get_records_sql(
             "SELECT a.*, u.firstname, u.lastname,
             u.picture, cm.instance, q.name, cm.section
@@ -1556,7 +1209,6 @@ function quest_reset_userdata($data) {
     }
 
     // ...updating dates - shift may be negative too.
-
     if ($data->timeshift) {
 
         shift_course_mod_dates('quest', array('datestart', 'dateend'), $data->timeshift, $data->courseid);
@@ -1572,6 +1224,39 @@ function quest_reset_userdata($data) {
     return $status;
 }
 
+/**
+ * Obtains the automatic completion state for this module based on any conditions in game settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ *
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function quest_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
+    if (($cm->completion == 0) or ($cm->completion == 1)) {
+        // Completion option is not enabled so just return $type.
+        return $type;
+    }
+    $quest = $DB->get_record('quest', array('id' => $cm->instance), '*', MUST_EXIST);
+    // Check for passing grade.
+    if ($quest->completionpass) {
+        require_once($CFG->libdir . '/gradelib.php');
+        $item = grade_item::fetch(array('courseid' => $course->id, 'itemtype' => 'mod',
+                        'itemmodule' => 'quest', 'iteminstance' => $cm->instance, 'outcomeid' => null));
+        if ($item) {
+            $grades = grade_grade::fetch_users_grades($item, array($userid), false);
+            if (!empty($grades[$userid])) {
+                $passed = $grades[$userid]->is_passed($item);
+                return $passed;
+            }
+        }
+    }
+
+    return $type;
+}
 /** Adds module specific settings to the settings block
  *
  * @param settings_navigation $settings The settings navigation object

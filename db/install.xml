@@ -98,6 +98,8 @@
 					NEXT="permitviewautors" />
 				<FIELD NAME="permitviewautors" TYPE="int" LENGTH="2" NOTNULL="true"
 					UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="typegrade" />
+				<FIELD NAME="completionpass" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"
+					COMMENT="Instance is marked completed if grade is above 50%." />			
 			</FIELDS>
 			<KEYS>
 				<KEY NAME="primary" TYPE="primary" FIELDS="id" />

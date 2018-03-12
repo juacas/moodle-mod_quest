@@ -32,7 +32,6 @@ require_once("locallib.php");
 global $DB, $OUTPUT, $PAGE;
 
 $asid = required_param('asid', PARAM_INT); // Assessment ID.
-$sid = optional_param('sid', 0, PARAM_INT);
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 
@@ -42,7 +41,7 @@ $submission = $DB->get_record('quest_submissions', array('id' => $answer->submis
 $quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
 $course = get_course($quest->course);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
-
+$sid = $submission->id;
 require_login($course->id, false, $cm);
 
 quest_check_visibility($course, $cm);
@@ -54,7 +53,7 @@ $url = new moodle_url('/mod/quest/viewassessment.php',
         array('asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
 $PAGE->set_url($url);
 $PAGE->navbar->add(get_string('submission', 'quest') . ':' . $submission->title,
-        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
+        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission')));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -87,7 +86,7 @@ if ($answer->userid == $USER->id) {
     echo "<form name=\"gradingform\" action=\"answer.php\" method=\"post\">";
     echo "<a name=\"Claims\"><input type=\"hidden\" name=\"action\" value=\"updatecomment\" /></a>";
     echo "<input type=\"hidden\" name=\"redirect\" value=\"$redirect\"/>";
-    echo "<input type=\"hidden\" name=\"sid\" value=\"$submission->id\" /> ";
+    echo "<input type=\"hidden\" name=\"sid\" value=\"$sid\" /> ";
     echo "<input type=\"hidden\" name=\"aid\" value=\"$answer->id\" /> ";
     echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" /> ";
     echo "<center>";
@@ -123,8 +122,8 @@ if (($ismanager || ($answer->userid == $USER->id))) {
 }
 
 $title .= " " . get_string('tothechallenge', 'quest') .
-         "<a name=\"sid_$submission->id\" href=\"submissions.php?" .
-        "id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+         "<a name=\"sid_$sid\" href=\"submissions.php?" .
+        "id=$cm->id&amp;action=showsubmission&amp;sid=$sid\">$submission->title</a>";
 
 echo $OUTPUT->heading($title);
 

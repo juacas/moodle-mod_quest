@@ -281,10 +281,12 @@ for ($i = 0; $i < $indice; $i++) {
     $incline[$i] = 0;
 }
 $servertime = time();
-$params = [$indice, $incline, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers, $servertime];
-
-$PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+if ($indice > 0) {
+    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
+                $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers,
+                $servertime, null];
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+}
 echo '</td></tr>';
 
 $title = get_string('myanswers', 'quest');

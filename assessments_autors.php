@@ -63,6 +63,7 @@ if ($action == 'displaygradingform') {
     $id = required_param('id', PARAM_INT);
     // Called with no assessment.
     echo $OUTPUT->continue_button("view.php?id=$id");
+    echo $OUTPUT->footer();
 } else if ($action == 'editelements') {
     // Edit assessment elements (for teachers).
     if (!$ismanager) {
@@ -242,6 +243,8 @@ if ($action == 'displaygradingform') {
     echo '<input type="submit" value="' . get_string("savechanges") . '" />';
     echo '<input type="submit" name="cancel" value="' . get_string("cancel") . '" />';
     echo '</form>';
+    echo $OUTPUT->footer();
+
 } else if ($action == 'insertelements') {
     // Insert/update assignment elements (for teachers).
     if (!$ismanager) {
@@ -572,10 +575,11 @@ if ($action == 'displaygradingform') {
     } else {
         $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (Activity ignores this grading.)";
     }
+    echo $OUTPUT->header();
     echo $OUTPUT->notification($message, 'info');
     echo $OUTPUT->continue_button($returnto);
+    echo $OUTPUT->footer();
+
 } else {
     print_error('unkownactionerror', 'quest', null, $action);
 }
-
-echo $OUTPUT->footer();

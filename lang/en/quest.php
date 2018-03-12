@@ -93,7 +93,7 @@ $string['change'] = 'Save Changes';
 $string['changecalification'] = 'Change calification';
 $string['changemanualcalification'] = 'Change calification manually';
 $string['changeteam'] = 'Manage Teams';
-
+$string['checkthat'] = 'Check that';
 $string['change'] = 'Guardar Cambios';
 $string['clasification'] = 'Ranking';
 $string['closeassignment'] = 'Close challenge';
@@ -121,7 +121,7 @@ $string['dateendsubmissionevent'] = 'End of challenge "{$a}"';
 
 $string['dateofstart'] = 'Starting date';
 
-$string['datestartevent'] = 'Starting of QUESTOURnament {$a}';
+$string['datestartevent'] = 'Starting of QUESTOURnament "{$a}"';
 $string['datestartsubmissionevent'] = 'Starting of challenge "{$a}"';
 $string['datestr'] = '%m/%d/%y<br />%H:%M';
 $string['datestrmodel'] = '%%m/%%d/%%y &nbsp;&nbsp;%%H:%%M';
@@ -241,7 +241,7 @@ To access this answer, please click here:
 <a href="{$a->link}">{$a->link}</a>
 ';
 $string['emailmodifanswersubject'] = 'Moodle. Answer modification in module QUESTOURnament';
-$string['emailmodifsubmission'] = 'Hello, {$a->firstname}.
+$string['emailchallengeupdate'] = 'Hello, {$a->firstname}.
 
 Challenge modified in
 \'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
@@ -250,10 +250,14 @@ To access the challenge, please click here:
 
 <a href="{$a->link}">{$a->link}</a>
 ';
-$string['emailmodifsubmissionsubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
+$string['emailchallengeupdatesubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
+$string['emailchallenge_start'] = 'Hello, {$a->firstname}. The challenge <b>\'{$a->title}\'</b> has started in the QUESTOURnament \'{$a->name}\'. (At \'{$a->sitename}\'.)
+To access the site on which the challenge is, please click here:
+<a href="{$a->link}">{$a->link}</a>';
+$string['emailchallenge_startsubject'] = 'Moodle. QUESTOURnament Challenge Started';
+
 $string['emailsave'] = 'Hello, {$a->firstname}.
 
-n
 Challenge modified in
 \'{$a->sitename} \' server, in the QUESTOURnament \'{$a->name} \'. It is titled \'{$a->title} \'.
 
@@ -261,6 +265,7 @@ To access the site on which the challenge is, please click here:
 
 <a href="{$a->link}">{$a->link}</a>
 ';
+
 $string['emailsavesubject'] = 'Moodle. Changes in challenge in module QUESTOURnament';
 $string['emailtagline'] = 'This e-mail is a copy of the message you sent on \"{$a} \"';
 $string['enternewteam'] = 'Enter new Team';
@@ -715,7 +720,7 @@ $string['elementsautor_help'] = '<P align="justify">In order to assess a challen
   <OL>
       <li>DESCRIPTION of the assessment element. It should clearly determine which aspect of the task is being assessed. In the case of a qualitative assessment, it will be useful to provide details of what is considered excellent, average, etc.</li>
       <li>SCALE of the assessment element. There are several predetermined scales, from the simple YES/NO scale, to a scale of total percentage. Each assessment element will use its own scale, which must be choosen so that it can adjust to each possible variation of the element. However, it must be taken into account that the scale does not determine how important an assessment element is when the final score is calculated: for example, an element with a 2-point scale will have the same &quot;influence&quot; in the final score than another element that uses a 100-point scale, whenever the respective elements has the same <i>weight</i> or ponderation factor.</li>
-      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
+      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted Challenge, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
 </div>';
@@ -818,7 +823,7 @@ $string['groupmode_help'] = '<P align="justify">The group mode can be one of thr
 </div>';
 $string['initialpoints'] = 'Initial score';
 $string['initialpoints_help'] = '<P align="justify">This parameter sets the initial score of the challenge to be added.</P>
-<P align="justify">However, the teacher will be able to modify this value till the maximum score set for the QUESTOURnament where the challenge is to be added. A student can also modify this initial score when adding a challenge, but only by choosing a value equal or lower than the value set by the teacher as initial score of the QUESTOURnament where the challenge is to be added.
+<P align="justify">However, the teacher will be able to modify this value from minimum score up to the maximum score set for the QUESTOURnament where the challenge is to be added. A student can also modify this initial score when adding a challenge, but only by choosing a value equal or lower than the value set by the teacher as initial score of the QUESTOURnament where the challenge is to be added.
  </P>
 <P align="justify">Finally, it is important to emphasize that the value of this parameter can be different for each challenge in a QUESTOURnament.</P>';
 $string['maxcalification'] = 'Highest score';
@@ -978,7 +983,7 @@ $string['windowpreviewsubmission_help'] = '<p align="justify">This page shows th
 <p align="justify">This way, it will be able to preview the aspect of the challenge before its submission. This posibility is specially useful when a mathematical equation must be inserted for which it is necessary to introduce an expression with the adequate format that will be transformed by the filters provided by Moodle and whose final aspect can not be previewed in the editor of the platform.</p>';
 
 // Message provider.
-
+$string['messageprovider:challenge_start'] = 'Challenges start: a challenge has started.';
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
 $string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';

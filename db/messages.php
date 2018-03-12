@@ -27,7 +27,10 @@
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
 $messageproviders = array(
-                // Notify teacher that a student has submitted a challenge attempt.
+                // Notify teacher that a student has submitted a challenge attempt or something that requires attention.
                 'challenge_update' => array(),
                 // Confirm a student's quiz attempt.
-                'evaluation_update' => array());
+                'evaluation_update' => array(),
+                // Notify student that a challenge has started.
+                'challenge_start' => array (),
+);

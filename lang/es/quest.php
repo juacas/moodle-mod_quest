@@ -114,6 +114,7 @@ $string['changecalification'] = 'Cambiar Calificación';
 $string['changemanualcalification'] = 'Cambiar Calificación Manualmente';
 $string['changeteam'] = 'Gestión Equipos';
 $string['changeteamteacher'] = 'Gestión de Equipos';
+$string['checkthat'] = 'Compruebe que';
 $string['clasification'] = 'Clasificación';
 $string['closeassignment'] = 'Cerrar la tarea';
 $string['comeback'] = 'Volver Atrás';
@@ -136,12 +137,12 @@ $string['currentphasesubmission'] = 'Fase actual';
 $string['dateanswer'] = 'Fecha';
 $string['dateassess'] = 'Fecha de Evaluación';
 $string['dateend'] = 'Cierre';
-$string['dateendevent'] = 'Finalización del Concurso {$a}';
+$string['dateendevent'] = 'Finalización del QUESTOURnament "{$a}"';
 $string['dateendsubmissionevent'] = 'Finalización del Desafío: "{$a}"';
 $string['dateofend'] = 'Fecha de Cierre';
 $string['dateofstart'] = 'Fecha de Comienzo';
 $string['datestart'] = 'Comienzo';
-$string['datestartevent'] = 'Inicio del Concurso {$a}';
+$string['datestartevent'] = 'Inicio del QUESTOURnament "{$a}"';
 $string['datestartsubmissionevent'] = 'Inicio del Desafío: "{$a}"';
 $string['datestr'] = '%d/%m/%y<br />%H:%M';
 $string['datestrmodel'] = '%%d/%%m/%%y &nbsp;&nbsp;%%H:%%M';
@@ -224,12 +225,17 @@ Se ha modificado una respuesta en
 Para acceder a la respuesta en cuestión haga clic aquí:
 <a href="{$a->link}">{$a->link}</a>';
 $string['emailmodifanswersubject'] = 'Moodle. Respuesta Modificada en Módulo QUESTOURnament';
-$string['emailmodifsubmission'] = 'Hola, {$a->firstname}.
+$string['emailchallengeupdate'] = 'Hola, {$a->firstname}.
 Se han realizado la modificación de un Desafío en
 \'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
 Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
 <a href="{$a->link}">{$a->link}</a>';
-$string['emailmodifsubmissionsubject'] = 'Moodle. Modificación en Desafío de Módulo QUESTOURnament';
+$string['emailchallengeupdatesubject'] = 'Moodle: Modificación en Desafío de Módulo QUESTOURnament';
+$string['emailchallenge_start'] = 'Hola, {$a->firstname}. Ha empezado el Desafío  <b>\'{$a->title}\'</b>
+ en la actividad QUESTOURnament \'{$a->name}\'. (En \'{$a->sitename}\'.)
+Para acceder al sitio donde se encuentra el Desafío modificado haga clic aquí:
+<a href="{$a->link}">{$a->link}</a>';
+$string['emailchallenge_startsubject'] = 'Moodle: Inicio de Desafío de QUESTOURnament';
 $string['emailsave'] = 'Hola, {$a->firstname}.
 Se han realizado cambios en un Desafío en
 \'{$a->sitename}\' en el módulo QUESTOURnament \'{$a->name}\' cuyo nombre es \'{$a->title}\'.
@@ -314,6 +320,7 @@ $string['mail7'] = 'Los comentarios realizados por \'{$a}\' pueden verse en su t
 $string['managingassignment'] = 'Administrar tarea';
 $string['maxcalification'] = 'Máxima Puntuación';
 $string['maximumsize'] = 'Tamaño máximo';
+$string['messageprovider:challengestart'] = 'Notification of a challenge start';
 $string['modif'] = 'Modificar';
 $string['modifanswersubmission'] = 'Modificar Respuesta {$a}';
 $string['modified'] = 'modificada';
@@ -693,7 +700,6 @@ $string['elements_help'] = '
 <P align="justify">Para calificar una respuesta enviada a un desafío se utilizarán una serie de &quot;Elementos de evaluación&quot;. Cada elemento debe cubrir un aspecto particular a evaluar en las respuestas enviadas y su número dependerá del tamaño y complejidad del desafío propuesto. Los elementos tendrán las siguientes características:
 <div align="justify">
   <OL>
-
       <li>La DESCRIPCIÓN del elemento de evaluación. Debería establecer claramente qué aspecto de la tarea se está evaluando. Si la evaluación es cualitativa, será útil dar detalles de qué se considera excelente, promedio, etc.
       y pobre. </li>
       <li>La ESCALA del elemento de evaluación. Existen una serie de escalas predefinidas, que van desde una escala simple SÍ/NO, hasta una escala de porcentaje total. Cada elemento de evaluación tiene su propia escala, la cuál debería elegirse para que pudiera ajustarse a todas las variaciones posibles de ese elemento. No obstante, debe tenerse en cuenta que la escala NO determina la importancia del elemento cuando se calcula la calificación final: por ejemplo, un elemento con una escala de dos puntos tiene la misma &quot;influencia&quot; en la calificación final que otro elemento que use una escala de 100 puntos, siempre que los respectivos elementos tengan el mismo <i>peso</i> o factor de ponderación.</li>
@@ -702,13 +708,14 @@ $string['elements_help'] = '
   </OL>
 <P align="justify">El sistema proporciona la posibilidad de que el conjunto de elementos de evaluación se personalice para cada desafío añadido en un mismo QUESTOURnament.
 </div>';
-$string['elementsautor'] = 'Assessment Elements for Authors';
-$string['elementsautor_help'] = '<P align="justify">In order to assess a challenge proposed a number of &quot;Assessment Elements&quot; will be defined, covering each one a particular aspect to be assessed in the challenge proposed and depending its number on the size and complexity of the challenge proposed. The elements will have the following characteristics:
+$string['elementsautor'] = 'Elementos de evaluación para autores';
+$string['elementsautor_help'] = '<P align="justify">Para evaluar un desafío se usa un número de &quot;Elementos de calificación&quot;. Cada uno debe cubrir un aspecto particular y su número depende del tamaño y complejidad de la tarea encomendada. Los elementos tienen los siguientes componenetes:
 <div align="justify">
   <OL>
-      <li>DESCRIPTION of the assessment element. It should clearly determine which aspect of the task is being assessed. In the case of a qualitative assessment, it will be useful to provide details of what is considered excellent, average, etc.</li>
-      <li>SCALE of the assessment element. There are several predetermined scales, from the simple YES/NO scale, to a scale of total percentage. Each assessment element will use its own scale, which must be choosen so that it can adjust to each possible variation of the element. However, it must be taken into account that the scale does not determine how important an assessment element is when the final score is calculated: for example, an element with a 2-point scale will have the same &quot;influence&quot; in the final score than another element that uses a 100-point scale, whenever the respective elements has the same <i>weight</i> or ponderation factor.</li>
-      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
+      <li>La DESCRIPCIÓN del elemento de evaluación. Debería establecer claramente qué aspecto de la tarea se está evaluando. Si la evaluación es cualitativa, será útil dar detalles de qué se considera excelente, promedio, etc.
+      y pobre. </li>
+      <li>La ESCALA del elemento de evaluación. Existen una serie de escalas predefinidas, que van desde una escala simple SÍ/NO, hasta una escala de porcentaje total. Cada elemento de evaluación tiene su propia escala, la cuál debería elegirse para que pudiera ajustarse a todas las variaciones posibles de ese elemento. No obstante, debe tenerse en cuenta que la escala NO determina la importancia del elemento cuando se calcula la calificación final: por ejemplo, un elemento con una escala de dos puntos tiene la misma &quot;influencia&quot; en la calificación final que otro elemento que use una escala de 100 puntos, siempre que los respectivos elementos tengan el mismo <i>peso</i> o factor de ponderación.</li>
+      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de un desafío, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
       </li>
   </OL>
 </div>';
@@ -817,7 +824,7 @@ $string['groupmode_help'] = '<P align="justify">El modo de agrupación puede esc
 ';
 $string['initialpoints'] = 'Puntuaci&oacute;n Inicial';
 $string['initialpoints_help'] = '<P align="justify">Este par&aacute;metro permite establecer la puntuaci&oacute;n inicial del desaf&iacute;o que se va a añadir. </P>
-<P align="justify">No obstante, el profesor podr&aacute; modificar este valor hasta la m&aacute;xima puntuaci&oacute;n fijada para este m&oacute;dulo QUESTOURnament. </P>
+<P align="justify">No obstante, el profesor podr&aacute; modificar este valor desde la m$iacute;nima puntuaci&oacute;n hasta la m&aacute;xima puntuaci&oacute;n fijada para este m&oacute;dulo QUESTOURnament. </P>
 <P align="justify">Si al a&ntilde;adir o modificar un desafío en un m&oacute;dulo QUESTOURnament la puntuaci&oacute;n inicial fuese superior a la <a href="help.php?component=quest&identifier=maxcalification">M&aacute;xima Puntuaci&oacute;n</a> establecida para dicho módulo, se tomar&iacute;a como valor de la puntuaci&oacute;n inicial el de la m&aacute;xima puntuaci&oacute;n establecida.</P>
 <P align="justify">Finalmente destacar que el valor de este parámetro puede variar de un desaf&iacute;o a otro en un mismo módulo QUESTOURnament.</P>
 ';

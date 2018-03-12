@@ -87,7 +87,6 @@ $submissionurl = "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=
 
 // Now check whether we need to display a frameset..
 if ($action == "answer") {
-    require_sesskey();
     $answer = new stdClass();
     $answer->id = null;
     $answer->submissionid = $sid;
@@ -116,6 +115,7 @@ if ($action == "answer") {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
+        require_sesskey();
         quest_uploadanswer($quest, $answer, $ismanager, $cm, $descriptionoptions, $attachmentoptions, $context);
         echo $OUTPUT->heading(get_string('submittedanswer', 'quest') . " " . get_string('ok'));
         echo $OUTPUT->continue_button($submissionurl);
@@ -301,18 +301,13 @@ if ($action == "answer") {
     // Update current User and team scores..
     // ...recalculate points and report to gradebook..
     quest_grade_updated($quest, $answer->userid);
-
-    if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer();
-        exit();
-    }
+    // Notify teachers.
+    $users = quest_get_course_members($course->id, "u.lastname, u.firstname");
     foreach ($users as $user) {
-        if (!$ismanager) {
-            continue;
+        if (has_capability('mod/quest:manage', $context, $user->id)) {
+            quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'answerdelete',
+                    $quest, $submission, $answer);
         }
-        quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", 'answerdelete',
-                $quest, $submission, $answer);
     }
     if (!has_capability('mod/quest:manage', $context, $submission->userid)) {
         $user = get_complete_user_data('id', $submission->userid);
@@ -326,7 +321,7 @@ if ($action == "answer") {
     echo $OUTPUT->notification(get_string('emailanswerdeletesubject', 'quest'), 'info');
     echo $OUTPUT->continue_button($submissionurl);
     print_string("deleting", "quest");
-    echo $OUTPUT->footer;
+    echo $OUTPUT->footer();
 } else if ($action == 'modif') {
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", array("id" => $aid), '*', MUST_EXIST);
@@ -424,7 +419,7 @@ if ($action == "answer") {
                 require_once('classes/event/answer_viewed.php');
                 $updatedevent = mod_quest\event\answer_updated::create_from_parts($submission, $answer, $cm);
                 $updatedevent->trigger();
-            } else {
+            } else { // TODO: remove deprecated API.
                 add_to_log($course->id, "quest", "newattachment",
                         "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
             }
@@ -459,16 +454,6 @@ if ($action == "answer") {
         print_footer($course);
         exit();
     }
-    // JPC 2013-11-28 disable excesive notifications.
-    if (false) {
-        foreach ($users as $user) {
-            if ($ismanager) {
-                quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer",
-                'answeradd', $quest, $submission, $answer, $USER);
-            }
-        }
-    }
-    // JPC block disabled.
     $user = get_complete_user_data('id', $submission->userid);
     if ($user) {
         quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer", 'answeradd',

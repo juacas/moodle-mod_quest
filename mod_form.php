@@ -207,7 +207,7 @@ class mod_quest_mod_form extends moodleform_mod {
         }
         $mform->addElement('select', 'tinitial', get_string('tinitial', 'quest'), $arrayinitialtime);
         $mform->addHelpButton('tinitial', "tinitial", "quest");
-        $mform->setDefault('tinitial', 3);
+        $mform->setDefault('tinitial', 0);
 
         for ($i = 0; $i <= 100; $i++) {
             $arrayteampercent[$i] = $i;
@@ -298,11 +298,20 @@ SCRIPT;
             $errors['dateend'] = get_string('closebeforeopen', 'quest');
         }
         if ($data['mincalification'] > $data['maxcalification']) {
-            $errors['mincalification'] = get_string('mincalification_help', 'quest');
-            $errors['maxcalification'] = get_string('maxcalification_help', 'quest');
+            $errors['maxcalification'] = get_string('checkthat', 'quest'). ': ' .
+                get_string('mincalification', 'quest') . ' (' . $data['mincalification'] . ') < ' .
+                get_string('maxcalification', 'quest') . ' (' . $data['maxcalification'] . ')';
+            $errors['mincalification'] = $errors['maxcalification'];
         }
         if ($data['initialpoints'] > $data['maxcalification']) {
-            $errors['initialpoints'] = get_string('initialpoints_help', 'quest');
+            $errors['initialpoints'] = get_string('checkthat', 'quest') . ': ' .
+                    get_string('initialpoints', 'quest') . ' (' .  $data['initialpoints']  . ')' .
+            ' < ' . get_string('maxcalification', 'quest') . ' (' .  $data['maxcalification']  . ')';
+        }
+        if ($data['initialpoints'] < $data['mincalification']) {
+            $errors['initialpoints'] = get_string('checkthat', 'quest'). ': ' .
+                    get_string('initialpoints', 'quest') . ' (' .  $data['initialpoints']  . ')' .
+                    ' > ' . get_string('mincalification', 'quest') . ' (' .  $data['mincalification'] . ')';
         }
         if (count($errors) == 0) {
             return true;
@@ -333,6 +342,30 @@ SCRIPT;
         $draftitemid = file_get_submitted_draft_itemid('introattachments');
         file_prepare_draft_area($draftitemid, $ctx->id, 'mod_quest', 'introattachment', 0, array('subdirs' => 0));
         $defaultvalues['introattachments'] = $draftitemid;
+    }
+    /**
+     * Add any custom completion rules to the form.
+     *
+     * @return array Contains the names of the added form elements
+     */
+    public function add_completion_rules() {
+        $mform =& $this->_form;
+
+        $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quiz'));
+        $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
+        $mform->addHelpButton('completionpass', 'completionpass', 'quiz');
+        // Enable this completion rule by default.
+        $mform->setDefault('completionpass', 0);
+        return array('completionpass');
+    }
+    /**
+     * Determines if completion is enabled for this module.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function completion_rule_enabled($data) {
+        return !empty($data['completionpass']);
     }
 }
 
