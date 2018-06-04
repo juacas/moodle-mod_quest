@@ -1119,6 +1119,9 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                 $sortdata['title'] = strtolower($answer->title);
 
                 $user = get_complete_user_data('id', $answer->userid);
+                if (!$user) {
+                    continue;
+                }
                 // User Name Surname.
                 if ($ismanager) {
                     $data[] = $user ? $OUTPUT->user_picture($user) : '';
