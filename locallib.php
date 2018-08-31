@@ -2102,7 +2102,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
 
     $sid = $answer->submissionid;
 
-    $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST););
+    $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST);
 
     if ($DB->count_records("quest_elements", array("submissionsid" => $submission->id, "questid" => $quest->id)) == 0) {
         $idsubmission = 0;
