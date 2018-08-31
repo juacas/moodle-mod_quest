@@ -758,7 +758,7 @@ function quest_get_user_grades($quest, $userid = 0) {
         if ($userid != 0) {
             $students = array($userid => get_complete_user_data('id', $userid));
         } else {
-            $students = get_course_students($quest->course);
+            $students = quest_get_course_students($quest->course);
         }
         if ($students) {
             $return = array();

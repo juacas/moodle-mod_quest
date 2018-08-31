@@ -4426,7 +4426,7 @@ function quest_next_submission_url($submission, $cm) {
  * can 'mod/quest:attempt')
  * @param int $courseid
  * @return array of user records */
-function get_course_students($courseid) {
+function quest_get_course_students($courseid) {
     $context = context_course::instance($courseid);
     $members = get_users_by_capability($context, 'mod/quest:attempt');
     return $members;
@@ -4828,7 +4828,7 @@ function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
 function quest_get_maxpoints_group($groupid, $quest) {
     global $DB;
     $maxpoints = 0;
-    if ($students = get_course_students($quest->course)) {
+    if ($students = quest_get_course_students($quest->course)) {
         foreach ($students as $student) {
             if ($groupmember = $DB->get_record("groups_members", array("userid" => $student->id))) {
                 if ($groupid == $groupmember->groupid) {
@@ -4863,7 +4863,7 @@ function quest_get_maxpoints_group($groupid, $quest) {
 function quest_get_maxpoints($quest) {
     global $DB;
     $maxpoints = 0;
-    if ($students = get_course_students($quest->course)) {
+    if ($students = quest_get_course_students($quest->course)) {
         foreach ($students as $student) {
 
             if ($calificationstudent = $DB->get_record("quest_calification_users",
@@ -4897,7 +4897,7 @@ function quest_get_maxpoints($quest) {
 function quest_get_maxpoints_group_teams($groupid, $quest) {
     global $DB;
     $maxpoints = 0;
-    if ($students = get_course_students($quest->course)) {
+    if ($students = quest_get_course_students($quest->course)) {
         foreach ($students as $student) {
             if ($groupmember = $DB->get_record("groups_members", array("userid" => $student->id))) {
                 if ($groupid == $groupmember->groupid) {
