@@ -183,19 +183,19 @@ function quest_count_submission_answers_correct($sid) {
  */
 function quest_recalculate_all_submissions_stats() {
     global $CFG;
-    $sql = "update mdl_quest_submissions set nanswers=" .
-             "(select count(*) from mdl_quest_answers as ans where ans.submissionid=mdl_quest_submissions.id )";
-    $sql2 = "update mdl_quest_submissions set nanswerscorrect=" .
-             "(select count(*) from mdl_quest_answers as ans where ans.submissionid=mdl_quest_submissions.id and ans.grade>50 )";
+    $sql = "update {quest_submissions} set nanswers=" .
+             "(select count(*) from {quest_answers} as ans where ans.submissionid={quest_submissions}.id )";
+    $sql2 = "update {quest_submissions} set nanswerscorrect=" .
+             "(select count(*) from {quest_answers} as ans where ans.submissionid={quest_submissions}.id and ans.grade>50 )";
     $sql3 = "update mdl_quest_submissions set nanswersassessed=" .
-             "(select count(*) from mdl_quest_answers as ans where ans.submissionid=mdl_quest_submissions.id and ans.phase>0 )";
-    $sql4 = "update mdl_quest_submissions set dateanswercorrect=(select min(date) from mdl_quest_answers as ans where " .
-            "ans.submissionid=mdl_quest_submissions.id and ans.grade>=50)";
+             "(select count(*) from {quest_answers} as ans where ans.submissionid={quest_submissions}.id and ans.phase>0 )";
+    $sql4 = "update {quest_submissions} set dateanswercorrect=(select min(date) from {quest_answers} as ans where " .
+            "ans.submissionid={quest_submissions}.id and ans.grade>=50)";
 
     echo "Recalculating nanwers, nanswerscorrect, dateanswercorrect";
 
-    execute_sql(str_replace("mdl_", $CFG->prefix, $sql));
-    execute_sql(str_replace("mdl_", $CFG->prefix, $sql2));
-    execute_sql(str_replace("mdl_", $CFG->prefix, $sql3));
-    execute_sql(str_replace("mdl_", $CFG->prefix, $sql4));
+    execute_sql($sql);
+    execute_sql($sql2);
+    execute_sql($sql3);
+    execute_sql($sql4);
 }
