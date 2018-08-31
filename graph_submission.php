@@ -30,7 +30,7 @@
 require_once('../../config.php');
 global $CFG;
 require_once('locallib.php');
-require_once('classes/quest_graphlib.php');
+require_once('vendor/quest_graphlib.php');
 /**
  * Calculate scoring.
  * @param unknown $timenow
