@@ -1213,10 +1213,10 @@ function quest_reset_userdata($data) {
 
         shift_course_mod_dates('quest', array('datestart', 'dateend'), $data->timeshift, $data->courseid);
         $shifttimesql = "UPDATE {quest_submissions} " .
-                        "SET datestart = datestart + ($data->timeshift), dateend = dateend + ($data->timeshift) " .
+                        "SET datestart = datestart + (?), dateend = dateend + (?) " .
                         "WHERE questid  $insql and datestart<>0";
-
-        $DB->execute($shifttimesql, $inparams);
+        $shiftparams = array_merge([$data->timeshift, $data->timeshift], $inparams);
+        $DB->execute($shifttimesql, $shiftparams);
 
         $status[] = array('component' => $componentstr, 'item' => get_string('datechanged'), 'error' => false);
     }
