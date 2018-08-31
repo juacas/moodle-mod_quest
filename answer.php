@@ -28,8 +28,6 @@
  * - confirmdelete
  * - delete
  * - modif
- * - updateanswer
- * - removeattachments
  * - preview
  * - permitsubmit
  * @author Juan Pablo de Castro and many others.
@@ -375,125 +373,6 @@ if ($action == "answer") {
         $mform->display();
         echo $OUTPUT->footer();
     }
-} else if ($action == 'updateanswer') { // Evp esta acción es la que actualiza la respuesta y esto.
-                                        // ...se sustituye en la función quest_uploadanswer..
-    require_sesskey();
-    print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
-                     format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_self" />', true);
-    $form = data_submitted();
-    $aid = required_param('aid', PARAM_INT); // Answer ID..
-    $answer = $DB->get_record("quest_answers", array("id" => $aid), '*', MUST_EXIST);
-    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
-
-    if (!($ismanager or (($USER->id == $answer->userid) and ($timenow < $quest->dateend)))) {
-        print_error('nopermissions', 'error', null, "You are not authorized to update your answer.");
-    }
-
-    // Check existence of title..
-    if (empty($form->title)) {
-        $form->title = get_string("notitle", "quest");
-    }
-
-    $answer->date = time();
-    $points = quest_get_points($submission, $quest, $answer);
-    $answer->pointsmax = $points;
-    $answer->title = $form->title;
-    $answer->description = trim($form->description);
-    $answer->date = $answer->date;
-    $answer->perceiveddifficulty = $form->perceiveddifficulty;
-
-    if (($answer->phase == 1) || ($answer->phase == 2)) {
-        $answer->state = 2;
-    }
-    $DB->update_record("quest_answers", $answer);
-    // TODO: Check if merge this code with uploadanswer.php..
-
-    if ($quest->nattachments) {
-        require_once($CFG->dirroot . '/lib/uploadlib.php');
-        $um = new upload_manager(null, false, false, $course, false, $quest->maxbytes);
-        $dir = quest_file_area_name_answers($quest, $answer);
-
-        if ($um->process_file_uploads($dir)) {
-            if ($CFG->version >= 2014051200) {
-                require_once('classes/event/answer_viewed.php');
-                $updatedevent = mod_quest\event\answer_updated::create_from_parts($submission, $answer, $cm);
-                $updatedevent->trigger();
-            } else { // TODO: remove deprecated API.
-                add_to_log($course->id, "quest", "newattachment",
-                        "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer", "$answer->id", "$cm->id");
-            }
-            print_heading(get_string("uploadsuccess", "quest"));
-            // ......will take care of printing errors..
-        } else {
-            print_heading(get_string('upload'));
-            $OUTPUT->notification(get_string('uploaderror', 'quest'));
-            echo $um->get_errors();
-
-            $errorreturnurl = "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=modif";
-
-            echo $OUTPUT->continue_button($errorreturnurl);
-            print_footer($course);
-            die();
-        }
-    } else {
-        print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
-    }
-
-    // Update scores and statistics..
-    $submission = quest_update_submission_counts($submission->id);
-    // Update current User and team scores..
-    // ...recalculate points and report to gradebook..
-
-    quest_grade_updated($quest, $answer->userid);
-
-    // NOTIFICATIONS..
-
-    if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        print_heading(get_string("nostudentsyet"));
-        print_footer($course);
-        exit();
-    }
-    $user = get_complete_user_data('id', $submission->userid);
-    if ($user) {
-        quest_send_message($user, "answer.php?sid=$answer->submissionid&amp;aid=$answer->id&amp;action=showanswer", 'answeradd',
-                $quest, $submission, $answer);
-    }
-
-    print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
-
-    echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$sid&amp;action=showsubmission");
-} else if ($action == 'removeattachments') {
-    require_sesskey();
-    print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
-                     format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_parent" />', true);
-
-    $form = data_submitted();
-
-    $aid = required_param('aid', PARAM_INT); // Answer ID..
-    $answer = $DB->get_record("quest_answers", "id", $aid);
-
-    if (!($ismanager or (($USER->id == $answer->userid)))) {
-        print_error('attachmentsnoauthorizedupdate', 'quest');
-    }
-    // Check existence of title..
-    if (empty($form->title)) {
-        $OUTPUT->notify(get_string("notitlegiven", "quest"));
-    } else {
-        $DB->set_field("quest_answers", "title", $form->title, array("id" => $answer->id));
-        $DB->set_field("quest_answers", "description", trim($form->description), array("id" => $answer->id));
-    }
-    // Moodle 2.x has different mchanism for files... quest_delete_submitted_files_answers($quest, $answer);.
-    if ($CFG->version >= 2014051200) {
-        require_once('classes/event/answer_updated.php');
-        $updatedevent = mod_quest\event\answer_updated::create_from_parts($submission, $answer, $cm);
-        $updatedevent->trigger();
-    } else {
-        add_to_log($course->id, "quest", "removeattachments", "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer",
-                "$answer->id", "$cm->id");
-    }
-    echo $OUTPUT->continue_button("answer.php?id=$cm->id&amp;aid=$answer->id&amp;sid=$sid&amp;action=$form->beforeaction");
 } else if ($action == "preview") {
     print_header_simple(format_string($quest->name), "",
             "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
