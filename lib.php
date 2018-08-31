@@ -1,6 +1,4 @@
 <?php
-use core_calendar\local\event\proxies\std_proxy;
-
 // This file is part of Questournament activity for Moodle http://moodle.org/
 //
 // Questournament for Moodle is free software: you can redistribute it and/or modify
@@ -16,7 +14,8 @@ use core_calendar\local\event\proxies\std_proxy;
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Library of functions and constants for module quest
+/**
+ * Library of functions and constants for module quest
  * quest constants and standard Moodle functions plus the quest functions
  * called by the standard functions
  * see also locallib.php for other non-standard quest functions
@@ -28,7 +27,10 @@ use core_calendar\local\event\proxies\std_proxy;
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package mod_quest
+ */
+use core_calendar\local\event\proxies\std_proxy;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');

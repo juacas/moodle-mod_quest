@@ -1489,7 +1489,7 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
 
     if ($assessment) {
 
-        $answer = $DB->get_record("quest_answers", array("id" => $assessment->answerid),'*', MUST_EXIST);
+        $answer = $DB->get_record("quest_answers", array("id" => $assessment->answerid), '*', MUST_EXIST);
         $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
 
         $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showanswer',
@@ -4186,7 +4186,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
         $$column = "<a href=\"view.php?id=$cm->id&amp;sortteam=$column&amp;dirteam=$columndir\">" . $string[$column] .
                  "</a>$columnicon";
     }
-    // $firstname, $lastname, $teamname, $ncomponents are defined by $$column assignment above.
+    // Variables $firstname, $lastname, $teamname, $ncomponents are defined by $$column assignment above.
     $table->head = array("$firstname / $lastname", "$teamname", "$ncomponents");
 
     echo html_writer::table($table);

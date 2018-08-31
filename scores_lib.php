@@ -184,11 +184,11 @@ function quest_count_submission_answers_correct($sid) {
 function quest_recalculate_all_submissions_stats() {
     global $CFG;
     $sql = "update {quest_submissions} set nanswers=" .
-             "(select count(*) from {quest_answers} as ans where ans.submissionid={quest_submissions}.id )";
+             "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id )";
     $sql2 = "update {quest_submissions} set nanswerscorrect=" .
-             "(select count(*) from {quest_answers} as ans where ans.submissionid={quest_submissions}.id and ans.grade>50 )";
+             "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id and ans.grade>50 )";
     $sql3 = "update mdl_quest_submissions set nanswersassessed=" .
-             "(select count(*) from {quest_answers} as ans where ans.submissionid={quest_submissions}.id and ans.phase>0 )";
+             "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id and ans.phase>0 )";
     $sql4 = "update {quest_submissions} set dateanswercorrect=(select min(date) from {quest_answers} as ans where " .
             "ans.submissionid={quest_submissions}.id and ans.grade>=50)";
 

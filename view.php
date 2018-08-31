@@ -60,7 +60,7 @@ $ismanager = has_capability('mod/quest:manage', $context);
 require_capability('mod/quest:view', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-    print_error('modulehiddenerror','quest');
+    print_error('modulehiddenerror', 'quest');
 }
 
 // Mark as viewed.

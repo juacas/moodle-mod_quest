@@ -595,7 +595,7 @@ FORM;
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     // Check access.
     if (!$isteacher && $USER->id != $submission->userid) {
-        print_error('nopermissionassessment','quest');
+        print_error('nopermissionassessment', 'quest');
     }
     $timenow = time();
     $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php..
