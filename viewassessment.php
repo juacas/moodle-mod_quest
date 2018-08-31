@@ -107,7 +107,7 @@ if ($ismanager) {
     if (!empty($answer->commentforteacher)) {
         echo "<a name=\"Claims\"></a>";
         echo "<b>" . get_string("commentsforteacher", "quest") . "</b><br>";
-        print_simple_box(format_text($answer->commentforteacher), 'center');
+        echo $OUTPUT->box(format_text($answer->commentforteacher), 'center');
     }
 }
 

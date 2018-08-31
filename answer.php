@@ -153,21 +153,19 @@ if ($action == "answer") {
     }
 
     $title = get_string('answername', 'quest', $answer);
-
-    $subject = get_string('subject', 'quest');
+    $subject = get_string('tothechallenge', 'quest');
     $url = (new moodle_url('submissions.php', ['id' => $cm->id, 'action' => 'showsubmission', 'sid' => $submission->id]))->out();
     $subject .= "<a name=\"sid_$submission->id\" href=\"$url\">$submission->title</a>";
 
     if (($ismanager) || ($answer->userid == $USER->id)) {
-        $title .= get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
+        $title .= ' ' . get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
     }
 
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(get_string('answername', 'quest', $answer));
     echo $OUTPUT->header();
-    echo $OUTPUT->heading($title);
-    echo $OUTPUT->heading($subject);
+    echo $OUTPUT->heading($title . ' ' . $subject);
 
     quest_print_answer_info($quest, $answer);
 
@@ -361,13 +359,15 @@ if ($action == "answer") {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string("modifanswersubmission", "quest", ":"));
-        // Print information about the submission..
         $title = '"' . $submission->title . '" ';
+        echo $OUTPUT->heading(get_string("modifanswersubmission", "quest", $title));
+        // Print information about the submission..
+        echo $OUTPUT->box_start('block');
         echo $OUTPUT->heading($title);
         echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" .
                 get_string("specimenassessmentform", "quest") . "</a></b></center>");
         quest_print_submission($quest, $submission);
+        echo $OUTPUT->box_end();
         echo $OUTPUT->heading_with_help(get_string("answersubmission", "quest"), "answersubmission", "quest");
         $mform->display();
         echo $OUTPUT->footer();

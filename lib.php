@@ -362,7 +362,7 @@ function quest_user_outline($course, $user, $mod, $quest) {
 function quest_user_complete($course, $user, $mod, $quest) {
     // Print a detailed representation of what a user has done with
     // a given particular instance of this module, for user activity reports.
-    global $DB;
+    global $DB, $OUTPUT;
     if ($submissions = $DB->get_records_select("quest_submissions", "questid=? AND userid=?", array($quest->id, $user->id))) {
         foreach ($submissions as $submission) {
             echo get_string('submission', 'quest') . ': ' . $submission->title . '<br />';
@@ -380,7 +380,7 @@ function quest_user_complete($course, $user, $mod, $quest) {
                     array($quest->id, $submission->id, $user->id))) {
                 foreach ($answers as $answer) {
                     $nanswers++;
-                    print_simple_box_start();
+                    echo $OUTPUT->box_start('block');
                     echo '<table cellspacing="0" class="workshop_feedbackbox">';
 
                     echo '<tr>';
@@ -401,7 +401,7 @@ function quest_user_complete($course, $user, $mod, $quest) {
                     echo '</tr>';
 
                     echo '</table>';
-                    print_simple_box_end();
+                    echo $OUTPUT->box_end();
                 }
             }
         }

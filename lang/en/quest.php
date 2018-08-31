@@ -325,7 +325,7 @@ $string['managingassignment'] = 'Administrar tarea';
 
 $string['maximumsize'] = 'Largest size';
 $string['modif'] = 'Modify';
-$string['modifanswersubmission'] = 'Modify answer {$a}';
+$string['modifanswersubmission'] = 'Modify answer for challenge {$a}';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['modulehiddenerror'] = 'Module is hidden.';
 $string['movingtophase'] = 'Changing to phase {$a}';
