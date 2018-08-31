@@ -365,14 +365,8 @@ function quest_user_complete($course, $user, $mod, $quest) {
     global $DB;
     if ($submissions = $DB->get_records_select("quest_submissions", "questid=? AND userid=?", array($quest->id, $user->id))) {
         foreach ($submissions as $submission) {
-
-            print_simple_box_start();
-
             echo get_string('submission', 'quest') . ': ' . $submission->title . '<br />';
-
             quest_print_feedback($course, $submission, $user);
-
-            print_simple_box_end();
         }
     } else {
         print_string('notsubmittedyet', 'quest');

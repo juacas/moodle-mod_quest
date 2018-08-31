@@ -99,21 +99,24 @@ if ($form->save == 'SaveAnswer') {
         if ($um->process_file_uploads($dir)) {
             add_to_log($course->id, "quest", "newattachment",
                     "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer", "$newanswer->id", "$cm->id");
-            print_heading(get_string("uploadsuccess", "quest"));
+            global $OUTPUT;
+            echo $OUTPUT->heading(get_string("uploadsuccess", "quest"));
             // ...um will take care of printing errors.
         } else {
-            print_heading(get_string('upload'));
+            global $OUTPUT;
+            echo $OUTPUT->heading(get_string('upload'));
             $OUTPUT->notify(get_string('uploaderror', 'quest'));
             echo $um->get_errors();
 
             $errorreturnurl = "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=modif";
             $CFG->framename = "top";
             echo $OUTPUT->continue_button($errorreturnurl);
-            print_footer($course);
+            echo $OUTPUT->footer();
             die();
         }
     } else {
-        print_heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string("submittedanswer", "quest") . " " . get_string("ok"));
     }
 
     // Update scores and statistics.
@@ -127,8 +130,9 @@ if ($form->save == 'SaveAnswer') {
     }
     // NOTIFICATIONS.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        print_heading(get_string("nostudentsyet"));
-        print_footer($course);
+        global $OUTPUT;
+        echo $OUTPUT->heading("nostudentsyet");
+        echo $OUTPUT->footer();
         exit();
     }
     // JPC 2013-11-28 disable excesive notifications...
@@ -148,25 +152,5 @@ if ($form->save == 'SaveAnswer') {
     add_to_log($course->id, "quest", "submit_answer", "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=showanswer",
             "$newanswer->id", "$cm->id");
     echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
-    print_footer($course);
-} else if ($form->save1 == "PreviewAnswer") {
-
-    echo "<hr size=\"1\" noshade=\"noshade\" />";
-    print_heading_with_help(get_string('windowpreview', 'quest'), "windowpreview", "quest");
-
-    $title = $form->title;
-    echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
-    echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-    // Print upload form.
-    $answer->title = $form->title;
-    $temp = '\\';
-    $temp1 = $temp . $temp;
-    $answer->description = str_replace($temp1, $temp, $form->description);
-
-    print_simple_box(format_text($answer->description), 'center');
-
-    close_window_button();
-
-    print_footer($course);
-    exit();
+    ehco $OUTPUT->footer();
 }

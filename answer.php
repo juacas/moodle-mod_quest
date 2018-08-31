@@ -28,7 +28,6 @@
  * - confirmdelete
  * - delete
  * - modif
- * - preview
  * - permitsubmit
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
@@ -373,25 +372,6 @@ if ($action == "answer") {
         $mform->display();
         echo $OUTPUT->footer();
     }
-} else if ($action == "preview") {
-    print_header_simple(format_string($quest->name), "",
-            "<a href=\"index.php?id=$course->id\">$strquests</a> -> <a href=\"view.php?id=$cm->id\">" .
-                     format_string($quest->name, true) . "</a> -> $stranswer", "", '<base target="_parent" />', true);
-    $form = data_submitted();
-    echo "<hr size=\"1\" noshade=\"noshade\" />";
-    print_heading_with_help(get_string('windowpreview', 'quest'), "windowpreview", "quest");
-    $title = $form->title;
-    echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
-    echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-    // Print upload form..
-    $answer->title = $form->title;
-    $temp = '\\';
-    $temp1 = $temp . $temp;
-    $answer->description = str_replace($temp1, $temp, $form->description);
-    print_simple_box(format_text($answer->description), 'center');
-    close_window_button();
-    print_footer($course);
-    exit();
 } else if ($action == "permitsubmit") {
     require_sesskey();
     $aid = required_param('aid', PARAM_INT); // Answer ID..

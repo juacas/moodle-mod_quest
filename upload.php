@@ -145,8 +145,9 @@ if (isset($form->operation)) {
 
         if ($ismanager) {
             if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-                print_heading(get_string("nostudentsyet"));
-                print_footer($course);
+                global $OUTPUT;
+                echo $OUTPUT->heading(get_string('nostudentsyet'));
+                echo $OUTPUT->footer();
                 exit();
             }
             if ($submissiongroup = $DB->get_record("groups_members", array("userid" => $submission->userid))) {
@@ -156,9 +157,9 @@ if (isset($form->operation)) {
 
         add_to_log($course->id, "quest", "approve_submission",
                 "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
-        print_heading(get_string("submitted", "quest") . " " . get_string("ok"));
+        echo $OUTPUT->heading(get_string("submitted", "quest") . " " . get_string("ok"));
         echo $OUTPUT->continue_button("view.php?id=$cm->id");
-        print_footer($course);
+        echo $OUTPUT->footer($course);
     } else if ($form->operation == get_string("save", "quest")) {
         // ...add new submission record.
         $newsubmission->id = $form->sid;
@@ -213,7 +214,7 @@ if (isset($form->operation)) {
                     "$cm->id");
         }
         echo $OUTPUT->continue_button("view.php?id=$cm->id");
-        print_footer($course);
+        echo $OUTPUT->footer();
     } else if ($form->operation == get_string("delete", "quest")) {
 
         $submission = $DB->get_record("quest_submissions", array("id" => $form->sid), '*', MUST_EXIST);
@@ -276,7 +277,7 @@ if (isset($form->operation)) {
                     if ($submission->timecreated > $timenow) {
                         // ...ignore this new submission.
                         redirect("view.php?id=$cm->id");
-                        print_footer($course);
+                        $OUTPUT->footer();
                         exit();
                     }
                 }
@@ -397,19 +398,22 @@ if (isset($form->operation)) {
                     add_to_log($course->id, "quest", "newattachment",
                             "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id",
                             "$cm->id");
-                    print_heading(get_string("uploadsuccess", "quest"));
+                    global $OUTPUT;
+                    echo $OUTPUT->heading(get_string("uploadsuccess", "quest"));
                 }
                 // ...um will take care of printing errors.
             }
         }
 
-        print_heading(get_string("submitted", "quest") . " " . get_string("ok"));
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string("submitted", "quest") . " " . get_string("ok"));
 
         if (!$ismanager) {
 
             if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname, u.secret")) {
-                print_heading(get_string("nostudentsyet"));
-                print_footer($course);
+                global $OUTPUT;
+                echo $OUTPUT->heading("nostudentsyet");
+                echo $OUTPUT->footer();
                 exit();
             }
             foreach ($users as $user) {
@@ -425,28 +429,7 @@ if (isset($form->operation)) {
                 "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission", "$newsubmission->id", "$cm->id");
 
         echo $OUTPUT->continue_button("view.php?id=$cm->id");
-        print_footer($course);
-    } else if (isset($form->save1) && $form->save1 == "Preview") {
-
-        echo "<hr size=\"1\" noshade=\"noshade\" />";
-
-        print_heading_with_help(get_string('windowpreviewsubmission', 'quest'), "windowpreviewsubmission", "quest");
-
-        $title = $form->title;
-        echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
-        echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-        // ...print upload form.
-        $submission->title = $form->title;
-        $temp = '\\';
-        $temp1 = $temp . $temp;
-        $submission->description = str_replace($temp1, $temp, $form->description);
-
-        print_simple_box(format_text($submission->description), 'center');
-
-        close_window_button();
-
-        print_footer($course);
-        exit();
+        echo $OUTPUT->footer();
     }
 }
 

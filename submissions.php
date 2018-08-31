@@ -37,7 +37,6 @@
  *          - showanswersuser
  *          - team
  *          - showanswersteam
- *          - preview
  *          - recalificationall
  *          - confirmchangeform */
 require_once("../../config.php");
@@ -468,8 +467,9 @@ if ($action == 'confirmdelete') {
     $tablesort->sortdata = array();
     $indice = 0;
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        print_heading(get_string("nostudentsyet"));
-        print_footer($course);
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string('nostudentsyet'));
+        echo $OUTPUT->footer();
         exit();
     }
 
@@ -752,8 +752,9 @@ if ($action == 'confirmdelete') {
     $indice = 0;
 
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        print_heading(get_string("nostudentsyet"));
-        print_footer($course);
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string('nostudentsyet'));
+        echo $OUTPUT->footer();
         exit();
     }
 
@@ -1046,32 +1047,6 @@ if ($action == 'confirmdelete') {
                     "$calification");
     echo html_writer::table($table);
     echo $OUTPUT->continue_button("submissions.php?action=showsubmission&sid=$submission->id&id=$cm->id");
-} else if ($action == "preview") {
-    $PAGE->set_title(format_string($quest->name));
-    $PAGE->set_heading($course->fullname);
-
-    echo $OUTPUT->header();
-    $form = data_submitted();
-
-    echo "<hr size=\"1\" noshade=\"noshade\" />";
-
-    print_heading_with_help(get_string('windowpreviewsubmission', 'quest'), "windowpreviewsubmission", "quest");
-
-    $title = $form->title;
-    echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
-    echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-    // Print upload form.
-    $submission->title = $form->title;
-    $temp = '\\';
-    $temp1 = $temp . $temp;
-    $submission->description = str_replace($temp1, $temp, $form->description);
-
-    echo $OUTPUT->box(format_text($submission->description), 'center');
-
-    close_window_button();
-
-    print_footer($course);
-    exit();
 } else if ($action == "recalificationall" && false) { // This action is deprecated.
 
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);

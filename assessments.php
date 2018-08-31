@@ -781,8 +781,9 @@ FORM;
             quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
         }
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            print_heading(get_string("nostudentsyet"));
-            print_footer($course);
+            global $OUTPUT;
+            echo $OUTPUT->heading("nostudentsyet");
+            echo $OUTPUT->footer();
             exit();
         }
         // JPC 2013-11-28 disable excesive notifications..
