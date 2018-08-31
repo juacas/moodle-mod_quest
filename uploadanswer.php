@@ -103,7 +103,7 @@ if ($form->save == 'SaveAnswer') {
             // ...um will take care of printing errors.
         } else {
             print_heading(get_string('upload'));
-            notify(get_string('uploaderror', 'quest'));
+            $OUTPUT->notify(get_string('uploaderror', 'quest'));
             echo $um->get_errors();
 
             $errorreturnurl = "answer.php?sid=$submission->id&amp;aid=$newanswer->id&amp;action=modif";

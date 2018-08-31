@@ -427,7 +427,7 @@ if ($action == "answer") {
             // ......will take care of printing errors..
         } else {
             print_heading(get_string('upload'));
-            notify(get_string('uploaderror', 'quest'));
+            $OUTPUT->notification(get_string('uploaderror', 'quest'));
             echo $um->get_errors();
 
             $errorreturnurl = "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=modif";
@@ -479,7 +479,7 @@ if ($action == "answer") {
     }
     // Check existence of title..
     if (empty($form->title)) {
-        notify(get_string("notitlegiven", "quest"));
+        $OUTPUT->notify(get_string("notitlegiven", "quest"));
     } else {
         $DB->set_field("quest_answers", "title", $form->title, array("id" => $answer->id));
         $DB->set_field("quest_answers", "description", trim($form->description), array("id" => $answer->id));

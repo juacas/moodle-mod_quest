@@ -464,7 +464,7 @@ if ($action == 'confirmdelete') {
         $form->initialpoints = $form->pointsmax;
     }
     if (!quest_check_submission_dates($submission, $quest)) {
-        print_error'invaliddates', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
+        print_error('invaliddates', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
     }
     if (!quest_check_submission_text($submission)) {
         print_error('invalidtext', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
