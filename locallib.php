@@ -4094,7 +4094,6 @@ function quest_recalification($answer, $quest, $assessment, $course) {
  */
 function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
     global $CFG, $USER, $DB;
-
     $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
@@ -4180,7 +4179,10 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
 
     $columns = array('firstname', 'lastname', 'teamname', 'ncomponents');
     $table->width = "95%";
-
+    $firstname = '';
+    $lastname = '';
+    $teamname = '';
+    $ncomponents = 0;
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sortteam != $column) {
@@ -4198,7 +4200,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
         $$column = "<a href=\"view.php?id=$cm->id&amp;sortteam=$column&amp;dirteam=$columndir\">" . $string[$column] .
                  "</a>$columnicon";
     }
-
+    // $firstname, $lastname, $teamname, $ncomponents are defined by $$column assignment above.
     $table->head = array("$firstname / $lastname", "$teamname", "$ncomponents");
 
     echo html_writer::table($table);
