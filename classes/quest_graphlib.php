@@ -26,7 +26,7 @@ Contact author at: hermanV@mindless.com
  * as part of Moodle (http://moodle.com).  Modified lines
  * are marked with "Moodle".
  */
-
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 class graph {
   var $image;
