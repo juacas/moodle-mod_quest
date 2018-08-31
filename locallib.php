@@ -4078,7 +4078,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
  * @return boolean
  */
 function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
-    global $CFG, $USER, $DB;
+    global $CFG, $USER, $DB, $OUTPUT;
     $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
