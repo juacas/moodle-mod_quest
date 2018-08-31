@@ -163,16 +163,6 @@ if ($action == 'global') {
     $groupmode = $currentgroup = false; // JPC group support desactivation.
     // Print settings and things in a table across the top.
     echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-
-    // Allow the teacher to change groups (for this session).
-    if ($groupmode and isteacheredit($course->id)) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            echo '<td>';
-            print_group_menu($groups, $groupmode, $currentgroup,
-                    "viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC");
-            echo '</td>';
-        }
-    }
     // Print admin links.
     echo "<td align=\"right\">";
     echo "<a href=\"submissions.php?id=$cm->id&amp;action=adminlist\">" . get_string("administration") . "</a>\n";
@@ -332,16 +322,6 @@ if ($action == 'global') {
 
     // Print settings and things in a table across the top.
     echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-
-    // Allow the teacher to change groups (for this session).
-    if ($groupmode and isteacheredit($course->id)) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            echo '<td>';
-            print_group_menu($groups, $groupmode, $currentgroup,
-                    "viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC");
-            echo '</td>';
-        }
-    }
     // Print admin links.
     echo "<td align=\"right\">";
     echo "<a href=\"submissions.php?id=$cm->id&amp;action=adminlist\">" . get_string("administration") . "</a>\n";

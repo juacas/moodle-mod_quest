@@ -65,12 +65,7 @@ $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
-// Allow the teacher to change groups (for this session).
-if ($groupmode and isteacheredit($course->id)) {
-    if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-        print_group_menu($groups, $groupmode, $currentgroup, "team.php?id=$cm->id");
-    }
-}
+
 
 if ($ismanager) {
 
@@ -169,7 +164,7 @@ if ($ismanager) {
         exit();
     }
 
-    // Now prepare table with student assessments and submissions.
+    // Now prepare table with student team enrollments.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();

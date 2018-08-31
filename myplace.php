@@ -602,41 +602,8 @@ if ((!$ismanager) && ($quest->allowteams)) {
 }
 
 echo '</table>';
-if ($repeatactionsbelow) {
-    $text = '';
-    $text = "<center><b>";
-    if ($quest->dateend > $timenow) {
-        $text .= "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" .
-                    get_string('addsubmission', 'quest') . "</a>";
-    }
-    if ($quest->allowteams) {
-        if ($ismanager) {
-            $text .= "&nbsp;/&nbsp;<a href=\"team.php?id=$cm->id\">" . get_string('changeteamteacher', 'quest') . "</a>";
-        }
-    }
-
-    $text .= "&nbsp;/&nbsp;<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-         get_string('viewclasificationglobal', 'quest') . "</a>";
-
-    if ((!$canpreview) && ($quest->allowteams)) {
-        $text .= "&nbsp;/&nbsp;<a href=\"viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-                 get_string('viewclasificationteams', 'quest') . "</a>";
-    }
-    $text .= "</b></center>";
-    echo $text;
-
-    if (isteacheredit($course->id) and $quest->nelements) {
-        $sesskey = sesskey();
-        echo "<center>(<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&amp;sesskey=$sesskey\">" .
-             get_string('editelementsautor', 'quest') .
-             "</a> / <a href=\"assessments.php?id=$cm->id&amp;action=editelements&amp;sesskey=$sesskey\">" .
-             get_string('editelementsanswer', 'quest') .
-             "</a>)</center>";
-    }
-}
 
 echo $OUTPUT->continue_button('view.php?id=' . $cm->id);
-
 // Finish the page.
 echo $OUTPUT->footer();
 /**
