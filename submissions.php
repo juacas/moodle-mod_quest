@@ -452,7 +452,7 @@ if ($action == 'confirmdelete') {
     }
 } else if ($action == 'showsubmissionsuser') {
     if (!$canpreview) {
-        print_error('nopermissions','error', null, "Only teachers can look at this page");
+        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
 
     $userid = required_param('uid', PARAM_INT);
@@ -652,7 +652,6 @@ if ($action == 'confirmdelete') {
     $tablesort->sortdata = array();
 
     // ...skip if student not in group.
-
     if ($answers = quest_get_answers($quest, $user)) {
         foreach ($answers as $answer) {
             $data = array();
@@ -777,7 +776,6 @@ if ($action == 'confirmdelete') {
     }
 
     // Skip if student not in group.
-
     foreach ($users as $user) {
 
         if ($submissions = quest_get_user_submissions($quest, $user)) {
@@ -959,7 +957,6 @@ if ($action == 'confirmdelete') {
     foreach ($users as $user) {
 
         // ...skip if student not in group.
-
         if ($answers = quest_get_answers($quest, $user)) {
             foreach ($answers as $answer) {
                 $data = array();

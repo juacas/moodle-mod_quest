@@ -934,13 +934,6 @@ class quest_print_answer_form extends moodleform {
  * @param type $context */
 function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context) {
     global $DB, $COURSE, $OUTPUT, $USER;
-    $strquests = get_string('modulenameplural', 'quest');
-    $strquest = get_string('modulename', 'quest');
-    $stranswer = get_string('answer', 'quest');
-
-    $changegroup = optional_param('group', -1, PARAM_INT); // Groups are being  used?.
-    $currentgroup = groups_get_course_group($COURSE);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
 
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     $timenow = time();
@@ -1053,20 +1046,6 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
-    // Check to see if groups are being used in this quest.
-    // ...and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?.
-    $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
-                                        // Allow the teacher to change groups (for this session).
-    if ($groupmode and $ismanager) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            groups_print_activity_menu($cm,
-                    $CFG->wwwroot . "mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                    $return = false, $hideallparticipants = false);
-        }
-    }
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));

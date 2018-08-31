@@ -189,7 +189,7 @@ function quest_recalculate_all_submissions_stats() {
              "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id and ans.grade>50 )";
     $sql3 = "update mdl_quest_submissions set nanswersassessed=" .
              "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id and ans.phase>0 )";
-    $sql4 = "update {quest_submissions} set dateanswercorrect=(select min(date) from {quest_answers} as ans where " .
+    $sql4 = "update {quest_submissions} set dateanswercorrect=(select min(date) from {quest_answers} ans where " .
             "ans.submissionid={quest_submissions}.id and ans.grade>=50)";
 
     echo "Recalculating nanwers, nanswerscorrect, dateanswercorrect";
