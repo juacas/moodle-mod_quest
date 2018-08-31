@@ -988,4 +988,4 @@ $string['messageprovider:challenge_start'] = 'Challenges start: a challenge has 
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
 $string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';
-$string['nopermissionassessment'] = 'You have not permissions to view this assessment. You should be teacher or challenge's author.';
+$string['nopermissionassessment'] = 'You have not permissions to view this assessment. You should be teacher or challenge\'s author.';
