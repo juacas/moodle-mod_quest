@@ -66,7 +66,7 @@ if ($form->save == 'SaveAnswer') {
         $title = get_string("notitle", "quest");
     }
     if (!$validate = quest_validate_user_answer($quest, $submission)) {
-        error(get_string('answerexisty', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+        print_error('answerexisty', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
     }
 
     // Add new answer record.
@@ -88,7 +88,7 @@ if ($form->save == 'SaveAnswer') {
     $DB->set_field("quest_submissions", "nanswers", $submission->nanswers, "id", $submission->id);
 
     if (!$newanswer->id = $DB->insert_record("quest_answers", $newanswer)) {
-        error("Quest submission: Failure to create new submission record!");
+        print_error('inserterror', 'quest', null, "quest_answers");
     }
 
     if ($quest->nattachments) {

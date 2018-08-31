@@ -248,7 +248,7 @@ if ($action == 'displaygradingform') {
 } else if ($action == 'insertelements') {
     // Insert/update assignment elements (for teachers).
     if (!$ismanager) {
-        error("Only teachers can look at this page");
+        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
     $form = data_submitted();
     // Let's not fool around here, dump the junk!
@@ -264,7 +264,7 @@ if ($action == 'displaygradingform') {
                     $element->questid = $quest->id;
                     $element->elementno = $key;
                     if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_elementsautor");
                     }
                 }
             }
@@ -292,7 +292,7 @@ if ($action == 'displaygradingform') {
                         $element->weight = $form->weight[$key];
                     }
                     if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_elementsautor");
                     }
                 }
             }
@@ -314,7 +314,7 @@ if ($action == 'displaygradingform') {
                     $element->weight = $form->weight[$key];
                 }
                 if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                    error("Could not insert quest element!");
+                    print_error('inserterror', 'quest', null, "quest_elementsautor");
                 }
             }
             break;
@@ -334,7 +334,7 @@ if ($action == 'displaygradingform') {
                 }
                 $element->maxscore = $j - 1;
                 if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                    error("Could not insert quest element!");
+                    print_error('inserterror', 'quest', null, "quest_elementsautor");
                 }
             }
             // Let's not fool around here, dump the junk!
@@ -350,7 +350,7 @@ if ($action == 'displaygradingform') {
                     $element->rubricno = $j;
                     $element->description = $form->rubric[$i][$j];
                     if (!$element->id = $DB->insert_record("quest_rubrics_autor", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_rubrics_autor");
                     }
                 }
             }
@@ -452,7 +452,7 @@ if ($action == 'displaygradingform') {
                     $element->answer = $form->{"feedback_$i"};
                     $element->calification = $form->grade[$i];
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                        error("Could not insert quest grade!");
+                        print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                     }
                     if (empty($form->grade[$i])) {
                         $error += $questeweights[$elements[$i]->weight];
@@ -466,7 +466,7 @@ if ($action == 'displaygradingform') {
                 $element->elementno = $i;
                 $element->calification = $form->grade[$i];
                 if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                 }
                 $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
                 // Do sanity check.
@@ -486,7 +486,7 @@ if ($action == 'displaygradingform') {
                 $element->elementno = 0;
                 $element->calification = $form->grade[0];
                 if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                 }
                 // Now save the adjustment in element one.
                 unset($element);
@@ -495,7 +495,7 @@ if ($action == 'displaygradingform') {
                 $element->elementno = 1;
                 $element->calification = $form->grade[1];
                 if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                 }
                 $rawgrade = ($elements[$form->grade[0]]->maxscore + $form->grade[1]);
 
@@ -513,7 +513,7 @@ if ($action == 'displaygradingform') {
                     $element->answer = $form->{"feedback_$key"};
                     $element->calification = $thegrade;
                     if (!$element->id = $DB->insert_record("quest_items_asesments_autor", $element)) {
-                        error("Could not insert quest grade!");
+                        print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                     }
                 }
                 // Now work out the grade...

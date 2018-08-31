@@ -73,6 +73,7 @@ $string['assessthisanswer'] = 'Assess this answer';
 $string['assignmentnotinthecorrectphase'] = 'Assignment is not in the correctphase';
 $string['attachment'] = 'Attachment';
 $string['attachments'] = 'Attachments';
+$string['attachmentsnoauthorizedupdate'] = 'You are not authorized to modify these attachments';
 
 $string['authorofsubmission'] = 'Author of submission';
 $string['averageerror'] = 'Average error';
@@ -552,6 +553,7 @@ $string['submissionendlabel'] = 'Challenge ends on {$a}'; // TODO evp buscar uso
                                                           // submissionendlabel.
 $string['submissionexisty'] = 'There is another challenge with that title already. Enter another title.';
 $string['submissions'] = 'Challenges';
+$string['submissionsnoauthorizedupdate'] = 'You are not authorized to update this challenge';
 $string['submissionsnolongerallowed'] = 'Submissions no longer allowed';
 $string['submissionstartlabel'] = 'Challenge starts on {$a}'; // TODO evp buscar submissionstart en el
                                                               // código y cambiarlo por
@@ -987,3 +989,4 @@ $string['messageprovider:challenge_start'] = 'Challenges start: a challenge has 
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
 $string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';
+$string['nopermissionassessment'] = 'You have not permissions to view this assessment. You should be teacher or challenge's author.';

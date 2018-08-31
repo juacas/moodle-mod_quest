@@ -451,7 +451,7 @@ FORM;
                         }
                         $element->elementno = $key;
                         if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                            error("Could not insert quest element!");
+                            print_error('inserterror', 'quest', null, "quest_elements");
                         }
                     }
                 }
@@ -486,7 +486,7 @@ FORM;
                             $element->weight = $form->weight[$key];
                         }
                         if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                            error("Could not insert quest element!");
+                            print_error('inserterror', 'quest', null, "quest_elements");
                         }
                     }
                 }
@@ -513,7 +513,7 @@ FORM;
                         $element->weight = $form->weight[$key];
                     }
                     if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_elements");
                     }
                 }
                 break;
@@ -537,7 +537,7 @@ FORM;
                     }
                     $element->maxscore = $j - 1;
                     if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_elements");
                     }
                 }
                 // ...let's not fool around here, dump the junk!.
@@ -567,7 +567,7 @@ FORM;
                         $element->rubricno = $j;
                         $element->description = $form->rubric[$i][$j];
                         if (!$element->id = $DB->insert_record("quest_rubrics", $element)) {
-                            error("Could not insert quest element!");
+                            print_error('inserterror', 'quest', null, "quest_rubrics");
                         }
                     }
                 }
@@ -595,7 +595,7 @@ FORM;
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     // Check access.
     if (!$isteacher && $USER->id != $submission->userid) {
-        error("Can't access this script. You should be teacher or challenge's author.");
+        print_error('nopermissionassessment','quest');
     }
     $timenow = time();
     $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php..
@@ -616,7 +616,7 @@ FORM;
             // END profesor valida....
         } else { // Si no es profesor la fase siempre será phase=0. La nota queda pendiente....
             if ($assessment->phase != ASSESSMENT_PHASE_APPROVAL_PENDING) {
-                error("Error grave: no puede actualizar una evaluacion ya validada por el profesor.");
+                print_error('unkownactionerror', 'quest', null, 'Bad PHASE of assessment', "Error grave: no puede actualizar una evaluacion ya validada por el profesor.");
             }
         }
     } else { // Este QUEST no requiere validación....

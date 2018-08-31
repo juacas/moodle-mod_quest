@@ -146,13 +146,13 @@ if ($action == "answer") {
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", array("id" => $aid));
     if (!$answer) {
-        error("Answer not found!");
+        print_error('answer_not_found', 'quest', $submissionurl, $aid);
     }
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid));
 
     if ((!$ismanager) && ($submission->userid != $USER->id) && ($answer->userid != $USER->id) && ($submission->dateend > time()) &&
              ($submission->nanswerscorrect < $quest->nmaxanswers)) {
-        error(get_string('notpermissionanswer', 'quest'));
+        print_error('notpermissionanswer', 'quest');
     }
 
     $title = get_string('answername', 'quest', $answer);
@@ -475,7 +475,7 @@ if ($action == "answer") {
     $answer = $DB->get_record("quest_answers", "id", $aid);
 
     if (!($ismanager or (($USER->id == $answer->userid)))) {
-        error("You are not authorized to delete these attachments");
+        print_error('attachmentsnoauthorizedupdate', 'quest');
     }
     // Check existence of title..
     if (empty($form->title)) {

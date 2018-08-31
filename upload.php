@@ -68,9 +68,7 @@ $form = data_submitted("nomatch"); // POST may come from two forms...
 if (isset($form->operation)) {
     if ($form->operation == get_string("approve", "quest")) {
 
-        if (!$submission = $DB->get_record("quest_submissions", array("id" => $form->sid))) {
-            error("Submission id is incorrect");
-        }
+        $submission = $DB->get_record("quest_submissions", array("id" => $form->sid), '*', MUST_EXIST);
 
         $newsubmission->id = $form->sid;
         $newsubmission->questid = $quest->id;
@@ -99,10 +97,10 @@ if (isset($form->operation)) {
             $newsubmission->initialpoints = $newsubmission->pointsmin;
         }
         if (!quest_check_submission_dates($newsubmission, $quest)) {
-            error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+            print_error'invaliddates', 'quest', "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
         }
         if (!quest_check_submission_text($newsubmission)) {
-            error(get_string('invalidtext', 'quest'), "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+            print_error('invalidtext', 'quest', "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
         }
 
         $newsubmission->comentteacherautor = $form->comentteacherautor;
@@ -193,10 +191,10 @@ if (isset($form->operation)) {
             $newsubmission->initialpoints = $newsubmission->pointsmin;
         }
         if (!quest_check_submission_dates($newsubmission, $quest)) {
-            error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+            print_error('invaliddates', 'quest', "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
         }
         if (!quest_check_submission_text($newsubmission)) {
-            error(get_string('invalidtext', 'quest'), "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
+            print_error('invalidtext', 'quest', "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=approve");
         }
         if ($ismanager) {
             $newsubmission->perceiveddifficulty = $form->perceiveddifficulty;
@@ -218,16 +216,14 @@ if (isset($form->operation)) {
         print_footer($course);
     } else if ($form->operation == get_string("delete", "quest")) {
 
-        if (!$submission = $DB->get_record("quest_submissions", array("id" => $form->sid))) {
-            error("Submission id is incorrect");
-        }
+        $submission = $DB->get_record("quest_submissions", array("id" => $form->sid), '*', MUST_EXIST);
 
         // ...students are only allowed to delete their own submission and only up to the deadline.
         if (!($ismanager or (   ($USER->id == $submission->userid) and
                                 ($timenow < $quest->dateend) and
                                 ($submission->nanswers == 0) and
                                 ($timenow < $submission->dateend)))) {
-            error("You are not authorized to delete this submission");
+            print_error('submissionsnoauthorizedupdate', 'quest');
         }
 
         print_string("deleting", "quest");
@@ -338,14 +334,14 @@ if (isset($form->operation)) {
             $newsubmission->initialpoints = $newsubmission->pointsmin;
         }
         if (!quest_check_submission_dates($newsubmission, $quest)) {
-            error(get_string('invaliddates', 'quest'), "view.php?id=$cm->id&amp;action=submitchallenge");
+            print_error('invaliddates', 'quest', "view.php?id=$cm->id&amp;action=submitchallenge");
         }
         if (!quest_check_submission_text($newsubmission)) {
-            error(get_string('invalidtext', 'quest'), "view.php?id=$cm->id&amp;action=submitchallenge");
+            print_error('invalidtext', 'quest', "view.php?id=$cm->id&amp;action=submitchallenge");
         }
 
         if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
-            error("Quest submission: Failure to create new submission record!");
+            print_error('inserterror', 'quest', null, "quest_submissions");
         }
 
         if ($calificationuser = $DB->get_record("quest_calification_users",

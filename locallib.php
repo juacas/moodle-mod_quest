@@ -526,7 +526,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
                                                                        // pending state..
         }
         if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
-            error("Quest submission: Failure to create new submission record!");
+            print_error('inserterror', 'quest', null, "quest_submissions");
         }
     } else {
         $isnew = false;
@@ -983,7 +983,7 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     }
     if ($modif == false) {
         if (!$answer->id = $DB->insert_record("quest_answers", $answer)) {
-            error("Quest answer: Failure to create new answer record!");
+            print_error('inserterror', 'quest', null, "quest_answers");
         }
     }
     $answer = file_postupdate_standard_editor($answer, 'description', $definitionoptions, $context, 'mod_quest', 'answer',
@@ -1489,12 +1489,9 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
 
     if ($assessment) {
 
-        if (!$answer = $DB->get_record("quest_answers", array("id" => $assessment->answerid))) {
-            error("Quest_print_assessment: Answer record not found");
-        }
-        if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-            error("Quest_print_assessment: Submission record not found");
-        }
+        $answer = $DB->get_record("quest_answers", array("id" => $assessment->answerid),'*', MUST_EXIST);
+        $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
+
         $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showanswer',
                         'aid' => $answer->id]))->out();
         echo $OUTPUT->heading(
@@ -2101,15 +2098,11 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
 function quest_get_answer_grade($quest, $answer, $form) {
     global $questeweights, $DB;
 
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-        error("quest submission is misconfigured");
-    }
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
 
     $sid = $answer->submissionid;
 
-    if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id))) {
-        error("quest assessment is misconfigured");
-    }
+    $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST););
 
     if ($DB->count_records("quest_elements", array("submissionsid" => $submission->id, "questid" => $quest->id)) == 0) {
         $idsubmission = 0;
@@ -2153,7 +2146,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
             }
 
@@ -2172,7 +2165,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
             }
             // ...now work out the grade....
@@ -2215,7 +2208,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
                 $element->answer = $form->{"feedback_$i"};
                 $element->calification = $form->grade[$i];
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
                 if (empty($form->grade[$i])) {
                     $error += $questeweights[$elements[$i]->weight];
@@ -2230,7 +2223,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
             $element->elementno = $i;
             $element->calification = $form->grade[$i];
             if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                error("Could not insert quest grade!");
+                print_error('inserterror', 'quest', null, "quest_elements_assessments");
             }
 
             $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
@@ -2254,7 +2247,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
             $element->elementno = 0;
             $element->calification = $form->grade[0];
             if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                error("Could not insert quest grade!");
+                print_error('inserterror', 'quest', null, "quest_elements_assessments");
             }
             // ...now save the adjustment in element one.
             unset($element);
@@ -2263,7 +2256,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
             $element->elementno = 1;
             $element->calification = $form->grade[1];
             if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                error("Could not insert quest grade!");
+                print_error('inserterror', 'quest', null, "quest_elements_assessments");
             }
             if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid))) == 0) {
                 $var = 0;
@@ -2285,7 +2278,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
                 $element->answer = $form->{"feedback_$key"};
                 $element->calification = $thegrade;
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
             }
             // ...now work out the grade....
@@ -2423,9 +2416,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
 
     if ($assessment) {
 
-        if (!$submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid))) {
-            error("Quest_print_assessment: Submission record not found");
-        }
+        $submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid), '*', MUST_EXIST);
         echo $OUTPUT->heading(
                 get_string('assessmentof', 'quest',
                         "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\" " .
@@ -3736,19 +3727,13 @@ function quest_recalification($answer, $quest, $assessment, $course) {
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-        error("quest submission is misconfigured");
-    }
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     if (!has_capability('mod/quest:manage', $context, $answer->userid)) {
-        if (!$calificationuser = $DB->get_record("quest_calification_users",
-                array("userid" => $answer->userid, "questid" => $quest->id))) {
-            error("Calification user is incorrect");
-        }
+        $calificationuser = $DB->get_record("quest_calification_users",
+                array("userid" => $answer->userid, "questid" => $quest->id), '*', MUST_EXIST);
         if ($quest->allowteams) {
-            if (!$calificationteam = $DB->get_record("quest_calification_teams",
-                    array("teamid" => $calificationuser->teamid, "questid" => $quest->id))) {
-                error("Calification team is incorrect");
-            }
+            $calificationteam = $DB->get_record("quest_calification_teams",
+                    array("teamid" => $calificationuser->teamid, "questid" => $quest->id), '*', MUST_EXIST);
         }
     }
     // ...first get the assignment elements for maxscores and weights....

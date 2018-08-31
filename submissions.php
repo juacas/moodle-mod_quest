@@ -287,7 +287,7 @@ if ($action == 'confirmdelete') {
 
     // ...students are only allowed to remove their own attachments and only up to the deadline.
     if (!($caneditchallenges or (($USER->id == $submission->userid) and ($timenow < $submission->dateend)))) {
-        error("You are not authorized to delete these attachments");
+        print_error('attachmentsnoauthorizedupdate', 'quest');
     }
     $submission->title = $title;
     $submission->description = $description;
@@ -440,7 +440,7 @@ if ($action == 'confirmdelete') {
 
     // Students are only allowed to update their own submission and only up to the deadline.
     if (!($caneditchallenges or (($USER->id == $submission->userid) and ($timenow < $quest->dateend)))) {
-        error("You are not authorized to update your submission");
+        print_error('submissionsnoauthorizedupdate','quest');
     }
     $title = required_param('title', PARAM_TEXT);
     $description = required_param('description', PARAM_RAW_TRIMMED);
@@ -464,10 +464,10 @@ if ($action == 'confirmdelete') {
         $form->initialpoints = $form->pointsmax;
     }
     if (!quest_check_submission_dates($submission, $quest)) {
-        error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
+        print_error'invaliddates', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
     }
     if (!quest_check_submission_text($submission)) {
-        error(get_string('invalidtext', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
+        print_error('invalidtext', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
     }
     $submission->mailed = 0;
     $submission->pointsmax = required_param('pointsmax', PARAM_INT);
@@ -600,7 +600,7 @@ if ($action == 'confirmdelete') {
     }
 } else if ($action == 'showsubmissionsuser') {
     if (!$canpreview) {
-        error("Only teachers can look at this page");
+        print_error('nopermissions','error', null, "Only teachers can look at this page");
     }
 
     $userid = required_param('uid', PARAM_INT);
@@ -886,7 +886,7 @@ if ($action == 'confirmdelete') {
 } else if ($action == 'showsubmissionsteam') {
 
     if (!$canpreview) {
-        error("Only teachers can look at this page");
+        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
@@ -904,10 +904,7 @@ if ($action == 'confirmdelete') {
         exit();
     }
 
-    if (!$team = $DB->get_record("quest_teams", array("id" => required_param('tid', PARAM_INT)))) {
-        error('Team id is incorrect');
-    }
-
+    $team = $DB->get_record("quest_teams", array("id" => required_param('tid', PARAM_INT)), '*', MUST_EXIST);
     $userstemp = array();
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
@@ -1081,10 +1078,7 @@ if ($action == 'confirmdelete') {
         exit();
     }
 
-    if (!$team = $DB->get_record("quest_teams", array('id' => required_param('tid', PARAM_INT)))) {
-        error('Team id is incorrect');
-    }
-
+    $team = $DB->get_record("quest_teams", array('id' => required_param('tid', PARAM_INT)), '*', MUST_EXIST);
     $userstemp = array();
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
