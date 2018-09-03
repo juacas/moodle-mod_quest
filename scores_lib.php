@@ -67,41 +67,6 @@ function updateallusers($questid) {
         quest_update_user_scores($quest, $usercal->userid);
     }
 }
-/**
- *
- * @param unknown $questid
- * @param unknown $teamid
- * @param string $update
- */
-function test_update_team($questid, $teamid, $update = true) {
-    global $DB;
-    $query = $DB->get_records_select("quest_calification_users", "teamid=?", array($teamid));
-    foreach ($query as $q) {
-        $members[] = $q->userid;
-    }
-    $memberlist = implode(',', $members);
-
-    $pointsanswers = quest_calculate_user_score($questid, $members);
-
-    $nanswers = quest_count_user_answers($questid, $members);
-    $nanswersassessed = quest_count_user_answers_assesed($questid, $members);
-    $submissionpoints = quest_calculate_user_submissions_score($questid, $members);
-    $nsubmissions = quest_count_user_submissions($questid, $members);
-    $nsubmissionassessed = quest_count_user_submissions_assesed($questid, $members);
-    $points = $submissionpoints + $pointsanswers;
-    if ($update) {
-        print("Updating team $teamid on questournament $questid");
-        $calificationteams = $DB->get_record('quest_calification_teams', array("questid" => $questid, "teamid" => $teamid));
-        $calificationteams->nanswers = $nanswers;
-        $calificationteams->nanswerassessment = $nanswersassessed;
-        $calificationteams->points = "$points";
-        $calificationteams->pointsanswers = "$pointsanswers";
-        $calificationteams->pointssubmission = "$submissionpoints";
-        $calificationteams->nsubmissionsassessment = $nsubmissionassessed;
-        $calificationteams->nsubmissions = $nsubmissions;
-        $DB->update_record('quest_calification_teams', $calificationteams);
-    }
-}
 
 /**
  * @param stdClass $submission
@@ -177,25 +142,4 @@ function quest_count_submission_answers_correct($sid) {
     } else {
         return 0;
     }
-}
-/**
- *
- */
-function quest_recalculate_all_submissions_stats() {
-    global $CFG;
-    $sql = "update {quest_submissions} set nanswers=" .
-             "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id )";
-    $sql2 = "update {quest_submissions} set nanswerscorrect=" .
-             "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id and ans.grade>50 )";
-    $sql3 = "update mdl_quest_submissions set nanswersassessed=" .
-             "(select count(*) from {quest_answers} ans where ans.submissionid={quest_submissions}.id and ans.phase>0 )";
-    $sql4 = "update {quest_submissions} set dateanswercorrect=(select min(date) from {quest_answers} ans where " .
-            "ans.submissionid={quest_submissions}.id and ans.grade>=50)";
-
-    echo "Recalculating nanwers, nanswerscorrect, dateanswercorrect";
-
-    execute_sql($sql);
-    execute_sql($sql2);
-    execute_sql($sql3);
-    execute_sql($sql4);
 }
