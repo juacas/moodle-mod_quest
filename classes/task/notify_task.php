@@ -1,18 +1,18 @@
 <?php
-// This file is part of MSocial activity for Moodle http://moodle.org/
+// This file is part of QUESTournament for Moodle - http://moodle.org/
 //
-// MSocial for Moodle is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// MSocial for Moodle is distributed in the hope that it will be useful,
+// Questournament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with MSocial for Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /** For debugging:
  * SET XDEBUG_CONFIG=netbeans-xdebug=xdebug
  * php.exe admin\tool\task\cli\schedule_task.php --execute=\mod_msocial\task\notify_task */
