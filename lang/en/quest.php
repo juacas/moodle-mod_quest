@@ -468,6 +468,14 @@ $string['quest:deleteattempts'] = 'Delete own and other\'s answers';
 $string['quest:deletechallengeall'] = 'Delete own and other\'s challenges';
 $string['quest:deletechallengemine'] = 'Delete own challenges';
 $string['quest:downloadlogs'] = 'Download current questournament\'s raw reports';
+$string['quest:generateCSVlogs'] = 'Generate CSV report for:';
+$string['quest:generateLogsReport'] = 'Logs';
+$string['quest:generateIPAccessesReport'] = 'IP Addresses Accesses';
+$string['quest:generateActivityReport'] = 'Activity';
+$string['quest:notifylocale'] = '<p>For your locale "<b>{$a->localelang}</b>" the decimal separator is "'.
+        '<b>{$a->localeconfigdecimal}</b>". ' .
+        'Check that your SpreadSheet interprets correctly this character.</p>';
+$string['quest:notifyemptylogs'] = 'Last query with no results. Check if legacy log is enabled in this server.<br/>';
 $string['quest:editattempt'] = 'Edit anyone\'s submitted answer';
 $string['quest:editattemptmine'] = 'Edit owned submitted answer';
 $string['quest:editchallengeall'] = 'Edit anyone\'s submitted challenge';

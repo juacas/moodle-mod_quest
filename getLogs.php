@@ -108,21 +108,20 @@ if ($query) {
     $localelang = current_language();
     setlocale(LC_ALL, $localelang );
     $localeconfig = localeconv();
-    echo $OUTPUT->notification("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" ".
-            "<b>{$localeconfig['decimal_point']}</b> \". " .
-            "Check that your SpreadSheet interprets correctly this character.</p>", 'info');
+    $a = (object)['localelang' => $localelang, 'localeconfigdecimal' => $localeconfig['decimal_point']];
+    echo $OUTPUT->notification(get_string('quest:notifylocale', 'quest', $a), 'info');
     if (!empty($sqlquery)) {
-        echo $OUTPUT->notification("Last query with no results. Check if legacy log is enabled in this server.<br/>");
+        echo $OUTPUT->notification(get_string('quest:notifyemptylogs','quest'));
     }
 
-    echo '<p>Generate CSV report for:';
+    echo '<p>' . get_string('quest:generateCSVlogs','quest');
     echo '<ul>';
     $thispageurl->param('query', 'logs');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Logs '), null, null, true);
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateLogsReport', 'quest') . ' '), null, null, true);
     $thispageurl->param('query', 'ip');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'IP Addresses Accesses '), null, null, true);
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateIPAccessesReport', 'quest') . ' '), null, null, true);
     $thispageurl->param('query', 'activity');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Activity '), null, null, true);
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateActivityReport', 'quest') . ' '), null, null, true);
     echo '</ul>';
 
     echo $OUTPUT->footer();
