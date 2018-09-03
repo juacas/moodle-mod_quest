@@ -30,7 +30,7 @@
 require_once('../../config.php');
 global $CFG;
 require_once('locallib.php');
-require_once('vendor/quest_graphlib.php');
+require_once('classes/quest_graphlib.php');
 /**
  * Calculate scoring.
  * @param unknown $timenow
@@ -232,7 +232,7 @@ function graph_submissions() {
     $width = optional_param('width', 300, PARAM_INT);
     $height = optional_param('height', 200, PARAM_INT);
 
-    $mygraph = new graph($width, $height);
+    $mygraph = new quest_graph($width, $height);
     $mygraph->parameter['title'] = get_string("questgraphtitle", 'quest');
     $mygraph->parameter['output_format'] = 'PNG';
     $mygraph->parameter['x_label'] = userdate($datestart, '%x') .
