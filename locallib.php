@@ -1593,7 +1593,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "<textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "<textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -1679,7 +1679,7 @@ FORM;
                 echo "  <td>\n";
                 if ($allowchanges) {
 
-                    echo "<textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "<textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -1758,7 +1758,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -1905,7 +1905,7 @@ FORM;
                     echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                     echo "  <td>\n";
                     if ($allowchanges) {
-                        echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                        echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                         if (isset($grades[$i]->answer)) {
                             echo $grades[$i]->answer;
                         }
@@ -2074,9 +2074,8 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
 }
 
 /** Calculate a percentual grade for an answer. */
-function quest_get_answer_grade($quest, $answer, $form) {
+function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
-
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
 
     $sid = $answer->submissionid;
@@ -2113,7 +2112,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
         case 0: // ...no grading.
                 // Insert all the elements that contain something.
             for ($i = 0; $i < $num; $i++) {
-                if (!isset($form->{"feedback_$i"})) {
+                if (!isset($feedbacks[$i])) {
                     continue;
                 }
 
@@ -2121,7 +2120,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
                 $element->elementno = $i;
-                $element->answer = $form->{"feedback_$i"};
+                $element->answer = $feedbacks[$i];
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
@@ -2134,12 +2133,12 @@ function quest_get_answer_grade($quest, $answer, $form) {
 
         case 1: // ...accumulative grading.
                 // Insert all the elements that contain something.
-            foreach ($form->grade as $key => $thegrade) {
+            foreach ($grades as $key => $thegrade) {
                 $element = new stdclass();
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
                 $element->elementno = $key;
-                $element->answer = $form->{"feedback_$key"};
+                $element->answer = $feedbacks[$key];
                 $element->calification = $thegrade;
                 $element->commentteacher = '';
 
@@ -2150,7 +2149,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
             // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
+            foreach ($grades as $key => $grade) {
 
                 if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid))) == 0) {
                     $var = 0;
@@ -2170,109 +2169,8 @@ function quest_get_answer_grade($quest, $answer, $form) {
             // Process grade into quest assesment.
             $percent = ($rawgrade / $totalweight);
             break;
-
-        case 2: // ...error banded graded.
-                // Insert all the elements that contain something.
-            $error = 0.0;
-            if ($DB->get_field("quest_submissions", "numelements", array("id" => $submission->id)) == 0) {
-                $num = $DB->get_field("quest", "nelements", array("id" => $quest->id));
-            } else {
-                $num = $DB->get_field("quest_submissions", "numelements", array("id" => $submission->id));
-            }
-            for ($i = 0; $i < $num; $i++) {
-                unset($element);
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = $i;
-                $element->answer = $form->{"feedback_$i"};
-                $element->calification = $form->grade[$i];
-                if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
-                }
-                if (empty($form->grade[$i])) {
-                    $error += $questeweights[$elements[$i]->weight];
-                }
-            }
-            // ...now save the adjustment.
-            unset($element);
-
-            $i = $num;
-            $element->questid = $quest->id;
-            $element->assessmentid = $assessment->id;
-            $element->elementno = $i;
-            $element->calification = $form->grade[$i];
-            if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                print_error('inserterror', 'quest', null, "quest_elements_assessments");
-            }
-
-            $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
-            // ...do sanity check.
-            if ($rawgrade < 0) {
-                $rawgrade = 0;
-            } else if ($rawgrade > $quest->maxcalification) {
-                $rawgrade = $quest->maxcalification;
-            }
-            echo "<b>" . get_string("weightederrorcount", "quest", intval($error + 0.5)) . "</b>\n";
-
-            $percent = ($rawgrade / $quest->maxcalification);
-
-            break;
-
-        case 3: // ...criteria grading.
-                // ...save in the selected criteria value in element zero,.
-            unset($element);
-            $element->questid = $quest->id;
-            $element->assessmentid = $assessment->id;
-            $element->elementno = 0;
-            $element->calification = $form->grade[0];
-            if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                print_error('inserterror', 'quest', null, "quest_elements_assessments");
-            }
-            // ...now save the adjustment in element one.
-            unset($element);
-            $element->questid = $quest->id;
-            $element->assessmentid = $assessment->id;
-            $element->elementno = 1;
-            $element->calification = $form->grade[1];
-            if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                print_error('inserterror', 'quest', null, "quest_elements_assessments");
-            }
-            if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid))) == 0) {
-                $var = 0;
-            } else {
-                $var = $sid;
-            }
-            $rawgrade = ($DB->get_field("quest_elements", "maxscore",
-                    array("elementno" => $form->grade[0], "questid" => $quest->id, "submissionsid" => $var)) + $form->grade[1]);
-            $percent = ($rawgrade / $quest->maxcalification);
-            break;
-
-        case 4: // ...rubric grading (identical to accumulative grading).
-                // Insert all the elements that contain something.
-            foreach ($form->grade as $key => $thegrade) {
-                unset($element);
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = $key;
-                $element->answer = $form->{"feedback_$key"};
-                $element->calification = $thegrade;
-                if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
-                }
-            }
-            // ...now work out the grade....
-            $rawgrade = 0;
-            $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
-                $maxscore = 4;
-                $weight = $questeweights[$elements[$key]->weight];
-                if ($weight > 0) {
-                    $totalweight += $weight;
-                }
-                $rawgrade += ($grade / $maxscore) * $weight;
-            }
-            $percent = ($rawgrade / $totalweight);
-            break;
+        default:
+            throw new InvalidArgumentException('Unknown grading strategy.');
     } // ...end of switch.
     return $percent;
 }
@@ -2503,7 +2401,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -2582,7 +2480,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -2661,7 +2559,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -2797,7 +2695,7 @@ FORM;
                     echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                     echo "  <td>\n";
                     if ($allowchanges) {
-                        echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                        echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                         if (isset($grades[$i]->answer)) {
                             echo $grades[$i]->answer;
                         }
@@ -3727,14 +3625,15 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 
     $timenow = time();
     // ...don't fiddle about, delete all the old and add the new!.
-    $formraw = new stdclass();
-    $formraw->grade = $DB->get_records("quest_elements_assessments", array("assessmentid" => $assessment->id));
-    if ($formraw->grade) {
-        foreach ($formraw->grade as $graderaw) {
-            $form->grade[$graderaw->elementno] = $graderaw->calification; // ...to renumber index.
+    $grades = [];
+    $gradesraw = new stdclass();
+    $gradesraw->grade = $DB->get_records("quest_elements_assessments", array("assessmentid" => $assessment->id));
+    if ($gradesraw->grade) {
+        foreach ($gradesraw->grade as $graderaw) {
+            $grades[$graderaw->elementno] = $graderaw->calification; // ...to renumber index.
         }
     } else {
-        $form->grade = null;
+        $grades = null;
     }
 
     if ($quest->validateassessment == 1) {
@@ -3830,7 +3729,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
+            foreach ($grades as $key => $grade) {
                 $maxscore = $elements[$key]->maxscore;
                 $weight = $questeweightsrecalif[$elements[$key]->weight];
                 if ($weight > 0) {
@@ -3864,122 +3763,8 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             }
 
             break;
-
-        case 2: // ...error banded graded.
-                // Insert all the elements that contain something.
-            $error = 0.0;
-            for ($i = 0; $i < $quest->nelements; $i++) {
-
-                if (empty($form->grade[$i])) {
-                    $error += $questeweightsrecalif[$elements[$i]->weight];
-                }
-            }
-            // ...now save the adjustment.
-            $i = $quest->nelements;
-
-            $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
-            // ...do sanity check.
-            if ($rawgrade < 0) {
-                $rawgrade = 0;
-            } else if ($rawgrade > $quest->maxcalification) {
-                $rawgrade = $quest->maxcalification;
-            }
-            $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $quest->maxcalification);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
-
-                $submission->points = $grade;
-
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
-                }
-                if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
-                    $answer->phase = 2;
-                }
-            } else {
-                $points = quest_get_points($submission, $quest, $answer);
-                $grade = $points * ($rawgrade / $quest->maxcalification);
-                $submission->points = $grade;
-                if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
-                }
-                $answer->phase = 1;
-            }
-
-            break;
-
-        case 3: // ...criteria grading.
-                // ...save in the selected criteria value in element zero.
-            $rawgrade = ($elements[$form->grade[0]]->maxscore + $form->grade[1]);
-            $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $quest->maxcalification);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
-
-                $submission->points = $grade;
-
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
-                }
-                if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
-                    $answer->phase = 2;
-                }
-            } else {
-                $points = quest_get_points($submission, $quest, $answer);
-                $grade = $points * ($rawgrade / $quest->maxcalification);
-                $submission->points = $grade;
-                if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
-                }
-                $answer->phase = 1;
-            }
-
-            break;
-
-        case 4: // ...rubric grading (identical to accumulative grading).
-                // Insert all the elements that contain something.
-                // ...now work out the grade....
-            $rawgrade = 0;
-            $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
-                $maxscore = $elements[$key]->maxscore;
-                $weight = $questeweightsrecalif[$elements[$key]->weight];
-                if ($weight > 0) {
-                    $totalweight += $weight;
-                }
-                $rawgrade += ($grade / $maxscore) * $weight;
-            }
-
-            $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $totalweight);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
-
-                $submission->points = $grade;
-
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
-                }
-                if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
-                    $answer->phase = 2;
-                }
-            } else {
-
-                $submission->points = $grade;
-                if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
-                }
-                $answer->phase = 1;
-            }
-
-            break;
+        default:
+            throw new InvalidArgumentException('Unknown grading strategy.');
     } // ...end of switch.
 
     $answer->grade = 100 * ($grade / $points);

@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
@@ -85,7 +84,7 @@ $string['cantRespond_WARN'] = 'Don\'t have permissions to answer.';
 $string['cantRespond_WARN_notingroup_or_challengeended'] = 'You can\'t answer. You don\'t belong to this group or the challenge is ended.';
 $string['calculationoffinalgrades'] = 'Calculation of final grades';
 $string['calification'] = 'Score';
-$string['calificationautor'] = 'Calification from autor of the challenge';
+$string['calificationautor'] = 'Calification for the author of the challenge';
 $string['calificationdate'] = 'Publishing of calification date';
 $string['calificationdateevent'] = 'Califications for {$a} have been published';
 $string['calificationthisquest'] = 'Get califications from module QUESTOURnament';
