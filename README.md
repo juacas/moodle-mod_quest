@@ -29,6 +29,7 @@ Installation
 
 Change log
 ==========
+ - v1.4.0 Code refactoring and cleaning to conform to Moodle's development guides.
  - v1.3.7 Implement activity completion (gradepass).
  - v1.3.6 Notification messages grouped for starting Challenges.
  - v1.3.5 Remove Moodle 1.x support.
