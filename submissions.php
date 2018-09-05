@@ -31,15 +31,12 @@
  *          - confirmdelete
  *          - delete
  *          - modif
- *          - updatesubmission
- *          - removeattachments
  *          - showsubmission
  *          - approve
  *          - showsubmissionsuser
  *          - showanswersuser
  *          - team
  *          - showanswersteam
- *          - preview
  *          - recalificationall
  *          - confirmchangeform */
 require_once("../../config.php");
@@ -276,30 +273,6 @@ if ($action == 'confirmdelete') {
         echo $OUTPUT->heading_with_help(get_string("modifsubmission", "quest", $titlesubmission), "modifsubmission", "quest");
         $mform->display();
     }
-} else if ($action == 'removeattachments') {
-    $form = data_submitted();
-    $sid = required_param('sid', PARAM_INT); // ...submission id.
-    $title = required_param('title', PARAM_TEXT); // ...title.
-    $description = required_param('description', PARAM_RAW_TRIMMED);
-
-    $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
-    $PAGE->navbar->add(\format_string($submission->title));
-
-    // ...students are only allowed to remove their own attachments and only up to the deadline.
-    if (!($caneditchallenges or (($USER->id == $submission->userid) and ($timenow < $submission->dateend)))) {
-        error("You are not authorized to delete these attachments");
-    }
-    $submission->title = $title;
-    $submission->description = $description;
-    // ...amend title... just in case they were modified.
-    $DB->update_record('quest_submissions', $submission);
-
-    print_string("removeallattachments", "quest");
-    quest_delete_submitted_files_submissions($quest, $submission);
-    add_to_log($course->id, "quest", "removeattachments",
-            "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
-
-    echo $OUTPUT->continue_button("submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=$form->beforeaction");
 } else if ($action == 'showsubmission') {
     $sid = required_param('sid', PARAM_INT); // ...submission id.
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
@@ -433,127 +406,6 @@ if ($action == 'confirmdelete') {
     }
 
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
-} else if ($action == 'updatesubmission') {
-    $form = data_submitted();
-    $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
-    $PAGE->navbar->add(\format_string($submission->title));
-
-    // Students are only allowed to update their own submission and only up to the deadline.
-    if (!($caneditchallenges or (($USER->id == $submission->userid) and ($timenow < $quest->dateend)))) {
-        error("You are not authorized to update your submission");
-    }
-    $title = required_param('title', PARAM_TEXT);
-    $description = required_param('description', PARAM_RAW_TRIMMED);
-    $submission->title = $title;
-    $submission->description = $description;
-
-    $submission->datestart = make_timestamp(required_param('submissionstartyear', PARAM_INT),
-            required_param('submissionstartmonth', PARAM_INT), required_param('submissionstartday', PARAM_INT),
-            required_param('submissionstarthour', PARAM_INT), required_param('submissionstartminute', PARAM_INT));
-
-    $submission->dateend = make_timestamp(required_param('submissionendyear', PARAM_INT),
-            required_param('submissionendmonth', PARAM_INT), required_param('submissionendday', PARAM_INT),
-            required_param('submissionendhour', PARAM_INT), required_param('submissionendminute', PARAM_INT));
-    $submission->timecreated = time();
-    $submission->tinitial = $quest->tinitial;
-
-    if ($submission->dateend > $quest->dateend) {
-        $submission->dateend = $quest->dateend;
-    }
-    if ($form->initialpoints > $form->pointsmax) {
-        $form->initialpoints = $form->pointsmax;
-    }
-    if (!quest_check_submission_dates($submission, $quest)) {
-        error(get_string('invaliddates', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
-    }
-    if (!quest_check_submission_text($submission)) {
-        error(get_string('invalidtext', 'quest'), "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=modif");
-    }
-    $submission->mailed = 0;
-    $submission->pointsmax = required_param('pointsmax', PARAM_INT);
-    $submission->pointsmin = required_param('pointsmin', PARAM_INT);
-    $submission->initialpoints = required_param('initialpoints', PARAM_INT);
-
-    if ($caneditchallenges) {
-        $submission->perceiveddifficulty = $form->perceiveddifficulty;
-        $submission->predictedduration = $form->predictedduration;
-        $submission->comentteacherautor = optional_param('comentteacherautor', $submission->comentteacherautor, PARAM_TEXT);
-        $submission->comentteacherpupil = optional_param('comentteacherpupil', $submission->comentteacherpupil, PARAM_TEXT);
-    }
-    quest_update_submission($submission);
-    quest_update_challenge_calendar($cm, $quest, $submission);
-
-    if ($ismanager) {
-        if ($submission->datestart < time() && $submission->state != 1) { // Approval pending.
-            if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-                print_heading(get_string("nostudentsyet"));
-                print_footer($course);
-                exit();
-            }
-            if ($submissiongroup = $DB->get_record("groups_members", array("userid" => $submission->userid))) {
-                $currentgroup = $submissiongroup->groupid;
-            }
-            // JPC 2013-11-28 disable excesive notifications.
-            if (false) {
-                foreach ($users as $user) {
-                    if (!$ismanager) {
-                        if (isset($currentgroup)) {
-                            if (!groups_is_member($currentgroup, $user->id)) {
-                                continue;
-                            }
-                        }
-                    }
-                    quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                            'modifsubmission', $quest, $submission, '');
-                }
-                $DB->set_field("quest_submissions", "maileduser", 1, array("id" => $submission->id));
-            }
-            // JPC 2013-11 disabled block.
-        }
-    } else { // Not teacher.
-        if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            print_heading(get_string("nostudentsyet"));
-            print_footer($course);
-            exit();
-        }
-        // JPC 2013-11-28 disable excesive notifications.
-        if (false) {
-            foreach ($users as $user) { // ...mail to teachers.
-                if (!$ismanager) {
-                    continue;
-                }
-                quest_send_message($user, "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                        'modifsubmission', $quest, $submission, '');
-            }
-        }
-        // JPC 2013-11 disabled block.
-    }
-
-    if ($quest->nattachments) {
-        require_once($CFG->dirroot . '/lib/uploadlib.php');
-        $um = new upload_manager(null, false, false, $course, false, $quest->maxbytes);
-        if ($um->preprocess_files()) {
-            $dir = quest_file_area_name_submissions($quest, $submission);
-            if ($um->save_files($dir)) {
-                add_to_log($course->id, "quest", "newattachment",
-                        "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                        "$submission->id", "$cm->id");
-                print_heading(get_string("uploadsuccess", "quest"));
-            }
-            // Upload manager will print errors.
-        }
-    }
-    // Log the action.
-    if ($CFG->version >= 2014051200) {
-        require_once('classes/event/challenge_changed.php');
-        $viewevent = mod_quest\event\challenge_changed::create_from_parts($USER, $submission, $cm);
-        $viewevent->trigger();
-    } else {
-        add_to_log($course->id, "quest", "modif_submission",
-                "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
-    }
-    print_heading(get_string("submitted", "quest") . " " . get_string("ok"));
-    echo $OUTPUT->continue_button("view.php?id=$cm->id");
 } else if ($action == 'approve') {
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
     $authorid = $submission->userid;
@@ -600,7 +452,7 @@ if ($action == 'confirmdelete') {
     }
 } else if ($action == 'showsubmissionsuser') {
     if (!$canpreview) {
-        error("Only teachers can look at this page");
+        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
 
     $userid = required_param('uid', PARAM_INT);
@@ -615,8 +467,9 @@ if ($action == 'confirmdelete') {
     $tablesort->sortdata = array();
     $indice = 0;
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        print_heading(get_string("nostudentsyet"));
-        print_footer($course);
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string('nostudentsyet'));
+        echo $OUTPUT->footer();
         exit();
     }
 
@@ -799,7 +652,6 @@ if ($action == 'confirmdelete') {
     $tablesort->sortdata = array();
 
     // ...skip if student not in group.
-
     if ($answers = quest_get_answers($quest, $user)) {
         foreach ($answers as $answer) {
             $data = array();
@@ -886,7 +738,7 @@ if ($action == 'confirmdelete') {
 } else if ($action == 'showsubmissionsteam') {
 
     if (!$canpreview) {
-        error("Only teachers can look at this page");
+        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
@@ -899,15 +751,13 @@ if ($action == 'confirmdelete') {
     $indice = 0;
 
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        print_heading(get_string("nostudentsyet"));
-        print_footer($course);
+        global $OUTPUT;
+        echo $OUTPUT->heading(get_string('nostudentsyet'));
+        echo $OUTPUT->footer();
         exit();
     }
 
-    if (!$team = $DB->get_record("quest_teams", array("id" => required_param('tid', PARAM_INT)))) {
-        error('Team id is incorrect');
-    }
-
+    $team = $DB->get_record("quest_teams", array("id" => required_param('tid', PARAM_INT)), '*', MUST_EXIST);
     $userstemp = array();
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
@@ -926,7 +776,6 @@ if ($action == 'confirmdelete') {
     }
 
     // Skip if student not in group.
-
     foreach ($users as $user) {
 
         if ($submissions = quest_get_user_submissions($quest, $user)) {
@@ -1081,10 +930,7 @@ if ($action == 'confirmdelete') {
         exit();
     }
 
-    if (!$team = $DB->get_record("quest_teams", array('id' => required_param('tid', PARAM_INT)))) {
-        error('Team id is incorrect');
-    }
-
+    $team = $DB->get_record("quest_teams", array('id' => required_param('tid', PARAM_INT)), '*', MUST_EXIST);
     $userstemp = array();
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
@@ -1111,7 +957,6 @@ if ($action == 'confirmdelete') {
     foreach ($users as $user) {
 
         // ...skip if student not in group.
-
         if ($answers = quest_get_answers($quest, $user)) {
             foreach ($answers as $answer) {
                 $data = array();
@@ -1199,32 +1044,6 @@ if ($action == 'confirmdelete') {
                     "$calification");
     echo html_writer::table($table);
     echo $OUTPUT->continue_button("submissions.php?action=showsubmission&sid=$submission->id&id=$cm->id");
-} else if ($action == "preview") {
-    $PAGE->set_title(format_string($quest->name));
-    $PAGE->set_heading($course->fullname);
-
-    echo $OUTPUT->header();
-    $form = data_submitted();
-
-    echo "<hr size=\"1\" noshade=\"noshade\" />";
-
-    print_heading_with_help(get_string('windowpreviewsubmission', 'quest'), "windowpreviewsubmission", "quest");
-
-    $title = $form->title;
-    echo "<center><b>" . get_string('title', 'quest') . ": " . $title . "</b></center><br>";
-    echo "<center><b>" . get_string('description', 'quest') . "</b></center>";
-    // Print upload form.
-    $submission->title = $form->title;
-    $temp = '\\';
-    $temp1 = $temp . $temp;
-    $submission->description = str_replace($temp1, $temp, $form->description);
-
-    echo $OUTPUT->box(format_text($submission->description), 'center');
-
-    close_window_button();
-
-    print_footer($course);
-    exit();
 } else if ($action == "recalificationall" && false) { // This action is deprecated.
 
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);

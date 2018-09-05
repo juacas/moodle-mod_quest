@@ -38,8 +38,6 @@ require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $candownloadlogs = has_capability('mod/quest:downloadlogs', $context);
-$thispageurl = new moodle_url('/mod/quest/getLogs.php', $_GET);
-$PAGE->set_url($thispageurl);
 
 if (!$candownloadlogs) {
     print_error('nopermissions', 'error', null, 'No enough permissions mod/quest:downloadlogs');
@@ -47,6 +45,11 @@ if (!$candownloadlogs) {
 // Select various queries.
 $queryid = optional_param('query', 'what', PARAM_ALPHA);
 
+$params = [];
+$params['id'] = $id;
+$params['queryid'] = $queryid;
+$thispageurl = new moodle_url('/mod/quest/index.php', $params);
+$PAGE->set_url($thispageurl);
 switch ($queryid) {
     case 'ip':
         $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
@@ -108,21 +111,20 @@ if ($query) {
     $localelang = current_language();
     setlocale(LC_ALL, $localelang );
     $localeconfig = localeconv();
-    echo $OUTPUT->notification("<p>For your locale \"<b>$localelang</b>\" the decimal separator is \" ".
-            "<b>{$localeconfig['decimal_point']}</b> \". " .
-            "Check that your SpreadSheet interprets correctly this character.</p>", 'info');
+    $a = (object)['localelang' => $localelang, 'localeconfigdecimal' => $localeconfig['decimal_point']];
+    echo $OUTPUT->notification(get_string('quest:notifylocale', 'quest', $a), 'info');
     if (!empty($sqlquery)) {
-        echo $OUTPUT->notification("Last query with no results. Check if legacy log is enabled in this server.<br/>");
+        echo $OUTPUT->notification(get_string('quest:notifyemptylogs', 'quest'));
     }
 
-    echo '<p>Generate CSV report for:';
+    echo '<p>' . get_string('quest:generateCSVlogs', 'quest');
     echo '<ul>';
     $thispageurl->param('query', 'logs');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Logs '), null, null, true);
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateLogsReport', 'quest') . ' '), null, null, true);
     $thispageurl->param('query', 'ip');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'IP Addresses Accesses '), null, null, true);
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateIPAccessesReport', 'quest') . ' '), null, null, true);
     $thispageurl->param('query', 'activity');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Activity '), null, null, true);
+    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateActivityReport', 'quest') . ' '), null, null, true);
     echo '</ul>';
 
     echo $OUTPUT->footer();

@@ -32,7 +32,9 @@ $id = required_param('id', PARAM_INT); // Course...
 global $DB, $PAGE, $OUTPUT;
 $course = get_course($id);
 require_login($course);
-$thispageurl = new moodle_url('/mod/quest/index.php', $_GET);
+$params = [];
+$params['id'] = optional_param('id', null, PARAM_INT);
+$thispageurl = new moodle_url('/mod/quest/index.php', $params);
 $PAGE->set_url($thispageurl);
 
 $context = context_course::instance($course->id);

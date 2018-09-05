@@ -1,6 +1,4 @@
 <?php
-use core_calendar\local\event\proxies\std_proxy;
-
 // This file is part of Questournament activity for Moodle http://moodle.org/
 //
 // Questournament for Moodle is free software: you can redistribute it and/or modify
@@ -16,7 +14,8 @@ use core_calendar\local\event\proxies\std_proxy;
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Library of functions and constants for module quest
+/**
+ * Library of functions and constants for module quest
  * quest constants and standard Moodle functions plus the quest functions
  * called by the standard functions
  * see also locallib.php for other non-standard quest functions
@@ -28,7 +27,10 @@ use core_calendar\local\event\proxies\std_proxy;
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package mod_quest
+ */
+use core_calendar\local\event\proxies\std_proxy;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
@@ -362,17 +364,11 @@ function quest_user_outline($course, $user, $mod, $quest) {
 function quest_user_complete($course, $user, $mod, $quest) {
     // Print a detailed representation of what a user has done with
     // a given particular instance of this module, for user activity reports.
-    global $DB;
+    global $DB, $OUTPUT;
     if ($submissions = $DB->get_records_select("quest_submissions", "questid=? AND userid=?", array($quest->id, $user->id))) {
         foreach ($submissions as $submission) {
-
-            print_simple_box_start();
-
             echo get_string('submission', 'quest') . ': ' . $submission->title . '<br />';
-
             quest_print_feedback($course, $submission, $user);
-
-            print_simple_box_end();
         }
     } else {
         print_string('notsubmittedyet', 'quest');
@@ -386,7 +382,7 @@ function quest_user_complete($course, $user, $mod, $quest) {
                     array($quest->id, $submission->id, $user->id))) {
                 foreach ($answers as $answer) {
                     $nanswers++;
-                    print_simple_box_start();
+                    echo $OUTPUT->box_start('block');
                     echo '<table cellspacing="0" class="workshop_feedbackbox">';
 
                     echo '<tr>';
@@ -407,7 +403,7 @@ function quest_user_complete($course, $user, $mod, $quest) {
                     echo '</tr>';
 
                     echo '</table>';
-                    print_simple_box_end();
+                    echo $OUTPUT->box_end();
                 }
             }
         }
@@ -758,7 +754,7 @@ function quest_get_user_grades($quest, $userid = 0) {
         if ($userid != 0) {
             $students = array($userid => get_complete_user_data('id', $userid));
         } else {
-            $students = get_course_students($quest->course);
+            $students = quest_get_course_students($quest->course);
         }
         if ($students) {
             $return = array();
@@ -1213,10 +1209,10 @@ function quest_reset_userdata($data) {
 
         shift_course_mod_dates('quest', array('datestart', 'dateend'), $data->timeshift, $data->courseid);
         $shifttimesql = "UPDATE {quest_submissions} " .
-                        "SET datestart = datestart + ($data->timeshift), dateend = dateend + ($data->timeshift) " .
+                        "SET datestart = datestart + (?), dateend = dateend + (?) " .
                         "WHERE questid  $insql and datestart<>0";
-
-        $DB->execute($shifttimesql, $inparams);
+        $shiftparams = array_merge([$data->timeshift, $data->timeshift], $inparams);
+        $DB->execute($shifttimesql, $shiftparams);
 
         $status[] = array('component' => $componentstr, 'item' => get_string('datechanged'), 'error' => false);
     }

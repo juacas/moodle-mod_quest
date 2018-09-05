@@ -65,31 +65,21 @@ $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
-// Allow the teacher to change groups (for this session).
-if ($groupmode and isteacheredit($course->id)) {
-    if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-        print_group_menu($groups, $groupmode, $currentgroup, "team.php?id=$cm->id");
-    }
-}
-
 if ($ismanager) {
-
-    $form = data_submitted("nomatch");
-    if ($form == false) {
-        $form = new stdclass();
-    }
 
     $title = get_string('changeteamteacher', 'quest');
     echo $OUTPUT->heading_with_help($title, "changeteamteacher", "quest");
 
     if ($action == 'change') {
         if (($groupmode == false) || ($currentgroup != 0)) {
-            if (isset($form->team)) {
-                foreach ($form->team as $i => $teamfield) {
+            $teams = optional_param_array('team', null, PARAM_ALPHANUMEXT);
+            $userids = optional_param('userid', [], PARAM_INT);
+            if (isset($teams)) {
+                foreach ($teams as $i => $teamfield) {
 
                     $teamfield = trim($teamfield);
                     if (!empty($teamfield)) {
-                        $userid = $form->userid[$i];
+                        $userid = $userids[$i];
                         if ($calificationuser = $DB->get_record("quest_calification_users",
                                 array("userid" => $userid, "questid" => $quest->id))) {
                             if (!empty($calificationuser->teamid)) {
@@ -129,7 +119,7 @@ if ($ismanager) {
                                 $team->ncomponents = 1;
                                 $team->questid = $quest->id;
                                 $team->currentgroup = $currentgroup;
-                                $team->name = $form->team[$i];
+                                $team->name = $teams[$i];
 
                                 $team->id = $DB->insert_record("quest_teams", $team);
 
@@ -169,7 +159,7 @@ if ($ismanager) {
         exit();
     }
 
-    // Now prepare table with student assessments and submissions.
+    // Now prepare table with student team enrollments.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();

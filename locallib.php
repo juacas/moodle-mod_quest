@@ -526,7 +526,7 @@ function quest_upload_challenge(stdClass $quest, stdClass $newsubmission, $isman
                                                                        // pending state..
         }
         if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
-            error("Quest submission: Failure to create new submission record!");
+            print_error('inserterror', 'quest', null, "quest_submissions");
         }
     } else {
         $isnew = false;
@@ -934,13 +934,6 @@ class quest_print_answer_form extends moodleform {
  * @param type $context */
 function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context) {
     global $DB, $COURSE, $OUTPUT, $USER;
-    $strquests = get_string('modulenameplural', 'quest');
-    $strquest = get_string('modulename', 'quest');
-    $stranswer = get_string('answer', 'quest');
-
-    $changegroup = optional_param('group', -1, PARAM_INT); // Groups are being  used?.
-    $currentgroup = groups_get_course_group($COURSE);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
 
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     $timenow = time();
@@ -983,7 +976,7 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     }
     if ($modif == false) {
         if (!$answer->id = $DB->insert_record("quest_answers", $answer)) {
-            error("Quest answer: Failure to create new answer record!");
+            print_error('inserterror', 'quest', null, "quest_answers");
         }
     }
     $answer = file_postupdate_standard_editor($answer, 'description', $definitionoptions, $context, 'mod_quest', 'answer',
@@ -1053,20 +1046,6 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
-    // Check to see if groups are being used in this quest.
-    // ...and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?.
-    $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
-                                        // Allow the teacher to change groups (for this session).
-    if ($groupmode and $ismanager) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            groups_print_activity_menu($cm,
-                    $CFG->wwwroot . "mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
-                    $return = false, $hideallparticipants = false);
-        }
-    }
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
@@ -1119,6 +1098,9 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                 $sortdata['title'] = strtolower($answer->title);
 
                 $user = get_complete_user_data('id', $answer->userid);
+                if (!$user) {
+                    continue;
+                }
                 // User Name Surname.
                 if ($ismanager) {
                     $data[] = $user ? $OUTPUT->user_picture($user) : '';
@@ -1486,12 +1468,9 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
 
     if ($assessment) {
 
-        if (!$answer = $DB->get_record("quest_answers", array("id" => $assessment->answerid))) {
-            error("Quest_print_assessment: Answer record not found");
-        }
-        if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-            error("Quest_print_assessment: Submission record not found");
-        }
+        $answer = $DB->get_record("quest_answers", array("id" => $assessment->answerid), '*', MUST_EXIST);
+        $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
+
         $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showanswer',
                         'aid' => $answer->id]))->out();
         echo $OUTPUT->heading(
@@ -1614,7 +1593,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "<textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "<textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -1700,7 +1679,7 @@ FORM;
                 echo "  <td>\n";
                 if ($allowchanges) {
 
-                    echo "<textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "<textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -1779,7 +1758,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -1926,7 +1905,7 @@ FORM;
                     echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                     echo "  <td>\n";
                     if ($allowchanges) {
-                        echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                        echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                         if (isset($grades[$i]->answer)) {
                             echo $grades[$i]->answer;
                         }
@@ -2095,18 +2074,13 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
 }
 
 /** Calculate a percentual grade for an answer. */
-function quest_get_answer_grade($quest, $answer, $form) {
+function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
-
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-        error("quest submission is misconfigured");
-    }
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
 
     $sid = $answer->submissionid;
 
-    if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id))) {
-        error("quest assessment is misconfigured");
-    }
+    $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST);
 
     if ($DB->count_records("quest_elements", array("submissionsid" => $submission->id, "questid" => $quest->id)) == 0) {
         $idsubmission = 0;
@@ -2138,7 +2112,7 @@ function quest_get_answer_grade($quest, $answer, $form) {
         case 0: // ...no grading.
                 // Insert all the elements that contain something.
             for ($i = 0; $i < $num; $i++) {
-                if (!isset($form->{"feedback_$i"})) {
+                if (!isset($feedbacks[$i])) {
                     continue;
                 }
 
@@ -2146,11 +2120,11 @@ function quest_get_answer_grade($quest, $answer, $form) {
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
                 $element->elementno = $i;
-                $element->answer = $form->{"feedback_$i"};
+                $element->answer = $feedbacks[$i];
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
             }
 
@@ -2159,23 +2133,23 @@ function quest_get_answer_grade($quest, $answer, $form) {
 
         case 1: // ...accumulative grading.
                 // Insert all the elements that contain something.
-            foreach ($form->grade as $key => $thegrade) {
+            foreach ($grades as $key => $thegrade) {
                 $element = new stdclass();
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
                 $element->elementno = $key;
-                $element->answer = $form->{"feedback_$key"};
+                $element->answer = $feedbacks[$key];
                 $element->calification = $thegrade;
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
+                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
             }
             // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
+            foreach ($grades as $key => $grade) {
 
                 if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid))) == 0) {
                     $var = 0;
@@ -2195,109 +2169,8 @@ function quest_get_answer_grade($quest, $answer, $form) {
             // Process grade into quest assesment.
             $percent = ($rawgrade / $totalweight);
             break;
-
-        case 2: // ...error banded graded.
-                // Insert all the elements that contain something.
-            $error = 0.0;
-            if ($DB->get_field("quest_submissions", "numelements", array("id" => $submission->id)) == 0) {
-                $num = $DB->get_field("quest", "nelements", array("id" => $quest->id));
-            } else {
-                $num = $DB->get_field("quest_submissions", "numelements", array("id" => $submission->id));
-            }
-            for ($i = 0; $i < $num; $i++) {
-                unset($element);
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = $i;
-                $element->answer = $form->{"feedback_$i"};
-                $element->calification = $form->grade[$i];
-                if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
-                }
-                if (empty($form->grade[$i])) {
-                    $error += $questeweights[$elements[$i]->weight];
-                }
-            }
-            // ...now save the adjustment.
-            unset($element);
-
-            $i = $num;
-            $element->questid = $quest->id;
-            $element->assessmentid = $assessment->id;
-            $element->elementno = $i;
-            $element->calification = $form->grade[$i];
-            if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                error("Could not insert quest grade!");
-            }
-
-            $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
-            // ...do sanity check.
-            if ($rawgrade < 0) {
-                $rawgrade = 0;
-            } else if ($rawgrade > $quest->maxcalification) {
-                $rawgrade = $quest->maxcalification;
-            }
-            echo "<b>" . get_string("weightederrorcount", "quest", intval($error + 0.5)) . "</b>\n";
-
-            $percent = ($rawgrade / $quest->maxcalification);
-
-            break;
-
-        case 3: // ...criteria grading.
-                // ...save in the selected criteria value in element zero,.
-            unset($element);
-            $element->questid = $quest->id;
-            $element->assessmentid = $assessment->id;
-            $element->elementno = 0;
-            $element->calification = $form->grade[0];
-            if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                error("Could not insert quest grade!");
-            }
-            // ...now save the adjustment in element one.
-            unset($element);
-            $element->questid = $quest->id;
-            $element->assessmentid = $assessment->id;
-            $element->elementno = 1;
-            $element->calification = $form->grade[1];
-            if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                error("Could not insert quest grade!");
-            }
-            if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid))) == 0) {
-                $var = 0;
-            } else {
-                $var = $sid;
-            }
-            $rawgrade = ($DB->get_field("quest_elements", "maxscore",
-                    array("elementno" => $form->grade[0], "questid" => $quest->id, "submissionsid" => $var)) + $form->grade[1]);
-            $percent = ($rawgrade / $quest->maxcalification);
-            break;
-
-        case 4: // ...rubric grading (identical to accumulative grading).
-                // Insert all the elements that contain something.
-            foreach ($form->grade as $key => $thegrade) {
-                unset($element);
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = $key;
-                $element->answer = $form->{"feedback_$key"};
-                $element->calification = $thegrade;
-                if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    error("Could not insert quest grade!");
-                }
-            }
-            // ...now work out the grade....
-            $rawgrade = 0;
-            $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
-                $maxscore = 4;
-                $weight = $questeweights[$elements[$key]->weight];
-                if ($weight > 0) {
-                    $totalweight += $weight;
-                }
-                $rawgrade += ($grade / $maxscore) * $weight;
-            }
-            $percent = ($rawgrade / $totalweight);
-            break;
+        default:
+            throw new InvalidArgumentException('Unknown grading strategy.');
     } // ...end of switch.
     return $percent;
 }
@@ -2420,9 +2293,7 @@ function quest_print_assessment_autor($quest, $assessment = false, $allowchanges
 
     if ($assessment) {
 
-        if (!$submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid))) {
-            error("Quest_print_assessment: Submission record not found");
-        }
+        $submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid), '*', MUST_EXIST);
         echo $OUTPUT->heading(
                 get_string('assessmentof', 'quest',
                         "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\" " .
@@ -2530,7 +2401,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -2609,7 +2480,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -2688,7 +2559,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                     if (isset($grades[$i]->answer)) {
                         echo $grades[$i]->answer;
                     }
@@ -2824,7 +2695,7 @@ FORM;
                     echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
                     echo "  <td>\n";
                     if ($allowchanges) {
-                        echo "      <textarea name=\"feedback_$i\" rows=\"3\" cols=\"75\" >\n";
+                        echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
                         if (isset($grades[$i]->answer)) {
                             echo $grades[$i]->answer;
                         }
@@ -3733,19 +3604,13 @@ function quest_recalification($answer, $quest, $assessment, $course) {
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
-    if (!$submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid))) {
-        error("quest submission is misconfigured");
-    }
+    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     if (!has_capability('mod/quest:manage', $context, $answer->userid)) {
-        if (!$calificationuser = $DB->get_record("quest_calification_users",
-                array("userid" => $answer->userid, "questid" => $quest->id))) {
-            error("Calification user is incorrect");
-        }
+        $calificationuser = $DB->get_record("quest_calification_users",
+                array("userid" => $answer->userid, "questid" => $quest->id), '*', MUST_EXIST);
         if ($quest->allowteams) {
-            if (!$calificationteam = $DB->get_record("quest_calification_teams",
-                    array("teamid" => $calificationuser->teamid, "questid" => $quest->id))) {
-                error("Calification team is incorrect");
-            }
+            $calificationteam = $DB->get_record("quest_calification_teams",
+                    array("teamid" => $calificationuser->teamid, "questid" => $quest->id), '*', MUST_EXIST);
         }
     }
     // ...first get the assignment elements for maxscores and weights....
@@ -3760,14 +3625,15 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 
     $timenow = time();
     // ...don't fiddle about, delete all the old and add the new!.
-    $formraw = new stdclass();
-    $formraw->grade = $DB->get_records("quest_elements_assessments", array("assessmentid" => $assessment->id));
-    if ($formraw->grade) {
-        foreach ($formraw->grade as $graderaw) {
-            $form->grade[$graderaw->elementno] = $graderaw->calification; // ...to renumber index.
+    $grades = [];
+    $gradesraw = new stdclass();
+    $gradesraw->grade = $DB->get_records("quest_elements_assessments", array("assessmentid" => $assessment->id));
+    if ($gradesraw->grade) {
+        foreach ($gradesraw->grade as $graderaw) {
+            $grades[$graderaw->elementno] = $graderaw->calification; // ...to renumber index.
         }
     } else {
-        $form->grade = null;
+        $grades = null;
     }
 
     if ($quest->validateassessment == 1) {
@@ -3863,7 +3729,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
+            foreach ($grades as $key => $grade) {
                 $maxscore = $elements[$key]->maxscore;
                 $weight = $questeweightsrecalif[$elements[$key]->weight];
                 if ($weight > 0) {
@@ -3897,122 +3763,8 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             }
 
             break;
-
-        case 2: // ...error banded graded.
-                // Insert all the elements that contain something.
-            $error = 0.0;
-            for ($i = 0; $i < $quest->nelements; $i++) {
-
-                if (empty($form->grade[$i])) {
-                    $error += $questeweightsrecalif[$elements[$i]->weight];
-                }
-            }
-            // ...now save the adjustment.
-            $i = $quest->nelements;
-
-            $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
-            // ...do sanity check.
-            if ($rawgrade < 0) {
-                $rawgrade = 0;
-            } else if ($rawgrade > $quest->maxcalification) {
-                $rawgrade = $quest->maxcalification;
-            }
-            $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $quest->maxcalification);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
-
-                $submission->points = $grade;
-
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
-                }
-                if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
-                    $answer->phase = 2;
-                }
-            } else {
-                $points = quest_get_points($submission, $quest, $answer);
-                $grade = $points * ($rawgrade / $quest->maxcalification);
-                $submission->points = $grade;
-                if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
-                }
-                $answer->phase = 1;
-            }
-
-            break;
-
-        case 3: // ...criteria grading.
-                // ...save in the selected criteria value in element zero.
-            $rawgrade = ($elements[$form->grade[0]]->maxscore + $form->grade[1]);
-            $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $quest->maxcalification);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
-
-                $submission->points = $grade;
-
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
-                }
-                if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
-                    $answer->phase = 2;
-                }
-            } else {
-                $points = quest_get_points($submission, $quest, $answer);
-                $grade = $points * ($rawgrade / $quest->maxcalification);
-                $submission->points = $grade;
-                if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
-                }
-                $answer->phase = 1;
-            }
-
-            break;
-
-        case 4: // ...rubric grading (identical to accumulative grading).
-                // Insert all the elements that contain something.
-                // ...now work out the grade....
-            $rawgrade = 0;
-            $totalweight = 0;
-            foreach ($form->grade as $key => $grade) {
-                $maxscore = $elements[$key]->maxscore;
-                $weight = $questeweightsrecalif[$elements[$key]->weight];
-                if ($weight > 0) {
-                    $totalweight += $weight;
-                }
-                $rawgrade += ($grade / $maxscore) * $weight;
-            }
-
-            $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $totalweight);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
-
-                $submission->points = $grade;
-
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
-                }
-                if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
-                    $answer->phase = 2;
-                }
-            } else {
-
-                $submission->points = $grade;
-                if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
-                }
-                $answer->phase = 1;
-            }
-
-            break;
+        default:
+            throw new InvalidArgumentException('Unknown grading strategy.');
     } // ...end of switch.
 
     $answer->grade = 100 * ($grade / $points);
@@ -4062,8 +3814,9 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
         }
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            print_heading(get_string("nostudentsyet"));
-            print_footer($course);
+            global $OUTPUT;
+            echo $OUTPUT->heading(get_string('nostudentsyet'));
+            echo $OUTPUT->footer();
             exit();
         }
         // JPC 2013-11-28 disable excesive notifications.
@@ -4090,8 +3843,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
  * @return boolean
  */
 function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
-    global $CFG, $USER, $DB;
-
+    global $CFG, $USER, $DB, $OUTPUT;
     $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?.
     $groupmode = groups_get_activity_group($cm); // Groups are being used?.
     $currentgroup = groups_get_course_group($course);
@@ -4177,7 +3929,10 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
 
     $columns = array('firstname', 'lastname', 'teamname', 'ncomponents');
     $table->width = "95%";
-
+    $firstname = '';
+    $lastname = '';
+    $teamname = '';
+    $ncomponents = 0;
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sortteam != $column) {
@@ -4195,7 +3950,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
         $$column = "<a href=\"view.php?id=$cm->id&amp;sortteam=$column&amp;dirteam=$columndir\">" . $string[$column] .
                  "</a>$columnicon";
     }
-
+    // Variables $firstname, $lastname, $teamname, $ncomponents are defined by $$column assignment above.
     $table->head = array("$firstname / $lastname", "$teamname", "$ncomponents");
 
     echo html_writer::table($table);
@@ -4436,7 +4191,7 @@ function quest_next_submission_url($submission, $cm) {
  * can 'mod/quest:attempt')
  * @param int $courseid
  * @return array of user records */
-function get_course_students($courseid) {
+function quest_get_course_students($courseid) {
     $context = context_course::instance($courseid);
     $members = get_users_by_capability($context, 'mod/quest:attempt');
     return $members;
@@ -4838,7 +4593,7 @@ function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
 function quest_get_maxpoints_group($groupid, $quest) {
     global $DB;
     $maxpoints = 0;
-    if ($students = get_course_students($quest->course)) {
+    if ($students = quest_get_course_students($quest->course)) {
         foreach ($students as $student) {
             if ($groupmember = $DB->get_record("groups_members", array("userid" => $student->id))) {
                 if ($groupid == $groupmember->groupid) {
@@ -4873,7 +4628,7 @@ function quest_get_maxpoints_group($groupid, $quest) {
 function quest_get_maxpoints($quest) {
     global $DB;
     $maxpoints = 0;
-    if ($students = get_course_students($quest->course)) {
+    if ($students = quest_get_course_students($quest->course)) {
         foreach ($students as $student) {
 
             if ($calificationstudent = $DB->get_record("quest_calification_users",
@@ -4907,7 +4662,7 @@ function quest_get_maxpoints($quest) {
 function quest_get_maxpoints_group_teams($groupid, $quest) {
     global $DB;
     $maxpoints = 0;
-    if ($students = get_course_students($quest->course)) {
+    if ($students = quest_get_course_students($quest->course)) {
         foreach ($students as $student) {
             if ($groupmember = $DB->get_record("groups_members", array("userid" => $student->id))) {
                 if ($groupid == $groupmember->groupid) {

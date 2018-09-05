@@ -50,8 +50,6 @@ $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST)
 
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
-$thispageurl = new moodle_url('/mod/quest/viewclasification.php', $_GET);
-$PAGE->set_url($thispageurl);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
@@ -314,15 +312,6 @@ if ($action == 'global') {
                                         // Print settings and things in a table across the top.
     echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
 
-    // Allow the teacher to change groups (for this session).
-    if ($groupmode and isteacheredit($course->id)) {
-        if ($groups = $DB->get_records_menu("groups", "courseid", $course->id, "name ASC", "id,name")) {
-            echo '<td>';
-            print_group_menu($groups, $groupmode, $currentgroup,
-                    "viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC");
-            echo '</td>';
-        }
-    }
     // Print admin links.
     echo "<td align=\"right\">";
 

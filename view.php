@@ -60,7 +60,7 @@ $ismanager = has_capability('mod/quest:manage', $context);
 require_capability('mod/quest:view', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-    error("Module hidden.");
+    print_error('modulehiddenerror', 'quest');
 }
 
 // Mark as viewed.
@@ -158,7 +158,7 @@ if (has_capability('mod/quest:manage', $context)) {
                     quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam);
                     echo $OUTPUT->footer();
                     exit();
-                } else if (!empty($teamname) && trim($teamname) != '') {
+                } else {
                     // Team assignation or creation.
                     if ($team = $DB->get_record("quest_teams",
                             array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {

@@ -248,15 +248,17 @@ if ($action == 'displaygradingform') {
 } else if ($action == 'insertelements') {
     // Insert/update assignment elements (for teachers).
     if (!$ismanager) {
-        error("Only teachers can look at this page");
+        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
-    $form = data_submitted();
+    $descriptions = required_param_array('description', PARAM_ALPHANUMEXT);
+    $weights = optional_param_array('weight', null, PARAM_INT);
+    $scales = optional_param_array('scale', null, PARAM_INT);
     // Let's not fool around here, dump the junk!
     $DB->delete_records("quest_elementsautor", array("questid" => $quest->id));
     // Determine wich type of grading.
     switch ($quest->gradingstrategyautor) {
         case 0: // ...no grading insert all the elements that contain something.
-            foreach ($form->description as $key => $description) {
+            foreach ($descriptions as $key => $description) {
                 if ($description) {
                     unset($element);
                     $element = new stdClass();
@@ -264,97 +266,41 @@ if ($action == 'displaygradingform') {
                     $element->questid = $quest->id;
                     $element->elementno = $key;
                     if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_elementsautor");
                     }
                 }
             }
             break;
         case 1: // Accumulative grading.
                 // Insert all the elements that contain something.
-            foreach ($form->description as $key => $description) {
+            foreach ($descriptions as $key => $description) {
                 if ($description) {
                     $element = new stdClass();
                     $element->description = $description;
                     $element->questid = $quest->id;
                     $element->elementno = $key;
-                    if (isset($form->scale[$key])) {
-                        $element->scale = $form->scale[$key];
-                        switch ($questscales[$form->scale[$key]]['type']) {
+                    if (isset($scales[$key])) {
+                        $element->scale = $scales[$key];
+                        switch ($questscales[$scales[$key]]['type']) {
                             case 'radio':
-                                $element->maxscore = $questscales[$form->scale[$key]]['size'] - 1;
+                                $element->maxscore = $questscales[$scales[$key]]['size'] - 1;
                                 break;
                             case 'selection':
-                                $element->maxscore = $questscales[$form->scale[$key]]['size'];
+                                $element->maxscore = $questscales[$scales[$key]]['size'];
                                 break;
                         }
                     }
-                    if (isset($form->weight[$key])) {
-                        $element->weight = $form->weight[$key];
+                    if (isset($weights[$key])) {
+                        $element->weight = $weights[$key];
                     }
                     if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                        error("Could not insert quest element!");
+                        print_error('inserterror', 'quest', null, "quest_elementsautor");
                     }
                 }
             }
             break;
-
-        case 2: // Error banded grading...
-        case 3: // ...and criterion grading
-                // Insert all the elements that contain something, the number of descriptions is one
-                // less than the number of grades.
-            foreach ($form->maxscore as $key => $themaxscore) {
-                unset($element);
-                $element->questid = $quest->id;
-                $element->elementno = $key;
-                $element->maxscore = $themaxscore;
-                if (isset($form->description[$key])) {
-                    $element->description = $form->description[$key];
-                }
-                if (isset($form->weight[$key])) {
-                    $element->weight = $form->weight[$key];
-                }
-                if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                    error("Could not insert quest element!");
-                }
-            }
-            break;
-
-        case 4: // ...and criteria grading
-                // Insert all the elements that contain something.
-            foreach ($form->description as $key => $description) {
-                unset($element);
-                $element->questid = $quest->id;
-                $element->elementno = $key;
-                $element->description = $description;
-                $element->weight = $form->weight[$key];
-                for ($j = 0; $j < 5; $j++) {
-                    if (empty($form->rubric[$key][$j])) {
-                        break;
-                    }
-                }
-                $element->maxscore = $j - 1;
-                if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                    error("Could not insert quest element!");
-                }
-            }
-            // Let's not fool around here, dump the junk!
-            $DB->delete_records("quest_rubrics_autor", "questid", $quest->id);
-            for ($i = 0; $i < $quest->nelementsautor; $i++) {
-                for ($j = 0; $j < 5; $j++) {
-                    unset($element);
-                    if (empty($form->rubric[$i][$j])) { // OK to have an element with fewer than 5 items.
-                        break;
-                    }
-                    $element->questid = $quest->id;
-                    $element->elementno = $i;
-                    $element->rubricno = $j;
-                    $element->description = $form->rubric[$i][$j];
-                    if (!$element->id = $DB->insert_record("quest_rubrics_autor", $element)) {
-                        error("Could not insert quest element!");
-                    }
-                }
-            }
-            break;
+        default:
+            throw new InvalidArgumentException('Unknown grading strategy.');
     } // end of switch
     redirect("view.php?id=$cm->id", get_string("savedok", "quest"));
 } else if ($action == 'updateassessment') {
@@ -384,7 +330,6 @@ if ($action == 'displaygradingform') {
     } else { // Form grading
              // don't fiddle about, delete all the old and add the new!
         $DB->delete_records("quest_items_assesments_autor", array("assessmentautorid" => $assessment->id));
-        $form = data_submitted('nomatch'); // Nomatch because we can come from assess.php.
         $numelements = count($elementsraw);
         // Determine what kind of grading we have.
         switch ($quest->gradingstrategyautor) {
@@ -395,8 +340,8 @@ if ($action == 'displaygradingform') {
                     $element->questid = $quest->id;
                     $element->assessmentautorid = $assessment->id;
                     $element->elementno = $i;
-                    $element->answer = $form->{"feedback_$i"};
-                    $element->commentteacher = $form->generalcomment;
+                    $element->answer = optional_param("feedback_$i", null, PARAM_TEXT);
+                    $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                         print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
                     }
@@ -405,16 +350,18 @@ if ($action == 'displaygradingform') {
                 break;
             case 1: // Accumulative grading.
                     // Insert all the elements that contain something.
-                foreach ($form->grade as $key => $thegrade) {
+                $grades = optional_param_array('grade', [], PARAM_FLOAT);
+                foreach ($grades as $key => $thegrade) {
                     unset($element);
                     $element = new stdclass();
                     $element->questid = $quest->id;
                     $element->userid = $USER->id;
                     $element->assessmentautorid = $assessment->id;
                     $element->elementno = $key;
-                    $element->answer = $form->{"feedback_$key"};
+                    $element->answer = optional_param("feedback_$key", null, PARAM_TEXT);
                     $element->calification = $thegrade;
-                    $element->commentteacher = $form->generalcomment; // TODO: EVP CHECK THIS... DATA BASE
+                    $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
+                                                                      // TODO: EVP CHECK THIS... DATA BASE
                                                                       // CONTAINS THIS FIELD BUT I
                                                                       // do not find it in the form and
                                                                       // I have included this to
@@ -427,7 +374,7 @@ if ($action == 'displaygradingform') {
                 // Now work out the grade...
                 $rawgrade = 0;
                 $totalweight = 0;
-                foreach ($form->grade as $key => $grade) {
+                foreach ($grades as $key => $grade) {
                     $maxscore = $elements[$key]->maxscore;
                     $weight = $questeweights[$elements[$key]->weight];
                     if ($weight > 0) {
@@ -441,94 +388,8 @@ if ($action == 'displaygradingform') {
                 }
                 $grade = $points * ($rawgrade / $totalweight);
                 break;
-            case 2: // Error banded graded.
-                    // Insert all the elements that contain something.
-                $error = 0.0;
-                for ($i = 0; $i < $numelements; $i++) {
-                    unset($element);
-                    $element->questid = $quest->id;
-                    $element->assessmentid = $assessment->id;
-                    $element->elementno = $i;
-                    $element->answer = $form->{"feedback_$i"};
-                    $element->calification = $form->grade[$i];
-                    if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                        error("Could not insert quest grade!");
-                    }
-                    if (empty($form->grade[$i])) {
-                        $error += $questeweights[$elements[$i]->weight];
-                    }
-                }
-                // Now save the adjustment.
-                $element = new stdClass();
-                $i = $numelements;
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = $i;
-                $element->calification = $form->grade[$i];
-                if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                    error("Could not insert quest grade!");
-                }
-                $rawgrade = ($elements[intval($error + 0.5)]->maxscore + $form->grade[$i]);
-                // Do sanity check.
-                if ($rawgrade < 0) {
-                    $rawgrade = 0;
-                } else if ($rawgrade > $quest->maxcalification) {
-                    $rawgrade = $quest->maxcalification;
-                }
-                echo "<b>" . get_string("weightederrorcount", "quest", intval($error + 0.5)) . "</b>\n";
-                $grade = $points * ($rawgrade / $quest->maxcalification);
-                break;
-            case 3: // Criteria grading.
-                    // Save in the selected criteria value in element zero.
-                unset($element);
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = 0;
-                $element->calification = $form->grade[0];
-                if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                    error("Could not insert quest grade!");
-                }
-                // Now save the adjustment in element one.
-                unset($element);
-                $element->questid = $quest->id;
-                $element->assessmentid = $assessment->id;
-                $element->elementno = 1;
-                $element->calification = $form->grade[1];
-                if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                    error("Could not insert quest grade!");
-                }
-                $rawgrade = ($elements[$form->grade[0]]->maxscore + $form->grade[1]);
-
-                $grade = $points * ($rawgrade / $quest->maxcalification);
-
-                break;
-
-            case 4: // Rubric grading (identical to accumulative grading).
-                    // Insert all the elements that contain something.
-                foreach ($form->grade as $key => $thegrade) {
-                    unset($element);
-                    $element->questid = $quest->id;
-                    $element->assessmentid = $assessment->id;
-                    $element->elementno = $key;
-                    $element->answer = $form->{"feedback_$key"};
-                    $element->calification = $thegrade;
-                    if (!$element->id = $DB->insert_record("quest_items_asesments_autor", $element)) {
-                        error("Could not insert quest grade!");
-                    }
-                }
-                // Now work out the grade...
-                $rawgrade = 0;
-                $totalweight = 0;
-                foreach ($form->grade as $key => $grade) {
-                    $maxscore = $elements[$key]->maxscore;
-                    $weight = $questeweights[$elements[$key]->weight];
-                    if ($weight > 0) {
-                        $totalweight += $weight;
-                    }
-                    $rawgrade += ($grade / $maxscore) * $weight;
-                }
-                $grade = $points * ($rawgrade / $totalweight);
-                break;
+            default:
+                throw new InvalidArgumentException('Unknown grading strategy.');
         }
     }
 
@@ -537,11 +398,13 @@ if ($action == 'displaygradingform') {
     $assessment->dateassessment = $timenow;
     $submission->evaluated = 1;
     // Any comment?
-    if (!empty($form->generalcomment)) {
-        $assessment->commentsteacher = $form->generalcomment;
+    $generalcomment = optional_param('generalcomment', null, PARAM_TEXT);
+    if (!empty($generalcomment)) {
+        $assessment->commentsteacher = $generalcomment;
     }
-    if (!empty($form->generalteachercomment)) {
-        $assessment->commentsforteacher = $form->generalteachercomment;
+    $generalteachercomment = optional_param('generalteachercomment', null, PARAM_TEXT);
+    if (!empty($generalteachercomment)) {
+        $assessment->commentsforteacher = $generalteachercomment;
     }
     quest_update_submission($submission); // Weird bug with number precission and decimal point in
                                           // Moodle 2.5+.

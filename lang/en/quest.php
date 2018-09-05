@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
@@ -73,6 +72,7 @@ $string['assessthisanswer'] = 'Assess this answer';
 $string['assignmentnotinthecorrectphase'] = 'Assignment is not in the correctphase';
 $string['attachment'] = 'Attachment';
 $string['attachments'] = 'Attachments';
+$string['attachmentsnoauthorizedupdate'] = 'You are not authorized to modify these attachments';
 
 $string['authorofsubmission'] = 'Author of submission';
 $string['averageerror'] = 'Average error';
@@ -84,7 +84,7 @@ $string['cantRespond_WARN'] = 'Don\'t have permissions to answer.';
 $string['cantRespond_WARN_notingroup_or_challengeended'] = 'You can\'t answer. You don\'t belong to this group or the challenge is ended.';
 $string['calculationoffinalgrades'] = 'Calculation of final grades';
 $string['calification'] = 'Score';
-$string['calificationautor'] = 'Calification from autor of the challenge';
+$string['calificationautor'] = 'Calification for the author of the challenge';
 $string['calificationdate'] = 'Publishing of calification date';
 $string['calificationdateevent'] = 'Califications for {$a} have been published';
 $string['calificationthisquest'] = 'Get califications from module QUESTOURnament';
@@ -324,7 +324,7 @@ $string['managingassignment'] = 'Administrar tarea';
 
 $string['maximumsize'] = 'Largest size';
 $string['modif'] = 'Modify';
-$string['modifanswersubmission'] = 'Modify answer {$a}';
+$string['modifanswersubmission'] = 'Modify answer for challenge {$a}';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['modulehiddenerror'] = 'Module is hidden.';
 $string['movingtophase'] = 'Changing to phase {$a}';
@@ -467,6 +467,14 @@ $string['quest:deleteattempts'] = 'Delete own and other\'s answers';
 $string['quest:deletechallengeall'] = 'Delete own and other\'s challenges';
 $string['quest:deletechallengemine'] = 'Delete own challenges';
 $string['quest:downloadlogs'] = 'Download current questournament\'s raw reports';
+$string['quest:generateCSVlogs'] = 'Generate CSV report for:';
+$string['quest:generateLogsReport'] = 'Logs';
+$string['quest:generateIPAccessesReport'] = 'IP Addresses Accesses';
+$string['quest:generateActivityReport'] = 'Activity';
+$string['quest:notifylocale'] = '<p>For your locale "<b>{$a->localelang}</b>" the decimal separator is "'.
+        '<b>{$a->localeconfigdecimal}</b>". ' .
+        'Check that your SpreadSheet interprets correctly this character.</p>';
+$string['quest:notifyemptylogs'] = 'Last query with no results. Check if legacy log is enabled in this server.<br/>';
 $string['quest:editattempt'] = 'Edit anyone\'s submitted answer';
 $string['quest:editattemptmine'] = 'Edit owned submitted answer';
 $string['quest:editchallengeall'] = 'Edit anyone\'s submitted challenge';
@@ -552,6 +560,7 @@ $string['submissionendlabel'] = 'Challenge ends on {$a}'; // TODO evp buscar uso
                                                           // submissionendlabel.
 $string['submissionexisty'] = 'There is another challenge with that title already. Enter another title.';
 $string['submissions'] = 'Challenges';
+$string['submissionsnoauthorizedupdate'] = 'You are not authorized to update this challenge';
 $string['submissionsnolongerallowed'] = 'Submissions no longer allowed';
 $string['submissionstartlabel'] = 'Challenge starts on {$a}'; // TODO evp buscar submissionstart en el
                                                               // código y cambiarlo por
@@ -634,8 +643,7 @@ $string['answersubmission_help'] = '<P align="justify">This page allows to answe
   <li><strong>Attachments</strong>: if the sending of attachments is allowed, it will be possible to add them at the end of the body of the answer to be submitted.</li>
 </ul>
 <p>The screen will be shown to the student divided in two areas, the upper one will contain a textarea to introduce the answer, and the author of the answer will be asked about his/her opinion about the level of difficulty of the challenge proposed by choosing among one of a set of the options presented, while in the lower one the challenge to be answered will be shown.</p>
-<p align="justify">Beside the text Answer there is an icon with the image of a square root. When this icon is clicked, a screen in which any expression can be tested with the TEX filter provided by Moodle, is shown. The TEX filter turns expresions introduced with a correct sintaxis into mathematic equations with the same appearance that if they were shown by the Microsoft Word equation editor.</p>
-<p align="justify">The PreviewAnswer button allows to access a screen that shows the aspect of the answer to be submitted after the Moodle text filters have been applied. This screen is the <a href="help.php?component=quest&identifier=windowpreview"">PreviewAnswer Window</a>. The SaveAnswer button allows to save and submit the answer that had been introduced.</p>';
+<p align="justify">Beside the text Answer there is an icon with the image of a square root. When this icon is clicked, a screen in which any expression can be tested with the TEX filter provided by Moodle, is shown. The TEX filter turns expresions introduced with a correct sintaxis into mathematic equations with the same appearance that if they were shown by the Microsoft Word equation editor.</p>';
 $string['approvesubmission'] = 'Approve/Reject Challenge/Question';
 $string['approvesubmission_help'] = '<P align="justify">This page allows the teacher to approve, save or delete a challenge proposed by a student. The actions that can be taken are described below:</P>
 <ul>
@@ -987,3 +995,4 @@ $string['messageprovider:challenge_start'] = 'Challenges start: a challenge has 
 $string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
 $string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
 $string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';
+$string['nopermissionassessment'] = 'You have not permissions to view this assessment. You should be teacher or challenge\'s author.';
