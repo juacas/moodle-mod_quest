@@ -50,8 +50,6 @@ $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST)
 
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
-$thispageurl = new moodle_url('/mod/quest/viewclasification.php', $_GET);
-$PAGE->set_url($thispageurl);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
