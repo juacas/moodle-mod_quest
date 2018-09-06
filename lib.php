@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Library of functions and constants for module quest
  * quest constants and standard Moodle functions plus the quest functions
@@ -29,7 +28,6 @@
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  */
-use core_calendar\local\event\proxies\std_proxy;
 
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
@@ -38,7 +36,7 @@ require_once($CFG->dirroot . '/enrol/locallib.php');
 require_once('locallib.php');
 /**
  *
- * @param unknown $quest
+ * @param \stdClass $quest
  * @return boolean|number
  */
 function quest_add_instance($quest) {
@@ -116,7 +114,7 @@ function quest_supports($feature) {
 }
 /**
  *
- * @param unknown $newsubmission
+ * @param \stdClass $newsubmission
  * @return boolean
  */
 function quest_check_submission_dates($newsubmission) {
@@ -126,7 +124,7 @@ function quest_check_submission_dates($newsubmission) {
 }
 /**
  *
- * @param unknown $newsubmission
+ * @param \stdClass $newsubmission
  * @return boolean
  */
 function quest_check_submission_text($newsubmission) {
@@ -145,7 +143,7 @@ function quest_check_submission_text($newsubmission) {
  * @global stdClass $CFG
  * @global stdClass $DB
  * @param stdClass $quest cminfo
- * @return type */
+ * @return bool */
 function quest_update_instance($quest, $form) {
     // Given an object containing all the necessary data,
     // (defined by the form in mod_.ht_form.php) this function
@@ -177,7 +175,7 @@ function quest_update_instance($quest, $form) {
 }
 /**
  *
- * @param unknown $id
+ * @param int $id
  * @return boolean
  */
 function quest_delete_instance($id) {
@@ -253,12 +251,12 @@ function quest_delete_instance($id) {
 }
 /**
  *
- * @param unknown $course
- * @param unknown $cm
- * @param unknown $context
- * @param unknown $filearea
- * @param unknown $args
- * @param unknown $forcedownload
+ * @param \stdClass $course
+ * @param \stdClass $cm
+ * @param \stdClass $context
+ * @param string $filearea
+ * @param string[] $args
+ * @param bool $forcedownload
  * @param array $options
  * @return boolean
  */
@@ -318,10 +316,10 @@ function quest_save_intro_draft_files($formdata, $ctx) {
 }
 /**
  *
- * @param unknown $course
- * @param unknown $user
- * @param unknown $mod
- * @param unknown $quest
+ * @param \stdClass $course
+ * @param \stdClass $user
+ * @param \stdClass $mod
+ * @param \stdClass $quest
  * @return NULL
  */
 function quest_user_outline($course, $user, $mod, $quest) {
@@ -356,10 +354,10 @@ function quest_user_outline($course, $user, $mod, $quest) {
 }
 /**
  *
- * @param unknown $course
- * @param unknown $user
- * @param unknown $mod
- * @param unknown $quest
+ * @param \stdClass $course
+ * @param \stdClass $user
+ * @param \stdClass $mod
+ * @param \stdClass $quest
  */
 function quest_user_complete($course, $user, $mod, $quest) {
     // Print a detailed representation of what a user has done with
@@ -415,9 +413,9 @@ function quest_user_complete($course, $user, $mod, $quest) {
 }
 /**
  *
- * @param unknown $course
- * @param unknown $submission
- * @param unknown $user
+ * @param \stdClass $course
+ * @param \stdClass $submission
+ * @param \stdClass $user
  */
 function quest_print_feedback($course, $submission, $user) {
     global $CFG, $rating, $DB;
@@ -520,9 +518,9 @@ function quest_print_feedback($course, $submission, $user) {
 }
 /**
  *
- * @param unknown $course
- * @param unknown $isteacher
- * @param unknown $timestart
+ * @param \stdClass $course
+ * @param bool $isteacher
+ * @param int $timestart
  * @return boolean
  */
 function quest_is_recent_activity($course, $isteacher, $timestart) {
@@ -551,7 +549,7 @@ function quest_is_recent_activity($course, $isteacher, $timestart) {
 }
 
 /** Get one user that act as a teacher
- * @param unknown $courseid */
+ * @param \stdClass $courseid */
 function quest_get_teacher($courseid) {
     $context = context_course::instance($courseid);
     $members = get_users_by_capability($context, 'mod/quest:manage');
@@ -560,13 +558,13 @@ function quest_get_teacher($courseid) {
 
 /**
  *
- * @param unknown $course
- * @param unknown $quest
- * @param unknown $submission
- * @param unknown $userfrom
- * @param unknown $userto
- * @param unknown $user
- * @param unknown $cm
+ * @param \stdClass $course
+ * @param \stdClass $quest
+ * @param \stdClass $submission
+ * @param \stdClass $userfrom
+ * @param \stdClass $userto
+ * @param \stdClass $user
+ * @param \stdClass $cm
  * @return string
  */
 function quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, $user, $cm) {
@@ -611,13 +609,13 @@ function quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, 
 }
 /**
  *
- * @param unknown $course
- * @param unknown $quest
- * @param unknown $submission
- * @param unknown $userfrom
- * @param unknown $userto
- * @param unknown $user
- * @param unknown $cm
+ * @param \stdClass $course
+ * @param \stdClass $quest
+ * @param \stdClass $submission
+ * @param \stdClass $userfrom
+ * @param \stdClass $userto
+ * @param \stdClass $user
+ * @param \stdClass $cm
  * @return string
  */
 function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, $user, $cm) {
@@ -645,13 +643,13 @@ function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, 
 }
 /**
  *
- * @param unknown $quest
- * @param unknown $userfrom
- * @param unknown $userto
- * @param unknown $course
- * @param unknown $user
- * @param unknown $submission
- * @param unknown $cm
+ * @param \stdClass $quest
+ * @param \stdClass $userfrom
+ * @param \stdClass $userto
+ * @param \stdClass $course
+ * @param \stdClass $user
+ * @param \stdClass $submission
+ * @param \stdClass $cm
  * @return string
  */
 function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submission, $cm) {
@@ -859,8 +857,8 @@ function quest_update_grades($quest, $userid = 0, $nullifnone = true) {
 }
 /**
  *
- * @param unknown $questid
- * @return unknown|array
+ * @param int $questid
+ * @return array
  */
 function quest_get_participants($questid) {
     // Must return an array of user records (all data) who are participants
@@ -941,10 +939,10 @@ function quest_refresh_events($courseid = 0) {
 }
 /**
  *
- * @param unknown $activities
- * @param unknown $index
- * @param unknown $sincetime
- * @param unknown $courseid
+ * @param \stdClass[] $activities
+ * @param int $index
+ * @param int $sincetime
+ * @param \stdClass $courseid
  * @param string $questcmid
  * @param string $user
  * @param string $groupid
@@ -1038,7 +1036,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
 
             if (empty($groupid) || groups_is_member($groupid, $post->userid)) {
 
-                $tmpactivity = new Object();
+                $tmpactivity = new \stdClass();
 
                 $tmpactivity->type = "quest";
                 $tmpactivity->defaultindex = $index;
@@ -1069,10 +1067,10 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
  * @global type $CFG
  * @global type $USER
  * @global type $OUTPUT
- * @param type $activity
- * @param type $course
- * @param type $detail
- * @return type */
+ * @param \stdClass $activity
+ * @param \stdClass $course
+ * @param bool $detail
+ * @return */
 function quest_print_recent_mod_activity($activity, $course, $detail = false) {
     global $CFG, $USER, $OUTPUT;
 
@@ -1120,7 +1118,7 @@ function quest_print_recent_mod_activity($activity, $course, $detail = false) {
  */
 
 /** Called by course/reset.php
- * @param $mform form passed by reference */
+ * @param moodleform $mform form passed by reference */
 function quest_reset_course_form_definition(&$mform) {
     $mform->addElement('header', 'questournamentheader', get_string('modulenameplural', 'quest'));
 
@@ -1128,7 +1126,7 @@ function quest_reset_course_form_definition(&$mform) {
 }
 /**
  * Course reset form defaults.
- * @param unknown $course
+ * @param \stdClass $course
  * @return number[]
  */
 function quest_reset_course_form_defaults($course) {
@@ -1139,7 +1137,7 @@ function quest_reset_course_form_defaults($course) {
  * This function is used by the reset_course_userdata function in moodlelib.
  * This function will remove all answers, teams, and evaluations from the specified questournament
  * and clean up any related data.
- * @param $data the data submitted from the reset course.
+ * @param \stdClass $data the data submitted from the reset course.
  * @return array status array */
 function quest_reset_userdata($data) {
     global $CFG, $DB;
@@ -1286,8 +1284,8 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
 }
 /**
  *
- * @param unknown $submission
- * @param unknown $user
+ * @param \stdClass $submission
+ * @param \stdClass $user
  * @return array
  */
 function quest_get_user_answers($submission, $user) {
@@ -1297,7 +1295,7 @@ function quest_get_user_answers($submission, $user) {
 }
 /**
  *
- * @param unknown $submission
+ * @param \stdClass $submission
  * @return array
  */
 function quest_get_submission_answers($submission) {
@@ -1306,8 +1304,8 @@ function quest_get_submission_answers($submission) {
 }
 /**
  *
- * @param unknown $quest
- * @param unknown $user
+ * @param \stdClass $quest
+ * @param \stdClass $user
  * @return array
  */
 function quest_get_user_answer($quest, $user) {
@@ -1317,8 +1315,8 @@ function quest_get_user_answer($quest, $user) {
 }
 /**
  *
- * @param unknown $quest
- * @param unknown $user
+ * @param \stdClass $quest
+ * @param \stdClass $user
  * @return array
  */
 function quest_get_user_assessments($quest, $user) {
@@ -1328,7 +1326,7 @@ function quest_get_user_assessments($quest, $user) {
 }
 /**
  *
- * @param unknown $answer
+ * @param \stdClass $answer
  * @return array
  */
 function quest_get_user_assessment($answer) {
@@ -1338,7 +1336,7 @@ function quest_get_user_assessment($answer) {
 }
 /**
  * @param stdClass $quest
- * @return Ambigous <number, unknown> */
+ * @return number */
 function quest_get_maxpoints_teams(stdClass $quest) {
     global $DB;
     $maxpoints = -1;

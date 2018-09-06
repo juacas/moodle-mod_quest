@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -47,8 +46,10 @@ require_once('base.php');
 class quest_viewed extends base {
 
     /**
+     * Populate event from arguments
+     * @param \stdClass $user
      * @param \stdClass $quest
-     * @param \stdClass $cm
+     * @param \cm_info $cm
      * @return quest_viewed */
     public static function create_from_parts($user, \stdClass $quest, \cm_info $cm) {
         $url = "/mod/quest/view.php?id=$cm->id";

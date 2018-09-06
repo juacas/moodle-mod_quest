@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
  * Module developed at the University of Valladolid
@@ -47,11 +46,11 @@ require_once('base.php');
 class answer_assessed extends base {
 
     /**
-     *
+     * Populate event from arguments.
      * @param \stdClass $challenge
      * @param \stdClass $answer
      * @param \stdClass $assessment
-     * @param unknown $cm
+     * @param \stdClass $cm
      * @return \mod_quest\event\answer_assessed
      */
     public static function create_from_parts(\stdClass $challenge, \stdClass $answer, \stdClass $assessment, $cm) {
