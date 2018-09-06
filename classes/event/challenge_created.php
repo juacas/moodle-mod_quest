@@ -46,9 +46,9 @@ require_once('base.php');
 class challenge_created extends base {
 
     /**
-     *
-     * @param unknown $challenge
-     * @param unknown $cm
+     * Populate event from arguments
+     * @param \stdClass $challenge
+     * @param \cm_info $cm
      * @return \mod_quest\event\challenge_created
      */
     public static function create_from_parts($challenge, $cm) {

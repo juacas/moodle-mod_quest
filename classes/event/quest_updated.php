@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
  * Module developed at the University of Valladolid
@@ -30,7 +29,6 @@ namespace mod_quest\event;
 defined('MOODLE_INTERNAL') || die();
 require_once('base.php');
 
-
 /** The user modifies the Quest caracteristics
  *
  * @property-read array $other {
@@ -45,15 +43,14 @@ require_once('base.php');
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 class quest_updated extends base {
-
     /**
-     *
-     * @param unknown $courseid
-     * @param unknown $userid
-     * @param unknown $cmid
-     * @param unknown $activityid
-     * @param unknown $url
-     * @param unknown $info
+     * Populate event from arguments
+     * @param int $courseid
+     * @param int $userid
+     * @param int $cmid
+     * @param int $activityid
+     * @param string $url
+     * @param string $info
      * @return \mod_quest\event\quest_updated
      */
     public static function create_from_parts($courseid, $userid, $cmid, $activityid, $url, $info) {

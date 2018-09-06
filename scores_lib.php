@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once("locallib.php");
 /**
  * TODO use $quest record.
- * @param unknown $questid
+ * @param int $questid
  */
 function updateallteams($questid) {
     global $DB;
@@ -55,7 +55,7 @@ function updateallteams($questid) {
 
 /**
  * TODO use $quest record.
- * @param unknown $questid
+ * @param int $questid
  */
 function updateallusers($questid) {
     global $DB;
@@ -88,8 +88,8 @@ function quest_calculate_pointsanswercorrect_and_date($submission) {
 }
 
 /** Counts and update record for quest_submissions
- * @param unknown $sid
- * @return unknown */
+ * @param int $sid
+ * @return \stdClass */
 function quest_update_submission_counts($sid) {
     global $DB, $message;
     $submission = $DB->get_record("quest_submissions", array('id' => $sid), '*', MUST_EXIST);
@@ -108,7 +108,7 @@ function quest_update_submission_counts($sid) {
 }
 
 /**
- * @param $sid submission id */
+ * @param int $sid submission id */
 function quest_count_submission_answers($sid) {
     global $DB;
     if ($query = $DB->get_record_select("quest_answers", "submissionid=?", array($sid), "count(*) as num")) {
@@ -119,8 +119,8 @@ function quest_count_submission_answers($sid) {
 }
 /**
  *
- * @param unknown $sid
- * @return unknown|number
+ * @param int $sid
+ * @return number
  */
 function quest_count_submission_answers_assesed($sid) {
     global $DB;
@@ -132,8 +132,8 @@ function quest_count_submission_answers_assesed($sid) {
 }
 /**
  *
- * @param unknown $sid
- * @return unknown|number
+ * @param int $sid
+ * @return int
  */
 function quest_count_submission_answers_correct($sid) {
     global $DB;

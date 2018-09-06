@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -47,7 +46,7 @@ require_once('base.php');
 class briefting_viewed extends base {
 
     /**
-     *
+     * Populate event from arguments.
      * @param \stdClass $user
      * @param \stdClass $quest
      * @param \cm_info $cm

@@ -54,21 +54,21 @@ quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 
-$url = new moodle_url('/mod/quest/viewclasification.php', array('id' => $id));
+$thispageurl = new moodle_url('/mod/quest/viewclasification.php', array('id' => $id));
 if ($a !== '') {
-    $url->param('a', $a);
+    $thispageurl->param('a', $a);
 }
 if ($action !== 'global') {
-    $url->param('action', $action);
+    $thispageurl->param('action', $action);
 }
 if ($sort !== 'lastname') {
-    $url->param('sort', $sort);
+    $thispageurl->param('sort', $sort);
 }
 if ($dir !== 'ASC') {
-    $url->param('dir', $dir);
+    $thispageurl->param('dir', $dir);
 }
 
-$PAGE->set_url($url);
+$PAGE->set_url($thispageurl);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->navbar->add(get_string('global', 'quest'));
 $PAGE->set_heading($course->fullname);

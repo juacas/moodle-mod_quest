@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 defined('MOODLE_INTERNAL') || die();
 /** Backup Questournament module
  *
@@ -65,8 +64,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         return $this->prepare_activity_structure($paths);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest($data) {
         global $DB;
@@ -87,8 +86,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->apply_activity_instance($newitemid);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_element($data) {
         global $DB;
@@ -98,8 +97,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_elements', $data);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_particular_element($data) {
         global $DB;
@@ -111,8 +110,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_elements', $data);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_element_autor($data) {
         global $DB;
@@ -123,8 +122,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_elementsautor', $data);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_rubric_autor($data) {
         global $DB;
@@ -139,8 +138,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_rubric($data) {
         global $DB;
@@ -154,8 +153,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_challenge($data) {
         global $DB, $USER;
@@ -187,8 +186,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_challenge', $oldid, $newitemid, true);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_element_assess($data) {
         global $DB;
@@ -201,8 +200,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_elements_assessments', $data);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_team($data) {
         global $DB;
@@ -216,8 +215,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_team', $oldid, $newitemid);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_answer($data) {
         global $DB;
@@ -234,8 +233,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_answer', $oldid, $newitemid, true);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_calification_user($data) {
         global $DB;
@@ -249,8 +248,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_calification_users', $data);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_calification_team($data) {
         global $DB;
@@ -262,8 +261,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('quest_calification_teams', $data);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_assessment($data) {
         global $DB;
@@ -282,8 +281,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_assessment', $oldid, $newitemid);
     }
     /**
-     *
-     * @param unknown $data
+     * Process data for this level of the backup.
+     * @param \stdClass $data
      */
     protected function process_quest_assessment_autor($data) {
         global $DB;
