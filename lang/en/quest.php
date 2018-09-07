@@ -32,13 +32,7 @@ $string['addacomment'] = 'Add a comment';
 $string['addcomment'] = 'Add comment';
 $string['addelement'] = 'Add element';
 $string['addsubmission'] = 'Add challenge';
-$string['afterdeadline'] = 'After dead line: {$a}';
-$string['agreetothisassessment'] = 'Agree to this assessment';
-$string['allgradeshaveamaximumof'] = 'All grades have a maximum of: {$a}';
-$string['allowresubmit'] = 'Allow resubmit';
-$string['alreadyinphase'] = 'Already in phase {$a}';
 $string['amendassessmentelements'] = 'Amend assessment elements';
-$string['amendtitle'] = 'Amend title';
 $string['answer'] = 'Answer';
 $string['responsetochallenge'] = 'Answer to the challenge';
 $string['answercontent'] = 'Answer content';
@@ -47,9 +41,7 @@ $string['answername'] = 'Answer: {$a->title}';
 $string['answer_not_found'] = 'Can not get answer record with id {$a}';
 $string['answernoauthorizedupdate'] = 'You are not authorized to update your answer';
 $string['answers'] = 'Answers.';
-
 $string['approve'] = 'Approve';
-
 $string['assess'] = 'Assess';
 $string['assessedon'] = 'Assessed on {$a}';
 $string['assessment'] = 'Assessment';
@@ -57,16 +49,10 @@ $string['assessmentby'] = 'Assessment by {$a}';
 $string['assessmentcharacteristics'] = 'Characteristics of the assessment';
 $string['assessmentglobal'] = 'Global assessment';
 $string['assessmentgrade'] = 'Assessment grade: {$a}';
-$string['assessmentnotyetagreed'] = 'Assessment not yet agreed';
 $string['assessmentof'] = 'Assessment of {$a}';
 $string['assessmentofthissubmission'] = 'Assessment of this challenge';
 $string['assessments'] = 'Assessments';
-$string['assessmentsareok'] = 'Assessments are ok';
 $string['assessmentsby'] = 'Assessments by {$a}';
-$string['assessmentsdone'] = 'Assessments done';
-$string['assessmentsmustbeagreed'] = 'Assessments must be agreed';
-$string['assessmentwasagreedon'] = 'Assessment was agreed on {$a}';
-$string['assessor'] = 'Assessor';
 $string['assessthisanswer'] = 'Assess this answer';
 
 $string['assignmentnotinthecorrectphase'] = 'Assignment is not in the correctphase';
@@ -75,28 +61,19 @@ $string['attachments'] = 'Attachments';
 $string['attachmentsnoauthorizedupdate'] = 'You are not authorized to modify these attachments';
 
 $string['authorofsubmission'] = 'Author of submission';
-$string['averageerror'] = 'Average error';
-$string['awaitinggradingbyteacher'] = 'Awaiting grading by {$a}';
-$string['beforedeadline'] = 'before dead line: {$a}';
 $string['by'] = 'by';
 $string['bynameondate'] = 'by {$a->name} - {$a->date}';
 $string['cantRespond_WARN'] = 'Don\'t have permissions to answer.';
 $string['cantRespond_WARN_notingroup_or_challengeended'] = 'You can\'t answer. You don\'t belong to this group or the challenge is ended.';
-$string['calculationoffinalgrades'] = 'Calculation of final grades';
 $string['calification'] = 'Score';
 $string['calificationautor'] = 'Calification for the author of the challenge';
-$string['calificationdate'] = 'Publishing of calification date';
-$string['calificationdateevent'] = 'Califications for {$a} have been published';
-$string['calificationthisquest'] = 'Get califications from module QUESTOURnament';
 $string['calification_provisional_msg'] = 'Calification shown may be provisional';
 $string['change'] = 'Save Changes';
-$string['changecalification'] = 'Change calification';
-$string['changemanualcalification'] = 'Change calification manually';
+$string['changemanualcalification'] = 'Change grade manually';
 $string['changeteam'] = 'Manage Teams';
 $string['checkthat'] = 'Check that';
 $string['change'] = 'Guardar Cambios';
 $string['clasification'] = 'Ranking';
-$string['closeassignment'] = 'Close challenge';
 $string['closebeforeopen'] = 'The Close Date of the Questournament must be subsequent to the Start Date';
 $string['comment'] = 'Comment';
 $string['commentby'] = 'Comment by';
@@ -109,18 +86,14 @@ $string['confirmchangeform'] = 'This will change the evaluation form. Are you su
 $string['confirmdelete'] = 'Confirm deletion';
 $string['confirmdeletionofthisitem'] = 'Confirm deletion of this item {$a}';
 $string['correct'] = 'Correct';
-$string['criterion'] = 'Criterion';
 $string['currentphase'] = 'Current phase of QUESTOURnament';
 $string['currentphaseanswer'] = 'Answers phase';
 $string['currentphasesubmission'] = 'Submission phase';
 $string['dateanswer'] = 'Date';
 $string['dateassess'] = 'Assessment date';
-
 $string['dateendevent'] = 'End of QUESTOURnament "{$a}"';
 $string['dateendsubmissionevent'] = 'End of challenge "{$a}"';
-
 $string['dateofstart'] = 'Starting date';
-
 $string['datestartevent'] = 'Starting of QUESTOURnament "{$a}"';
 $string['datestartsubmissionevent'] = 'Starting of challenge "{$a}"';
 $string['datestr'] = '%m/%d/%y<br />%H:%M';
@@ -205,8 +178,7 @@ A challenge has been assessed in
 
 To access this new challenge, please click here:
 
-<a href="{$a->link}">{$a->link}</a>
-';
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailassessmentautorsubject'] = 'Moodle. Challenge assessed in module QUESTOURnament';
 $string['emailassessmentsubject'] = 'Moodle. Answer assessed in module QUESTOURnament';
 $string['emaildeletesubmission'] = 'Hello, {$a->firstname}.
@@ -216,13 +188,9 @@ A challenge has been deleted in
 
 To access the QUESTOURnament, please click here:
 
-<a href="{$a->link}">{$a->link}</a>
-';
+<a href="{$a->link}">{$a->link}</a>';
 $string['emaildeletesubmissionsubject'] = 'Moodle. Challenge deleted in module QUESTOURnament';
-$string['emailevaluatecomment'] = 'Hola, {$a->firstname}.
-
-Se ha empleado el mecanismo de reclamaciones en la evaluación de una respuesta en
-
+$string['emailevaluatecomment'] = 'Hello, {$a->firstname}.
 Complaining mechanism has been started for an assessment in
 \'{$a->sitename} \' site, in the QUESTOURnament \'{$a->name} \', of the challenge \'{$a->title} \', answer \'{$a->secondname} \'.
 
@@ -238,8 +206,7 @@ An answer hase been modified in
 
 To access this answer, please click here:
 
-<a href="{$a->link}">{$a->link}</a>
-';
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailmodifanswersubject'] = 'Moodle. Answer modification in module QUESTOURnament';
 $string['emailchallengeupdate'] = 'Hello, {$a->firstname}.
 
@@ -248,8 +215,7 @@ Challenge modified in
 
 To access the challenge, please click here:
 
-<a href="{$a->link}">{$a->link}</a>
-';
+<a href="{$a->link}">{$a->link}</a>';
 $string['emailchallengeupdatesubject'] = 'Moodle. Challenge modified in module QUESTOURnament';
 $string['emailchallenge_start'] = 'Hello, {$a->firstname}. The challenge <b>\'{$a->title}\'</b> has started in the QUESTOURnament \'{$a->name}\'. (At \'{$a->sitename}\'.)
 To access the site on which the challenge is, please click here:
@@ -263,23 +229,17 @@ Challenge modified in
 
 To access the site on which the challenge is, please click here:
 
-<a href="{$a->link}">{$a->link}</a>
-';
+<a href="{$a->link}">{$a->link}</a>';
 
 $string['emailsavesubject'] = 'Moodle. Changes in challenge in module QUESTOURnament';
 $string['emailtagline'] = 'This e-mail is a copy of the message you sent on \"{$a} \"';
-$string['enternewteam'] = 'Enter new Team';
 $string['enterpassword'] = 'Enter password:';
 $string['enterteam'] = 'Enter Team';
-$string['errorbanded'] = 'Error while creating the band';
 $string['evaluate'] = 'Evaluate';
 $string['evaluation_pending'] = 'Not evaluated';
 $string['excellent'] = 'Excellent';
 $string['exponential'] = 'Exponential';
 $string['feedbackgoeshere'] = 'Feedback goes here';
-$string['finalcalification'] = 'Final score';
-$string['finalcalifications'] = 'Final scores';
-$string['finalcalificationuser'] = 'Final Score';
 $string['firstname'] = 'Firstname';
 $string['generalcomment'] = 'General comment';
 $string['gradingcharacteristics'] = 'Characteristics of grading';
@@ -293,41 +253,21 @@ $string['gradeautor'] = 'Autor\'s Grade';
 $string['graded'] = 'Graded';
 $string['gradedbyteacher'] = 'Graded by {$a}';
 $string['gradeforassessments'] = 'Grade for assessments';
-$string['gradeforbias'] = 'Grade for bias';
-$string['gradeforreliability'] = 'Grade for reliability';
-$string['gradeforstudentsassessment'] = 'Grade for student sassessment';
 $string['gradeofsubmission'] = 'Grade of submission: {$a}';
 
-$string['hidegradesbeforeagreement'] = 'hide grades before agreement';
-$string['includeteachersgrade'] = 'include teacher\'s grade';
 $string['incorrect'] = 'wrong';
 $string['individualcalification'] = 'individual score';
 $string['inserterror'] = 'Could not insert record in table {$a} in database.';
 $string['invaliddates'] = 'Invalid dates. Must be between {$a->questdatestart} and {$a->questdateend}';
 $string['invalidtext'] = 'Text field is blank';
 $string['lastname'] = 'Lastname';
-$string['leaguetable'] = 'Tabla de trabajos entregados';
 $string['legend'] = 'A (B) [C] {$a} <br>A: Answers. B: Correct Answers. <br>C: Not assessed Answers. {$a} Shows if I have answered yet<br>';
 $string['linear'] = 'Lineal';
-$string['listassessments'] = 'List of Assessments';
-$string['listofallsubmissions'] = 'List of all submissions';
-$string['liststudentsassessments'] = 'List students assessments';
-$string['loadingforteacherassessments'] = 'Loading {$a} assessments';
-$string['mail1'] = 'Tu tarea \'{$a} \' ha sido evaluada por';
-$string['mail2'] = 'Los comentarios y la calificación pueden verse en \'{$a} \'';
-$string['mail3'] = 'Puede verlo en su tarea de búsqueda';
-$string['mail4'] = 'Se ha añadido un comentario a la tarea \'{$a} \' por';
-$string['mail5'] = 'El nuevo comentario puede verse en \'{$a} \'';
-$string['mail6'] = 'Su evaluación de la tarea \'{$a} \' ha sido revisada';
-$string['mail7'] = 'Los comentarios realizados por \'{$a} \' pueden verse en su tarea de búsqueda';
-$string['managingassignment'] = 'Administrar tarea';
-
 $string['maximumsize'] = 'Largest size';
 $string['modif'] = 'Modify';
 $string['modifanswersubmission'] = 'Modify answer for challenge {$a}';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['modulehiddenerror'] = 'Module is hidden.';
-$string['movingtophase'] = 'Changing to phase {$a}';
 $string['myanswers'] = 'My Answers';
 $string['mycalification'] = 'My Ranking';
 $string['mycalificationteam'] = 'My Ranking by Teams';
@@ -338,22 +278,16 @@ $string['nanswerscorrect'] = 'Right answers';
 $string['nanswerscorrectshort'] = 'Right';
 $string['nanswersshort'] = 'Answers';
 $string['nanswerswhithoutassess'] = 'Not assessed';
-
 $string['ncomponentsteam'] = 'Max. members in team';
 
-$string['newassessments'] = 'New assessments';
 $string['newattachment'] = 'new attachment';
 $string['newcalification'] = 'New grade';
-$string['newgradings'] = 'new gradings';
-$string['newsubmissions'] = 'new submissions';
 $string['newteam'] = 'New team';
-$string['nivel'] = 'Level of exigency';
 $string['noanswers'] = 'No answers';
 $string['noassessments'] = 'No Assesments';
 $string['noassessmentsdone'] = 'No assessments';
 $string['noattachments'] = 'No Attachments';
 $string['nograde'] = 'No Grade';
-$string['nosubmissionsavailableforassessment'] = 'There are no submissions available for assessment';
 $string['notavailable'] = 'not available';
 $string['noteonassessmentelements'] = 'Note that grading is broken down into a number of \'Assessment Elements\'.<br />
     This makes the grading easier and more consistent. As evaluator you must add these <br />
@@ -362,29 +296,16 @@ $string['noteonassessmentelements'] = 'Note that grading is broken down into a n
     to add them. You can change the number of elements using the Edit Author Assessment screen,<br />
     the elements themselves can be amended from the &quot;Edit Author Assessment&quot; screen. ';
 $string['notgraded'] = 'Not Graded';
-$string['notitlegiven'] = 'No Title Given';
 $string['notsubmittedyet'] = 'No submission has been made yet';
 $string['nsubmissions'] = 'Number of challenges';
 $string['nsubmissionsassessment'] = 'Assessed challenges';
 $string['nocapabilityaddchallenge'] = 'You have not enough permissions to add a challenge';
-$string['numbercomponents'] = 'Components';
+
 $string['numbermaxofanswers'] = 'Max number of right answers';
-$string['numberofassessmentelements'] = 'Number of Assessment Elements'; // TODO evp esta o nelements sobra, que es lo mismo.
-$string['numberofassessmentelementsautor'] = 'Number Assessment Elements for Authors'; // TODO evp esta le pasa igual.
-$string['numberofassessments'] = 'Number of Assessments';
-$string['numberofassessmentsofstudentsubmissions'] = 'Number of Assessments of Student Submissions';
-$string['numberofassessmentsofteachersexamples'] = 'Number of Assessments of Examples from Teacher';
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
 $string['of'] = 'of';
-$string['oldcalification'] = 'Current score';
 $string['oldteam'] = 'Current team';
 $string['on'] = 'on {$a}';
-$string['openassignment'] = 'Open Assignment';
-$string['optionforpeergrade'] = 'Option for Peer Grade';
-$string['overallgrade'] = 'Overall Grade';
-$string['overallpeergrade'] = 'Overall Peer Grade: {$a}';
-$string['overallteachergrade'] = 'Overall Teacher Grade: {$a}';
-$string['ownwork'] = 'Own Work';
 
 $string['passwordprotectedquest'] = "Password Protected QUESTOURnament";
 $string['permitsubmit'] = 'Allow re-submition';
@@ -399,9 +320,9 @@ $string['phase'] = 'Phase';
 $string['phase1'] = 'Inactive QUESTOURnament';
 $string['phase2'] = 'Open QUESTOURnament ';
 $string['phase3'] = 'Closed QUESTOURnament ';
-$string['phase4'] = 'QUESTOURnament Closed.<br> Califications published';
-$string['phase5'] = 'Final calification computation.';
-$string['phase6'] = 'Show final calification';
+$string['phase4'] = 'QUESTOURnament Closed.<br> Scores published';
+$string['phase5'] = 'Final score computation.';
+$string['phase6'] = 'Show final score';
 $string['phase1answer'] = 'Not assessed';
 $string['phase2answer'] = 'Assessed by Author';
 $string['phase3answer'] = 'Assessed by Teacher';
@@ -427,9 +348,6 @@ $string['phase8submission'] = 'Assessed. Start pending.';
 
 $string['picture'] = 'Picture';
 $string['pictureof'] = 'Picture of';
-$string['pleaseassesstheseexamplesfromtheteacher'] = 'Valore por favor estos ejemplos de la {$a}';
-$string['pleaseassessthesestudentsubmissions'] = 'Please assess these {$a} Submissions';
-$string['pleaseassessyoursubmissions'] = 'Please assess your Submission(s)';
 $string['pluginname'] = 'Questournament';
 $string['pluginadministration'] = 'Questournament administration';
 $string['points'] = 'Score';
@@ -444,15 +362,11 @@ $string['present'] = 'Present';
 $string['preview'] = 'Preview';
 $string['processingquest'] = 'Processing {$a} ';
 $string['quests'] = 'QUESTs';
-$string['questagreedassessments'] = 'Agreed assesments in QUESTOURnament';
 $string['questapprovesubmission'] = 'Challenges approved in QUESTOURnament';
 $string['questassessments'] = 'Assesments in QUESTOURnament';
 $string['questcomments'] = 'Commments in QUESTOURnament';
 $string['questgraphtitle'] = 'Potential score';
 $string['questgraphYlegend'] = 'Score';
-$string['questpassessments'] = 'Assessments in QUESTOURnament';
-$string['questpfeedback'] = 'Feedback commments in QUESTOURnament';
-$string['questsubmissions'] = 'Challenges submitted to QUESTOURnament';
 $string['questsubmitanswer'] = 'Answers submitted to QUESTOURnament';
 $string['questsubmitsubmission'] = 'Challenges submitted to QUESTOURnament';
 $string['questgraphtitle'] = 'Potential scores';
@@ -490,13 +404,9 @@ $string['quest:preview'] = 'View extended information and links of the different
 $string['quest:viewotherattemptsowners'] = 'View owners of other attempts';
 $string['quest:viewreports'] = 'View the questournament reports';
 
-$string['reassess'] = 'Re-assess';
 $string['reevaluate'] = 'Re-assess';
 $string['recalificationall'] = 'Re-assess all answers';
-$string['removeallattachments'] = 'Remove All Attachments';
-$string['removeattachments'] = 'Remove All Attachments';
 $string['removeelement'] = 'Remove element';
-$string['repeatanalysis'] = 'Repeat Analysis';
 $string['reply'] = 'Answer';
 $string['resetquestallanswers'] = 'Erase all answers and scores.';
 $string['resetchanges'] = 'Reset changes';
@@ -505,10 +415,8 @@ $string['resumeindividual'] = 'View Individual Summary.';
 $string['resumequest'] = 'Moodle. Activity summary. QUESTOURnament {$a->name}';
 $string['resumeteams'] = 'View Summary by Teams';
 $string['returnto'] = 'Return to';
-$string['returntosubmissionpage'] = 'Return to Submission Page';
 $string['rubric'] = 'Rubric';
 $string['save'] = 'Save';
-$string['savecalification'] = 'Save Calification';
 $string['savedok'] = 'Saved OK';
 $string['savemyassessment'] = 'Save my Assessment';
 $string['savemycomment'] = 'Save my Comment';
@@ -534,7 +442,7 @@ $string['showanswer'] = 'Show answer';
 $string['showanswers'] = 'Show answers';
 $string['showanswersteam'] = 'Show team answers';
 $string['showanswersuser'] = 'Show individual answers';
-$string['showcalification'] = 'Show calification';
+$string['showcalification'] = 'Show scores';
 $string['showclasifindividual'] = 'Show individual clasification';
 
 $string['showdescription'] = 'Show QUESTOURnament description';
@@ -555,79 +463,44 @@ $string['studentsubmissions'] = '{$a} Submissions';
 $string['studentsubmissionsforassessment'] = '{$a} Student Submissions for Assessment';
 $string['subject'] = 'Subject: ';
 $string['submission'] = 'Challenge';
-$string['submissionendlabel'] = 'Challenge ends on {$a}'; // TODO evp buscar uso de submissionend en el
-                                                          // codigo y cambiarlo por
-                                                          // submissionendlabel.
-$string['submissionexisty'] = 'There is another challenge with that title already. Enter another title.';
 $string['submissions'] = 'Challenges';
-$string['submissionsnoauthorizedupdate'] = 'You are not authorized to update this challenge';
-$string['submissionsnolongerallowed'] = 'Submissions no longer allowed';
-$string['submissionstartlabel'] = 'Challenge starts on {$a}'; // TODO evp buscar submissionstart en el
-                                                              // código y cambiarlo por
-                                                              // submissionstartlabel.
-$string['submitassignment'] = 'Submit new challenge';
 $string['submitchallenge'] = 'Submit new challenge';
 
 $string['submitted'] = 'Challenge Submitted';
 $string['submittedanswer'] = 'Answer submitted';
 $string['submittedby'] = 'Submitted by';
 $string['suggestedgrade'] = 'Suggested Grade';
-$string['teacherassessments'] = '{$a} Assessments';
-$string['teacherscomment'] = 'Teacher\'s comment';
-$string['teachersgrade'] = 'Teacher\'s grade';
-$string['teachersubmissionsforassessment'] = '{$a} Teacher Submissions for Assessment';
+
 $string['team'] = 'Team';
 $string['teamcalification'] = 'Team score';
 $string['teamforquest'] = 'Work Team for QUESTOURnament {$a}';
 $string['teamname'] = 'Team Name';
-
 $string['thegradeis'] = 'The grade is';
-$string['thereisfeedbackfromtheteacher'] = 'There is feedback from {$a}';
-$string['theseasessmentsaregradedbytheteacher'] = 'Theese assessment are grades by {$a}';
-$string['timeassessed'] = 'Time assessed';
 $string['timeassessment'] = 'Assessed on';
 $string['timemaxoflife'] = 'Default time of life for new challenges.';
-
 $string['title'] = 'Title';
-$string['tocalification'] = 'Get final grades';
 $string['today'] = 'Today';
 $string['tothechallenge'] = 'to the challenge ';
 
 $string['typeindividual'] = 'Students';
 $string['typeofscale'] = 'Type of Scale';
 $string['typeteam'] = 'Team';
-$string['ungradedassessmentsofstudentsubmissions'] = '{$a} Ungraded Assessments of Student Submissions';
-$string['ungradedassessmentsofteachersubmissions'] = '{$a} Ungraded Assessments of Teacher Submissions';
 $string['unkownactionerror'] = 'Fatal error: Unknown action {$a}.';
 $string['unknownauthor'] = 'Unknown author';
-$string['updateanswer'] = 'Answer updated';
 $string['updatecomment'] = 'Comment updated';
-$string['updatesubmission'] = 'Challenge submitted';
-$string['upgradecalification'] = 'Get Califications';
-$string['uploadsuccess'] = 'Upload Successful';
-$string['uploaderror'] = 'Upload Error';
 $string['usepassword'] = 'Use Password';
 $string['user'] = 'User';
 $string['verypoor'] = 'Very Poor';
 $string['view'] = 'View';
 $string['viewassessment'] = 'View Assessment';
 $string['viewassessmentautor'] = 'View Challenge Assessment';
-$string['viewassessmentofteacher'] = 'View Assessment of {$a}';
 $string['viewclasification'] = 'View Ranking';
 $string['viewclasificationglobal'] = 'View Global Clasification';
 $string['viewclasificationteams'] = 'View Team Clasification';
-$string['viewotherassessments'] = 'View other Assessments';
 $string['warningonamendingelements'] = 'WARNING: There are submitted assessments. <br />Do NOT change the number  of elements, the scale types or the element weights.';
 $string['weight'] = 'Weight';
-$string['weightederrorcount'] = 'Weighted Error Count: {$a}';
-$string['weightforbias'] = 'Weight for Bias';
-$string['weightforgradingofassessments'] = 'Weight for Grading of Assessments';
-$string['weightforpeerassessments'] = 'Weight for Peer Assessments';
 $string['weights'] = 'Weights';
-$string['weightsusedforfinalgrade'] = 'Weights used for Final Grade';
-$string['weightsusedforsubmissions'] = 'Weights used for Submissions';
 $string['wrongpassword'] = 'Incorrect password for this QUESTOURnament';
-$string['yourassessments'] = 'Your assessments';
 $string['yourfeedbackgoeshere'] = 'Your Feedback goes Here';
 // HELP TEXTS.
 $string['allowteams'] = 'Allow workteams';
@@ -708,7 +581,7 @@ $string['dateend_help'] = '<P align="justify">This paramenter sets the closing d
 $string['dateofend'] = 'Closing date';
 $string['dateofend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
 <P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
-$string['datestart'] = 'Starting on'; // Evp quizás mejor poner Start DAte.
+$string['datestart'] = 'Starting on';
 $string['datestart_help'] = '<P align="justify">This parameter sets the starting date of this QUESTOURnament. After this date, the students of the course will be able to access the QUESTOURnament in order to add a challenge, submit an answer to a challenge or to do any other usual action.</P>
 <P align="justify">This date is checked when a QUESTOURnament is defined, so that if it is subsequent to the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a>, an error message is shown and the QUESTOURnament that is being defined will not be created.</P>';
 $string['elements'] = 'Assessment Elements';
@@ -932,7 +805,7 @@ $string['typecalification_help'] = '<P align="justify">This parameter sets the w
 $string['teamporcent'] = 'Percentage of Team Scoring';
 $string['teamporcent_help'] = '<P align="justify">This parameter sets the percentage of the score of a team that will be added to the total individual score of each of its members, that is which determines the final score of a student in a QUESTOURnament.</P>
 <P align="justify">The goal is to promote team work in a way that it has an impact in the final score and ranking possition of each student.</P>';
-$string['teams'] = 'Team Classification'; // TODO evp en la pagina de ayuda se titulaba View Summary by Teams.
+$string['teams'] = 'Team Classification';
 $string['teams_help'] = '<P align="justify">This page shows the score obtained by each team that belongs to the same group in a QUESTOURnament. A percentage of this score determined by the "<a href="help.php?component=quest&identifier=teamporcent"">Percentage of Team Scoring</a>" parameter of the QUESTOURnament will contribute to the individual score of each member of the team.</P>
 <P align="justify">The following parameters are shown:</P>
 <div align="justify">
@@ -983,16 +856,6 @@ $string['validateassessment'] = 'Validate Assesments';
 $string['validateassessment_help'] = '<P align="justify">If this option is selected, the teacher will have to approve all the assessments made by the students that propose challenges in order to validate the scores given by them to the answers submitted by other students to those challenges.</P>
 <P align="justify">The scores of students and ranking will not be modified till the teacher have approved the scores given by the students. The teacher will be able to modify those scores, being the scores given by the teachers the valid ones in case those are different from the ones given by the students that proposed the challenges.</P>
 <P align="justify">If this option is not selected, the teacher will not be obliged to approve all the scores given by the students, although he will still be able to do it in the cases he considers it necessary. If the teacher modifies a score given by a student, the new score will be the one that will be part of the final individual score of the student. On the other side, if the teacher does not assess the answer again, the score used will be the one given by the student that proposed the challenge.</P>';
-$string['windowpreview'] = 'Preview Answer Window';
-$string['windowpreview_help'] = '<p align="justify">This page shows the aspect of an answer that is being edited with the Moodle editor after the different filters provided by the platform are applied.</p>
-<p align="justify">This way, it will be able to preview the aspect of the canswer before its submission. This posibility is specially useful when a mathematical equation must be inserted for which it is necessary to introduce an expression with the adequate format that will be transformed by the filters provided by Moodle and whose final aspect can not be previewed in the editor of the platform.</p>';
-$string['windowpreviewsubmission'] = 'Preview Challenge Window';
-$string['windowpreviewsubmission_help'] = '<p align="justify">This page shows the aspect of a challenge that is being edited with the Moodle editor after the different filters provided by the platform are applied.</p>
-<p align="justify">This way, it will be able to preview the aspect of the challenge before its submission. This posibility is specially useful when a mathematical equation must be inserted for which it is necessary to introduce an expression with the adequate format that will be transformed by the filters provided by Moodle and whose final aspect can not be previewed in the editor of the platform.</p>';
 
-// Message provider.
-$string['messageprovider:challenge_start'] = 'Challenges start: a challenge has started.';
-$string['messageprovider:challenge_update'] = 'Challenges changes: new challenges, change of phase, modifications.';
-$string['messageprovider:evaluation_update'] = 'Changes that may alter your calification.';
-$string['notpermissionsubmission'] = 'You have not permissions to view this challenge.';
-$string['nopermissionassessment'] = 'You have not permissions to view this assessment. You should be teacher or challenge\'s author.';
+$string['notpermissionsubmission'] = 'You have no permissions to view this challenge.';
+$string['nopermissionassessment'] = 'You have no permissions to view this assessment. You should be teacher or challenge\'s author.';

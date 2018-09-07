@@ -29,6 +29,7 @@ Installation
 
 Change log
 ==========
+ - v1.4.2 Lang strings cleaned for translation with AMOS
  - v1.4.1 Code refactoring and cleaning to conform to Moodle's development guides.
  - v1.3.7 Implement activity completion (gradepass).
  - v1.3.6 Notification messages grouped for starting Challenges.
