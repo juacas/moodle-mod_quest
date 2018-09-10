@@ -334,7 +334,7 @@ class quest_print_upload_form extends moodleform {
             $challengeend = $quest->dateend;
         }
         if ($ismanager) {
-            $mform->addElement('date_time_selector', 'dateend', get_string("challengeend", "quest"));
+            $mform->addElement('date_time_selector', 'dateend', get_string('challengeend', "quest"));
             $mform->setDefault('dateend', $challengeend);
             $mform->addHelpButton('dateend', 'challengeend', 'quest');
         } else {

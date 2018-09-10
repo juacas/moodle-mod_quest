@@ -567,14 +567,13 @@ $string['changeteamteacher_help'] = '<P align="justify">This option allows to ma
 <p align="justify">if the QUESTOURnament has groups defined, when the teacher changes a student from one team to another, he must select the group to which the student belongs. This makes possible to have two teams with the same name whenever they belong to different groups.</p>
 <p align="justify">If when a student is changed from one team to anothe the team loses his last member, that team will automatically disappear.</p>';
 $string['challengestart'] = 'Start Date of the challenge';
-$string['challengestart_help'] = '<P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
-<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
-<P align="justify">A partir de esta fecha los alumnos podr&aacute;n visualizar el desaf&iacute;o y enviar sus respuestas. </P>
-<P align="justify">Este fecha deber&aacute; ser anterior a la Fecha de Cierre del Desaf&iacute;o </P>';
-$string['challengeend'] = 'Close date of the challenge';
-$string['challengeend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desaf&iacute;o. A partir de esta fecha no será posible enviar más respuestas al desaf&iacute;o. Sin embargo, los profesores sí podr&aacute;n seguir evaluando al autor del desaf&iacute;o, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desaf&iacute;os podr&aacute;n continuar evaluando las respuestas enviadas por otros alumnos.</P>
-<P align="justify">Una vez se cierre el desafío, todos los participantes podr&aacute;n ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
-<P align="justify">Esta fecha no podr&aacute; ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del m&oacute;dulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desaf&iacute;o </a>. </P>';
+$string['challengestart_help'] = '<P align="justify">It allows to set the date in which a challenge will open. This parameter can only be set by a teacher.</P>
+<P align="justify">If a challenge is added by a student, its starting date will be the time when it was added, being the teachers able to modify this value when the challenge is approved or modified.</P>
+<P align="justify">After this date the students will be able to access the challenge and to submit their answers.</P>
+<P align="justify">This date must be previous to the <a href="help.php?component=quest&identifier=challengeend"">Closing Date of the Challenge</a>.</P>';
+$string['challengeend_help'] = '<P align="justify">It allows to set the date in which a challenge will be closed. After this date it will not be able to submit any more answers to the challenge. However, the teachers will still be able to assess the author of the challenge attending to both the challenge proposed and the assessments made. Moreover, the authors of the challenges will still be able to assess the answers submitted to them.</P>
+<P align="justify">Once a challenge is closed, all the participants will be able to see all the answers submitted, as well as the assessments made and the scores obtained.</P>
+<P align="justify">This date may not be subsequent to the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a> of the QUESTOURnament or previous to the <a href="help.php?component=quest&identifier=challengestart"">Starting Date of the Challenge</a>.</P>';
 $string['dateend'] = 'Closing on';
 $string['dateend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
 <P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
@@ -780,15 +779,6 @@ $string['specimenanswer'] = 'Assessment Form for Answers';
 $string['specimenanswer_help'] = '<P align="justify">This page shows the assessment form that is used to assess each of the answers submitted to a challenge of this QUESTOURnament.</P>';
 $string['specimensubmission'] = 'Assessment Form for Challenges';
 $string['specimensubmission_help'] = '<P align="justify">This page shows the assessment form that is used to assess the challenges proposed by students in this QUESTOURnament.</P>';
-$string['submissionend'] = 'Closing date of the Challenge';
-$string['submissionend_help'] = '<P align="justify">It allows to set the date in which a challenge will be closed. After this date it will not be able to submit any more answers to the challenge. However, the teachers will still be able to assess the author of the challenge attending to both the challenge proposed and the assessments made. Moreover, the authors of the challenges will still be able to assess the answers submitted to them.</P>
-<P align="justify">Once a challenge is closed, all the participants will be able to see all the answers submitted, as well as the assessments made and the scores obtained.</P>
-<P align="justify">This date may not be subsequent to the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a> of the QUESTOURnament or previous to the <a href="help.php?component=quest&identifier=submissionstart"">Starting Date of the Challenge</a>.</P>';
-$string['submissionstart'] = 'Starting date of the Challenge';
-$string['submissionstart_help'] = '<P align="justify">It allows to set the date in which a challenge will open. This parameter can only be set by a teacher.</P>
-<P align="justify">If a challenge is added by a student, its starting date will be the time when it was added, being the teachers able to modify this value when the challenge is approved or modified.</P>
-<P align="justify">After this date the students will be able to access the challenge and to submit their answers.</P>
-<P align="justify">This date must be previous to the <a href="help.php?component=quest&identifier=submissionend"">Closing Date of the Challenge</a>.</P>';
 $string['typegrade'] = 'Get grades from';
 $string['typegrade_help'] = '<P align="justify">This parameter sets which is the classification used to calculate the final total score of the students.</P>
 <P align="justify">There are two possibilities:</P>
