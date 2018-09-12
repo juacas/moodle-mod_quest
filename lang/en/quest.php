@@ -516,7 +516,7 @@ $string['answersubmission_help'] = '<P align="justify">This page allows to answe
   <li><strong>Attachments</strong>: if the sending of attachments is allowed, it will be possible to add them at the end of the body of the answer to be submitted.</li>
 </ul>
 <p>The screen will be shown to the student divided in two areas, the upper one will contain a textarea to introduce the answer, and the author of the answer will be asked about his/her opinion about the level of difficulty of the challenge proposed by choosing among one of a set of the options presented, while in the lower one the challenge to be answered will be shown.</p>
-<p align="justify">Beside the text Answer there is an icon with the image of a square root. When this icon is clicked, a screen in which any expression can be tested with the TEX filter provided by Moodle, is shown. The TEX filter turns expresions introduced with a correct sintaxis into mathematic equations with the same appearance that if they were shown by the Microsoft Word equation editor.</p>';
+<P align="justify">Beside the text Answer there is an icon with the image of a square root. When this icon is clicked, a screen in which any expression can be tested with the TEX filter provided by Moodle, is shown. The TEX filter turns expresions introduced with a correct sintaxis into mathematic equations with the same appearance that if they were shown by the Microsoft Word equation editor.</p>';
 $string['approvesubmission'] = 'Approve/Reject Challenge/Question';
 $string['approvesubmission_help'] = '<P align="justify">This page allows the teacher to approve, save or delete a challenge proposed by a student. The actions that can be taken are described below:</P>
 <ul>
@@ -551,8 +551,8 @@ $string['assessthissubmission_help'] = '<P align="justify">This page allows the 
 <P align="justify">The maximum possible score for the author of the challenge will be the maximum score reached by the challenge during its lifetime, whenever a correct answer has been submitted. On the other had, if no correct answer is received before the challenge closes, its <a href="help.php?component=quest&identifier=initialpoints"">Initial Score</a> will be considered also its maximum score.';
 
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
-$string['numberofattachments_help'] = '<p align="justify">This parameter sets how many text fields will be presented to allow the submission of files when a student or a teacher makes a submission. The value of this parameter must be between 0 and 5. It will usually be 0 or 1, but in certain cases it can be necessary to allow the submission of more than one attachment. If the value specified is 0, that is also the default value for this parameter, this means that it will not be allowed to send any attachment with a submission.</p>
-<p align="justify">If, for example, the number specified is 3, and only 2 files are attached to the submission, that submission is made without showing any warning message. This means that, when a submission is made, it is allowed to attach any number of files up to the maximum specified by this parameter.</p>';
+$string['numberofattachments_help'] = '<P align="justify">This parameter sets how many text fields will be presented to allow the submission of files when a student or a teacher makes a submission. The value of this parameter must be between 0 and 5. It will usually be 0 or 1, but in certain cases it can be necessary to allow the submission of more than one attachment. If the value specified is 0, that is also the default value for this parameter, this means that it will not be allowed to send any attachment with a submission.</p>
+<P align="justify">If, for example, the number specified is 3, and only 2 files are attached to the submission, that submission is made without showing any warning message. This means that, when a submission is made, it is allowed to attach any number of files up to the maximum specified by this parameter.</p>';
 $string['changeteamteacher'] = 'Manage Teams';
 $string['changeteamteacher_help'] = '<P align="justify">This option allows to manage the teams of the QUESTOURnament or to change a student from one team to another if it were necessary.</P>
 <P align="justify">The following information is presented:</P>
@@ -564,8 +564,8 @@ $string['changeteamteacher_help'] = '<P align="justify">This option allows to ma
       <li><strong>New Team</strong>: it is a field text that allows to introduce the name of the new team to which the student will be allocated.</li>
   </ul>
 </div>
-<p align="justify">if the QUESTOURnament has groups defined, when the teacher changes a student from one team to another, he must select the group to which the student belongs. This makes possible to have two teams with the same name whenever they belong to different groups.</p>
-<p align="justify">If when a student is changed from one team to anothe the team loses his last member, that team will automatically disappear.</p>';
+<P align="justify">if the QUESTOURnament has groups defined, when the teacher changes a student from one team to another, he must select the group to which the student belongs. This makes possible to have two teams with the same name whenever they belong to different groups.</p>
+<P align="justify">If when a student is changed from one team to anothe the team loses his last member, that team will automatically disappear.</p>';
 $string['challengestart'] = 'Start Date of the challenge';
 $string['challengestart_help'] = '<P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
 <P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
@@ -850,7 +850,7 @@ of its authorship, otherwise, the challenge could be refused of modified by the 
 </div>
 <ul>
 </ul>';
-$string['usepassword_help'] = '<p align="justify">This option allows to set an access password to this QUESTOURnament. To protect a QUESTOURnament with a password can be necessary, for example, when that QUESTOURnament is used by several groups of students in a course, and must be opened to each group in a different time slot, in which case, the access password will not allow that a group of students can access the QUESTOURnament once it is opened to another different group of students but not for them yet.</p>';
+$string['usepassword_help'] = '<P align="justify">This option allows to set an access password to this QUESTOURnament. To protect a QUESTOURnament with a password can be necessary, for example, when that QUESTOURnament is used by several groups of students in a course, and must be opened to each group in a different time slot, in which case, the access password will not allow that a group of students can access the QUESTOURnament once it is opened to another different group of students but not for them yet.</p>';
 
 $string['validateassessment'] = 'Validate Assesments';
 $string['validateassessment_help'] = '<P align="justify">If this option is selected, the teacher will have to approve all the assessments made by the students that propose challenges in order to validate the scores given by them to the answers submitted by other students to those challenges.</P>
