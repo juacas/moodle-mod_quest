@@ -66,20 +66,20 @@ $string['bynameondate'] = 'by {$a->name} - {$a->date}';
 $string['cantRespond_WARN'] = 'Don\'t have permissions to answer.';
 $string['cantRespond_WARN_notingroup_or_challengeended'] = 'You can\'t answer. You don\'t belong to this group or the challenge is ended.';
 $string['calification'] = 'Score';
-$string['calificationautor'] = 'Calification for the author of the challenge';
-$string['calification_provisional_msg'] = 'Calification shown may be provisional';
+$string['calificationautor'] = 'Assessment for the author of the challenge';
+$string['calification_provisional_msg'] = 'Assessment shown may be provisional';
 $string['change'] = 'Save Changes';
 $string['changemanualcalification'] = 'Change grade manually';
 $string['changeteam'] = 'Manage Teams';
 $string['checkthat'] = 'Check that';
-$string['change'] = 'Guardar Cambios';
+$string['change'] = 'Save Changes';
 $string['clasification'] = 'Ranking';
-$string['closebeforeopen'] = 'The Close Date of the Questournament must be subsequent to the Start Date';
+$string['closebeforeopen'] = 'The Close Date of the Questournament must be later than the Start Date';
 $string['comment'] = 'Comment';
 $string['commentby'] = 'Comment by';
-$string['comentsforautor'] = 'Coments for autor';
+$string['comentsforautor'] = 'Coments for author';
 $string['comentsforpupil'] = 'Coments for students';
-$string['commentsautor'] = 'General comments by autor';
+$string['commentsautor'] = 'General comments by author';
 $string['commentsforteacher'] = 'Comments for the teacher';
 $string['commentsteacher'] = 'General comments by teacher';
 $string['confirmchangeform'] = 'This will change the evaluation form. Are you sure?';
@@ -111,14 +111,14 @@ $string['difficultyHard'] = 'Hard';
 $string['difficultyVeryHard'] = 'Very hard';
 $string['disagreewiththisassessment'] = 'Disagree with this assessment';
 $string['displayoffinalgrades'] = 'Display of final grades';
-$string['dontshowgrades'] = 'Dont show grades';
+$string['dontshowgrades'] = 'Do not show grades';
 $string['doyouwantparticularform'] = 'Do you want to use for this challenge an evaluation form different to the one defined by the QUESTournament creator?';
-$string['edit'] = 'Edita';
+$string['edit'] = 'Edit';
 $string['editacomment'] = 'Edit a Comment';
 $string['editelementsanswer'] = 'Edit assesment elements for answers';
 $string['editelementsautor'] = 'Edit assensment elements for autors';
 $string['editingassessmentelements'] = 'Editing assessment elements';
-$string['editingassessmentelementsofautors'] = 'Editing assessment elements of autors';
+$string['editingassessmentelementsofautors'] = 'Editing assessment elements of authors';
 $string['element'] = 'Element';
 
 $string['elementweight'] = 'Element weight';
@@ -299,7 +299,7 @@ $string['notgraded'] = 'Not Graded';
 $string['notsubmittedyet'] = 'No submission has been made yet';
 $string['nsubmissions'] = 'Number of challenges';
 $string['nsubmissionsassessment'] = 'Assessed challenges';
-$string['nocapabilityaddchallenge'] = 'You have not enough permissions to add a challenge';
+$string['nocapabilityaddchallenge'] = 'You do not have enough permissions to add a challenge';
 
 $string['numbermaxofanswers'] = 'Max number of right answers';
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
@@ -310,7 +310,7 @@ $string['on'] = 'on {$a}';
 $string['passwordprotectedquest'] = "Password Protected QUESTOURnament";
 $string['permitsubmit'] = 'Allow re-submition';
 
-$string['perceiveddifficultyLevelQuestion'] = 'How difficult has been this challenge to you?';
+$string['perceiveddifficultyLevelQuestion'] = 'How difficult has this challenge been to you?';
 $string['perceiveddifficultyLevel'] = 'Difficulty';
 $string['perceivedTeacherDifficultyLevel'] = 'Estimated difficulty';
 $string['perceivedTeacherDifficultyLevel_help'] = 'Estimated difficulty of the challenge. This level is used to cathegorize the challenges. It is used for pedagogic research. This is an optional parameter.';
@@ -390,7 +390,7 @@ $string['quest:notifylocale'] = '<p>For your locale "<b>{$a->localelang}</b>" th
 Check that your SpreadSheet interprets correctly this character.</p>';
 $string['quest:notifyemptylogs'] = 'Last query with no results. Check if legacy log is enabled in this server.<br/>';
 $string['quest:editattempt'] = 'Edit anyone\'s submitted answer';
-$string['quest:editattemptmine'] = 'Edit owned submitted answer';
+$string['quest:editattemptmine'] = 'Edit own submitted answer';
 $string['quest:editchallengeall'] = 'Edit anyone\'s submitted challenge';
 $string['quest:editchallengemine'] = 'Edit own submitted challenge.';
 $string['quest:emailconfirmchallenge'] = 'Receive email confirmation from own questournament challenge';
@@ -451,7 +451,7 @@ $string['showsubmission'] = 'Show Submission';
 $string['showsubmissions'] = 'Show Submissions';
 $string['showsubmissionsteam'] = 'Show Team Submissions';
 $string['showsubmissionsuser'] = 'Show Individual Submissions';
-$string['shouldSelectDifficultyLevel'] = 'Please, selecta a difficulty level';
+$string['shouldSelectDifficultyLevel'] = 'Please, select a difficulty level';
 
 $string['specimenassessmentform'] = 'Example Assessment Form';
 $string['specimenassessmentformanswer'] = 'Example Assessment Form for answers';
@@ -504,7 +504,7 @@ $string['wrongpassword'] = 'Incorrect password for this QUESTOURnament';
 $string['yourfeedbackgoeshere'] = 'Your Feedback goes Here';
 // HELP TEXTS.
 $string['allowteams'] = 'Allow workteams';
-$string['allowteams_help'] = '<P align="justify">This parameter obliges to that each student taking part in this QUESTOURnament belongs to a team. In such a case, when a student access the QUESTOURnament for the first time, he will have to enter the name of the team to which he belongs.</P>
+$string['allowteams_help'] = '<P align="justify">This parameter forces that each student taking part in this QUESTOURnament belongs to a team. In such a case, when a student access the QUESTOURnament for the first time, he will have to enter the name of the team to which he belongs.</P>
 <P align="justify">Moreover, in this case, besides the individual ranking, the team ranking is presented.</P>
 <P align="justify">The number of members of a team is set by the parameter <a href="help.php?component=quest&identifier=ncomponents"">Number of Members</a>, and can be managed by the teachers during the QUESTOURnament life. If mistakes arise, these can be settled by using the option <a href="help.php?component=quest&identifier=changeteamteacher"">Manage Teams</a> that is only accessible to teachers.</P>';
 $string['answersubmission'] = 'Answer to the challenge';
