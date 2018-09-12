@@ -1165,10 +1165,10 @@ function quest_reset_userdata($data) {
 
     if ($removeanswers) {
 
-        $DB->delete_records_select('quest_elements_assesments', "questid $insql", $inparams);
+        $DB->delete_records_select('quest_elements_assessments', "questid $insql", $inparams);
         $DB->delete_records_select('quest_elements_assesments_autor', "questid $insql", $inparams);
-        $DB->delete_records_select('quest_assesments', "questid $insql", $inparams);
-        $DB->delete_records_select('quest_assesments_autor', "questid $insql", $inparams);
+        $DB->delete_records_select('quest_assessments', "questid $insql", $inparams);
+        $DB->delete_records_select('quest_assessments_autor', "questid $insql", $inparams);
         // ...remove califications.
         $DB->delete_records_select('quest_calification_users', "questid $insql", $inparams);
         $DB->delete_records_select('quest_calification_teams', "questid $insql", $inparams);
