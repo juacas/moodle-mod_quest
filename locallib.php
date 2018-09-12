@@ -2809,7 +2809,7 @@ function quest_update_quest_calendar($quest, $cm = null) {
 
         $eventdata = new stdClass();
         $eventdata->name = get_string($type . 'event', 'quest', $quest->name);
-        $url = new moodle_url('/mod/quest/view.php', array('id' => $cm->coursemodule));
+        $url = new moodle_url('/mod/quest/view.php', array('id' => $cm->id));
         $eventdata->description = strip_pluginfile_content($quest->intro);
         $eventdata->eventtype = $type;
         $eventdata->timestart = $date;
@@ -2818,7 +2818,7 @@ function quest_update_quest_calendar($quest, $cm = null) {
         $eventdata->timeduration = 0;
         $eventdata->visible = $cm->visible;
         $eventdata->courseid = $cm->course;
-        $eventdata->uuid = 'quest-' . $cm->coursemodule. '-' . $type;
+        $eventdata->uuid = 'quest-' . $quest->id . '-' . $type;
 
         $event = $DB->get_record('event',
                 array('modulename' => $eventdata->modulename,
