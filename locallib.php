@@ -376,10 +376,12 @@ class quest_print_upload_form extends moodleform {
                                 null, $attachmentoptions);
         }
         if ($action == 'approve') {
-            $mform->addElement('textarea', 'commentteacherauthor', get_string("comentsforautor", "quest"), 'rows="6" cols="70"');
+            $mform->addElement('textarea', 'commentteacherauthor', get_string("commentsforauthor", "quest"), 'rows="6" cols="70"');
+            $mform->addHelpButton('commentteacherauthor', 'commentsforauthor', 'quest');
         }
         if ($ismanager) {
-            $mform->addElement('textarea', 'commentteacherpupil', get_string("comentsforpupil", "quest"), 'rows="6" cols="70"');
+            $mform->addElement('textarea', 'commentteacherpupil', get_string("commentsforstudent", "quest"), 'rows="6" cols="70"');
+            $mform->addHelpButton('commentteacherpupil', 'commentsforstudent', 'quest');
             $difficultyscale = quest_get_difficulty_levels();
             $radioarray = array();
             foreach ($difficultyscale as $value => $item) {
@@ -655,12 +657,12 @@ function quest_print_submission($quest, $submission) {
 
     if (!empty($submission->comentteacherautor)) {
         if (($submission->userid == $USER->id) || ($canpreview)) {
-            echo $OUTPUT->heading(get_string('comentsforautor', 'quest'));
+            echo $OUTPUT->heading(get_string('commentsforauthor', 'quest'));
             echo $OUTPUT->box(format_text($submission->comentteacherautor), 'center');
         }
     }
     if (!empty($submission->comentteacherpupil)) {
-        echo $OUTPUT->heading(get_string('comentsforpupil', 'quest'));
+        echo $OUTPUT->heading_with_help(get_string('commentsforstudent', 'quest'), 'commentsforstudent', 'quest');
         echo $OUTPUT->box(format_text($submission->comentteacherpupil), 'center');
     }
 
@@ -1706,11 +1708,12 @@ FORM;
         case 0:
         case 1:
         case 4: // ...no grading, accumulative and rubic.
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b></p></td>\n";
+            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
+            $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
             break;
         default:
             echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . "/<br />" .
-                     get_string("reasonforadjustment", "quest") . ":</b></p></td>\n";
+                    $OUTPUT->help_icon('generalcomment', 'quest') . get_string("reasonforadjustment", "quest") . ":</b></p></td>\n";
     }
     echo "  <td>\n";
     quest_print_general_comment_box($course, $allowchanges, $assessment);
@@ -1730,7 +1733,7 @@ FORM;
     } else {
         if (!empty($assessment->commentsforteacher)) {
             echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>" . get_string("commentsautor", "quest") . ":</b></p></td>\n";
+            echo "  <td align=\"right\"><p><b>" . get_string("commentsauthor", "quest") . ":</b></p></td>\n";
             echo "  <td>\n";
             echo format_text($assessment->commentsforteacher);
             echo "&nbsp;</td>\n";
@@ -2175,7 +2178,8 @@ FORM;
                 echo "  <td>" . format_text($elements[$i]->description);
                 echo "</td></tr>\n";
                 echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
+                echo "  <td align=\"right\"><p><b>" . get_string("feedback") .
+                $OUTPUT->help_icon('feedback', 'quest') . ":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
                     echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
@@ -2207,7 +2211,9 @@ FORM;
                 echo "</td></tr>\n";
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade") . ":</b></p></td>\n";
+                    echo "  <td align=\"right\"><p><b>" . get_string("grade") .
+                    $OUTPUT->help_icon('grade') .
+                    ":</b></p></td>\n";
                     echo "  <td valign=\"top\">\n";
 
                     // ...get the appropriate scale.
@@ -2254,7 +2260,8 @@ FORM;
                     echo "</tr>\n";
                 }
                 echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
+                echo "  <td align=\"right\"><p><b>" . get_string("feedback") .
+                        $OUTPUT->help_icon('feedback', 'quest') .":</b></p></td>\n";
                 echo "  <td>\n";
                 if ($allowchanges) {
                     echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
@@ -2284,11 +2291,13 @@ FORM;
         case 0:
         case 1:
         case 4: // ...no grading, accumulative and rubic.
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b></p></td>\n";
+            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
+                    $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
             break;
         default:
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . "/<br />" .
-                     get_string("reasonforadjustment", "quest") . ":</b></p></td>\n";
+            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") .
+                    $OUTPUT->help_icon('generalcomment', 'quest') . "/<br />" .
+                    get_string("reasonforadjustment", "quest") . ":</b></p></td>\n";
     }
     echo "  <td>\n";
     if ($ismanager) {

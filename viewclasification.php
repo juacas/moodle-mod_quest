@@ -70,7 +70,7 @@ if ($dir !== 'ASC') {
 
 $PAGE->set_url($thispageurl);
 $PAGE->set_title(format_string($quest->name));
-$PAGE->navbar->add(get_string('global', 'quest'));
+$PAGE->navbar->add(get_string('globalranking', 'quest'));
 $PAGE->set_heading($course->fullname);
 if ($action != 'export') {
     echo $OUTPUT->header();
@@ -120,21 +120,17 @@ if ($action == 'global') {
     }
     // Print admin links.
     echo "<td align=\"right\">";
-
     echo '</td></tr>';
-
     echo '<tr><td>';
-
     echo '</td></tr>';
     echo '</table>';
-    echo $OUTPUT->heading_with_help(get_string('global', 'quest'), "global", "quest");
+    echo $OUTPUT->heading_with_help(get_string('globalranking', 'quest'), "globalranking", "quest");
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
         echo $OUTPUT->footer();
         exit();
     }
-
     // Now prepare table with student assessments and submissions.
     $tablesort = new stdclass();
     $tablesort->data = array();
@@ -148,7 +144,6 @@ if ($action == 'global') {
         }
         if ($clasifications = quest_get_user_clasification($quest, $user)) {
             foreach ($clasifications as $clasification) {
-
                 $data = array();
                 $sortdata = array();
                 // ...user picture.
@@ -270,7 +265,9 @@ if ($action == 'global') {
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=$column&amp;dir=$columndir\">" .
-                 $string[$column] . "</a>$columnicon";
+        $string[$column] .
+        (get_string("{$column}_help", 'quest') == '' ? '' : $OUTPUT->help_icon("$column", 'quest')) .
+        "</a>$columnicon";
     }
 
     $table->head = array("", "$firstname / $lastname", "$nanswers", "$nanswersassessment");
@@ -449,7 +446,9 @@ if ($action == 'global') {
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"viewclasification.php?id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" .
-                    $string[$column] . "</a>$columnicon";
+        $string[$column] .
+        (get_string("{$column}_help", 'quest') == '' ? '' : $OUTPUT->help_icon("$column", 'quest')) .
+        "</a>$columnicon";
     }
 
     $table->head = array("$team", "$nanswers", "$nanswersassessment");

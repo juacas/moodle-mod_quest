@@ -73,7 +73,7 @@ if ($ismanager) {
     if ($action == 'change') {
         if (($groupmode == false) || ($currentgroup != 0)) {
             $teams = optional_param_array('team', null, PARAM_ALPHANUMEXT);
-            $userids = optional_param('userid', [], PARAM_INT);
+            $userids = optional_param_array('userid', [], PARAM_INT);
             if (isset($teams)) {
                 foreach ($teams as $i => $teamfield) {
 
@@ -262,7 +262,7 @@ if ($ismanager) {
     echo "<input name=\"i\" type=\"hidden\" value=\"$i\">\n";
     echo "<input name=\"id\" type=\"hidden\" value=\"$cm->id\">\n";
     echo "<center>\n<input name=\"action\" type=\"submit\" " .
-         "onClick=\"document.form=this.value;document.form.submit()\" value=\"change\" />\n</center>\n";
+         "onClick=\"document.forms['team'].submit()\" value=\"change\" />\n</center>\n";
     echo "</form>";
 }
 
