@@ -143,8 +143,8 @@ if ($action == 'displaygradingform') {
                 echo "</tr>\n";
             }
             break;
-            default:
-                throw new InvalidArgumentException('Unknown grading strategy.');
+        default:
+            throw new InvalidArgumentException('Unknown grading strategy.');
     }
     // Close table and form.
     echo "</table><br />";

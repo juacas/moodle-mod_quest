@@ -49,7 +49,7 @@ $string['assessmentby'] = 'Assessment by {$a}';
 $string['assessmentcharacteristics'] = 'Characteristics of the assessment';
 $string['assessmentglobal'] = 'Global assessment';
 $string['assessmentgrade'] = 'Assessment grade: {$a}';
-$string['assessmentof'] = 'Assessment of {$a}';
+$string['assessmentof'] = 'Assessment of "{$a}"';
 $string['assessmentofthissubmission'] = 'Assessment of this challenge';
 $string['assessments'] = 'Assessments';
 $string['assessmentsby'] = 'Assessments by {$a}';
@@ -66,20 +66,20 @@ $string['bynameondate'] = 'by {$a->name} - {$a->date}';
 $string['cantRespond_WARN'] = 'Don\'t have permissions to answer.';
 $string['cantRespond_WARN_notingroup_or_challengeended'] = 'You can\'t answer. You don\'t belong to this group or the challenge is ended.';
 $string['calification'] = 'Score';
-$string['calificationautor'] = 'Calification for the author of the challenge';
-$string['calification_provisional_msg'] = 'Calification shown may be provisional';
+$string['calificationautor'] = 'Assessment for the author of the challenge';
+$string['calification_provisional_msg'] = 'Assessment shown may be provisional';
 $string['change'] = 'Save Changes';
 $string['changemanualcalification'] = 'Change grade manually';
 $string['changeteam'] = 'Manage Teams';
 $string['checkthat'] = 'Check that';
-$string['change'] = 'Guardar Cambios';
+$string['change'] = 'Save Changes';
 $string['clasification'] = 'Ranking';
-$string['closebeforeopen'] = 'The Close Date of the Questournament must be subsequent to the Start Date';
+$string['closebeforeopen'] = 'The Close Date of the Questournament must be later than the Start Date';
 $string['comment'] = 'Comment';
 $string['commentby'] = 'Comment by';
-$string['comentsforautor'] = 'Coments for autor';
-$string['comentsforpupil'] = 'Coments for students';
-$string['commentsautor'] = 'General comments by autor';
+$string['commentsforauthor'] = 'Coments for author';
+$string['commentsforstudent'] = 'Coments for students';
+$string['commentsauthor'] = 'General comments by author';
 $string['commentsforteacher'] = 'Comments for the teacher';
 $string['commentsteacher'] = 'General comments by teacher';
 $string['confirmchangeform'] = 'This will change the evaluation form. Are you sure?';
@@ -111,14 +111,14 @@ $string['difficultyHard'] = 'Hard';
 $string['difficultyVeryHard'] = 'Very hard';
 $string['disagreewiththisassessment'] = 'Disagree with this assessment';
 $string['displayoffinalgrades'] = 'Display of final grades';
-$string['dontshowgrades'] = 'Dont show grades';
+$string['dontshowgrades'] = 'Do not show grades';
 $string['doyouwantparticularform'] = 'Do you want to use for this challenge an evaluation form different to the one defined by the QUESTournament creator?';
-$string['edit'] = 'Edita';
+$string['edit'] = 'Edit';
 $string['editacomment'] = 'Edit a Comment';
 $string['editelementsanswer'] = 'Edit assesment elements for answers';
 $string['editelementsautor'] = 'Edit assensment elements for autors';
 $string['editingassessmentelements'] = 'Editing assessment elements';
-$string['editingassessmentelementsofautors'] = 'Editing assessment elements of autors';
+$string['editingassessmentelementsofautors'] = 'Editing assessment elements of authors';
 $string['element'] = 'Element';
 
 $string['elementweight'] = 'Element weight';
@@ -240,6 +240,8 @@ $string['evaluation_pending'] = 'Not evaluated';
 $string['excellent'] = 'Excellent';
 $string['exponential'] = 'Exponential';
 $string['feedbackgoeshere'] = 'Feedback goes here';
+$string['feedback'] = 'Feedback';
+$string['feedback_help'] = 'Enter here a feedback about this part of the assessment.';
 $string['firstname'] = 'Firstname';
 $string['generalcomment'] = 'General comment';
 $string['gradingcharacteristics'] = 'Characteristics of grading';
@@ -268,10 +270,7 @@ $string['modif'] = 'Modify';
 $string['modifanswersubmission'] = 'Modify answer for challenge {$a}';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['modulehiddenerror'] = 'Module is hidden.';
-$string['myanswers'] = 'My Answers';
-$string['mycalification'] = 'My Ranking';
-$string['mycalificationteam'] = 'My Ranking by Teams';
-$string['mysubmissions'] = 'My Challenges';
+
 $string['nanswers'] = 'Answers';
 $string['nanswersassessment'] = 'Assessed Answers';
 $string['nanswerscorrect'] = 'Right answers';
@@ -299,7 +298,7 @@ $string['notgraded'] = 'Not Graded';
 $string['notsubmittedyet'] = 'No submission has been made yet';
 $string['nsubmissions'] = 'Number of challenges';
 $string['nsubmissionsassessment'] = 'Assessed challenges';
-$string['nocapabilityaddchallenge'] = 'You have not enough permissions to add a challenge';
+$string['nocapabilityaddchallenge'] = 'You do not have enough permissions to add a challenge';
 
 $string['numbermaxofanswers'] = 'Max number of right answers';
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
@@ -310,7 +309,7 @@ $string['on'] = 'on {$a}';
 $string['passwordprotectedquest'] = "Password Protected QUESTOURnament";
 $string['permitsubmit'] = 'Allow re-submition';
 
-$string['perceiveddifficultyLevelQuestion'] = 'How difficult has been this challenge to you?';
+$string['perceiveddifficultyLevelQuestion'] = 'How difficult has this challenge been to you?';
 $string['perceiveddifficultyLevel'] = 'Difficulty';
 $string['perceivedTeacherDifficultyLevel'] = 'Estimated difficulty';
 $string['perceivedTeacherDifficultyLevel_help'] = 'Estimated difficulty of the challenge. This level is used to cathegorize the challenges. It is used for pedagogic research. This is an optional parameter.';
@@ -385,12 +384,12 @@ $string['quest:generateCSVlogs'] = 'Generate CSV report for:';
 $string['quest:generateLogsReport'] = 'Logs';
 $string['quest:generateIPAccessesReport'] = 'IP Addresses Accesses';
 $string['quest:generateActivityReport'] = 'Activity';
-$string['quest:notifylocale'] = '<p>For your locale "<b>{$a->localelang}</b>" the decimal separator is "
+$string['quest:notifylocale'] = '<P>For your locale "<b>{$a->localelang}</b>" the decimal separator is "
 <b>{$a->localeconfigdecimal}</b>".
-Check that your SpreadSheet interprets correctly this character.</p>';
+Check that your SpreadSheet interprets correctly this character.</P>';
 $string['quest:notifyemptylogs'] = 'Last query with no results. Check if legacy log is enabled in this server.<br/>';
 $string['quest:editattempt'] = 'Edit anyone\'s submitted answer';
-$string['quest:editattemptmine'] = 'Edit owned submitted answer';
+$string['quest:editattemptmine'] = 'Edit own submitted answer';
 $string['quest:editchallengeall'] = 'Edit anyone\'s submitted challenge';
 $string['quest:editchallengemine'] = 'Edit own submitted challenge.';
 $string['quest:emailconfirmchallenge'] = 'Receive email confirmation from own questournament challenge';
@@ -451,7 +450,7 @@ $string['showsubmission'] = 'Show Submission';
 $string['showsubmissions'] = 'Show Submissions';
 $string['showsubmissionsteam'] = 'Show Team Submissions';
 $string['showsubmissionsuser'] = 'Show Individual Submissions';
-$string['shouldSelectDifficultyLevel'] = 'Please, selecta a difficulty level';
+$string['shouldSelectDifficultyLevel'] = 'Please, select a difficulty level';
 
 $string['specimenassessmentform'] = 'Example Assessment Form';
 $string['specimenassessmentformanswer'] = 'Example Assessment Form for answers';
@@ -472,6 +471,7 @@ $string['submittedby'] = 'Submitted by';
 $string['suggestedgrade'] = 'Suggested Grade';
 
 $string['team'] = 'Team';
+$string['team_help'] = '';
 $string['teamcalification'] = 'Team score';
 $string['teamforquest'] = 'Work Team for QUESTOURnament {$a}';
 $string['teamname'] = 'Team Name';
@@ -504,7 +504,7 @@ $string['wrongpassword'] = 'Incorrect password for this QUESTOURnament';
 $string['yourfeedbackgoeshere'] = 'Your Feedback goes Here';
 // HELP TEXTS.
 $string['allowteams'] = 'Allow workteams';
-$string['allowteams_help'] = '<P align="justify">This parameter obliges to that each student taking part in this QUESTOURnament belongs to a team. In such a case, when a student access the QUESTOURnament for the first time, he will have to enter the name of the team to which he belongs.</P>
+$string['allowteams_help'] = '<P align="justify">This parameter forces that each student taking part in this QUESTOURnament belongs to a team. In such a case, when a student access the QUESTOURnament for the first time, he will have to enter the name of the team to which he belongs.</P>
 <P align="justify">Moreover, in this case, besides the individual ranking, the team ranking is presented.</P>
 <P align="justify">The number of members of a team is set by the parameter <a href="help.php?component=quest&identifier=ncomponents"">Number of Members</a>, and can be managed by the teachers during the QUESTOURnament life. If mistakes arise, these can be settled by using the option <a href="help.php?component=quest&identifier=changeteamteacher"">Manage Teams</a> that is only accessible to teachers.</P>';
 $string['answersubmission'] = 'Answer to the challenge';
@@ -512,69 +512,45 @@ $string['answersubmission_help'] = '<P align="justify">This page allows to answe
 <P align="justify">The fields that will be presented are the following:</P>
 <ul>
   <li><strong>Title</strong>: name that identifies the answer to be submitted.</li>
-  <li><strong>Description</strong>: this is the body of the answer to be submitted that must cover all the items specified by the challenge.</li>
+  <li><strong>Description</strong>: this is the body of the answer to be submitted that must cover all the items specified by the assessment form of the challenge.</li>
   <li><strong>Attachments</strong>: if the sending of attachments is allowed, it will be possible to add them at the end of the body of the answer to be submitted.</li>
-</ul>
-<p>The screen will be shown to the student divided in two areas, the upper one will contain a textarea to introduce the answer, and the author of the answer will be asked about his/her opinion about the level of difficulty of the challenge proposed by choosing among one of a set of the options presented, while in the lower one the challenge to be answered will be shown.</p>
-<p align="justify">Beside the text Answer there is an icon with the image of a square root. When this icon is clicked, a screen in which any expression can be tested with the TEX filter provided by Moodle, is shown. The TEX filter turns expresions introduced with a correct sintaxis into mathematic equations with the same appearance that if they were shown by the Microsoft Word equation editor.</p>';
+</ul>';
 $string['approvesubmission'] = 'Approve/Reject Challenge/Question';
 $string['approvesubmission_help'] = '<P align="justify">This page allows the teacher to approve, save or delete a challenge proposed by a student. The actions that can be taken are described below:</P>
 <ul>
-  <li><strong align="justify">Approve</strong>: when this button is clicked, all the data related to the challenge are saved together with the modifications proposed by the teacher. After this, the challenge will be available for the rest of the students that will be able to submit answers once the challenge is opened.</li>
+  <li><strong align="justify">Approve</strong>: all the data related to the challenge are saved together with the modifications proposed by the teacher. After this, the challenge will be available for the rest of the students that will be able to submit answers once the challenge is opened.</li>
   <li><strong align="justify">Save</strong>: all the changes made by the teacher in the challenge are saved, but it will not still be available for the rest of students. This allows that the author of the challenge makes the necessary modifications for the teacher to approve it.</li>
-  <li><strong align="justify">Delete</strong>: the teacher deletes the challenge because he considers it not adequate or interesting.</li>
 </ul>
-<P align="justify">When any of these actions take place, a message is sent to the author of the challenge, internally or through e-mail, depending on the user preferences according to his profile.</P>
-<P align="justify">The information that is presented about the challenge and that can be modified is the following:</P>
-<ul>
-    <li><strong>Title</strong>: name of the challenge, it should not include the name of the author of the challenge in order to keep the anonymity
-of its authorship, otherwise, the challenge could be refused of modified by the teacher.</li>
-      <li><strong>Description</strong>: it is the body of the challenge, where the problem and the items to be included in the answer are presented. It must be clear and complete. </li>
-      <li><strong>Maximum Score</strong>: it is the maximum score that the challenge will be able to reach, it is limited by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> of the QUESTOURnament to which the challenge belongs.</li>
-      <li><strong>Initial Score</strong>: it is the score of the challenge when it is opened and that will vary during the development of the contest.</li>
-      <li><strong>Starting Date</strong>: it sets the date in which the challenge is opened, this parameter can only be set by the teacher. When the challenge is added by a student, the starting date is the time when the challenge is added.</li>
-      <li><strong>Closing Date</strong>: it sets the date in which the challenge is closed, after this date it will not be able to submit answers, although the author of the challenge or the teacher will still be able to assess the answers submitted during the lifetime of the challenge. It can not be subsequent to the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a> set for the QUESTOURnament.</li>
-      <li><strong>Attachments</strong>: this will allow to specify the attachments if this possibility was set when the QUESTOURnament was defined. At this time, it is also possible to delete the attachments included in the challenge so far.</li>
-  <li><strong>Comments for Author</strong>: in this field it will be able to include suggestions or comments that the teacher wants to make to the student that proposed the challenge, which will be also accessible by the rest of teachers.</li>
-  <li><strong>Comments for Students</strong>: in this field it will be able to include comments that the teacher wants to make to the students about the challenge, these comments will be available for all the participants in the QUESTOURnament.</li>
-</ul>';
+<P align="justify">When any of these actions take place, a message is sent to the author of the challenge, internally or through e-mail, depending on the user preferences according to his profile.</P>';
+$string['commentsforauthor_help'] = '<strong>Comments for Author</strong>: in this field it will be able to include suggestions or comments that the teacher wants to make to the student that proposed the challenge, which will be also accessible by the rest of teachers.</li>';
+$string['commentsforstudent_help'] = '<strong>Comments for Students</strong>: this field contains the comments that the teacher wants to show to the students about this challenge, these comments will be available for all the participants in the QUESTOURnament.';
 $string['assessthissubmission'] = 'Assess this challenge';
 $string['assessthissubmission_help'] = '<P align="justify">This page allows the teacher to assess the work of the students that propose challenges in the QUESTOURnament. The score given will depend both on the labour of the student as author of a challenge and as evaluator of the answers received.</P>
 <P align="justify">In order to facilitate the assessment of the task, a set of assessment elements, each one covering an aspect to assess in the task, will be used. For each assessment element it will be necessary to:
 <div align="justify">
   <OL>
-<LI>Introduce a score by clicking the adequate radio button, selecting an option in a selection list presented,ect., which will depend on the scale used for that assessment element.
+<LI>Introduce a score by clicking the adequate radio button, selecting an option in a selection list presented,etc., which will depend on the scale used for that assessment element.
 <LI>Introduce an explanation of why that score is given. If it is considered that the reason is obvious, this field can be left empty. However, it must be taken into account that the student whose work is being assessed can make a complaint about the score received.
   </OL>
 </div>
-<P align="justify">It is also possible to make a general comment about the work assessed. This comment must be respetful and constructive. The score and comments made will be accessbile to the author of the challenge. The teacher will be able to manually modify the global score, in case it is necessary to adjust the score automatically calculated.
-<P align="justify">The maximum possible score for the author of the challenge will be the maximum score reached by the challenge during its lifetime, whenever a correct answer has been submitted. On the other had, if no correct answer is received before the challenge closes, its <a href="help.php?component=quest&identifier=initialpoints"">Initial Score</a> will be considered also its maximum score.';
-
+<P align="justify">It is also possible to make a general comment about the work assessed. This comment must be respectful and constructive. The score and comments made will be accessible to the author of the challenge. The teacher will be able to manually modify the global score, in case it is necessary to adjust the score automatically calculated.
+<P align="justify">The maximum possible score for the author of the challenge will be the maximum score reached by the challenge during its lifetime, whenever a correct answer has been submitted. On the other hand, if no correct answer is received before the challenge closes, its Initial Score will be considered also its maximum score.';
+$string['generalcomment_help'] = '<P align="justify">This is a feedback about the work assessed. This comment must be respectful and constructive.';
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
-$string['numberofattachments_help'] = '<p align="justify">This parameter sets how many text fields will be presented to allow the submission of files when a student or a teacher makes a submission. The value of this parameter must be between 0 and 5. It will usually be 0 or 1, but in certain cases it can be necessary to allow the submission of more than one attachment. If the value specified is 0, that is also the default value for this parameter, this means that it will not be allowed to send any attachment with a submission.</p>
-<p align="justify">If, for example, the number specified is 3, and only 2 files are attached to the submission, that submission is made without showing any warning message. This means that, when a submission is made, it is allowed to attach any number of files up to the maximum specified by this parameter.</p>';
+$string['numberofattachments_help'] = '<P align="justify">This parameter sets how many text fields will be presented to allow the submission of files when a student or a teacher makes a submission. The value of this parameter must be between 0 and 5. It will usually be 0 or 1, but in certain cases it can be necessary to allow the submission of more than one attachment. If the value specified is 0, that is also the default value for this parameter, this means that it will not be allowed to send any attachment with a submission.</P>
+<P align="justify">If, for example, the number specified is 3, and only 2 files are attached to the submission, that submission is made without showing any warning message. This means that, when a submission is made, it is allowed to attach any number of files up to the maximum specified by this parameter.</P>';
 $string['changeteamteacher'] = 'Manage Teams';
-$string['changeteamteacher_help'] = '<P align="justify">This option allows to manage the teams of the QUESTOURnament or to change a student from one team to another if it were necessary.</P>
-<P align="justify">The following information is presented:</P>
-<div align="justify">
-  <ul>
-    <li><strong>Firstname/Lastname</strong>: it shows the name and the last name introduced by the student when he registered himself in the system.</li>
-      <li><strong>Team Name</strong>: it shows the name of the team to which the student belongs.</li>
-      <li><strong> Members</strong>: it defines the current number of members that the team to which the student belong has.</li>
-      <li><strong>New Team</strong>: it is a field text that allows to introduce the name of the new team to which the student will be allocated.</li>
-  </ul>
-</div>
-<p align="justify">if the QUESTOURnament has groups defined, when the teacher changes a student from one team to another, he must select the group to which the student belongs. This makes possible to have two teams with the same name whenever they belong to different groups.</p>
-<p align="justify">If when a student is changed from one team to anothe the team loses his last member, that team will automatically disappear.</p>';
+$string['changeteamteacher_help'] = '<P align="justify">This option allows to manage the teams of the QUESTOURnament or to move a student from one team to another if it were necessary.</P>
+<P align="justify">If a student is moved from one team to another and the team loses his last member, it will automatically disappear.</P>';
 $string['challengestart'] = 'Start Date of the challenge';
-$string['challengestart_help'] = '<P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
-<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
-<P align="justify">A partir de esta fecha los alumnos podr&aacute;n visualizar el desaf&iacute;o y enviar sus respuestas. </P>
-<P align="justify">Este fecha deber&aacute; ser anterior a la Fecha de Cierre del Desaf&iacute;o </P>';
-$string['challengeend'] = 'Close date of the challenge';
-$string['challengeend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desaf&iacute;o. A partir de esta fecha no será posible enviar más respuestas al desaf&iacute;o. Sin embargo, los profesores sí podr&aacute;n seguir evaluando al autor del desaf&iacute;o, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desaf&iacute;os podr&aacute;n continuar evaluando las respuestas enviadas por otros alumnos.</P>
-<P align="justify">Una vez se cierre el desafío, todos los participantes podr&aacute;n ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
-<P align="justify">Esta fecha no podr&aacute; ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del m&oacute;dulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desaf&iacute;o </a>. </P>';
+$string['challengestart_help'] = '<P align="justify">It allows you to set the data when the challenge will start. This parameter can be adjusted by a teacher.</P>
+<P align="justify">If the challenge is created by a student, the creation date is taken as the start date of the challenge, but the reachers can modify this value when they approve or edit the challenge.</P>
+<P align="justify">From this day on, the students can view the challenge and send their answers. </P>
+<P align="justify">This date must be before the Closing date of the challenge </P>';
+$string['challengeend'] = 'Closind date of the challenge';
+$string['challengeend_help'] = '<P align="justify">It allows you to set the date when a challenge will be closed. From this date on, it will not be possible to send any more answers to the challenge. However, the teaches can continue assessing the author of the challenge, both for the question made and for the work made as assesser. Also, the authors of the challenges  can continue assessing the answers sent by other studentes.</P>
+<P align="justify">Once the challenge is closed, all participants will be able to see the answers sent by others, as well as the assessments and scores obtained. </P>
+<P align="justify">This date can not be later than the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a> of the QUESTOURnament module, nor before the <a href="help.php?component=quest&identifier=submissionstart"">Start Date of the Challenge </a>. </P>';
 $string['dateend'] = 'Closing on';
 $string['dateend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
 <P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
@@ -593,40 +569,37 @@ $string['elements_help'] = '<P align="justify">In order to assess an answer subm
       <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
-<P align="justify">The system allows to customise the set of assessment elements defined for each challenge added to a QUESTOURnament.
+<P align="justify">The system allows you to customise the set of assessment elements defined for each challenge added to a QUESTOURnament.
 </div>';
 $string['elementsautor'] = 'Assessment Elements for Authors';
-$string['elementsautor_help'] = '<P align="justify">In order to assess a challenge proposed a number of &quot;Assessment Elements&quot; will be defined, covering each one a particular aspect to be assessed in the challenge proposed and depending its number on the size and complexity of the challenge proposed. The elements will have the following characteristics:
+$string['elementsautor_help'] = '<P align="justify">In order to assess a challenge proposed, a number of &quot;Assessment Elements&quot; will be defined, each one covering a particular aspect to be assessed in the challenge proposed and depending its number on the size and complexity of the challenge proposed. The elements will have the following characteristics:
 <div align="justify">
   <OL>
       <li>DESCRIPTION of the assessment element. It should clearly determine which aspect of the task is being assessed. In the case of a qualitative assessment, it will be useful to provide details of what is considered excellent, average, etc.</li>
       <li>SCALE of the assessment element. There are several predetermined scales, from the simple YES/NO scale, to a scale of total percentage. Each assessment element will use its own scale, which must be choosen so that it can adjust to each possible variation of the element. However, it must be taken into account that the scale does not determine how important an assessment element is when the final score is calculated: for example, an element with a 2-point scale will have the same &quot;influence&quot; in the final score than another element that uses a 100-point scale, whenever the respective elements has the same <i>weight</i> or ponderation factor.</li>
-      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted Challenge, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
+      <li>WEIGHT of the assessment element. By default, each element has the same weight when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted Challenge, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
 </div>';
-$string['global'] = 'Global Classification';
-$string['global_help'] = '<P ALIGN=CENTER><strong>View (Individual) Ranking</strong></P>
-
-<P align="justify">This option shows the classification of the participants in the QUESTOURnament that belong to the same group.</P>
-<P align="justify">The following parameters are shown:</P>
-<div align="justify">
-  <ul>
-    <li><strong>Picture</strong>: image of the student introduced by himself in his profile.</li>
-      <li><strong>Firstname/Lastname</strong>: name and last name introduced by the student when he registered himself in the system.</li>
-      <li><strong>Answers</strong>: number of answers submitted by a student in this QUESTOURnament.</li>
-      <li><strong>Assessed Answers</strong>: number of answers assessed of all the ones submitted by this student in the QUESTOURnament.</li>
-      <li><strong>Number of Challenges</strong>: number of challenges proposed by a student in this QUESTOURnament.</li>
-      <li><strong>Assessed Challenges</strong>: number of challenges assessed of all the ones proposed by this student in the QUESTOURnament.</li>
-      <li><strong>Challenges Score</strong>: total score obtained by the student corresponding to the assessment made by the teachers of the challenges proposed by him.</li>
-      <li><strong>Answers Score</strong>: total score obtained by the student corresponding to the assessment of the answers submitted by him.</li>
-      <li><strong>Team Score</strong>: this parameter is only shown when the option <a href="help.php?component=quest&identifier=allowteams"">Allow Teams</a> is selected in the QUESTOURnament. It is the percentage, set by the option <a href="help.php?component=quest&identifier=teamporcent"">Percentage of Team Scoring</a>, of the total score obtained by the team to which the student belongs, that will be added to his individual score.</li>
-      <li><strong>Score</strong>: It is the total individual score of the student, incorporating his challenges and answers scores and a percentage of his team score if it were necessary.</li>
-  </ul>
-    <p>It must be emphasized that the teachers have access to all the information listed above, while the students can only see that information if the teacher that defined the QUESTOURnament selected the option <a href="help.php?component=quest&identifier=showauthoringdetails"">Show Authoring Details to the Students in Classifications</a>. In any other case, students will not have access to these partial data related to the challenges proposed by other students.</p>
-  <p>By default, the ranking is ordered according to the total individual score obtained by each student, although this order can be modified by choosing another ordering parameter and pressing its name.</p>
-  <p>It is also possible to access the ranking by teams through the option <a href="help.php?component=quest&identifier=teams"">View Summary by Teams</a>.</p>
+$string['globalranking'] = 'Global Classification';
+$string['globalranking_help'] = '<P ALIGN=CENTER><strong>View (Individual) Ranking</strong></P>
+<P align="justify">This option shows the classification of the participants in the QUESTOURnament.</P>
+<P>Please note that the teachers have access to all the information listed above, while the students can only see that information if the teacher that defined the QUESTOURnament selected the option "Show Authoring Details to the Students in Classifications". In any other case, students will not have access to these partial data related to the challenges proposed by other students.</P>
+  <P>By default, the ranking is ordered according to the total individual score obtained by each student, although this order can be modified by choosing another ordering parameter and pressing its name.</P>
+  <P>It is also possible to access the ranking by teams through the option View Summary by Teams.</P>
 </div>';
+$string['picture_help'] = '';
+$string['firstname_help'] = '';
+$string['lastname_help'] = '';
+$string['nanswers_help'] = '<strong>Answers</strong>: number of answers submitted by a student in this QUESTOURnament.';
+$string['nanswersassessment_help'] = '<strong>Assessed Answers</strong>: number of answers assessed of all the ones submitted by this student in the QUESTOURnament.';
+$string['nsubmissions_help'] = '<strong>Number of Challenges</strong>: number of challenges proposed by a student in this QUESTOURnament.';
+$string['nsubmissionsassessment_help'] = '<strong>Assessed Challenges</strong>: number of challenges assessed of all the ones proposed by this student in the QUESTOURnament.';
+$string['pointssubmission_help'] = '<strong>Challenges Score</strong>: total score obtained by the student corresponding to the assessment made by the teachers of the challenges proposed by him.';
+$string['pointsanswers_help'] = '<strong>Answers Score</strong>: total score obtained by the student corresponding to the assessment of the answers submitted by him.';
+$string['pointsteam_help'] = '<strong>Team Score</strong>: this parameter is only shown when the option <a href="help.php?component=quest&identifier=allowteams"">Allow Teams</a> is selected in the QUESTOURnament. It is the percentage, set by the option Percentage of Team Scoring, of the total score obtained by the team to which the student belongs, that will be added to his individual score.';
+$string['points_help'] = '<strong>Score</strong>: It is the total individual score of the student (or the team), incorporating his challenges and answers scores and a percentage of his team score if it were necessary.';
+
 $string['individualranking'] = 'View (Individual) Ranking';
 $string['individualranking_help'] = '<P align="justify">This option shows the classification of the participants in the QUESTOURnament that belong to the same group.</P>
 <P align="justify">The following parameters are shown:</P>
@@ -643,9 +616,9 @@ $string['individualranking_help'] = '<P align="justify">This option shows the cl
       <li><strong>Team Score</strong>: this parameter is only shown when the option <a href="help.php?component=quest&identifier=allowteams"">Allow Teams</a> is selected in the QUESTOURnament. It is the percentage, set by the option <a href="help.php?component=quest&identifier=teamporcent"">Percentage of Team Scoring</a>, of the total score obtained by the team to which the student belongs, that will be added to his individual score.</li>
       <li><strong>Score</strong>: It is the total individual score of the student, incorporating his challenges and answers scores and a percentage of his team score if it were necessary.</li>
   </ul>
-    <p>It must be emphasized that the teachers have access to all the information listed above, while the students can only see that information if the teacher that defined the QUESTOURnament selected the option <a href="help.php?component=quest&identifier=showauthoringdetails"">Show Authoring Details to the Students in Classifications</a>. In any other case, students will not have access to these partial data related to the challenges proposed by other students.</p>
-  <p>By default, the ranking is ordered according to the total individual score obtained by each student, although this order can be modified by choosing another ordering parameter and pressing its name.</p>
-  <p>It is also possible to access the ranking by teams through the option <a href="help.php?component=quest&identifier=teams"">View Summary by Teams</a>.</p>
+    <P>It must be emphasized that the teachers have access to all the information listed above, while the students can only see that information if the teacher that defined the QUESTOURnament selected the option <a href="help.php?component=quest&identifier=showauthoringdetails"">Show Authoring Details to the Students in Classifications</a>. In any other case, students will not have access to these partial data related to the challenges proposed by other students.</P>
+  <P>By default, the ranking is ordered according to the total individual score obtained by each student, although this order can be modified by choosing another ordering parameter and pressing its name.</P>
+  <P>It is also possible to access the ranking by teams through the option <a href="help.php?component=quest&identifier=teams"">View Summary by Teams</a>.</P>
 </div>';
 $string['grading'] = 'Assess Answer';
 $string['grading_help'] = '<P align="justify">This page allows to assess an answer submitted. The score given will depend on how the answer corresponds to what is required in the corresponding challenge.</P>
@@ -672,15 +645,15 @@ $string['gradingstrategy_help'] = '<P align="justify">The scoring strategy used 
       </li>
   </OL>
 </div>';
-$string['gradingstrategyautor'] = 'Scoring strategy for autors';
-$string['gradingstrategyautor_help'] = '<P align="justify">The scoring strategy used to assess the challenges added in a QUESTOURnament is acumulative.
+$string['gradingstrategyautor'] = 'Scoring strategy for authors';
+$string['gradingstrategyautor_help'] = '<P align="justify">The scoring strategy used to assess the challenges added in a QUESTOURnament is accumulative.
 
 <P align="justify">This means that in the scoring of each assessment a number of elements are used, and each one must cover a specific aspect of the task to be assessed. The number of assessment elements will depend of the size and complexity of the task. The assessment elements have the following characteristics:
 <div align="justify">
   <OL>
       <li>DESCRIPTION of the assessment element. It should clearly determine which aspect of the task is being assessed. In the case of a qualitative assessment, it will be useful to provide details of what is considered excellent, average, etc.</li>
       <li>SCALE of the assessment element. There are several predetermined scales, from the simple YES/NO scale, to a scale of total percentage. Each assessment element will use its own scale, which must be choosen so that it can adjust to each possible variation of the element. However, it must be taken into account that the scale does not determine how important an assessment element is when the final score is calculated: for example, an element with a 2-point scale will have the same &quot;influence&quot; in the final score than another element that uses a 100-point scale, whenever the respective elements has the same <i>weight</i> or ponderation factor.</li>
-      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
+      <li>WEIGHT of the assessment element. By default, each element has the same weight when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
 </div>';
@@ -733,17 +706,15 @@ of its authorship, otherwise, the challenge could be refused of modified by the 
 $string['modulename'] = 'QUESTOURnament';
 $string['modulename_help'] = 'Questournament is an activity that allows to develop contests. Students can engage in a competition to answer a set of challenges whose score changes in time. The challenge gains reward as the time goes by without any valid answer. This activity allows to place some preasure and motivation on the course. The game can be played individually or in teams. The scoreboard gives credit to the best participants.';
 $string['myplace'] = 'My Place for this Questournament';
-$string['myplace_help'] = '<P align="justify">This page shows the information corresponding to the activity developed by each participant in the QUESTOURnament.</P>
-<P align="justify">The information presented is divided in several sections:</P>
-<ul>
-  <li>
-    <div align="justify"><strong>My Challenges</strong>: it shows a list with all the challenges that have been added by the user that views this page. For each challenge, the current score (maximum score that it will possible to obtain by an answer submitted at this time), the phase or state in which the challenge is, the number of answers submitted and the number of them that were right, the opening and closing dates and its title are shown. Pressing its title gives access to the complete description of a challenge. The teacher will be able to modify or delete a challenge at any time, while the author, if a student, will only be able to do it till the challenge that he has added is approved by the teacher.</div>
-  </li>
-  <li><strong>My Answers</strong>: it shows all the answers submitted by the user that views this page. For each answer, the date of submission, the actions that can be taken (View Assessment, etc.), the score obtained and its title are shown. An answer could be modified or deleted by the teacher at any time, while the student will only be able to modify or delete an answer that he has submitted till it has been assessed.</li>
-  <li><strong>My Raking</strong>: it shows the different scores obtained by a student in the QUESTOURnament, both the sores corresponding to the answers assessed and to the challenges proposed. This section will be not shown if the user that views this page is a teacher.</li>
-  <li><strong>My Ranking by Teams</strong>: it shows the scores obtained by the team to which the student that views this page belongs. This option will only be shown if the QUESTOURnament has the <a href="help.php?component=quest&identifier=allowteams"">Allow Teams</a> option selected. This section will not be shown if the user that views this page is a teacher.</li>
-</ul>
-<p>Through this page it will be also possible to execute a set of actions such as <a href="help.php?component=quest&identifier=submitchallengeassignment"">Add Challenge</a> or <a href="help.php?component=quest&identifier=changeteamteacher"">Manage Teams</a>, that will depend on the role of the user (student...).</p>';
+$string['myplace_help'] = '<P align="justify">This page shows the information corresponding to the activity developed by each participant in the QUESTOURnament.</P>';
+$string['myanswers'] = 'My Answers';
+$string['myranking'] = 'My Ranking';
+$string['myrankingteam'] = 'My Ranking by Teams';
+$string['mychallenges'] = 'My Challenges';
+$string['mychallenges_help'] = '<div align="justify"><strong>My Challenges</strong>: it shows a list with all the challenges that have been added by the user that views this page. For each challenge, the current score (maximum score that it will possible to obtain by an answer submitted at this time), the phase or state in which the challenge is, the number of answers submitted and the number of them that were right, the opening and closing dates and its title are shown. Pressing its title gives access to the complete description of a challenge. The teacher will be able to modify or delete a challenge at any time, while the author, if a student, will only be able to do it till the challenge that he has added is approved by the teacher.</div>';
+$string['myanswers_help'] = '<strong>My Answers</strong>: it shows all the answers submitted by current user. For each answer, the date of submission, the actions that can be taken (View Assessment, etc.), the score obtained and its title are shown. An answer could be modified or deleted by the teacher at any time, while the student will only be able to modify or delete an answer that he has submitted till it has been assessed.';
+$string['myranking_help'] = '<strong>My Raking</strong>: it shows the different scores obtained by a student in the QUESTOURnament, both the sores corresponding to the answers assessed and to the challenges proposed. This section will be not shown if the user that views this page is a teacher.';
+$string['myrankingteam_help'] = '<strong>My Ranking by Teams</strong>: it shows the scores obtained by the team to which the student that views this page belongs. This option will only be shown if the QUESTOURnament has the <a href="help.php?component=quest&identifier=allowteams"">Allow Teams</a> option selected. This section will not be shown if the user that views this page is a teacher.';
 $string['ncomponents'] = 'Number of members';
 $string['ncomponents_help'] = '<P align="justify">This parameter sets the maximum number of members that each team will have.</P>
 <P align="justify">If a student tries to become member of a team that is already full, the system will inform of this fact and the student will have to become a member of another team.</P>';
@@ -756,7 +727,7 @@ $string['nmaxanswers'] = 'Maximum number of right answers';
 $string['nmaxanswers_help'] = '<P>This parameter sets the maximum number of correct answers that will be allowed in a challenge before it closes.</P>
 <P>Once this number is reached, the challenge will close and no more answers will be accepted, no matter what is the current socre of the challenge or if the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a></P> has been reached or not.';
 $string['password'] = 'Password';
-$string['password_help'] = '<p align="justify">This text field allows to set an access password for this QUESTOURnament. The password can have a maximum length of 10 characters, and can be modified at any time during the lifetime of the QUESTOURnament. By selecting the option &quot; <a href="help.php?component=quest&identifier=usepassword"">Use password</a>&quot; it is guaranteed that students must write this password to access the QUESTOURnament.</p>';
+$string['password_help'] = '<P align="justify">This text field allows to set an access password for this QUESTOURnament. The password can have a maximum length of 10 characters, and can be modified at any time during the lifetime of the QUESTOURnament. By selecting the option &quot; <a href="help.php?component=quest&identifier=usepassword"">Use password</a>&quot; it is guaranteed that students must write this password to access the QUESTOURnament.</P>';
 $string['permitviewautors'] = 'Show authoring details to the students of closed challenges';
 $string['permitviewautors_help'] = '<P align="justify">If this option, that is unselected by default, is selected, the information about the authors of the challenges of the QUESTOURnament will be shown, oncen those challenges are closed and it is not possible to submit any more answers.</P>
 <P align="justify">If this option is unselected, the students will never know the identity of the authors of the challenges even if they are closed.</P>';
@@ -807,22 +778,10 @@ $string['teamporcent_help'] = '<P align="justify">This parameter sets the percen
 <P align="justify">The goal is to promote team work in a way that it has an impact in the final score and ranking possition of each student.</P>';
 $string['teams'] = 'Team Classification';
 $string['teams_help'] = '<P align="justify">This page shows the score obtained by each team that belongs to the same group in a QUESTOURnament. A percentage of this score determined by the "<a href="help.php?component=quest&identifier=teamporcent"">Percentage of Team Scoring</a>" parameter of the QUESTOURnament will contribute to the individual score of each member of the team.</P>
-<P align="justify">The following parameters are shown:</P>
-<div align="justify">
-  <ul>
-    <li><strong>Team</strong>: name of the team.</li>
-      <li><strong>Answers</strong>: number of answers submitted by the members of the same team in this QUESTOURnament.</li>
-      <li><strong>Assessed Answers</strong>: number of answers assessed of all the ones submitted by the members of the team in the QUESTOURnament.</li>
-      <li><strong>Number of Challenges</strong>: number of challenges proposed by the members of the team in this QUESTOURnament.</li>
-      <li><strong>Assessed Challenges</strong>: number of challenges assessed of all the ones proposed by the members of the team in the QUESTOURnament.
-      <li><strong>Challenges Score</strong> total score obtained by the members of the team corresponding to the assessment made by the teachers of the challenges proposed by them.</li>
-      <li><strong>Answers Score</strong>: total score obtained by the members of the team corresponding to the assessment of the answers submitted by them.</li>
-      <li><strong>Score</strong>: it is the total score, incorporating the challenges and answers scores of each and every member of the team..</li>
-  </ul>
-  <p>By default, the ranking is ordered according to the total score obtained by each team, although this order can be modified by choosing another ordering parameter and pressing its name.</p>
-  <p>It is also possible to access the individual ranking through the option <a href="help.php?component=quest&identifier=global"">View Global Classification</a>.</p>
+  <P>By default, the ranking is ordered according to the total score obtained by each team, although this order can be modified by choosing another ordering parameter and pressing its name.</P>
+  <P>It is also possible to access the individual ranking through the option <a href="help.php?component=quest&identifier=global"">View Global Classification</a>.</P>
 </div>';
-$string['timemaxquestion'] = 'Maximum Time of Life'; // TODO evp esta sobra, vale la siguiente.
+$string['timemaxquestion'] = 'Maximum Time of Life';
 $string['timemaxquestion_help'] = '<P align="justify">This parameter sets the length (in days) of the challenges added to this QUESTOURnament</P>
 <P align="justify">A student can not modify the length of a challenge that he adds to the QUESTOURnament. However, teachers will be able to modify the starting and closing dates of each challenge of the QUESTOURnament, both of the ones proposed by them and of the ones proposed by the students.</P>';
 $string['tinitial'] = 'Initial time';
@@ -830,27 +789,10 @@ $string['tinitial_help'] = '<P align="justify">This parameter sets the length of
 <P align="justify">The objective is that the students answer as soon as possible in order to obtain the maximum possible score.</P>';
 $string['submitchallengeassignment'] = 'Add challenge';
 $string['submitchallengeassignment_help'] = '
-<p>In order to allow the students to submit new challenges permission "mod/quest:addchallenge" should be granted.
-	Probably, your plattform may have a role with this permission. Use menu option "Locally assigned roles" or "Permissions" to add the students that can be authors of challenges in this QUESTOURNAMENT.</p>
+<P>In order to allow the students to submit new challenges permission "mod/quest:addchallenge" should be granted.
+	Probably, your plattform may have a role with this permission. Use menu option "Locally assigned roles" or "Permissions" to add the students that can be authors of challenges in this QUESTOURNAMENT.</P>';
 
-<P align="justify">This page allows to add a challenge in the QUESTOURnament using the following fields to specify its characteristics:</P>
-<div align="justify">
-  <ul>
-      <li><strong>Title</strong>: name of the challenge, it should not include the name of the author of the challenge in order to keep the anonymity
-of its authorship, otherwise, the challenge could be refused of modified by the teacher.</li>
-      <li><strong>Description</strong>: it is the body of the challenge, where the problem and the items to be included in the answer are presented. It must be clear and complete. </li>
-      <li><strong>Maximum Score</strong>: it is the maximum score that the challenge will be able to reach, it is limited by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> of the QUESTOURnament to which the challenge belongs.</li>
-      <li><strong>Initial Score</strong>: it is the score of the challenge when it is opened and that will vary during the development of the contest.</li>
-      <li><strong>Starting Date</strong>: it sets the date in which the challenge is opened, this parameter can only be set by the teacher. When the challenge is added by a student, the starting date is the time when the challenge is added.</li>
-      <li><strong>Closing Date</strong>: it sets the date in which the challenge is closed, after this date it will not be able to submit answers, although the author of the challenge or the teacher will still be able to assess the answers submitted during the lifetime of the challenge. It can not be subsequent to the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a> set for the QUESTOURnament.</li>
-      <li><strong>Attachments</strong>: this will allow to specify the attachments if this possibility was set when the QUESTOURnament was defined.</li>
-  </ul>
-  <p>The system will check that the title and/or description fields are not left empty, in which case an error message will be displayed and the challenge will not be added. The system will also check if the dates are coherent, and in the case that the closing date of the challenge is subsequent to the closing date of the QUESTOURnament to which it belongs, this date will be taken as the closing date for the challenge.</p>
-  <p>For any challenge, if the initial score chosen is higher than the maximum score set, the maximum score will be also taken as initial score.</p>
-</div>
-<ul>
-</ul>';
-$string['usepassword_help'] = '<p align="justify">This option allows to set an access password to this QUESTOURnament. To protect a QUESTOURnament with a password can be necessary, for example, when that QUESTOURnament is used by several groups of students in a course, and must be opened to each group in a different time slot, in which case, the access password will not allow that a group of students can access the QUESTOURnament once it is opened to another different group of students but not for them yet.</p>';
+$string['usepassword_help'] = '<P align="justify">This option allows to set an access password to this QUESTOURnament. To protect a QUESTOURnament with a password can be necessary, for example, when that QUESTOURnament is used by several groups of students in a course, and must be opened to each group in a different time slot, in which case, the access password will not allow that a group of students can access the QUESTOURnament once it is opened to another different group of students but not for them yet.</P>';
 
 $string['validateassessment'] = 'Validate Assesments';
 $string['validateassessment_help'] = '<P align="justify">If this option is selected, the teacher will have to approve all the assessments made by the students that propose challenges in order to validate the scores given by them to the answers submitted by other students to those challenges.</P>

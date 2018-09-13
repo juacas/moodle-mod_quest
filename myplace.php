@@ -107,8 +107,8 @@ echo "<center><b>";
 quest_print_challenge_grading_link($cm, $context, $quest);
 quest_print_answer_grading_link($cm, $context, $quest);
 echo "</center>";
-$title = get_string('mysubmissions', 'quest');
-echo $OUTPUT->heading($title);
+$title = get_string('mychallenges', 'quest');
+echo $OUTPUT->heading_with_help($title, 'mychallenges', 'quest');
 
 // Get all the students.
 if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -290,7 +290,7 @@ if ($indice > 0) {
 echo '</td></tr>';
 
 $title = get_string('myanswers', 'quest');
-echo $OUTPUT->heading($title);
+echo $OUTPUT->heading_with_help($title, 'myanswers', 'quest');
 
 if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
     echo $OUTPUT->heading(get_string("nostudentsyet"));
@@ -401,7 +401,7 @@ echo html_writer::table($table);
 echo '</td></tr>';
 
 if (!$ismanager) {
-    $title = get_string('mycalification', 'quest');
+    $title = get_string('myranking', 'quest');
     echo $OUTPUT->heading($title);
 
     $tablesort->data = array();
@@ -514,8 +514,8 @@ echo '<tr><td>';
 echo '</td></tr>';
 if ((!$ismanager) && ($quest->allowteams)) {
 
-    $title = get_string('mycalificationteam', 'quest');
-    $OUTPUT->heading($title);
+    $title = get_string('myranking', 'quest');
+    $OUTPUT->heading_with_help($title, 'myrankingteam', 'quest');
 
     // Now prepare table with student assessments and submissions.
     $tablesort->data = array();
