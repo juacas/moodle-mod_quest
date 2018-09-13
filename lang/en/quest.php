@@ -543,11 +543,11 @@ $string['assessthissubmission_help'] = '<P align="justify">This page allows the 
 <P align="justify">In order to facilitate the assessment of the task, a set of assessment elements, each one covering an aspect to assess in the task, will be used. For each assessment element it will be necessary to:
 <div align="justify">
   <OL>
-<LI>Introduce a score by clicking the adequate radio button, selecting an option in a selection list presented,ect., which will depend on the scale used for that assessment element.
+<LI>Introduce a score by clicking the adequate radio button, selecting an option in a selection list presented,etc., which will depend on the scale used for that assessment element.
 <LI>Introduce an explanation of why that score is given. If it is considered that the reason is obvious, this field can be left empty. However, it must be taken into account that the student whose work is being assessed can make a complaint about the score received.
   </OL>
 </div>
-<P align="justify">It is also possible to make a general comment about the work assessed. This comment must be respetful and constructive. The score and comments made will be accessbile to the author of the challenge. The teacher will be able to manually modify the global score, in case it is necessary to adjust the score automatically calculated.
+<P align="justify">It is also possible to make a general comment about the work assessed. This comment must be respectful and constructive. The score and comments made will be accessbile to the author of the challenge. The teacher will be able to manually modify the global score, in case it is necessary to adjust the score automatically calculated.
 <P align="justify">The maximum possible score for the author of the challenge will be the maximum score reached by the challenge during its lifetime, whenever a correct answer has been submitted. On the other had, if no correct answer is received before the challenge closes, its <a href="help.php?component=quest&identifier=initialpoints"">Initial Score</a> will be considered also its maximum score.';
 
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
@@ -561,20 +561,20 @@ $string['changeteamteacher_help'] = '<P align="justify">This option allows to ma
     <li><strong>Firstname/Lastname</strong>: it shows the name and the last name introduced by the student when he registered himself in the system.</li>
       <li><strong>Team Name</strong>: it shows the name of the team to which the student belongs.</li>
       <li><strong> Members</strong>: it defines the current number of members that the team to which the student belong has.</li>
-      <li><strong>New Team</strong>: it is a field text that allows to introduce the name of the new team to which the student will be allocated.</li>
+      <li><strong>New Team</strong>: it is a text field that allows you to introduce the name of the new team to which the student will be allocated.</li>
   </ul>
 </div>
 <P align="justify">if the QUESTOURnament has groups defined, when the teacher changes a student from one team to another, he must select the group to which the student belongs. This makes possible to have two teams with the same name whenever they belong to different groups.</p>
 <P align="justify">If when a student is changed from one team to anothe the team loses his last member, that team will automatically disappear.</p>';
 $string['challengestart'] = 'Start Date of the challenge';
-$string['challengestart_help'] = '<P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
-<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
-<P align="justify">A partir de esta fecha los alumnos podr&aacute;n visualizar el desaf&iacute;o y enviar sus respuestas. </P>
-<P align="justify">Este fecha deber&aacute; ser anterior a la Fecha de Cierre del Desaf&iacute;o </P>';
-$string['challengeend'] = 'Close date of the challenge';
-$string['challengeend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desaf&iacute;o. A partir de esta fecha no será posible enviar más respuestas al desaf&iacute;o. Sin embargo, los profesores sí podr&aacute;n seguir evaluando al autor del desaf&iacute;o, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desaf&iacute;os podr&aacute;n continuar evaluando las respuestas enviadas por otros alumnos.</P>
-<P align="justify">Una vez se cierre el desafío, todos los participantes podr&aacute;n ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
-<P align="justify">Esta fecha no podr&aacute; ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del m&oacute;dulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desaf&iacute;o </a>. </P>';
+$string['challengestart_help'] = '<P align="justify">It allows you to set the data when the challenge will start. This parameter can be adjusted by a teacher.</P>
+<P align="justify">If the challenge is created by a student, the creation date is taken as the start date of the challenge, but the reachers can modify this value when they approve or edit the challenge.</P>
+<P align="justify">From this day on, the students can view the challenge and send their answers. </P>
+<P align="justify">This date must be before the Closing date of the challenge </P>';
+$string['challengeend'] = 'Closind date of the challenge';
+$string['challengeend_help'] = '<P align="justify">It allows you to set the date when a challenge will be closed. From this date on, it will not be possible to send any more answers to the challenge. However, the teaches can continue assessing the author of the challenge, both for the question made and for the work made as assesser. Also, the authors of the challenges  can continue assessing the answers sent by other studentes.</P>
+<P align="justify">Once the challenge is closed, all participants will be able to see the answers sent by others, as well as the assessments and scores obtained. </P>
+<P align="justify">This date can not be later than the <a href="help.php?component=quest&identifier=dateend"">Closing Date</a> of the QUESTOURnament module, nor before the <a href="help.php?component=quest&identifier=submissionstart"">Start Date of the Challenge </a>. </P>';
 $string['dateend'] = 'Closing on';
 $string['dateend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
 <P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
@@ -593,15 +593,15 @@ $string['elements_help'] = '<P align="justify">In order to assess an answer subm
       <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
-<P align="justify">The system allows to customise the set of assessment elements defined for each challenge added to a QUESTOURnament.
+<P align="justify">The system allows you to customise the set of assessment elements defined for each challenge added to a QUESTOURnament.
 </div>';
 $string['elementsautor'] = 'Assessment Elements for Authors';
-$string['elementsautor_help'] = '<P align="justify">In order to assess a challenge proposed a number of &quot;Assessment Elements&quot; will be defined, covering each one a particular aspect to be assessed in the challenge proposed and depending its number on the size and complexity of the challenge proposed. The elements will have the following characteristics:
+$string['elementsautor_help'] = '<P align="justify">In order to assess a challenge proposed, a number of &quot;Assessment Elements&quot; will be defined, each one covering a particular aspect to be assessed in the challenge proposed and depending its number on the size and complexity of the challenge proposed. The elements will have the following characteristics:
 <div align="justify">
   <OL>
       <li>DESCRIPTION of the assessment element. It should clearly determine which aspect of the task is being assessed. In the case of a qualitative assessment, it will be useful to provide details of what is considered excellent, average, etc.</li>
       <li>SCALE of the assessment element. There are several predetermined scales, from the simple YES/NO scale, to a scale of total percentage. Each assessment element will use its own scale, which must be choosen so that it can adjust to each possible variation of the element. However, it must be taken into account that the scale does not determine how important an assessment element is when the final score is calculated: for example, an element with a 2-point scale will have the same &quot;influence&quot; in the final score than another element that uses a 100-point scale, whenever the respective elements has the same <i>weight</i> or ponderation factor.</li>
-      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted Challenge, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
+      <li>WEIGHT of the assessment element. By default, each element has the same weight when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted Challenge, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
 </div>';
@@ -672,15 +672,15 @@ $string['gradingstrategy_help'] = '<P align="justify">The scoring strategy used 
       </li>
   </OL>
 </div>';
-$string['gradingstrategyautor'] = 'Scoring strategy for autors';
-$string['gradingstrategyautor_help'] = '<P align="justify">The scoring strategy used to assess the challenges added in a QUESTOURnament is acumulative.
+$string['gradingstrategyautor'] = 'Scoring strategy for authors';
+$string['gradingstrategyautor_help'] = '<P align="justify">The scoring strategy used to assess the challenges added in a QUESTOURnament is accumulative.
 
 <P align="justify">This means that in the scoring of each assessment a number of elements are used, and each one must cover a specific aspect of the task to be assessed. The number of assessment elements will depend of the size and complexity of the task. The assessment elements have the following characteristics:
 <div align="justify">
   <OL>
       <li>DESCRIPTION of the assessment element. It should clearly determine which aspect of the task is being assessed. In the case of a qualitative assessment, it will be useful to provide details of what is considered excellent, average, etc.</li>
       <li>SCALE of the assessment element. There are several predetermined scales, from the simple YES/NO scale, to a scale of total percentage. Each assessment element will use its own scale, which must be choosen so that it can adjust to each possible variation of the element. However, it must be taken into account that the scale does not determine how important an assessment element is when the final score is calculated: for example, an element with a 2-point scale will have the same &quot;influence&quot; in the final score than another element that uses a 100-point scale, whenever the respective elements has the same <i>weight</i> or ponderation factor.</li>
-      <li>WEIGHT of the assessment element. By default, each element has the same importance when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
+      <li>WEIGHT of the assessment element. By default, each element has the same weight when the final score of the task is calculated. However, this fact can be changed by giving the more important elements a weight higher than one, and to the less important elements a weight lower than one. It must be also taken into account that to modify the weight does NOT affect the possible maximum score of a submitted answer, because this value is determined by the <a href="help.php?component=quest&identifier=maxcalification"">Highest Score</a> parameter set for the challenge to which the answer is being submitted and the time when it was submitted.
       </li>
   </OL>
 </div>';
