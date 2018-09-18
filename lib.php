@@ -1275,10 +1275,12 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
         }
     }
     if (has_capability('mod/quest:downloadlogs', $PAGE->cm->context)) {
-        $catnode = $questnode->add('Admin logs', null, navigation_node::TYPE_CONTAINER);
-        $catnode->add('Get technical logs', new moodle_url('/mod/quest/getLogs.php', array('id' => $PAGE->cm->id)),
+        $catnode = $questnode->add(get_string('adminlogs', 'quest'), null, navigation_node::TYPE_CONTAINER);
+        $catnode->add(get_string('gettechnicallogs', 'quest'),
+                new moodle_url('/mod/quest/getLogs.php', array('id' => $PAGE->cm->id)),
                 navigation_node::TYPE_SETTING);
-        $catnode->add('Full activity listing', new moodle_url('/mod/quest/report.php', array('id' => $PAGE->cm->id)),
+        $catnode->add(get_string('fullactivitylisting', 'quest'),
+                new moodle_url('/mod/quest/report.php', array('id' => $PAGE->cm->id)),
                 navigation_node::TYPE_SETTING);
     }
 }

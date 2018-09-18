@@ -88,7 +88,7 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('selectyesno', 'usepassword', get_string('usepassword', 'quest'));
         $mform->addHelpButton('usepassword', "usepassword", "quest");
 
-        $mform->addElement('text', 'password', 'Password', array('size' => '10'));
+        $mform->addElement('text', 'password', get_string('password'), array('size' => '10'));
         $mform->addHelpButton('password', "password", "quest");
         $mform->setType('password', PARAM_RAW);
         $sizelist = array("10Kb", "50Kb", "100Kb", "500Kb", "1Mb", "2Mb", "5Mb", "10Mb", "20Mb", "50Mb");

@@ -124,7 +124,8 @@ if ($action == 'global') {
     echo '<tr><td>';
     echo '</td></tr>';
     echo '</table>';
-    echo $OUTPUT->heading_with_help(get_string('globalranking', 'quest'), "globalranking", "quest");
+    $classificationtitle = get_string('globalranking', 'quest');
+    echo $OUTPUT->heading_with_help($classificationtitle, "globalranking", "quest");
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
@@ -318,8 +319,8 @@ if ($action == 'global') {
 
     echo '</td></tr>';
     echo '</table>';
-
-    echo $OUTPUT->heading_with_help(get_string('teams', 'quest'), "teams", "quest");
+    $classificationtitle = get_string('teams', 'quest');
+    echo $OUTPUT->heading_with_help($classificationtitle, "teams", "quest");
 
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -493,5 +494,6 @@ if ($action == 'global') {
 // Finish the page.
 echo $OUTPUT->continue_button(new moodle_url('view.php', array('id' => $id)));
 $thispageurl->param('action', 'export');
-echo $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', 'Download CSV'), null, null, true);
+echo $OUTPUT->action_icon($thispageurl,
+        new pix_icon('t/download', get_string('quest:generateCSVlogs', 'quest') . ' ' . $classificationtitle), null, null, true);
 echo $OUTPUT->footer();

@@ -29,6 +29,7 @@ Installation
 
 Change log
 ==========
+ - v1.4.4 Some translation strings fixed.
  - v1.4.3 Help strings reformatted.
  - v1.4.2 Lang strings cleaned for translation with AMOS
  - v1.4.1 Code refactoring and cleaning to conform to Moodle's development guides.
