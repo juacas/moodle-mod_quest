@@ -184,9 +184,8 @@ function quest_delete_instance($id) {
     // Given an ID of an instance of this module,
     // ...this function will permanently delete the instance.
     // ...and any data that depends on it..
-    if (!$quest = $DB->get_record("quest", array("id" => $id))) {
-        return false;
-    }
+    $quest = $DB->get_record("quest", array("id" => $id), "*", MUST_EXIST);
+
     if (!$cm = get_coursemodule_from_instance('quest', $quest->id)) {
         return false;
     }
