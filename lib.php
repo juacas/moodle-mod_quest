@@ -634,7 +634,7 @@ function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, 
              '/mod/quest/view.php?id=' . $cm->id . '">' . format_string($quest->name, true) . '</a>';
 
     $posthtml .= ' &raquo; <a target="_blank" href="' . $CFG->wwwroot . '/mod/quest/submissions.php?id=' . $cm->id .
-             '&amp;action=showsubmission&amp;id=' . $submission->id . '">' . format_string($submission->title, true) . '</a></div>';
+             '&amp;action=showsubmission&amp;sid=' . $submission->id . '">' . format_string($submission->title, true) . '</a></div>';
 
     $posthtml .= quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submission, $cm);
 
