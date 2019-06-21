@@ -29,6 +29,7 @@ Installation
 
 Change log
 ==========
+ - v1.4.5 Link in notification emails fixed.
  - v1.4.4 Some translation strings fixed.
  - v1.4.3 Help strings reformatted.
  - v1.4.2 Lang strings cleaned for translation with AMOS
