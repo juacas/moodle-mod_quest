@@ -1,19 +1,19 @@
 <?php
-// This file is part of Questournament activity for Moodle http://moodle.org/
+// This file is part of QUESTOURnament activity for Moodle http://moodle.org/
 //
-// Questournament for Moodle is free software: you can redistribute it and/or modify
+// QUESTOURnament for Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Questournament for Moodle is distributed in the hope that it will be useful,
+// QUESTOURnament for Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/** Questournament activity for Moodle lang file
+/** QUESTOURnament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
  * Designed and directed by Juan Pablo de Castro with the effort of many other
@@ -77,7 +77,7 @@ $string['changeteam'] = 'Manage Teams';
 $string['checkthat'] = 'Check that';
 $string['change'] = 'Save Changes';
 $string['clasification'] = 'Ranking';
-$string['closebeforeopen'] = 'The Close Date of the Questournament must be later than the Start Date';
+$string['closebeforeopen'] = 'The Close Date of the QUESTOURnament must be later than the Start Date';
 $string['comment'] = 'Comment';
 $string['commentby'] = 'Comment by';
 $string['commentsforauthor'] = 'Coments for author';
@@ -293,8 +293,8 @@ $string['nograde'] = 'No Grade';
 $string['notavailable'] = 'not available';
 $string['noteonassessmentelements'] = 'Note that grading is broken down into a number of \'Assessment Elements\'.<br />
     This makes the grading easier and more consistent. As evaluator you must add these <br />
-    Elements before making the Questournament available to students. This is done by<br />
-    clicking on the Questournament in the course, if no elements are present you will be asked<br />
+    Elements before making the QUESTOURnament available to students. This is done by<br />
+    clicking on the QUESTOURnament in the course, if no elements are present you will be asked<br />
     to add them. You can change the number of elements using the Edit Author Assessment screen,<br />
     the elements themselves can be amended from the &quot;Edit Author Assessment&quot; screen. ';
 $string['notgraded'] = 'Not Graded';
@@ -307,7 +307,6 @@ $string['numbermaxofanswers'] = 'Max number of right answers';
 $string['numberofattachments'] = 'Number of Attachments expected on Submissions';
 $string['of'] = 'of';
 $string['oldteam'] = 'Current team';
-$string['on'] = 'on {$a}';
 
 $string['passwordprotectedquest'] = "Password Protected QUESTOURnament";
 $string['permitsubmit'] = 'Allow re-submition';
@@ -332,7 +331,7 @@ $string['phase4answer'] = 'Assessed as correct by Author';
 $string['phase5answer'] = 'Assessed as correct by Teacher';
 $string['phase1quest'] = 'Start pending';
 $string['phase2quest'] = 'In process';
-$string['phase3quest'] = 'Questournament ended';
+$string['phase3quest'] = 'QUESTOURnament ended';
 $string['phase1short'] = 'Set Up';
 $string['phase2short'] = 'Submissions';
 $string['phase3short'] = 'Both';
@@ -350,8 +349,8 @@ $string['phase8submission'] = 'Assessed. Start pending.';
 
 $string['picture'] = 'Picture';
 $string['pictureof'] = 'Picture of';
-$string['pluginname'] = 'Questournament';
-$string['pluginadministration'] = 'Questournament administration';
+$string['pluginname'] = 'QUESTOURnament';
+$string['pluginadministration'] = 'QUESTOURnament administration';
 $string['points'] = 'Score';
 $string['pointsanswers'] = 'Ans.Score';
 
@@ -402,7 +401,7 @@ $string['quest:gradeownchallenge'] = 'Grade own challenge';
 $string['quest:ignoretimelimits'] = 'Ignore time limits.';
 $string['quest:manage'] = 'Edit the questournament settings, add and remove challenges.';
 $string['quest:manageownchallenge'] = 'Manage own challenge';
-$string['quest:preview'] = 'View extended information and links of the different parts of the Questournament.';
+$string['quest:preview'] = 'View extended information and links of the different parts of the QUESTOURnament.';
 $string['quest:viewotherattemptsowners'] = 'View owners of other attempts';
 $string['quest:viewreports'] = 'View the questournament reports';
 
@@ -707,8 +706,8 @@ of its authorship, otherwise, the challenge could be refused of modified by the 
   <li><strong>Comments for Students</strong>: in this field it will be able to include comments that the teacher wants to make to the students about the challenge, these comments will be available for all the participants in the QUESTOURnament. </li>
 </ul>';
 $string['modulename'] = 'QUESTOURnament';
-$string['modulename_help'] = 'Questournament is an activity that allows to develop contests. Students can engage in a competition to answer a set of challenges whose score changes in time. The challenge gains reward as the time goes by without any valid answer. This activity allows to place some preasure and motivation on the course. The game can be played individually or in teams. The scoreboard gives credit to the best participants.';
-$string['myplace'] = 'My Place for this Questournament';
+$string['modulename_help'] = 'QUESTOURnament is an activity that allows to develop contests. Students can engage in a competition to answer a set of challenges whose score changes in time. The challenge gains reward as the time goes by without any valid answer. This activity allows to place some preasure and motivation on the course. The game can be played individually or in teams. The scoreboard gives credit to the best participants.';
+$string['myplace'] = 'My Place for this QUESTOURnament';
 $string['myplace_help'] = '<P align="justify">This page shows the information corresponding to the activity developed by each participant in the QUESTOURnament.</P>';
 $string['myanswers'] = 'My Answers';
 $string['myranking'] = 'My Ranking';

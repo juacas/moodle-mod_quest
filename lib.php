@@ -184,9 +184,8 @@ function quest_delete_instance($id) {
     // Given an ID of an instance of this module,
     // ...this function will permanently delete the instance.
     // ...and any data that depends on it..
-    if (!$quest = $DB->get_record("quest", array("id" => $id))) {
-        return false;
-    }
+    $quest = $DB->get_record("quest", array("id" => $id), "*", MUST_EXIST);
+
     if (!$cm = get_coursemodule_from_instance('quest', $quest->id)) {
         return false;
     }
@@ -635,7 +634,7 @@ function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, 
              '/mod/quest/view.php?id=' . $cm->id . '">' . format_string($quest->name, true) . '</a>';
 
     $posthtml .= ' &raquo; <a target="_blank" href="' . $CFG->wwwroot . '/mod/quest/submissions.php?id=' . $cm->id .
-             '&amp;action=showsubmission&amp;id=' . $submission->id . '">' . format_string($submission->title, true) . '</a></div>';
+             '&amp;action=showsubmission&amp;sid=' . $submission->id . '">' . format_string($submission->title, true) . '</a></div>';
 
     $posthtml .= quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submission, $cm);
 
