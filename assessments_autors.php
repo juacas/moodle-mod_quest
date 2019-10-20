@@ -158,7 +158,7 @@ if ($action == 'displaygradingform') {
     if (!$ismanager) {
         print_error('nopermissions', 'error', null, "Only teachers can look at this page");
     }
-    $descriptions = required_param_array('description', PARAM_ALPHANUMEXT);
+    $descriptions = required_param_array('description', PARAM_RAW);
     $weights = optional_param_array('weight', null, PARAM_INT);
     $scales = optional_param_array('scale', null, PARAM_INT);
     // Let's not fool around here, dump the junk!
