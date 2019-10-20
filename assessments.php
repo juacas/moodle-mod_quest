@@ -312,7 +312,7 @@ FORM;
         } else {
             $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid));
         }
-        $descriptions = required_param_array('description', PARAM_ALPHANUMEXT);
+        $descriptions = required_param_array('description', PARAM_RAW);
         $weights = optional_param_array('weight', null, PARAM_INT);
         $scales = optional_param_array('scale', null, PARAM_INT);
 
