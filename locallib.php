@@ -1042,7 +1042,8 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
  * @param string $dir */
 function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir) {
     global $CFG, $USER, $DB, $OUTPUT;
-
+    $groupmode = false;
+    $currentgroup = 0;
     $timenow = time();
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
@@ -4143,6 +4144,7 @@ function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
     $outputhtml .= '<div class="subject">' . $subject . '</div>';
 
     $fullname = fullname($userfrom, isteacher($courseid));
+    $by = new stdClass();
     $by->name = '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $userfrom->id . '&amp;course=' . $courseid . '">' . $fullname .
              '</a>';
     $by->date = userdate(time(), '', $userfrom->timezone);

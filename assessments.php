@@ -202,6 +202,7 @@ if ($action == 'displaygradingform') {
             break;
         case 1: // ...accumulative grading..
                 // ...set up scales name..
+            $scales = [];
             foreach ($questscales as $key => $scale) {
                 $scales[] = $scale['name'];
             }
