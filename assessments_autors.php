@@ -248,7 +248,8 @@ if ($action == 'displaygradingform') {
                     $element->questid = $quest->id;
                     $element->assessmentautorid = $assessment->id;
                     $element->elementno = $i;
-                    $element->answer = optional_param("feedback_$i", null, PARAM_TEXT);
+                    $feedb = optional_param_array("feedback", null, PARAM_TEXT);
+                    $element->answer = $feedb == null ? '':$feedb[$i];
                     $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                         print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
@@ -266,7 +267,8 @@ if ($action == 'displaygradingform') {
                     $element->userid = $USER->id;
                     $element->assessmentautorid = $assessment->id;
                     $element->elementno = $key;
-                    $element->answer = optional_param("feedback_$key", null, PARAM_TEXT);
+                    $feedb = optional_param_array("feedback", null, PARAM_TEXT);
+                    $element->answer = $feedb == null ? '':$feedb[$key];
                     $element->calification = $thegrade;
                     $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
                                                                       // TODO: EVP CHECK THIS... DATA BASE
