@@ -2212,7 +2212,6 @@ FORM;
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
                     echo "  <td align=\"right\"><p><b>" . get_string("grade") .
-                    $OUTPUT->help_icon('grade') .
                     ":</b></p></td>\n";
                     echo "  <td valign=\"top\">\n";
 
