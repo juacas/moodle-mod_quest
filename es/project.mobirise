@@ -1,7 +1,7 @@
 {
   "settings": {
     "name": "Questournament-ES",
-    "currentPage": "about.html",
+    "currentPage": "create.html",
     "theme": {
       "name": "mobirise4",
       "title": "Mobirise 4",
@@ -33,18 +33,26 @@
     },
     "path": "@PROJECT_PATH@",
     "versionFirst": "4.9.7",
-    "siteFonts": [],
+    "siteFonts": [
+      {
+        "css": "'Rubik', sans-serif",
+        "name": "Rubik",
+        "url": "https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,500,500i,700,700i,900,900i"
+      }
+    ],
     "uniqCompNum": 36,
-    "versionPublish": "4.10.3",
+    "versionPublish": "4.11.6",
     "robotsText": "User-agent: *\r\nDisallow: /cgi-bin\r\n",
     "robotsSwitcher": "on",
-    "favicon": "",
-    "noImageResize": "",
+    "favicon": false,
+    "noImageResize": false,
     "siteUrl": "undefined",
-    "cookiesAlert": "Usamos cookies para darle un mejor servicio. Para más informació consulte nuestra <a href='privacy.html'>cookie policy</a>.",
-    "gdpr": "Continuando acepta los <a href='terms.html'>Terms of Service</a> y <a href='policy.html'>Privacy Policy</a>.",
     "google-analytics": "",
-    "screenshot": "screenshot.png"
+    "screenshot": "screenshot.png",
+    "sitemapSwitcher": false,
+    "sitemapSwitcherAuto": false,
+    "cookiesAlert": false,
+    "gdpr": false
   },
   "pages": {
     "index.html": {
