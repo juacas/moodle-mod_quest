@@ -36,7 +36,7 @@ $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 $group = optional_param('group', -1, PARAM_INT);
 
 $actionclasification = optional_param('actionclasification', 'global', PARAM_ALPHA);
-
+$repeatactionsbelow = false;
 $local = setlocale(LC_CTYPE, 'esn');
 
 if (empty($actionclasification)) {
