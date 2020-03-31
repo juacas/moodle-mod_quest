@@ -401,9 +401,6 @@ FORM;
         print_error('nopermissionassessment', 'quest');
     }
     $timenow = time();
-    $isvalidating = false; // ...marca si se está validando la pregunta en cuyo caso no hay
-                           // puntuacion.
-                           // ...previa que restar.
     if ($quest->validateassessment == 1) {
         // ...necesita validar evaluacion.
         if ($isteacher) {
@@ -411,7 +408,6 @@ FORM;
             if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) { // ...contabiliza la
                                                                            // nueva.
                                                                            // ...evaluación.
-                $isvalidating = true;
                 $assessment->phase = 1; // ...ya está validada ahora OJO: ¿se había sumado esta
                                         // nota?.
             }
@@ -423,9 +419,7 @@ FORM;
         }
     } else { // Este QUEST no requiere validación....
         if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
-            $isvalidating = true;
-            $assessment->phase = ASSESSMENT_PHASE_APPROVED; // Pasa directamente a phase=1.
-                                                            // (validada).
+            $assessment->phase = ASSESSMENT_PHASE_APPROVED; // Pasa directamente a phase=1: validada.
         }
     }
     if ($answer->phase == ANSWER_PHASE_UNGRADED) {

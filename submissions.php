@@ -310,7 +310,6 @@ if ($action == 'confirmdelete') {
     $PAGE->navbar->add(\format_string($submission->title));
 
     echo $OUTPUT->header();
-
     /*
      * Flag to force a recalculation of team statistics and scores.
      * Only to solve errors in calculations.
@@ -331,56 +330,56 @@ if ($action == 'confirmdelete') {
                  "/mod/quest/submissions.php?id=$cm->id&action=showsubmission&sid=$submission->id&recalculate=yes" .
                  '">Recalc.</a>';
     }
-
     echo $OUTPUT->heading($title);
     echo ("<center><table width=100% ><tr><td>");
     quest_print_submission_info($quest, $submission);
     echo ("</td><td>");
     // INCRUSTA GRÁFICO DE EVOLUCION DE PUNTOS.
     quest_print_score_graph($quest, $submission);
-
     echo "</td></tr></table></center>";
+    
     $text = "<center><b>";
     $text .= "<a href=\"assessments.php?" .
-            "id=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform&amp;sesskey=" .
-             sesskey() . "\">" . get_string("specimenassessmentformanswer", "quest") . "</a>";
+    "id=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform&amp;sesskey=" .
+    sesskey() . "\">" . get_string("specimenassessmentformanswer", "quest") . "</a>";
     $text .= $OUTPUT->help_icon('specimenanswer', 'quest');
-
+    // Actions links.
     if ((($ismanager || $USER->id == $submission->userid) and $quest->nelementsautor) && ($submission->numelements == 0)) {
         $text .= "&nbsp;<a href=\"submissions.php?id=$cm->id&newform=1&sid=$sid&cambio=0&amp;action=confirmchangeform\">" .
-                 $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
+        $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
     } else if ((($ismanager || $USER->id == $submission->userid) and $quest->nelementsautor) && ($submission->numelements != 0)) {
         $assessmentsurl = new moodle_url('/mod/quest/assessments.php',
-                array('id' => $cm->id, 'sid' => $sid, 'newform' => 1, 'change_form' => 0, 'action' => 'editelements',
-                                'sesskey' => sesskey()));
+        array('id' => $cm->id, 'sid' => $sid, 'newform' => 1, 'change_form' => 0, 'action' => 'editelements',
+        'sesskey' => sesskey()));
         $text .= "&nbsp;<a href=\"$assessmentsurl\">" .
-                $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) .
-                 '</a>';
+        $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) .
+        '</a>';
     }
     $text .= "</b></center>";
     echo ($text);
-
+    
     echo $OUTPUT->heading(get_string('description', 'quest'));
     /*
-     * *
-     * Wording of the challenge
-     * *
-     */
+    * *
+    * Wording of the challenge
+    * *
+    */
     quest_print_submission($quest, $submission);
-
+    
     $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
     $currentgroup = groups_get_course_group($COURSE);
-
+    
     if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-             ($submission->nanswerscorrect < $quest->nmaxanswers)) {
+    ($submission->nanswerscorrect < $quest->nmaxanswers)) {
         $submission->phase = SUBMISSION_PHASE_ACTIVE;
     }
-
+    
+   
     if (!has_capability('mod/quest:manage', $context, $submission->userid) && ($groupmode == 2)) {
-
+        
         if ($currentgroup && !groups_is_member($currentgroup, $submission->userid) && !($submission->dateend < time())) {
-            print(get_string('cantRespond_WARN_notingroup_or_challengeended', 'quest'));
+            echo get_string('cantRespond_WARN_notingroup_or_challengeended', 'quest');
         } else {
             $actionlinks = quest_actions_submission($course, $submission, $quest, $cm, array('recalification' => false));
         }
@@ -393,7 +392,7 @@ if ($action == 'confirmdelete') {
     $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
     $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
     quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir);
-
+    
     if ($repeatactionsbelow) {
         echo $actionlinks . $recalculatelink;
     }
@@ -403,9 +402,8 @@ if ($action == 'confirmdelete') {
         $viewevent->trigger();
     } else {
         add_to_log($course->id, "quest", "read_submission",
-                "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
+        "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission", "$submission->id", "$cm->id");
     }
-
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
 } else if ($action == 'approve') {
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);

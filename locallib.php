@@ -1858,33 +1858,27 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
 function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
-
-    $sid = $answer->submissionid;
-
     $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST);
-
+    // Has personalized elements?
     if ($DB->count_records("quest_elements", array("submissionsid" => $submission->id, "questid" => $quest->id)) == 0) {
-        $idsubmission = 0;
-        $aregeneralelements = true;
-        $num = $DB->get_field("quest", "nelements", array("id" => $quest->id));
+        $customizedsid = 0;
     } else {
-        $aregeneralelements = false;
-        $idsubmission = $submission->id;
-        $num = $DB->get_field("quest_submissions", "numelements", array("id" => $submission->id));
+        $customizedsid = $submission->id;
     }
 
     // ...first get the assignment elements for maxscores and weights....
-    // Puede ser $idsubmission==0 (elementos generales) o algï¿½n $sid (elementos especï¿½ficos).
+    // Can be $customizedsid==0 (general elements) o any $sid (personalized elements).
     $select = "submissionsid=? AND questid=?";
-    $params = array($idsubmission, $quest->id);
+    $params = array($customizedsid, $quest->id);
     $elementsraw = $DB->get_records_select("quest_elements", $select, $params, "elementno ASC");
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
             $elements[] = $element; // ...to renumber index.
         }
     } else {
-        $elements = null;
+        $elements = [];
     }
+    $num = count($elements);
     $percent = 0;
     // ...don't fiddle about, delete all the old and add the new!.
     $DB->delete_records("quest_elements_assessments", array("assessmentid" => $assessment->id));
@@ -1908,7 +1902,6 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
                     print_error('inserterror', 'quest', null, "quest_elements_assessments");
                 }
             }
-
             $percent = 0;
             break;
 
@@ -1931,15 +1924,9 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
             $rawgrade = 0;
             $totalweight = 0;
             foreach ($grades as $key => $grade) {
-
-                if (($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid))) == 0) {
-                    $var = 0;
-                } else {
-                    $var = $sid;
-                }
-                $maxscore = $DB->get_field("quest_elements", "maxscore",
-                        array("questid" => $quest->id, "submissionsid" => $var, "elementno" => $key));
-                $weight = $questeweights[$elements[$key]->weight];
+                $elem  = $elements[$key];
+                $maxscore = $elem->maxscore;
+                $weight = $questeweights[$elem->weight];
                 if ($weight > 0) {
                     $totalweight += $weight;
                 }
@@ -2627,8 +2614,6 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
 
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
-
-    echo "<center><b>";
 
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
     if (($canapprove) && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING)) {
