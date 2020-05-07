@@ -803,3 +803,6 @@ $string['validateassessment_help'] = '<P align="justify">If this option is selec
 
 $string['notpermissionsubmission'] = 'You have no permissions to view this challenge.';
 $string['nopermissionassessment'] = 'You have no permissions to view this assessment. You should be teacher or challenge\'s author.';
+$string['messageprovider:challenge_start']  = 'A challenge just started';
+$string['messageprovider:challenge_update'] = 'A challenge has been edited';
+$string['messageprovider:evaluation_update'] = 'Changes in a grade';
