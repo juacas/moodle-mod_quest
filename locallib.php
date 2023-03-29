@@ -1624,7 +1624,7 @@ FORM;
                 echo "</td></tr>\n";
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade") . ":</b></p></td>\n";
+                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "grades") . ":</b></p></td>\n";
                     echo "  <td valign=\"top\">\n";
 
                     // ...get the appropriate scale.
@@ -2199,7 +2199,7 @@ FORM;
                 echo "</td></tr>\n";
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade") .
+                    echo "  <td align=\"right\"><p><b>" . get_string("grade","grades") .
                     ":</b></p></td>\n";
                     echo "  <td valign=\"top\">\n";
 

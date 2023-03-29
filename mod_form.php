@@ -215,7 +215,7 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('select', 'teamporcent', get_string('teamporcent', 'quest'), $arrayteampercent);
         $mform->addHelpButton('teamporcent', "teamporcent", "quest");
         $mform->setDefault('teamporcent', 25);
-
+        $mform->addElement('hidden', 'gradepass', 50);
         // Mod_cluster support disabled by now.
         if (false) {
             // Get clusterer instances available in the course.
@@ -281,6 +281,7 @@ SCRIPT;
                 $mform->addElement('hidden', 'anonymousleague', 1);
             }
         } // Clusterer support.
+
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -348,24 +349,24 @@ SCRIPT;
      *
      * @return array Contains the names of the added form elements
      */
-    public function add_completion_rules() {
-        $mform =& $this->_form;
+    // public function add_completion_rules() {
+    //     $mform =& $this->_form;
 
-        $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quiz'));
-        $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
-        $mform->addHelpButton('completionpass', 'completionpass', 'quiz');
-        // Enable this completion rule by default.
-        $mform->setDefault('completionpass', 0);
-        return array('completionpass');
-    }
+    //     $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quest'));
+    //     $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
+    //     $mform->addHelpButton('completionpass', 'completionpass', 'quest');
+    //     // Enable this completion rule by default.
+    //     $mform->setDefault('completionpass', 0);
+    //     return array('completionpass');
+    // }
     /**
      * Determines if completion is enabled for this module.
      *
      * @param array $data
      * @return bool
      */
-    public function completion_rule_enabled($data) {
-        return !empty($data['completionpass']);
-    }
+    // public function completion_rule_enabled($data) {
+    //     return !empty($data['completionpass']);
+    // }
 }
 

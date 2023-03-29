@@ -149,6 +149,7 @@ function quest_update_instance($quest, $form) {
     // (defined by the form in mod_.ht_form.php) this function
     // will update an existing instance with new data.
     global $CFG, $DB;
+    
     if ($quest->initialpoints > $quest->maxcalification) {
         $quest->initialpoints = $quest->maxcalification;
     }
@@ -170,7 +171,8 @@ function quest_update_instance($quest, $form) {
         $ctx = context_module::instance($quest->coursemodule);
         quest_save_intro_draft_files($quest, $ctx);
     }
-
+    
+    quest_update_grades($quest);
     return true;
 }
 /**
@@ -722,6 +724,7 @@ function quest_grade_item_update($quest, $grades = null) {
     $params['gradetype'] = GRADE_TYPE_VALUE;
     $params['grademax'] = floatval(100); // Grade is always normalized to other users
                                          // maxcalification...
+    $params['gradepass'] = floatval(50);
     $params['grademin'] = 0;
 
     if ($grades === 'reset') {

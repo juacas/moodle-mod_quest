@@ -29,6 +29,7 @@ Installation
 
 Change log
 ==========
+ - v1.5.0 Upgrade to moodle 4.x.
  - v1.4.8 Fix assessment when ther's just one assessment element.
  - v1.4.6 Fix filtering of description field for assessment elements.
  - v1.4.5 Link in notification emails fixed.
