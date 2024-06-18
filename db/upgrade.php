@@ -81,7 +81,7 @@ function xmldb_quest_upgrade($oldversion = 0) {
 
     if ($oldversion < 2017101800) {
         $table = new xmldb_table('quest_submissions');
-        $field = new xmldb_field('pointsmin', XMLDB_TYPE_INTEGER, '4', true, true, false, 0, $table->getField('pointsmax'));
+        $field = new xmldb_field('pointsmin', XMLDB_TYPE_NUMBER, null, true, true, false, 0, $table->getField('pointsmax'));
         $dbman->add_field($table, $field);
 
         $table = new xmldb_table('quest');
