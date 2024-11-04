@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->dirroot . '/enrol/locallib.php');
-require_once('locallib.php');
+require_once($CFG->dirroot . '/mod/quest/locallib.php');
 /**
  *
  * @param \stdClass $quest
