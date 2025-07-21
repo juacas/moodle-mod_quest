@@ -31,4 +31,4 @@ $plugin->requires = 2022041900; // Moodle 4 at least.
 $plugin->component = 'mod_quest';
 $plugin->cron = 600; // Period for cron to check this module (secs).
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.5.0';
+$plugin->release = 'v1.5.1';
