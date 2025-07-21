@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
  * Module developed at the University of Valladolid
@@ -23,7 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package mod_quest*/
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
@@ -44,7 +45,6 @@ require_once('base.php');
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 class challenge_assessed extends base {
-
     /**
      * Populate event from arguments.
      * @param \stdClass $challenge
@@ -57,17 +57,18 @@ class challenge_assessed extends base {
 
         $assessedby = $assessment->userid;
         $points = $assessment->points;
-        $data = array('relateduserid' => $challenge->userid, 'context' => \context_module::instance($cm->id),
+        $data = ['relateduserid' => $challenge->userid, 'context' => \context_module::instance($cm->id),
                         'userid' => $assessedby, 'courseid' => $cm->course,
-                        'other' => array('info' => $challenge->title . " Grade:" . $points, 'cmid' => $cm->id,
-                                        'activityid' => $challenge->questid, 'url' => $url));
-        /** @var quest_viewed $event */
+                        'other' => ['info' => $challenge->title . " Grade:" . $points, 'cmid' => $cm->id,
+                                        'activityid' => $challenge->questid, 'url' => $url]];
+        /** @var challenge_assessed $event */
         $event = self::create($data);
-        $event->set_legacy_logdata('graded', $data['other']['info'], $url);
         return $event;
     }
 
-    /** Init method. */
+    /**
+     * Init method.
+     */
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_TEACHING;

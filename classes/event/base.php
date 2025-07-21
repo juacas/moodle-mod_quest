@@ -27,8 +27,6 @@
  * @package mod_quest */
 namespace mod_quest\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /** The mod_quest abstract base event class.
  *
  * Most mod_quest events can extend this class.
@@ -38,32 +36,6 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 abstract class base extends \core\event\base {
-
-    /** Legacy log data.
-     *
-     * @var array */
-    protected $legacylogdata;
-
-    /** Sets the legacy event log data.
-     *
-     * @param string $action The current action
-     * @param string $info A detailed description of the change. But no more than 255 characters.
-     * @param string $url The url to the assign module instance. */
-    public function set_legacy_logdata($action = '', $info = '', $url = '') {
-        $this->legacylogdata = array($this->courseid, 'quest', $action, $url, $info);
-    }
-
-    /** Return legacy data for add_to_log().
-     *
-     * @return array */
-    protected function get_legacy_logdata() {
-        if (isset($this->legacylogdata)) {
-            return $this->legacylogdata;
-        }
-
-        return null;
-    }
-
     /** Returns relevant URL.
      *
      * @return \moodle_url */
@@ -74,7 +46,11 @@ abstract class base extends \core\event\base {
             return null;
         }
     }
-
+    /**
+     * URL of the event.
+     * @param mixed $url
+     * @return void
+     */
     public function set_url($url) {
         $this->url = $url;
     }

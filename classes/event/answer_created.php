@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle: The mod_quest challenge modification event.
  *
  * Module developed at the University of Valladolid
@@ -23,7 +24,8 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package mod_quest*/
+
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
@@ -53,17 +55,18 @@ class answer_created extends base {
      */
     public static function create_from_parts(\stdClass $challenge, \stdClass $answer, $cm) {
         $url = "/mod/quest/answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer";
-        $data = array('relateduserid' => $answer->userid, 'context' => \context_module::instance($cm->id),
+        $data = ['relateduserid' => $answer->userid, 'context' => \context_module::instance($cm->id),
                         'userid' => $answer->userid, 'courseid' => $cm->course,
-                        'other' => array('info' => $answer->title, 'cmid' => $cm->id, 'activityid' => $challenge->questid,
-                                        'url' => $url));
-        /** @var quest_viewed $event */
+                        'other' => ['info' => $answer->title, 'cmid' => $cm->id, 'activityid' => $challenge->questid,
+                                        'url' => $url]];
+        /** @var answer_created $event */
         $event = self::create($data);
-        $event->set_legacy_logdata('created', $data['other']['info'], $url);
         return $event;
     }
 
-    /** Init method. */
+    /**
+     * Init method.
+     */
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;

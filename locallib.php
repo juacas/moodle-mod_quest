@@ -2372,14 +2372,14 @@ FORM;
 /** Sort callback
  * @param array $a
  * @param array $b
- * @return boolean */
+ * @return integer */
 function quest_sortfunction_calification($a, $b) {
     $sort = 'calification';
     $dir = 'DESC';
     if ($dir == 'ASC') {
-        return ($a[$sort] > $b[$sort]);
+        return ($a[$sort] - $b[$sort]);
     } else {
-        return ($a[$sort] < $b[$sort]);
+        return ($a[$sort] - $b[$sort]);
     }
 }
 
@@ -2585,15 +2585,15 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 /**
  * @param array $a
  * @param array $b
- * @return boolean */
+ * @return int
+ */
 function quest_sortfunction($a, $b) {
     global $sort, $dir;
 
     if ($dir == 'ASC') {
-        return ($a[$sort] > $b[$sort]);
+        return ($a[$sort] - $b[$sort]);
     } else {
-
-        return ($a[$sort] < $b[$sort]);
+        return ($a[$sort] - $b[$sort]);
     }
 }
 

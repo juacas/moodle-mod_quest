@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** This file defines de main questournament configuration form
  *
  * Module developed at the University of Valladolid
@@ -28,7 +29,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->dirroot. "/mod/quest/locallib.php");
+require_once($CFG->dirroot . "/mod/quest/locallib.php");
 /**
  *
  *          It uses the standard core Moodle (>1.8) formslib. For
@@ -66,7 +67,7 @@ class mod_quest_mod_form extends moodleform_mod {
         // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
         // Adding the standard "name" field.
-        $mform->addElement('text', 'name', get_string('title', 'quest'), array('size' => '60'));
+        $mform->addElement('text', 'name', get_string('title', 'quest'), ['size' => '60']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         // Adding the description fields.
@@ -75,10 +76,15 @@ class mod_quest_mod_form extends moodleform_mod {
         } else {
             $this->add_intro_editor(true, get_string('description', 'quest'));
         }
-        $mform->addElement('filemanager', 'introattachments', get_string('introattachments', 'quest'), null,
-                array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes));
+        $mform->addElement(
+            'filemanager',
+            'introattachments',
+            get_string('introattachments', 'quest'),
+            null,
+            ['subdirs' => 0, 'maxbytes' => $COURSE->maxbytes]
+        );
         $mform->addHelpButton('introattachments', 'introattachments', 'quest');
-        $arraynattachments = array(0, 1, 2, 3, 4, 5);
+        $arraynattachments = [0, 1, 2, 3, 4, 5];
         $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $arraynattachments);
         $mform->addHelpButton('nattachments', "numberofattachments", "quest");
 
@@ -88,10 +94,10 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('selectyesno', 'usepassword', get_string('usepassword', 'quest'));
         $mform->addHelpButton('usepassword', "usepassword", "quest");
 
-        $mform->addElement('text', 'password', get_string('password'), array('size' => '10'));
+        $mform->addElement('text', 'password', get_string('password'), ['size' => '10']);
         $mform->addHelpButton('password', "password", "quest");
         $mform->setType('password', PARAM_RAW);
-        $sizelist = array("10Kb", "50Kb", "100Kb", "500Kb", "1Mb", "2Mb", "5Mb", "10Mb", "20Mb", "50Mb");
+        $sizelist = ["10Kb", "50Kb", "100Kb", "500Kb", "1Mb", "2Mb", "5Mb", "10Mb", "20Mb", "50Mb"];
         $maxsize = get_max_upload_file_size();
 
         foreach ($sizelist as $size) {
@@ -139,20 +145,28 @@ class mod_quest_mod_form extends moodleform_mod {
         }
         $mform->addElement('select', 'nelements', get_string('nelements', 'quest'), $arraynelements);
         $mform->addHelpButton('nelements', "nelements", "quest");
-        $mform->addElement('select', 'gradingstrategy', get_string('gradingstrategy', 'quest'),
-                array('0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')));
+        $mform->addElement(
+            'select',
+            'gradingstrategy',
+            get_string('gradingstrategy', 'quest'),
+            ['0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')]
+        );
         $mform->setDefault('gradingstrategy', '1');
         $mform->addHelpButton('gradingstrategy', "gradingstrategy", "quest");
 
         $mform->addElement('select', 'nelementsautor', get_string('nelementsautor', 'quest'), $arraynelements);
         $mform->addHelpButton('nelementsautor', "nelementsautor", "quest");
-        $mform->addElement('select', 'gradingstrategyautor', get_string('gradingstrategyautor', 'quest'),
-                array('0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')));
+        $mform->addElement(
+            'select',
+            'gradingstrategyautor',
+            get_string('gradingstrategyautor', 'quest'),
+            ['0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')]
+        );
         $mform->addHelpButton('gradingstrategyautor', "gradingstrategyautor", "quest");
 
         // Final grading for the activity.
-        $questypegrades = array(QUEST_TYPE_GRADE_INDIVIDUAL => get_string('typeindividual', 'quest'),
-                        QUEST_TYPE_GRADE_TEAM => get_string('typeteam', 'quest'));
+        $questypegrades = [QUEST_TYPE_GRADE_INDIVIDUAL => get_string('typeindividual', 'quest'),
+                        QUEST_TYPE_GRADE_TEAM => get_string('typeteam', 'quest')];
         $mform->addElement('header', 'gradingcharacteristics', get_string('gradingcharacteristics', 'quest'));
         $mform->addElement('select', 'typegrade', get_string('typegrade', 'quest'), $questypegrades);
         $mform->addHelpButton('typegrade', "typegrade", "quest");
@@ -171,7 +185,7 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addHelpButton('nmaxanswers', "nmaxanswers", "quest");
         $mform->setDefault('nmaxanswers', 25);
 
-        $questtypepoints = array(0 => get_string('linear', 'quest'));
+        $questtypepoints = [0 => get_string('linear', 'quest')];
         // Currently disabled: 1 => get_string('exponential', 'quest') ). This scoring pattern is not enabled by now.
         $mform->addElement('select', 'typecalification', get_string('typecalification', 'quest'), $questtypepoints);
         $mform->addHelpButton('typecalification', "typecalification", "quest");
@@ -216,40 +230,51 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addHelpButton('teamporcent', "teamporcent", "quest");
         $mform->setDefault('teamporcent', 25);
         $mform->addElement('hidden', 'gradepass', 50);
+        $mform->setType('gradepass', PARAM_INT);
         // Mod_cluster support disabled by now.
         if (false) {
             // Get clusterer instances available in the course.
-            if ($clusterersmods = get_all_instances_in_courses("clusterer", array($COURSE->id => $COURSE))) {
+            if ($clusterersmods = get_all_instances_in_courses("clusterer", [$COURSE->id => $COURSE])) {
                 $mform->addElement('header', 'general', get_string('clusterer', 'questournament'));
-                $mform->addElement('selectyesno', 'clustererleagues',
-                get_string('createligasfromclusterer', 'questournament'));
-                $mform->setHelpButton('clustererleagues', array("clustererleagues",
-                get_string("createligasfromclusterer", "questournament"), "questournament"));
+                $mform->addElement(
+                    'selectyesno',
+                    'clustererleagues',
+                    get_string('createligasfromclusterer', 'questournament')
+                );
+                $mform->setHelpButton('clustererleagues', ["clustererleagues",
+                get_string("createligasfromclusterer", "questournament"), "questournament"]);
                 $mform->setDefault('clustererleagues', $CFG->questournament_clustererleagues);
                 $mform->disabledIf('clustererleagues', 'allowteams', 'eq', 1);
-                $arrayclusterers = array();
+                $arrayclusterers = [];
                 foreach ($clusterersmods as $clusterermod) {
                     $modname = $clusterermod->name . " :";
                     if ($clusterers = $DB->get_records("clusterer_clusterers", "moduleinstanceid", $clusterermod->id)) {
                         foreach ($clusterers as $clusterer) {
                             $clusterername = "$clusterer->name :";
-                            if ($clustererinstances = $DB->get_records("clusterer_clusterer_instances",
-                                    "clustererid", $clusterer->id)) {
+                            if (
+                                $clustererinstances = $DB->get_records(
+                                    "clusterer_clusterer_instances",
+                                    "clustererid",
+                                    $clusterer->id
+                                )
+                            ) {
                                 foreach ($clustererinstances as $clustererinstance) {
                                     $date = date("d\.m\.y => g\:i\:s", $clustererinstance->version);
                                     $arrayclusterers[$clustererinstance->id] = "$modname $clusterername version: $date";
                                     // ...clear the name for a tidier list.
-                                    $clusterername = "&nbsp;".str_repeat("-", strlen($clusterername)) . ">";
+                                    $clusterername = "&nbsp;" . str_repeat("-", strlen($clusterername)) . ">";
                                 }
                                 $modname = "-" . str_repeat("-", strlen($modname)) . ">";// ...clear the name for a list more tidy.
                             }
                         }
                     }
                 }
-                $mform->addElement('select', 'clustererid', get_string('selectclusterer',
-                'questournament'), $arrayclusterers);
-                $mform->setHelpButton('clustererid', array("clustererid",
-                get_string("selectclusterer", "questournament"), "questournament"));
+                $mform->addElement('select', 'clustererid', get_string(
+                    'selectclusterer',
+                    'questournament'
+                ), $arrayclusterers);
+                $mform->setHelpButton('clustererid', ["clustererid",
+                get_string("selectclusterer", "questournament"), "questournament"]);
                 $mform->disabledIf('clustererid', 'allowteams', 'eq', 1);
                 echo <<< SCRIPT
 function pasarvariable() {
@@ -264,13 +289,13 @@ SCRIPT;
                 $mform->addElement('html', '<br/><center><a onClick="javascript:pasarvariable()">' .
                                 $strshowselectedcluster . '</a>');
                 $mform->addElement('selectyesno', 'visibleleagues', get_string('visibleleagues', 'questournament'));
-                $mform->setHelpButton('visibleleagues', array("visibleleagues",
-                                    get_string("visibleleagues", "questournament"), "questournament"));
+                $mform->setHelpButton('visibleleagues', ["visibleleagues",
+                                    get_string("visibleleagues", "questournament"), "questournament"]);
                 $mform->setDefault('visibleleagues', $CFG->questournament_visibleleagues);
                 $mform->disabledIf('visibleleagues', 'allowteams', 'eq', 1);
                 $mform->addElement('selectyesno', 'anonymousleague', get_string('anonymousleague', 'questournament'));
-                $mform->setHelpButton('anonymousleague', array("anonymousleague",
-                get_string("anonymousleague", "questournament"), "questournament"));
+                $mform->setHelpButton('anonymousleague', ["anonymousleague",
+                get_string("anonymousleague", "questournament"), "questournament"]);
                 $mform->setDefault('anonymousleague', $CFG->questournament_anonymousleague);
                 $mform->disabledIf('anonymousleague', 'allowteams', 'eq', 1);
             } else {
@@ -299,7 +324,7 @@ SCRIPT;
             $errors['dateend'] = get_string('closebeforeopen', 'quest');
         }
         if ($data['mincalification'] > $data['maxcalification']) {
-            $errors['maxcalification'] = get_string('checkthat', 'quest'). ': ' .
+            $errors['maxcalification'] = get_string('checkthat', 'quest') . ': ' .
                 get_string('mincalification', 'quest') . ' (' . $data['mincalification'] . ') < ' .
                 get_string('maxcalification', 'quest') . ' (' . $data['maxcalification'] . ')';
             $errors['mincalification'] = $errors['maxcalification'];
@@ -310,7 +335,7 @@ SCRIPT;
             ' < ' . get_string('maxcalification', 'quest') . ' (' .  $data['maxcalification']  . ')';
         }
         if ($data['initialpoints'] < $data['mincalification']) {
-            $errors['initialpoints'] = get_string('checkthat', 'quest'). ': ' .
+            $errors['initialpoints'] = get_string('checkthat', 'quest') . ': ' .
                     get_string('initialpoints', 'quest') . ' (' .  $data['initialpoints']  . ')' .
                     ' > ' . get_string('mincalification', 'quest') . ' (' .  $data['mincalification'] . ')';
         }
@@ -337,11 +362,11 @@ SCRIPT;
             if (!$ctx) {
                 $ctx = context_course::instance($this->current->course);
             }
-            $course = $DB->get_record('course', array('id' => $this->current->course), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $this->current->course], '*', MUST_EXIST);
         }
 
         $draftitemid = file_get_submitted_draft_itemid('introattachments');
-        file_prepare_draft_area($draftitemid, $ctx->id, 'mod_quest', 'introattachment', 0, array('subdirs' => 0));
+        file_prepare_draft_area($draftitemid, $ctx->id, 'mod_quest', 'introattachment', 0, ['subdirs' => 0]);
         $defaultvalues['introattachments'] = $draftitemid;
     }
     /**
@@ -350,14 +375,14 @@ SCRIPT;
      * @return array Contains the names of the added form elements
      */
     // public function add_completion_rules() {
-    //     $mform =& $this->_form;
+    // $mform =& $this->_form;
 
-    //     $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quest'));
-    //     $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
-    //     $mform->addHelpButton('completionpass', 'completionpass', 'quest');
-    //     // Enable this completion rule by default.
-    //     $mform->setDefault('completionpass', 0);
-    //     return array('completionpass');
+    // $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quest'));
+    // $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
+    // $mform->addHelpButton('completionpass', 'completionpass', 'quest');
+    // Enable this completion rule by default.
+    // $mform->setDefault('completionpass', 0);
+    // return array('completionpass');
     // }
     /**
      * Determines if completion is enabled for this module.
@@ -366,7 +391,6 @@ SCRIPT;
      * @return bool
      */
     // public function completion_rule_enabled($data) {
-    //     return !empty($data['completionpass']);
+    // return !empty($data['completionpass']);
     // }
 }
-

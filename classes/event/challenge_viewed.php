@@ -24,7 +24,7 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package mod_quest*/
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
@@ -45,7 +45,6 @@ require_once('base.php');
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 class challenge_viewed extends base {
-
     /**
      * Populate event from arguments
      * @param \stdClass $user
@@ -55,16 +54,17 @@ class challenge_viewed extends base {
      */
     public static function create_from_parts($user, $challenge, $cm) {
         $url = "/mod/quest/submissions.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showsubmission";
-        $data = array('relateduserid' => $user->id, 'context' => \context_module::instance($cm->id), 'userid' => $user->id,
+        $data = ['relateduserid' => $user->id, 'context' => \context_module::instance($cm->id), 'userid' => $user->id,
                         'objectid' => $challenge->id, 'courseid' => $cm->course,
-                        'other' => array('info' => $challenge->title, 'cmid' => $cm->id, 'url' => $url));
-        /** @var quest_viewed $event */
+                        'other' => ['info' => $challenge->title, 'cmid' => $cm->id, 'url' => $url]];
+        /** @var challenge_viewed $event */
         $event = self::create($data);
-        $event->set_legacy_logdata('view', $event->get_description(), $url);
         return $event;
     }
 
-    /** Init method. */
+    /**
+     * Init method.
+     */
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;

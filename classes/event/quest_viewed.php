@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -23,7 +24,8 @@
  * @author Juan Pablo de Castro and many others.
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package mod_quest*/
+
 namespace mod_quest\event;
 
 defined('MOODLE_INTERNAL') || die();
@@ -44,7 +46,6 @@ require_once('base.php');
  * @copyright 2015 Juan Pablo de Castro
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later */
 class quest_viewed extends base {
-
     /**
      * Populate event from arguments
      * @param \stdClass $user
@@ -54,16 +55,17 @@ class quest_viewed extends base {
     public static function create_from_parts($user, \stdClass $quest, \cm_info $cm) {
         $url = "/mod/quest/view.php?id=$cm->id";
         $info = $cm->id;
-        $data = array('relateduserid' => $user->id, 'context' => \context_module::instance($cm->id), 'userid' => $user->id,
+        $data = ['relateduserid' => $user->id, 'context' => \context_module::instance($cm->id), 'userid' => $user->id,
                         'objectid' => $cm->id, 'courseid' => $cm->course,
-                        'other' => array('info' => $info, 'cmid' => $cm->id, 'url' => $url));
+                        'other' => ['info' => $info, 'cmid' => $cm->id, 'url' => $url]];
         /** @var quest_viewed $event */
         $event = self::create($data);
-        $event->set_legacy_logdata('view', $info, $url);
         return $event;
     }
 
-    /** Init method. */
+    /**
+     * Init method.
+     */
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
