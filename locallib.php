@@ -1522,7 +1522,7 @@ function quest_answer_phase($answer, $course, $style = '') {
                 $string = get_string('phase3answer' . $style, 'quest');
             }
             if ($answer->state == ANSWER_STATE_MODIFIED) {
-                $string .= get_string('modificated', 'quest');
+                $string .= get_string('modified', 'quest');
             }
         } else if ($answer->phase == ANSWER_PHASE_PASSED) {
             if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
@@ -1769,7 +1769,7 @@ FORM;
                 echo "</td></tr>\n";
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "grades") . ":</b></p></td>\n";
+                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "quest") . ":</b></p></td>\n";
                     echo "  <td valign=\"top\">\n";
 
                     // ...get the appropriate scale.
@@ -1860,9 +1860,6 @@ FORM;
             echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
             $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
             break;
-        default:
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . "/<br />" .
-                    $OUTPUT->help_icon('generalcomment', 'quest') . get_string("reasonforadjustment", "quest") . ":</b></p></td>\n";
     }
     echo "  <td>\n";
     quest_print_general_comment_box($course, $allowchanges, $assessment);
@@ -2468,10 +2465,6 @@ FORM;
             echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
                     $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
             break;
-        default:
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") .
-                    $OUTPUT->help_icon('generalcomment', 'quest') . "/<br />" .
-                    get_string("reasonforadjustment", "quest") . ":</b></p></td>\n";
     }
     echo "  <td>\n";
     if ($ismanager) {
