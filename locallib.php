@@ -2990,6 +2990,9 @@ function quest_update_quest_calendar($quest, $cm = null) {
     if ($cm === null) {
         $cm = get_coursemodule_from_instance('quest', $quest->id);
     }
+    if ($cm === false) {
+        return;
+    }
     $dates = ['datestart' => $quest->datestart, 'dateend' => $quest->dateend];
     foreach ($dates as $type => $date) {
         $eventdata = new stdClass();
