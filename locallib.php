@@ -257,16 +257,14 @@ function quest_print_quest_info($quest) {
  */
 function quest_print_challenge_grading_link($cm, $context, $quest) {
     global $OUTPUT;
-    $text = "<a href=\"assessments_autors.php?id=$cm->id&amp;action=displaygradingform\">" .
-             get_string("specimenassessmentformsubmission", "quest") . "</a>";
-    $text .= $OUTPUT->help_icon('specimensubmission', 'quest');
-
-    if (has_capability('mod/quest:manage', $context) && $quest->nelements) {
-        $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-        $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&sesskey=" . sesskey() . "\">" . $editicon .
-                 '</a>';
-    }
-    echo ($text);
+    $url = new moodle_url('/mod/quest/assessments_autors.php', ['id' => $cm->id, 'action' => 'displaygradingform']);
+    $html = html_writer::link(
+        $url,
+        '<i class="fa fa-file-text-o me-1" aria-hidden="true"></i>' . get_string("specimenassessmentformsubmission", "quest"),
+        ['class' => 'btn btn-sm btn-outline-info me-1']
+    );
+    $html .= $OUTPUT->help_icon('specimensubmission', 'quest');
+    echo $html;
 }
 /**
  *
@@ -276,17 +274,14 @@ function quest_print_challenge_grading_link($cm, $context, $quest) {
  */
 function quest_print_answer_grading_link($cm, $context, $quest) {
     global $OUTPUT;
-    $text = "<a href=\"assessments.php?id=$cm->id&amp;viewgeneral=1&amp;action=displaygradingform\">" .
-             get_string("specimenassessmentformanswer", "quest") . "</a>";
-    $text .= $OUTPUT->help_icon('specimenanswer', 'quest');
-
-    if (has_capability('mod/quest:manage', $context) && $quest->nelements) {
-        $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-        $url = new moodle_url('assessments.php', ['id' => $cm->id, 'newform' => 0, 'cambio' => 0, 'viewgeneral' => 1,
-                        'action' => 'editelements', 'sesskey' => sesskey()]);
-        $text .= "&nbsp;<a href=\"" . $url->out() . "\">" . $editicon . '</a>';
-    }
-    echo ($text);
+    $url = new moodle_url('/mod/quest/assessments.php', ['id' => $cm->id, 'viewgeneral' => 1, 'action' => 'displaygradingform']);
+    $html = html_writer::link(
+        $url,
+        '<i class="fa fa-check-square-o me-1" aria-hidden="true"></i>' . get_string("specimenassessmentformanswer", "quest"),
+        ['class' => 'btn btn-sm btn-outline-info me-1']
+    );
+    $html .= $OUTPUT->help_icon('specimenanswer', 'quest');
+    echo $html;
 }
 /**
  *

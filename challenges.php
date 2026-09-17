@@ -455,21 +455,6 @@ if ($action == 'confirmdelete') {
         get_string('specimenassessmentformanswer', 'quest') . '</a> ';
     $actionbarbtns .= $OUTPUT->help_icon('specimenanswer', 'quest');
 
-    // Amend assessment elements (author or manager, if applicable).
-    if (($ismanager || $USER->id == $submission->userid) && $quest->nelementsautor) {
-        if ($submission->numelements == 0) {
-            $amendurl = new moodle_url('/mod/quest/challenges.php',
-                ['id' => $cm->id, 'newform' => 1, 'sid' => $sid, 'cambio' => 0, 'action' => 'confirmchangeform']);
-        } else {
-            $amendurl = new moodle_url('/mod/quest/assessments.php',
-                ['id' => $cm->id, 'sid' => $sid, 'newform' => 1, 'change_form' => 0,
-                 'action' => 'editelements', 'sesskey' => sesskey()]);
-        }
-        $actionbarbtns .= '<a href="' . $amendurl->out() . '" class="btn btn-sm btn-outline-secondary">' .
-            '<i class="fa fa-sliders me-1" aria-hidden="true"></i>' .
-            get_string('amendassessmentelements', 'quest') . '</a> ';
-    }
-
     // Export to Question Bank (manager only, at the END of the bar).
     $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
     if ($linkedq) {

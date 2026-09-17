@@ -209,12 +209,25 @@ class leaderboard_service {
      * Fetch individual leaderboard standings.
      *
      * @param int $questid
+     * @param string $sort
+     * @param string $dir
      * @param int $limit
      * @param int $offset
      * @return array
      */
-    public static function get_individual_standings(int $questid, int $limit = 50, int $offset = 0): array {
+    public static function get_individual_standings(int $questid, string $sort = 'points', string $dir = 'DESC', int $limit = 50, int $offset = 0): array {
         global $DB;
+
+        $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
+        $orderbysql = match ($sort) {
+            'lastname', 'user', 'fullname' => "u.lastname {$dir}, u.firstname {$dir}",
+            'firstname' => "u.firstname {$dir}, u.lastname {$dir}",
+            'team', 'teamname' => "t.name {$dir}, qcu.points DESC",
+            'nanswers', 'answers' => "qcu.nanswers {$dir}, qcu.points DESC",
+            'pointssubmission', 'authorpoints' => "qcu.pointssubmission {$dir}, qcu.points DESC",
+            'pointsanswers', 'answerpoints' => "qcu.pointsanswers {$dir}, qcu.points DESC",
+            default => "qcu.points {$dir}, qcu.nanswers DESC",
+        };
 
         $userfields = \core_user\fields::for_userpic()->with_name()->including('email');
         $userselects = $userfields->get_sql('u', false, '', '', false)->selects;
@@ -224,7 +237,7 @@ class leaderboard_service {
                   JOIN {user} u ON u.id = qcu.userid
              LEFT JOIN {quest_teams} t ON t.id = qcu.teamid
                  WHERE qcu.questid = :questid
-              ORDER BY qcu.points DESC, qcu.nanswers DESC";
+              ORDER BY {$orderbysql}";
 
         $records = $DB->get_records_sql($sql, ['questid' => $questid], $offset, $limit);
 
@@ -243,18 +256,39 @@ class leaderboard_service {
      * Fetch team leaderboard standings.
      *
      * @param int $questid
+     * @param string $sort
+     * @param string $dir
      * @param int $limit
      * @param int $offset
      * @return array
      */
-    public static function get_team_standings(int $questid, int $limit = 50, int $offset = 0): array {
+    public static function get_team_standings(int $questid, string $sort = 'points', string $dir = 'DESC', int $limit = 50, int $offset = 0): array {
         global $DB;
+
+        $teams = $DB->get_records('quest_teams', ['questid' => $questid]);
+        if ($teams) {
+            foreach ($teams as $t) {
+                self::update_team_scores($questid, (int)$t->id);
+            }
+        }
+
+        $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
+        $orderbysql = match ($sort) {
+            'team', 'teamname', 'name' => "t.name {$dir}, qct.points DESC",
+            'nanswers' => "qct.nanswers {$dir}, qct.points DESC",
+            'nanswerassessment' => "qct.nanswerassessment {$dir}, qct.points DESC",
+            'nsubmissions' => "qct.nsubmissions {$dir}, qct.points DESC",
+            'nsubmissionsassessment' => "qct.nsubmissionsassessment {$dir}, qct.points DESC",
+            'pointssubmission' => "qct.pointssubmission {$dir}, qct.points DESC",
+            'pointsanswers' => "qct.pointsanswers {$dir}, qct.points DESC",
+            default => "qct.points {$dir}, qct.nanswers DESC",
+        };
 
         $sql = "SELECT qct.*, t.name, t.ncomponents
                   FROM {quest_calification_teams} qct
                   JOIN {quest_teams} t ON t.id = qct.teamid
                  WHERE qct.questid = :questid
-              ORDER BY qct.points DESC, qct.nanswers DESC";
+              ORDER BY {$orderbysql}";
 
         $records = $DB->get_records_sql($sql, ['questid' => $questid], $offset, $limit);
 

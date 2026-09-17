@@ -36,6 +36,9 @@ class leaderboard_page implements renderable, templatable {
     protected stdClass $course;
     protected object $cm;
     protected array $standings;
+    protected bool $isteams;
+    protected string $sort;
+    protected string $dir;
 
     /**
      * Constructor.
@@ -44,17 +47,26 @@ class leaderboard_page implements renderable, templatable {
      * @param stdClass $course
      * @param object $cm
      * @param array $standings
+     * @param bool $isteams
+     * @param string $sort
+     * @param string $dir
      */
     public function __construct(
         stdClass $quest,
         stdClass $course,
         object $cm,
-        array $standings
+        array $standings,
+        bool $isteams = false,
+        string $sort = 'points',
+        string $dir = 'DESC'
     ) {
         $this->quest = $quest;
         $this->course = $course;
         $this->cm = $cm;
         $this->standings = $standings;
+        $this->isteams = $isteams;
+        $this->sort = $sort;
+        $this->dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
     }
 
     /**
@@ -66,43 +78,124 @@ class leaderboard_page implements renderable, templatable {
     public function export_for_template(renderer_base $output): array {
         global $USER;
 
-        $picturefields = \core_user\fields::get_picture_fields();
+        $context = \context_module::instance($this->cm->id);
+        $showauthoringdetails = !empty($this->quest->showauthoringdetails) || has_capability('mod/quest:manage', $context);
+
         $standingsdata = [];
-        foreach ($this->standings as $s) {
-            $userobj = new stdClass();
-            foreach ($picturefields as $field) {
-                if ($field === 'id') {
-                    $userobj->id = $s->userid ?? ($s->id ?? 0);
-                } else {
-                    $userobj->$field = $s->$field ?? '';
+        if ($this->isteams) {
+            foreach ($this->standings as $s) {
+                $standingsdata[] = [
+                    'rank' => $s->rank,
+                    'istop1' => ($s->rank === 1),
+                    'istop2' => ($s->rank === 2),
+                    'istop3' => ($s->rank === 3),
+                    'istop' => ($s->rank <= 3),
+                    'teamname' => $s->name ?? ($s->teamname ?? '-'),
+                    'nanswers' => (int)($s->nanswers ?? 0),
+                    'nanswerassessment' => (int)($s->nanswerassessment ?? 0),
+                    'nsubmissions' => (int)($s->nsubmissions ?? 0),
+                    'nsubmissionsassessment' => (int)($s->nsubmissionsassessment ?? 0),
+                    'pointssubmission' => round((float)($s->pointssubmission ?? 0), 1),
+                    'pointsanswers' => round((float)($s->pointsanswers ?? 0), 1),
+                    'points' => round((float)($s->points ?? 0), 1),
+                ];
+            }
+        } else {
+            $picturefields = \core_user\fields::get_picture_fields();
+            foreach ($this->standings as $s) {
+                $userobj = new stdClass();
+                foreach ($picturefields as $field) {
+                    if ($field === 'id') {
+                        $userobj->id = $s->userid ?? ($s->id ?? 0);
+                    } else {
+                        $userobj->$field = $s->$field ?? '';
+                    }
                 }
+
+                $pic = $output->user_picture($userobj, ['size' => 35]);
+
+                $standingsdata[] = [
+                    'rank' => $s->rank,
+                    'istop1' => ($s->rank === 1),
+                    'istop2' => ($s->rank === 2),
+                    'istop3' => ($s->rank === 3),
+                    'istop' => ($s->rank <= 3),
+                    'iscurrentuser' => (($s->userid ?? 0) == $USER->id),
+                    'userpicture' => $pic,
+                    'fullname' => fullname($userobj),
+                    'email' => $s->email ?? '',
+                    'teamname' => !empty($s->teamname) ? $s->teamname : '-',
+                    'nanswers' => (int)($s->nanswers ?? 0),
+                    'pointssubmission' => round((float)($s->pointssubmission ?? 0), 1),
+                    'pointsanswers' => round((float)($s->pointsanswers ?? 0), 1),
+                    'points' => round((float)($s->points ?? 0), 1),
+                ];
+            }
+        }
+
+        $sm = get_string_manager();
+        $gethelp = function(string $identifier) use ($output, $sm): string {
+            if ($sm->string_exists($identifier . '_help', 'quest')) {
+                return $output->help_icon($identifier, 'quest');
+            }
+            return '';
+        };
+
+        $buildsort = function(string $column) use ($output): array {
+            $isactive = ($this->sort === $column || ($column === 'points' && ($this->sort === 'rank' || $this->sort === '')));
+            $nextdir = ($isactive && $this->dir === 'DESC') ? 'ASC' : 'DESC';
+
+            $url = new moodle_url('/mod/quest/viewclasification.php', [
+                'id' => $this->cm->id,
+                'action' => $this->isteams ? 'teams' : 'global',
+                'sort' => $column,
+                'dir' => $nextdir,
+            ]);
+
+            $icon = '';
+            if ($isactive) {
+                $iconname = ($this->dir === 'ASC') ? 't/up' : 't/down';
+                $icon = ' ' . $output->pix_icon($iconname, $this->dir);
             }
 
-            $pic = $output->user_picture($userobj, ['size' => 35]);
-
-            $standingsdata[] = [
-                'rank' => $s->rank,
-                'istop1' => ($s->rank === 1),
-                'istop2' => ($s->rank === 2),
-                'istop3' => ($s->rank === 3),
-                'istop' => ($s->rank <= 3),
-                'iscurrentuser' => ($s->userid == $USER->id),
-                'userpicture' => $pic,
-                'fullname' => fullname($userobj),
-                'email' => $s->email,
-                'teamname' => !empty($s->teamname) ? $s->teamname : '-',
-                'nanswers' => (int)$s->nanswers,
-                'pointssubmission' => round((float)$s->pointssubmission, 1),
-                'pointsanswers' => round((float)$s->pointsanswers, 1),
-                'points' => round((float)$s->points, 1),
+            return [
+                'url' => $url->out(false),
+                'icon' => $icon,
+                'isactive' => $isactive,
             ];
-        }
+        };
 
         return [
             'questname' => format_string($this->quest->name),
+            'isteams' => $this->isteams,
+            'showauthoringdetails' => $showauthoringdetails,
             'allowteams' => !empty($this->quest->allowteams),
+            'showclasifindividual' => !empty($this->quest->showclasifindividual),
             'backurl' => (new moodle_url('/mod/quest/view.php', ['id' => $this->cm->id]))->out(false),
+            'teamsurl' => (new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $this->cm->id]))->out(false),
+            'globalurl' => (new moodle_url('/mod/quest/viewclasification.php', ['action' => 'global', 'id' => $this->cm->id]))->out(false),
+            'hasstandings' => !empty($standingsdata),
             'standings' => $standingsdata,
+            'help_rank' => $gethelp('rank'),
+            'help_user' => $gethelp('user'),
+            'help_team' => $gethelp('teams'),
+            'help_nanswers' => $gethelp('nanswers'),
+            'help_nanswersassessment' => $gethelp('nanswersassessment'),
+            'help_nsubmissions' => $gethelp('nsubmissions'),
+            'help_nsubmissionsassessment' => $gethelp('nsubmissionsassessment'),
+            'help_pointssubmission' => $gethelp('pointssubmission'),
+            'help_pointsanswers' => $gethelp('pointsanswers'),
+            'help_points' => $gethelp('points'),
+            'sort_rank' => $buildsort('points'),
+            'sort_user' => $buildsort('lastname'),
+            'sort_team' => $buildsort('team'),
+            'sort_nanswers' => $buildsort('nanswers'),
+            'sort_nanswersassessment' => $buildsort('nanswerassessment'),
+            'sort_nsubmissions' => $buildsort('nsubmissions'),
+            'sort_nsubmissionsassessment' => $buildsort('nsubmissionsassessment'),
+            'sort_pointssubmission' => $buildsort('pointssubmission'),
+            'sort_pointsanswers' => $buildsort('pointsanswers'),
+            'sort_points' => $buildsort('points'),
         ];
     }
 }

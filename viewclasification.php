@@ -99,9 +99,9 @@ if ($quest->allowteams && !$quest->showclasifindividual) {
 }
 
 if ($action == 'global') {
-    $standings = \mod_quest\service\leaderboard_service::get_individual_standings($quest->id);
+    $standings = \mod_quest\service\leaderboard_service::get_individual_standings($quest->id, $sort, $dir);
     $renderer = $PAGE->get_renderer('mod_quest');
-    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page($quest, $course, $cm, $standings));
+    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page($quest, $course, $cm, $standings, false, $sort, $dir));
 
     if ($quest->allowteams) {
         $teamsurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $cm->id]);
@@ -109,184 +109,9 @@ if ($action == 'global') {
              get_string('viewclasificationteams', 'quest') . '</a></div>';
     }
 } else if ($action == 'teams') {
-
-    // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?
-
-    $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
-                                        // Print settings and things in a table across the top.
-    echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-
-    // Print admin links.
-    echo "<td align=\"right\">";
-
-    echo '</td></tr>';
-
-    echo '<tr><td>';
-
-    echo '</td></tr>';
-    echo '</table>';
-    $classificationtitle = get_string('teams', 'quest');
-    echo $OUTPUT->heading_with_help($classificationtitle, "teams", "quest");
-
-    // Get all the students.
-    if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer();
-        exit();
-    }
-
-    // Now prepare table with student assessments and submissions.
-    $tablesort = new stdclass();
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
-    $teamstemp = array();
-
-    if ($teams = $DB->get_records('quest_teams', array('questid' => $quest->id))) {
-        foreach ($teams as $team) {
-            foreach ($users as $user) {
-                // ...skip if student not in group.
-                if ($currentgroup) {
-                    if (!groups_is_member($currentgroup, $user->id)) {
-                        continue;
-                    }
-                }
-
-                $clasification = $DB->get_record("quest_calification_users", array("userid" => $user->id, "questid" => $quest->id));
-                if ($clasification) {
-                    if ($clasification->teamid == $team->id) {
-                        $existy = false;
-                        foreach ($teamstemp as $teamtemp) {
-                            if ($teamtemp->id == $team->id) {
-                                $existy = true;
-                            }
-                        }
-                        if (!$existy) {
-                            $teamstemp[] = $team;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    $teams = $teamstemp;
-
-    foreach ($teams as $team) {
-
-        $data = array();
-        $sortdata = array();
-
-        if ($clasificationteam = $DB->get_record("quest_calification_teams",
-                                    array("teamid" => $team->id, "questid" => $quest->id))) {
-            // ...team name.
-            $data[] = $team->name;
-            $sortdata['team'] = strtolower($team->name);
-            // ...number of answers.
-            if ($ismanager) {
-                $data[] = "<a href=\"challenges.php?tid=$team->id&amp;action=showanswersteam&amp;id=$cm->id\">" .
-                         $clasificationteam->nanswers . '</a>';
-            } else {
-                $data[] = $clasificationteam->nanswers;
-            }
-            $sortdata['nanswers'] = $clasificationteam->nanswers;
-            // ...number of marked answers.
-            $data[] = $clasificationteam->nanswerassessment;
-            $sortdata['nanswersassessment'] = $clasificationteam->nanswerassessment;
-
-            if ($showauthoringdetails) { // START AUTHORING ANONYMIZING.
-                                           // ...number of challenges submitted.
-                if ($ismanager) {
-                    $data[] = "<a href=\"challenges.php?tid=$team->id&amp;action=showchallengesteam&amp;id=$cm->id\">" .
-                             $clasificationteam->nsubmissions . '</a>';
-                } else {
-                    $data[] = $clasificationteam->nsubmissions;
-                }
-                $sortdata['nsubmissions'] = $clasificationteam->nsubmissions;
-                // ...challenges marked.
-                $data[] = $clasificationteam->nsubmissionsassessment;
-                $sortdata['nsubmissionsassessment'] = $clasificationteam->nsubmissionsassessment;
-                // ...score for challenges marked.
-                $data[] = number_format($clasificationteam->pointssubmission, $numberprecission);
-                $sortdata['pointssubmission'] = $clasificationteam->pointssubmission;
-                // ...score for answers.
-                $data[] = number_format($clasificationteam->pointsanswers, $numberprecission);
-                $sortdata['pointsanswers'] = $clasificationteam->pointsanswers;
-            } // END AUTHORING ANONYMIZING
-              // ...total score.
-            $data[] = number_format($clasificationteam->points, $numberprecission);
-            $sortdata['points'] = $clasificationteam->points;
-
-            $tablesort->data[] = $data;
-            $tablesort->sortdata[] = $sortdata;
-        }
-    }
-
-    uasort($tablesort->sortdata, 'quest_sortfunction');
-    $table = new html_table();
-    $table->data = array();
-    foreach ($tablesort->sortdata as $key => $row) {
-        $table->data[] = $tablesort->data[$key];
-    }
-    $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-    $columns = array('team', 'nanswers', 'nanswersassessment');
-    $nsubmissions = '';
-    $nsubmissionsassessment = '';
-    $pointssubmission = '';
-    $pointsanswers = '';
-    $showauthoringdetails = $ismanager || $quest->showauthoringdetails;
-    if ($showauthoringdetails) {
-        foreach (array('nsubmissions', 'nsubmissionsassessment', 'pointssubmission', 'pointsanswers') as $col) {
-            $columns[] = $col;
-        }
-    }
-    $columns[] = 'points';
-
-    $table->width = "95%";
-
-    $string = [];
-    foreach ($columns as $column) {
-        $string[$column] = get_string("$column", 'quest');
-        if ($sort != $column) {
-            $columnicon = '';
-            $columndir = 'ASC';
-        } else {
-            $columndir = $dir == 'ASC' ? 'DESC' : 'ASC';
-            if ($column == 'lastaccess') {
-                $columnicon = $dir == 'ASC' ? 'up' : 'down';
-            } else {
-                $columnicon = $dir == 'ASC' ? 'down' : 'up';
-            }
-            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
-        }
-        $helpicon = get_string_manager()->string_exists("{$column}_help", 'quest') ? $OUTPUT->help_icon($column, 'quest') : '';
-        $$column = "<a href=\"viewclasification.php?id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" .
-        $string[$column] .
-        $helpicon .
-        "</a>$columnicon";
-    }
-
-    $table->head = array("$team", "$nanswers", "$nanswersassessment");
-    if ($showauthoringdetails) {
-        foreach (array("$nsubmissions", "$nsubmissionsassessment", "$pointssubmission", "$pointsanswers") as $head) {
-            $table->head[] = $head;
-        }
-    }
-    $table->head[] = "$points";
-
-    echo '<tr><td>';
-    echo html_writer::table($table);
-    echo '</td></tr>';
-    echo '<tr><td>';
-
-    if ($quest->showclasifindividual) {
-        echo ("<center><b><a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-                 get_string('viewclasificationglobal', 'quest') . "</a></b></center>");
-    }
-    echo '</td></tr>';
-    echo '</table>';
+    $standings = \mod_quest\service\leaderboard_service::get_team_standings($quest->id, $sort, $dir);
+    $renderer = $PAGE->get_renderer('mod_quest');
+    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page($quest, $course, $cm, $standings, true, $sort, $dir));
 } else if ($action == 'export') {
     require_capability('mod/quest:viewreports', $context);
     // Get all the students.
@@ -308,10 +133,19 @@ if ($action == 'global') {
     quest_export_csv($records, 'Classification', $cm);
 }
 // Finish the page.
-echo $OUTPUT->continue_button(new moodle_url('view.php', array('id' => $id)));
+$bottombuttons = [];
+$continueurl = new moodle_url('/mod/quest/view.php', ['id' => $id]);
+$bottombuttons[] = html_writer::link($continueurl, get_string('continue'), ['class' => 'btn btn-secondary']);
+
 if (has_capability('mod/quest:viewreports', $context)) {
-    $thispageurl->param('action', 'export');
-    echo $OUTPUT->action_icon($thispageurl,
-            new pix_icon('t/download', get_string('quest:generateCSVlogs', 'quest') . ' ' . $classificationtitle), null, null, true);
+    $exporturl = new moodle_url('/mod/quest/viewclasification.php', ['id' => $id, 'action' => 'export']);
+    $exportlabel = get_string('quest:generateCSVlogs', 'quest') . ' ' . $classificationtitle;
+    $bottombuttons[] = html_writer::link(
+        $exporturl,
+        '<i class="fa fa-download me-1" aria-hidden="true"></i>' . $exportlabel,
+        ['class' => 'btn btn-outline-success']
+    );
 }
+
+echo html_writer::div(implode(' ', $bottombuttons), 'd-flex flex-wrap justify-content-center align-items-center gap-2 my-4');
 echo $OUTPUT->footer();

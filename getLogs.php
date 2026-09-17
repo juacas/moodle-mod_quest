@@ -118,15 +118,23 @@ if ($query) {
         echo $OUTPUT->notification(get_string('quest:notifyemptylogs', 'quest'));
     }
 
-    echo '<p>' . get_string('quest:generateCSVlogs', 'quest');
-    echo '<ul>';
-    $thispageurl->param('query', 'logs');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateLogsReport', 'quest') . ' '), null, null, true);
-    $thispageurl->param('query', 'ip');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateIPAccessesReport', 'quest') . ' '), null, null, true);
-    $thispageurl->param('query', 'activity');
-    echo '<li>' . $OUTPUT->action_icon($thispageurl,  new pix_icon('t/download', get_string('quest:generateActivityReport', 'quest') . ' '), null, null, true);
-    echo '</ul>';
+    echo html_writer::tag('h5', get_string('quest:generateCSVlogs', 'quest'), ['class' => 'fw-bold my-3']);
+    $reports = [
+        'logs' => get_string('quest:generateLogsReport', 'quest'),
+        'ip' => get_string('quest:generateIPAccessesReport', 'quest'),
+        'activity' => get_string('quest:generateActivityReport', 'quest'),
+    ];
+
+    $reportbuttons = [];
+    foreach ($reports as $querytype => $label) {
+        $url = new moodle_url($thispageurl, ['query' => $querytype]);
+        $reportbuttons[] = html_writer::link(
+            $url,
+            '<i class="fa fa-download me-1" aria-hidden="true"></i>' . $label,
+            ['class' => 'btn btn-outline-success']
+        );
+    }
+    echo html_writer::div(implode(' ', $reportbuttons), 'd-flex flex-wrap gap-2 my-3');
 
     echo $OUTPUT->footer();
 }

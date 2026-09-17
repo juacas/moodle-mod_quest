@@ -81,32 +81,57 @@ if ($groupmode and $ismanager) {
 $title = get_string('myplace', 'quest', $quest);
 echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 
-$text = '';
-$text = "<center><b>";
+$actionbuttons = [];
+
 if ($quest->dateend > $timenow) {
     $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
-    $text .= '<a href="' . $addurl->out(false) . '">' . get_string('addchallenge', 'quest') . '</a>';
-}
-if ($quest->allowteams) {
-    if ($ismanager) {
-        $text .= "&nbsp;/&nbsp;<a href=\"team.php?id=$cm->id\">" . get_string('changeteamteacher', 'quest') . "</a>";
-    }
+    $actionbuttons[] = html_writer::link(
+        $addurl,
+        '<i class="fa fa-plus-circle me-1" aria-hidden="true"></i>' . get_string('addchallenge', 'quest'),
+        ['class' => 'btn btn-primary shadow-sm']
+    );
 }
 
-$text .= "&nbsp;<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-         get_string('viewclasificationglobal', 'quest') . "</a>";
+$leaderboardurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'global', 'id' => $cm->id, 'sort' => 'points', 'dir' => 'DESC']);
+$actionbuttons[] = html_writer::link(
+    $leaderboardurl,
+    '<i class="fa fa-trophy me-1" aria-hidden="true"></i>' . get_string('viewclasificationglobal', 'quest'),
+    ['class' => 'btn btn-outline-primary']
+);
 
 if ((!$canpreview) && ($quest->allowteams)) {
-    $text .= "&nbsp;<a href=\"viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-             get_string('viewclasificationteams', 'quest') . "</a>";
+    $teamsurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $cm->id, 'sort' => 'points', 'dir' => 'DESC']);
+    $actionbuttons[] = html_writer::link(
+        $teamsurl,
+        '<i class="fa fa-users me-1" aria-hidden="true"></i>' . get_string('viewclasificationteams', 'quest'),
+        ['class' => 'btn btn-outline-secondary']
+    );
 }
-$text .= "</b></center>";
-echo $text;
 
-echo "<center><b>";
-quest_print_challenge_grading_link($cm, $context, $quest);
-quest_print_answer_grading_link($cm, $context, $quest);
-echo "</center>";
+if ($quest->allowteams && $ismanager) {
+    $teamurl = new moodle_url('/mod/quest/team.php', ['id' => $cm->id]);
+    $actionbuttons[] = html_writer::link(
+        $teamurl,
+        '<i class="fa fa-users me-1" aria-hidden="true"></i>' . get_string('changeteamteacher', 'quest'),
+        ['class' => 'btn btn-outline-secondary']
+    );
+}
+
+if (!empty($actionbuttons)) {
+    echo html_writer::div(implode(' ', $actionbuttons), 'd-flex flex-wrap justify-content-center gap-2 my-3');
+}
+
+if ($ismanager) {
+    echo '<div class="card border-0 bg-light shadow-sm my-3"><div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-center gap-3 small">';
+    echo '<span class="fw-bold text-muted"><i class="fa fa-sliders me-1" aria-hidden="true"></i>' . get_string('grading', 'quest') . ':</span> ';
+    echo '<div>';
+    quest_print_challenge_grading_link($cm, $context, $quest);
+    echo '</div>';
+    echo '<div>';
+    quest_print_answer_grading_link($cm, $context, $quest);
+    echo '</div>';
+    echo '</div></div>';
+}
 $title = get_string('mychallenges', 'quest');
 echo $OUTPUT->heading_with_help($title, 'mychallenges', 'quest');
 

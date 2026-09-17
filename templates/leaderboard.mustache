@@ -20,16 +20,117 @@
     Leaderboard rankings template with podium and table.
 }}
 <div class="mod-quest-leaderboard mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h3 class="fw-bold mb-0"><i class="fa fa-trophy text-warning me-2" aria-hidden="true"></i>{{#str}}clasification, quest{{/str}}</h3>
+            <h3 class="fw-bold mb-0">
+                <i class="fa fa-trophy text-warning me-2" aria-hidden="true"></i>
+                {{#isteams}}{{#str}}teams, quest{{/str}}{{/isteams}}
+                {{^isteams}}{{#str}}globalranking, quest{{/str}}{{/isteams}}
+            </h3>
             <span class="text-muted">{{questname}}</span>
         </div>
-        <a href="{{{backurl}}}" class="btn btn-outline-secondary btn-sm">
-            <i class="fa fa-arrow-left me-1"></i> {{#str}}back, quest{{/str}}
-        </a>
+        <div class="d-flex gap-2">
+            {{#isteams}}
+            {{#showclasifindividual}}
+            <a href="{{{globalurl}}}" class="btn btn-outline-primary btn-sm">
+                <i class="fa fa-user me-1" aria-hidden="true"></i> {{#str}}viewclasificationglobal, quest{{/str}}
+            </a>
+            {{/showclasifindividual}}
+            {{/isteams}}
+            {{^isteams}}
+            {{#allowteams}}
+            <a href="{{{teamsurl}}}" class="btn btn-outline-primary btn-sm">
+                <i class="fa fa-users me-1" aria-hidden="true"></i> {{#str}}viewclasificationteams, quest{{/str}}
+            </a>
+            {{/allowteams}}
+            {{/isteams}}
+            <a href="{{{backurl}}}" class="btn btn-outline-secondary btn-sm">
+                <i class="fa fa-arrow-left me-1" aria-hidden="true"></i> {{#str}}back, quest{{/str}}
+            </a>
+        </div>
     </div>
 
+    {{#isteams}}
+    <!-- Team Standings Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 80px;" class="text-center">
+                                <a href="{{{sort_rank.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}rank, quest{{/str}}{{{sort_rank.icon}}}</a>{{{help_rank}}}
+                            </th>
+                            <th scope="col">
+                                <a href="{{{sort_team.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}team, quest{{/str}}{{{sort_team.icon}}}</a>{{{help_team}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_nanswers.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}nanswers, quest{{/str}}{{{sort_nanswers.icon}}}</a>{{{help_nanswers}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_nanswersassessment.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}nanswersassessment, quest{{/str}}{{{sort_nanswersassessment.icon}}}</a>{{{help_nanswersassessment}}}
+                            </th>
+                            {{#showauthoringdetails}}
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_nsubmissions.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}nsubmissions, quest{{/str}}{{{sort_nsubmissions.icon}}}</a>{{{help_nsubmissions}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_nsubmissionsassessment.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}nsubmissionsassessment, quest{{/str}}{{{sort_nsubmissionsassessment.icon}}}</a>{{{help_nsubmissionsassessment}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_pointssubmission.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}pointssubmission, quest{{/str}}{{{sort_pointssubmission.icon}}}</a>{{{help_pointssubmission}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_pointsanswers.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}pointsanswers, quest{{/str}}{{{sort_pointsanswers.icon}}}</a>{{{help_pointsanswers}}}
+                            </th>
+                            {{/showauthoringdetails}}
+                            <th scope="col" class="text-end pe-4">
+                                <a href="{{{sort_points.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}totalpoints, quest{{/str}}{{{sort_points.icon}}}</a>{{{help_points}}}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#standings}}
+                        <tr>
+                            <td class="text-center">
+                                {{#istop1}}<span class="badge rounded-circle bg-warning p-2 text-dark fs-6">🥇</span>{{/istop1}}
+                                {{#istop2}}<span class="badge rounded-circle bg-secondary p-2 text-white fs-6">🥈</span>{{/istop2}}
+                                {{#istop3}}<span class="badge rounded-circle bg-danger p-2 text-white fs-6">🥉</span>{{/istop3}}
+                                {{^istop}}<span class="text-muted fw-bold">#{{rank}}</span>{{/istop}}
+                            </td>
+                            <td>
+                                <div class="fw-bold fs-6 text-dark">
+                                    <i class="fa fa-users text-primary me-2" aria-hidden="true"></i>{{teamname}}
+                                </div>
+                            </td>
+                            <td class="text-center">{{nanswers}}</td>
+                            <td class="text-center text-muted">{{nanswerassessment}}</td>
+                            {{#showauthoringdetails}}
+                            <td class="text-center">{{nsubmissions}}</td>
+                            <td class="text-center text-muted">{{nsubmissionsassessment}}</td>
+                            <td class="text-center text-muted">{{pointssubmission}}</td>
+                            <td class="text-center text-muted">{{pointsanswers}}</td>
+                            {{/showauthoringdetails}}
+                            <td class="text-end pe-4">
+                                <span class="badge bg-success fs-6 py-1 px-3">{{points}} pts</span>
+                            </td>
+                        </tr>
+                        {{/standings}}
+                        {{^standings}}
+                        <tr>
+                            <td colspan="{{#showauthoringdetails}}9{{/showauthoringdetails}}{{^showauthoringdetails}}5{{/showauthoringdetails}}" class="text-center text-muted py-4">
+                                {{#str}}nostudentsyet{{/str}}
+                            </td>
+                        </tr>
+                        {{/standings}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {{/isteams}}
+
+    {{^isteams}}
     <!-- Individual Standings Table -->
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
@@ -37,15 +138,29 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col" style="width: 80px;" class="text-center">{{#str}}rank, quest{{/str}}</th>
-                            <th scope="col">{{#str}}user{{/str}}</th>
+                            <th scope="col" style="width: 80px;" class="text-center">
+                                <a href="{{{sort_rank.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}rank, quest{{/str}}{{{sort_rank.icon}}}</a>{{{help_rank}}}
+                            </th>
+                            <th scope="col">
+                                <a href="{{{sort_user.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}user{{/str}}{{{sort_user.icon}}}</a>{{{help_user}}}
+                            </th>
                             {{#allowteams}}
-                            <th scope="col">{{#str}}team, quest{{/str}}</th>
+                            <th scope="col">
+                                <a href="{{{sort_team.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}team, quest{{/str}}{{{sort_team.icon}}}</a>{{{help_team}}}
+                            </th>
                             {{/allowteams}}
-                            <th scope="col" class="text-center">{{#str}}answers, quest{{/str}}</th>
-                            <th scope="col" class="text-center">{{#str}}authorpoints, quest{{/str}}</th>
-                            <th scope="col" class="text-center">{{#str}}answerpoints, quest{{/str}}</th>
-                            <th scope="col" class="text-end pe-4">{{#str}}totalpoints, quest{{/str}}</th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_nanswers.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}answers, quest{{/str}}{{{sort_nanswers.icon}}}</a>{{{help_nanswers}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_pointssubmission.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}authorpoints, quest{{/str}}{{{sort_pointssubmission.icon}}}</a>{{{help_pointssubmission}}}
+                            </th>
+                            <th scope="col" class="text-center">
+                                <a href="{{{sort_pointsanswers.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}answerpoints, quest{{/str}}{{{sort_pointsanswers.icon}}}</a>{{{help_pointsanswers}}}
+                            </th>
+                            <th scope="col" class="text-end pe-4">
+                                <a href="{{{sort_points.url}}}" class="text-dark text-decoration-none fw-bold">{{#str}}totalpoints, quest{{/str}}{{{sort_points.icon}}}</a>{{{help_points}}}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,4 +204,5 @@
             </div>
         </div>
     </div>
+    {{/isteams}}
 </div>
