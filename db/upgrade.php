@@ -102,5 +102,35 @@ function xmldb_quest_upgrade($oldversion = 0) {
         // Msocial savepoint reached.
         upgrade_mod_savepoint(true, 2018030701, 'quest');
     }
+
+    if ($oldversion < 2026091600) {
+        // Drop deprecated tables if they exist.
+        $rubricstable = new xmldb_table('quest_rubrics');
+        if ($dbman->table_exists($rubricstable)) {
+            $dbman->drop_table($rubricstable);
+        }
+
+        $rubricsautortable = new xmldb_table('quest_rubrics_autor');
+        if ($dbman->table_exists($rubricsautortable)) {
+            $dbman->drop_table($rubricsautortable);
+        }
+
+        // Add autoexportqbank field to quest table.
+        $questtable = new xmldb_table('quest');
+        $field = new xmldb_field('autoexportqbank', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0, 'completionpass');
+        if (!$dbman->field_exists($questtable, $field)) {
+            $dbman->add_field($questtable, $field);
+        }
+
+        // Add questionusageid field to quest_answers table.
+        $answerstable = new xmldb_table('quest_answers');
+        $field = new xmldb_field('questionusageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'perceiveddifficulty');
+        if (!$dbman->field_exists($answerstable, $field)) {
+            $dbman->add_field($answerstable, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026091600, 'quest');
+    }
+
     return true;
 }

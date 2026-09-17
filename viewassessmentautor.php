@@ -47,8 +47,8 @@ require_login($course->id, false, $cm);
 $url = new moodle_url('/mod/quest/viewassessmentautor.php',
         array('aid' => $aid, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'dir' => $dir, 'sort' => $sort));
 $PAGE->set_url($url);
-$PAGE->navbar->add(get_string('submission', 'quest') . ':' . $submission->title,
-        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
+$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
+        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge')));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -66,7 +66,7 @@ if (isset($newcalification)) {
 
     if (($ismanager) && ($assessment->state != 0)) {
 
-        if ($calificationuser = $DB->get_record("quest_calification_users", "userid", $submission->userid, "questid", $quest->id)) {
+        if ($calificationuser = $DB->get_record("quest_calification_users", ["userid" => $submission->userid, "questid" => $quest->id])) {
             $calificationuser->points -= $assessment->points;
             $calificationuser->pointssubmission -= $assessment->points;
             $calificationuser->points += $newcalification;

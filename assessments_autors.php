@@ -37,7 +37,7 @@ require_once("scores_lib.php");
 
 $id = required_param('id', PARAM_INT); // Course Module ID.
 $action = required_param('action', PARAM_ALPHA);
-global $DB, $OUTPUT, $PAGE;
+global $DB, $OUTPUT, $PAGE, $questscales, $questeweights;
 // Get some useful stuff...
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
@@ -67,7 +67,7 @@ if ($action == 'displaygradingform') {
 } else if ($action == 'editelements') {
     // Edit assessment elements (for teachers).
     if (!$ismanager) {
-        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
+        throw new \moodle_exception('nopermissions', 'error', '', "Only teachers can look at this page");
     }
     // Set up heading, form and table.
     echo $OUTPUT->header();
@@ -84,7 +84,7 @@ if ($action == 'displaygradingform') {
     echo '<form name="form" method="post" action="assessments_autors.php">';
     echo '<input type="hidden" name="id" value="' . $cm->id . '" /> <input type="hidden" name="action" value="insertelements" />';
     echo '<table align="center" border="1">';
-    // Get existing elements, if none set up appropriate default ones.
+    $elements = [];
     if ($elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC")) {
         foreach ($elementsraw as $element) {
             $elements[] = $element; // ...to renumber index 0,1,2...
@@ -107,7 +107,8 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td>\n";
+                quest_print_editor("description[$i]", "id_autor_desc_$i", $elements[$i]->description, $context, 3);
                 echo "  </td></tr>\n";
                 echo "<tr valign=\"top\">\n";
                 echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
@@ -117,6 +118,7 @@ if ($action == 'displaygradingform') {
 
         case 1: // Accumulative grading.
                 // Set up scales name.
+            $scales = [];
             foreach ($questscales as $key => $scale) {
                 $scales[] = $scale['name'];
             }
@@ -124,7 +126,8 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td>\n";
+                quest_print_editor("description[$i]", "id_autor_desc_$i", $elements[$i]->description, $context, 3);
                 echo "  </td></tr>\n";
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
@@ -156,7 +159,7 @@ if ($action == 'displaygradingform') {
 } else if ($action == 'insertelements') {
     // Insert/update assignment elements (for teachers).
     if (!$ismanager) {
-        print_error('nopermissions', 'error', null, "Only teachers can look at this page");
+        throw new \moodle_exception('nopermissions', 'error', '', "Only teachers can look at this page");
     }
     $descriptions = required_param_array('description', PARAM_RAW);
     $weights = optional_param_array('weight', null, PARAM_INT);
@@ -168,13 +171,12 @@ if ($action == 'displaygradingform') {
         case 0: // ...no grading insert all the elements that contain something.
             foreach ($descriptions as $key => $description) {
                 if ($description) {
-                    unset($element);
                     $element = new stdClass();
                     $element->description = $description;
                     $element->questid = $quest->id;
                     $element->elementno = $key;
                     if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                        print_error('inserterror', 'quest', null, "quest_elementsautor");
+                        throw new \moodle_exception('inserterror', 'quest', '', "quest_elementsautor");
                     }
                 }
             }
@@ -202,7 +204,7 @@ if ($action == 'displaygradingform') {
                         $element->weight = $weights[$key];
                     }
                     if (!$element->id = $DB->insert_record("quest_elementsautor", $element)) {
-                        print_error('inserterror', 'quest', null, "quest_elementsautor");
+                        throw new \moodle_exception('inserterror', 'quest', '', "quest_elementsautor");
                     }
                 }
             }
@@ -252,7 +254,7 @@ if ($action == 'displaygradingform') {
                     $element->answer = $feedb == null ? '':$feedb[$i];
                     $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                        print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
+                        throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
                     }
                 }
                 $grade = $assessment->points; // Set to satisfy save to db.
@@ -261,8 +263,7 @@ if ($action == 'displaygradingform') {
                     // Insert all the elements that contain something.
                 $grades = optional_param_array('grade', [], PARAM_FLOAT);
                 foreach ($grades as $key => $thegrade) {
-                    unset($element);
-                    $element = new stdclass();
+                    $element = new stdClass();
                     $element->questid = $quest->id;
                     $element->userid = $USER->id;
                     $element->assessmentautorid = $assessment->id;
@@ -278,7 +279,7 @@ if ($action == 'displaygradingform') {
                                                                       // avoid errors. I think this
                                                                       // field is no longer used.
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-                        print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
+                        throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
                     }
                 }
                 // Now work out the grade...
@@ -330,13 +331,7 @@ if ($action == 'displaygradingform') {
         }
     }
     // Log the event.
-    if ($CFG->version >= 2014051200) {
-        require_once('classes/event/challenge_assessed.php');
-        \mod_quest\event\challenge_assessed::create_from_parts($submission, $assessment, $cm)->trigger();
-    } else {
-        add_to_log($course->id, "quest", "assess_challenge", "viewassessmentautor.php?id=$cm->id&amp;aid=$assessment->id",
-                "$assessment->id", "$cm->id");
-    }
+    \mod_quest\event\challenge_assessed::create_from_parts($submission, $assessment, $cm)->trigger();
     $returnto = optional_param('returnto', "view.php?id=$cm->id", PARAM_RAW);
     // ...show grade if grading strategy is not zero.
     if ($quest->gradingstrategyautor) {
@@ -354,5 +349,5 @@ if ($action == 'displaygradingform') {
     echo $OUTPUT->footer();
 
 } else {
-    print_error('unkownactionerror', 'quest', null, $action);
+    throw new \moodle_exception('unknownactionerror', 'quest', '', $action);
 }

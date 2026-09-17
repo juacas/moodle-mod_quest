@@ -1,0 +1,56 @@
+{{!
+    This file is part of Questournament activity for Moodle - http://moodle.org/
+
+    Questournament for Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Questournament for Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_quest/score_chart
+
+    Interactive scoring chart template for challenges.
+}}
+<div class="card mb-3 border-0 shadow-sm quest-score-chart-wrapper" style="max-width: 320px; width: 100%;">
+    <div class="card-body p-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+            <h6 class="card-title mb-0 fw-bold">
+                <i class="fa fa-line-chart text-primary me-2" aria-hidden="true"></i>{{#str}}questgraphtitle, quest{{/str}}
+            </h6>
+            <div class="badge bg-success fs-7 py-1 px-2">
+                <i class="fa fa-star me-1" aria-hidden="true"></i>{{#str}}currentscore, quest{{/str}}: <strong>{{currentpoints}} pts</strong>
+                <span class="badge bg-light text-dark ms-1 text-uppercase">{{currentphase}}</span>
+            </div>
+        </div>
+
+        <div id="{{containerid}}" class="quest-interactive-chart-container w-100" style="aspect-ratio: 1 / 1; max-width: 290px; margin: 0 auto;">
+            <noscript>
+                <div class="alert alert-info">
+                    <p>{{#str}}javascriptrequired, quest{{/str}}</p>
+                    <p>{{#str}}initialpoints, quest{{/str}}: {{initialpoints}} | {{#str}}pointsmax, quest{{/str}}: {{pointsmax}} | {{#str}}pointsmin, quest{{/str}}: {{pointsmin}}</p>
+                </div>
+            </noscript>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2 small text-muted" style="font-size: 0.82rem;">
+            <span><span class="badge rounded-pill me-1" style="background: rgba(13, 110, 253, 0.6);">&nbsp;</span> {{#str}}phase_stationary, quest{{/str}}</span>
+            <span><span class="badge rounded-pill me-1" style="background: rgba(245, 158, 11, 0.7);">&nbsp;</span> {{#str}}phase_inflation, quest{{/str}}</span>
+            <span><span class="badge rounded-pill me-1" style="background: rgba(139, 92, 246, 0.7);">&nbsp;</span> {{#str}}phase_deflation, quest{{/str}}</span>
+            <span><span class="badge rounded-pill bg-success me-1">&nbsp;</span> {{#str}}today, quest{{/str}}</span>
+        </div>
+    </div>
+</div>
+
+{{#js}}
+require(['mod_quest/score_chart'], function(scoreChart) {
+    scoreChart.init('#{{containerid}}', {{{chartdatajson}}});
+});
+{{/js}}

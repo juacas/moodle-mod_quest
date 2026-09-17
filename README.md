@@ -29,6 +29,7 @@ Installation
 
 Change log
 ==========
+ - v2.0.0 Upgrade for Moodle 5.0+: refactored architecture with domain services, interactive vector scoring chart (AMD), question bank integration (mod_qbank) with automatic grading, open challenge export to activity question bank, modern Boost/Mustache UI, removal of legacy tables and code cleanup, and automated test suite.
  - v1.5.0 Upgrade to moodle 4.x.
  - v1.4.8 Fix assessment when ther's just one assessment element.
  - v1.4.6 Fix filtering of description field for assessment elements.

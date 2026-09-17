@@ -1,5 +1,5 @@
 <?php
-// This file is part of Questournament activity for Moodle http://moodle.org/
+// This file is part of Questournament activity for Moodle - http://moodle.org/
 //
 // Questournament for Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,72 +14,68 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
- *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- *
- *          Debug functions */
-defined('MOODLE_INTERNAL') || die();
-require_once("locallib.php");
 /**
- * TODO use $quest record.
+ * Score recalculation helpers and backward compatibility wrappers.
+ *
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+use mod_quest\service\tournament_manager;
+use mod_quest\service\leaderboard_service;
+
+/**
+ * Recalculate scores for all teams in a quest instance.
+ *
  * @param int $questid
  */
 function updateallteams($questid) {
     global $DB;
-    $query = $DB->get_records_select("quest_teams", "questid=?", array($questid));
-    $quest = $DB->get_record('quest', array('id' => $questid));
-    $idteams = array();
-    foreach ($query as $team) {
+    $teams = $DB->get_records('quest_teams', ['questid' => $questid]);
+    $idteams = [];
+    foreach ($teams as $team) {
         $idteams[] = $team->id;
-        print("<p>Updating team $team->id on quest $questid: </p>  ");
-        quest_update_team_scores($quest->id, $team->id);
+        leaderboard_service::update_team_scores($questid, $team->id);
     }
     // Clean orphan records.
     if (!empty($idteams)) {
-        $select = 'teamid not in (' . join(',', $idteams) . ') and questid=' . $questid;
+        [$insql, $inparams] = $DB->get_in_or_equal($idteams, SQL_PARAMS_NAMED, 'param', false);
+        $DB->delete_records_select('quest_calification_teams', "questid = :qid AND teamid $insql", array_merge(['qid' => $questid], $inparams));
     } else {
-        $select = 'questid=' . $questid;
+        $DB->delete_records('quest_calification_teams', ['questid' => $questid]);
     }
-    print("<p>Cleaning orphan calification_teams records.");
-    $DB->delete_records_select('quest_calification_teams', $select);
 }
 
 /**
- * TODO use $quest record.
+ * Recalculate scores for all users in a quest instance.
+ *
  * @param int $questid
  */
 function updateallusers($questid) {
     global $DB;
-    $query = $DB->get_records_select("quest_calification_users", "questid=?", array($questid));
-    $quest = $DB->get_record('quest', array('id' => $questid));
-
-    foreach ($query as $usercal) {
-        print("<p>Updating user $usercal->userid on quest $questid: </p>  ");
-        quest_update_user_scores($quest, $usercal->userid);
+    $quest = $DB->get_record('quest', ['id' => $questid], '*', MUST_EXIST);
+    $usercals = $DB->get_records('quest_calification_users', ['questid' => $questid]);
+    foreach ($usercals as $usercal) {
+        leaderboard_service::update_user_scores($quest, (int)$usercal->userid);
     }
 }
 
 /**
+ * Update and calculate inflection date and points for first correct answer.
+ *
  * @param stdClass $submission
- * @return stdClass Submission updated */
+ * @return stdClass Updated submission
+ */
 function quest_calculate_pointsanswercorrect_and_date($submission) {
     global $DB;
-
-    $query = $DB->get_records_select("quest_answers", "submissionid=? and grade>=50", array($submission->id), "date, pointsmax");
-
-    if (count($query) > 0) {
-        $query = reset($query); // Get first record.
-        $submission->dateanswercorrect = $query->date;
-        $submission->pointsanswercorrect = $query->pointsmax;
+    $query = $DB->get_records_select('quest_answers', 'submissionid = ? AND grade >= 50', [$submission->id], 'date ASC', 'id, date, pointsmax', 0, 1);
+    if (!empty($query)) {
+        $first = reset($query);
+        $submission->dateanswercorrect = $first->date;
+        $submission->pointsanswercorrect = $first->pointsmax;
     } else {
         $submission->dateanswercorrect = 0;
         $submission->pointsanswercorrect = 0;
@@ -87,59 +83,86 @@ function quest_calculate_pointsanswercorrect_and_date($submission) {
     return $submission;
 }
 
-/** Counts and update record for quest_submissions
- * @param int $sid
- * @return \stdClass */
+/**
+ * Counts and updates aggregated counts for a challenge.
+ *
+ * @param int $cid Challenge ID
+ * @return stdClass
+ */
+function quest_update_challenge_counts($cid) {
+    return tournament_manager::update_submission_counts($cid);
+}
+
+/**
+ * Counts and updates aggregated counts for a submission (legacy wrapper).
+ *
+ * @param int $sid Submission ID
+ * @return stdClass
+ */
 function quest_update_submission_counts($sid) {
-    global $DB, $message;
-    $submission = $DB->get_record("quest_submissions", array('id' => $sid), '*', MUST_EXIST);
-    $na = quest_count_submission_answers($sid);
-    $naa = quest_count_submission_answers_assesed($sid);
-    $nac = quest_count_submission_answers_correct($sid);
-
-    $message .= "<p>Submission $sid has $na answers ($naa assessed) ($nac correct)</p>";
-
-    $submission->nanswers = $na;
-    $submission->nanswersassessed = $naa;
-    $submission->nanswerscorrect = $nac;
-    $submission = quest_calculate_pointsanswercorrect_and_date($submission);
-    $DB->update_record('quest_submissions', $submission);
-    return $submission;
+    return quest_update_challenge_counts($sid);
 }
 
 /**
- * @param int $sid submission id */
-function quest_count_submission_answers($sid) {
+ * Count total answers for a challenge.
+ *
+ * @param int $cid
+ * @return int
+ */
+function quest_count_challenge_answers($cid) {
     global $DB;
-    if ($query = $DB->get_record_select("quest_answers", "submissionid=?", array($sid), "count(*) as num")) {
-        return $query->num;
-    } else {
-        return 0;
-    }
+    return (int)$DB->count_records('quest_answers', ['submissionid' => $cid]);
 }
+
 /**
+ * Count total answers for a submission (legacy wrapper).
  *
  * @param int $sid
- * @return number
+ * @return int
+ */
+function quest_count_submission_answers($sid) {
+    return quest_count_challenge_answers($sid);
+}
+
+/**
+ * Count assessed answers for a challenge.
+ *
+ * @param int $cid
+ * @return int
+ */
+function quest_count_challenge_answers_assesed($cid) {
+    global $DB;
+    return (int)$DB->count_records_select('quest_answers', 'submissionid = ? AND phase > 0', [$cid]);
+}
+
+/**
+ * Count assessed answers for a submission (legacy wrapper).
+ *
+ * @param int $sid
+ * @return int
  */
 function quest_count_submission_answers_assesed($sid) {
-    global $DB;
-    if ($query = $DB->get_record_select("quest_answers", "submissionid=? and phase>0", array($sid), "count(*) as num")) {
-        return $query->num;
-    } else {
-        return 0;
-    }
+    return quest_count_challenge_answers_assesed($sid);
 }
+
 /**
+ * Count correct answers for a challenge.
+ *
+ * @param int $cid
+ * @return int
+ */
+function quest_count_challenge_answers_correct($cid) {
+    global $DB;
+    return (int)$DB->count_records_select('quest_answers', 'submissionid = ? AND grade >= 50', [$cid]);
+}
+
+/**
+ * Count correct answers for a submission (legacy wrapper).
  *
  * @param int $sid
  * @return int
  */
 function quest_count_submission_answers_correct($sid) {
-    global $DB;
-    if ($query = $DB->get_record_select("quest_answers", "submissionid=? and grade>=50", array($sid), "count(grade) as num")) {
-        return $query->num;
-    } else {
-        return 0;
-    }
+    return quest_count_challenge_answers_correct($sid);
 }
+

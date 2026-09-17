@@ -57,7 +57,7 @@ $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . $action : '-> ' . get_string('changeteam', 'quest');
 
 if ($quest->allowteams != 1) {
-    print_error('nopermissions', 'error', null, 'It is not allowed teams for this Questournament.');
+    throw new \moodle_exception('nopermissions', 'error', '', 'It is not allowed teams for this Questournament.');
 }
 
 $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
@@ -150,7 +150,7 @@ if ($ismanager) {
             }
         }
     } else {
-        print_error('unknownactionerror', 'quest', null, $action);
+        throw new \moodle_exception('unknownactionerror', 'quest', '', $action);
     }
 
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -239,6 +239,7 @@ if ($ismanager) {
     $columns = array('firstname', 'lastname', 'teamname', 'ncomponents', 'newteam');
     $table->width = "95%";
 
+    $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {

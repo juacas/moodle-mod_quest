@@ -40,7 +40,7 @@ $ismanager = has_capability('mod/quest:manage', $context);
 $candownloadlogs = has_capability('mod/quest:downloadlogs', $context);
 
 if (!$candownloadlogs) {
-    print_error('nopermissions', 'error', null, 'No enough permissions mod/quest:downloadlogs');
+    throw new \moodle_exception('nopermissions', 'error', '', 'No enough permissions mod/quest:downloadlogs');
 }
 // Select various queries.
 $queryid = optional_param('query', 'what', PARAM_ALPHA);
@@ -50,6 +50,7 @@ $params['id'] = $id;
 $params['queryid'] = $queryid;
 $thispageurl = new moodle_url('/mod/quest/index.php', $params);
 $PAGE->set_url($thispageurl);
+$sqlquery = null;
 switch ($queryid) {
     case 'ip':
         $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",

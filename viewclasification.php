@@ -43,7 +43,6 @@ $debugrecalculate = optional_param('recalculate', 'no', PARAM_ALPHA);
 
 $timenow = time();
 $numberprecission = 2;
-$local = setlocale(LC_CTYPE, 'esn');
 global $DB, $PAGE, $OUTPUT;
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
@@ -67,6 +66,8 @@ if ($sort !== 'lastname') {
 if ($dir !== 'ASC') {
     $thispageurl->param('dir', $dir);
 }
+
+$classificationtitle = ($action === 'teams') ? get_string('teams', 'quest') : get_string('globalranking', 'quest');
 
 $PAGE->set_url($thispageurl);
 $PAGE->set_title(format_string($quest->name));
@@ -98,206 +99,15 @@ if ($quest->allowteams && !$quest->showclasifindividual) {
 }
 
 if ($action == 'global') {
-
-    // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?
-    $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation in this version.
-                                        // Print settings and things in a table across the top.
-    echo '<table width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-
-    // Allow the teacher to change groups (for this session).
-    if ($groupmode and $ismanager) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            echo '<td>';
-            groups_print_activity_menu($cm,
-                    $CFG->wwwroot . "/mod/quest/viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC",
-                    $return = false, $hideallparticipants = false);
-            echo '</td>';
-        }
-    }
-    // Print admin links.
-    echo "<td align=\"right\">";
-    echo '</td></tr>';
-    echo '<tr><td>';
-    echo '</td></tr>';
-    echo '</table>';
-    $classificationtitle = get_string('globalranking', 'quest');
-    echo $OUTPUT->heading_with_help($classificationtitle, "globalranking", "quest");
-    // Get all the students.
-    if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer();
-        exit();
-    }
-    // Now prepare table with student assessments and submissions.
-    $tablesort = new stdclass();
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
-    foreach ($users as $user) {
-        // Skip if student not in group.
-        if ($currentgroup) {
-            if (!groups_is_member($currentgroup, $user->id)) {
-                continue;
-            }
-        }
-        if ($clasifications = quest_get_user_clasification($quest, $user)) {
-            foreach ($clasifications as $clasification) {
-                $data = array();
-                $sortdata = array();
-                // ...user picture.
-                $user->imagealt = get_string('pictureof', 'quest') . " " . fullname($user);
-                $data[] = $OUTPUT->user_picture($user, array('courseid' => $course->id, 'link' => true));
-                $sortdata['picture'] = 1;
-                // ...link to user profile or just fullname.
-                if ($ismanager) {
-                    $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?" .
-                            "id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
-                } else {
-                    $data[] = "<b>" . fullname($user) . '</b>';
-                }
-                // ...first name for sorting.
-                $sortdata['firstname'] = strtolower($user->firstname);
-                // ...last name for sorting.
-                $sortdata['lastname'] = strtolower($user->lastname);
-                // ...answers submitted.
-                if ($ismanager) {
-                    $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showanswersuser&amp;id=$cm->id\">" .
-                             $clasification->nanswers . '</a>';
-                } else {
-                    $data[] = $clasification->nanswers;
-                }
-                $sortdata['nanswers'] = $clasification->nanswers;
-                // ...answers marked.
-                $data[] = $clasification->nanswersassessment;
-                $sortdata['nanswersassessment'] = $clasification->nanswersassessment;
-
-                $showauthoringdetails = $ismanager || $quest->showauthoringdetails;
-                if ($showauthoringdetails) { // START AUTHORING ANONYMIZING
-                                               // ...number of challenges authored.
-                    if ($ismanager) {
-                        $data[] = "<a href=\"submissions.php?uid=$user->id&amp;action=showsubmissionsuser&amp;id=$cm->id\">" .
-                                 $clasification->nsubmissions . '</a>';
-                    } else {
-                        $data[] = $clasification->nsubmissions;
-                    }
-                    $sortdata['nsubmissions'] = $clasification->nsubmissions;
-                    // ...challenges marked.
-                    $data[] = $clasification->nsubmissionsassessment;
-                    $sortdata['nsubmissionsassessment'] = $clasification->nsubmissionsassessment;
-                    // ...score for challenges.
-                    $data[] = number_format($clasification->pointssubmission, $numberprecission);
-                    $sortdata['pointssubmission'] = $clasification->pointssubmission;
-                    // ...score for answers.
-                    $data[] = number_format($clasification->pointsanswers, $numberprecission);
-                    $sortdata['pointsanswers'] = $clasification->pointsanswers;
-                } // END AUTHORING ANONYMIZING.
-
-                if ($quest->allowteams) {
-                    if ($clasificationteam = $DB->get_record("quest_calification_teams",
-                            array("teamid" => $clasification->teamid, "questid" => $quest->id))) {
-                        // Team points.
-                        $data[] = number_format($clasificationteam->points * $quest->teamporcent / 100, 2);
-                        $sortdata['pointsteam'] = $clasificationteam->points * $quest->teamporcent / 100;
-                        // ...personal+team points.
-                        $data[] = number_format($clasification->points + $clasificationteam->points * $quest->teamporcent / 100,
-                                $numberprecission);
-                        $sortdata['points'] = $clasification->points + $clasificationteam->points * $quest->teamporcent / 100;
-                    } else {
-                        $data[] = number_format(0, $numberprecission);
-                        $sortdata['pointsteam'] = 0;
-
-                        $data[] = number_format(0, $numberprecission);
-                        $sortdata['points'] = $clasification->points;
-                    }
-                } else {
-                    // ...personal points.
-                    $data[] = number_format($clasification->points, $numberprecission);
-                    $sortdata['points'] = $clasification->points;
-                }
-
-                $tablesort->data[] = $data;
-                $tablesort->sortdata[] = $sortdata;
-            }
-        }
-    }
-
-    uasort($tablesort->sortdata, 'quest_sortfunction');
-    $table = new html_table();
-    $table->data = array();
-
-    foreach ($tablesort->sortdata as $key => $row) {
-        $table->data[] = $tablesort->data[$key];
-    }
-
-    $table->align = array('left', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-    $table->valign = array('center', 'center', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center',
-                    'center');
-
-    $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment');
-    $showauthoringdetails = $ismanager || $quest->showauthoringdetails;
-    if ($showauthoringdetails) {
-        foreach (array('nsubmissions', 'nsubmissionsassessment', 'pointssubmission', 'pointsanswers') as $col) {
-            $columns[] = $col;
-        }
-    }
-    if ($quest->allowteams) {
-        $columns[] = 'pointsteam';
-    }
-
-    $columns[] = 'points';
-
-    $table->width = "95%";
-
-    foreach ($columns as $column) {
-        $string[$column] = get_string("$column", 'quest');
-        if ($sort != $column) {
-            $columnicon = '';
-            $columndir = 'ASC';
-        } else {
-            $columndir = $dir == 'ASC' ? 'DESC' : 'ASC';
-            if ($column == 'lastaccess') {
-                $columnicon = $dir == 'ASC' ? 'up' : 'down';
-            } else {
-                $columnicon = $dir == 'ASC' ? 'down' : 'up';
-            }
-            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
-        }
-        $$column = "<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=$column&amp;dir=$columndir\">" .
-        $string[$column] .
-        (get_string("{$column}_help", 'quest') == '' ? '' : $OUTPUT->help_icon("$column", 'quest')) .
-        "</a>$columnicon";
-    }
-
-    $table->head = array("", "$firstname / $lastname", "$nanswers", "$nanswersassessment");
-    $showauthoringdetails = $ismanager || $quest->showauthoringdetails;
-    if ($showauthoringdetails) {
-        foreach (array("$nsubmissions", "$nsubmissionsassessment", "$pointssubmission", "$pointsanswers") as $head) {
-            $table->head[] = $head;
-        }
-    }
+    $standings = \mod_quest\service\leaderboard_service::get_individual_standings($quest->id);
+    $renderer = $PAGE->get_renderer('mod_quest');
+    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page($quest, $course, $cm, $standings));
 
     if ($quest->allowteams) {
-        $table->head[] = "$pointsteam";
+        $teamsurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $cm->id]);
+        echo '<div class="text-center my-3"><a href="' . $teamsurl->out() . '" class="btn btn-outline-primary">' .
+             get_string('viewclasificationteams', 'quest') . '</a></div>';
     }
-    $table->head[] = "$points";
-
-    echo '<tr><td>';
-    echo '<div valign="center">';
-    echo html_writer::table($table);
-    echo '</div>';
-    echo '</td></tr>';
-    echo '<tr><td>';
-
-    if ($quest->allowteams) {
-        echo ("<center><b><a href=\"viewclasification.php?action=teams&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-                 get_string('viewclasificationteams', 'quest') . "</a></b></center>");
-    }
-    echo '</td></tr>';
-
-    echo '</table>';
 } else if ($action == 'teams') {
 
     // Check to see if groups are being used in this quest
@@ -376,7 +186,7 @@ if ($action == 'global') {
             $sortdata['team'] = strtolower($team->name);
             // ...number of answers.
             if ($ismanager) {
-                $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showanswersteam&amp;id=$cm->id\">" .
+                $data[] = "<a href=\"challenges.php?tid=$team->id&amp;action=showanswersteam&amp;id=$cm->id\">" .
                          $clasificationteam->nanswers . '</a>';
             } else {
                 $data[] = $clasificationteam->nanswers;
@@ -389,7 +199,7 @@ if ($action == 'global') {
             if ($showauthoringdetails) { // START AUTHORING ANONYMIZING.
                                            // ...number of challenges submitted.
                 if ($ismanager) {
-                    $data[] = "<a href=\"submissions.php?tid=$team->id&amp;action=showsubmissionsteam&amp;id=$cm->id\">" .
+                    $data[] = "<a href=\"challenges.php?tid=$team->id&amp;action=showchallengesteam&amp;id=$cm->id\">" .
                              $clasificationteam->nsubmissions . '</a>';
                 } else {
                     $data[] = $clasificationteam->nsubmissions;
@@ -422,6 +232,10 @@ if ($action == 'global') {
     }
     $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
     $columns = array('team', 'nanswers', 'nanswersassessment');
+    $nsubmissions = '';
+    $nsubmissionsassessment = '';
+    $pointssubmission = '';
+    $pointsanswers = '';
     $showauthoringdetails = $ismanager || $quest->showauthoringdetails;
     if ($showauthoringdetails) {
         foreach (array('nsubmissions', 'nsubmissionsassessment', 'pointssubmission', 'pointsanswers') as $col) {
@@ -432,6 +246,7 @@ if ($action == 'global') {
 
     $table->width = "95%";
 
+    $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -446,9 +261,10 @@ if ($action == 'global') {
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
+        $helpicon = get_string_manager()->string_exists("{$column}_help", 'quest') ? $OUTPUT->help_icon($column, 'quest') : '';
         $$column = "<a href=\"viewclasification.php?id=$id&amp;action=teams&amp;sort=$column&amp;dir=$columndir\">" .
         $string[$column] .
-        (get_string("{$column}_help", 'quest') == '' ? '' : $OUTPUT->help_icon("$column", 'quest')) .
+        $helpicon .
         "</a>$columnicon";
     }
 
@@ -493,7 +309,9 @@ if ($action == 'global') {
 }
 // Finish the page.
 echo $OUTPUT->continue_button(new moodle_url('view.php', array('id' => $id)));
-$thispageurl->param('action', 'export');
-echo $OUTPUT->action_icon($thispageurl,
-        new pix_icon('t/download', get_string('quest:generateCSVlogs', 'quest') . ' ' . $classificationtitle), null, null, true);
+if (has_capability('mod/quest:viewreports', $context)) {
+    $thispageurl->param('action', 'export');
+    echo $OUTPUT->action_icon($thispageurl,
+            new pix_icon('t/download', get_string('quest:generateCSVlogs', 'quest') . ' ' . $classificationtitle), null, null, true);
+}
 echo $OUTPUT->footer();

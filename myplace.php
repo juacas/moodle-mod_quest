@@ -57,7 +57,6 @@ $canpreview = has_capability('mod/quest:preview', $context);
 // Print the page header.
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
-$straction = ($action) ? '-> ' . get_string($action, 'quest') : '-> ' . get_string('myplace', 'quest');
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -85,7 +84,8 @@ echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 $text = '';
 $text = "<center><b>";
 if ($quest->dateend > $timenow) {
-    $text .= "<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" . get_string('addsubmission', 'quest') . "</a>";
+    $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
+    $text .= '<a href="' . $addurl->out(false) . '">' . get_string('addchallenge', 'quest') . '</a>';
 }
 if ($quest->allowteams) {
     if ($ismanager) {
@@ -127,6 +127,19 @@ $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
                 'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
 
 $indice = 0;
+$initialpoints = [];
+$nanswerscorrect = [];
+$datesstart = [];
+$datesend = [];
+$dateanswercorrect = [];
+$pointsmax = [];
+$pointsmin = [];
+$pointsanswercorrect = [];
+$tinitial = [];
+$state = [];
+$pointsnmaxanswers = [];
+$forms = [];
+$incline = [];
 
 if ($submissions = quest_get_user_submissions($quest, $USER)) {
     foreach ($submissions as $submission) {
@@ -142,20 +155,20 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
 
             if ($canpreview) {
                 $data[] = quest_print_submission_title($quest, $submission) .
-                         " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . "<img src=\"" .
+                         " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
+                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" .
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
             } else if (($submission->nanswers == 0) and ($timenow < $submission->dateend) and ($submission->state < 2)) {
 
                 $data[] = quest_print_submission_title($quest, $submission) .
-                         " <a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . "<img src=\"" .
+                         " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" .
+                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" .
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
@@ -246,6 +259,7 @@ foreach ($tablesort->sortdata as $key => $row) {
     $table->data[] = $tablesort->data[$key];
 }
 
+$string = [];
 foreach ($columns as $column) {
     $string[$column] = get_string("$column", 'quest');
     if ($sort != $column) {
@@ -376,6 +390,7 @@ $columnsanswer = array('title', 'dateanswer', 'actions', 'calification');
 
 $table->width = "95%";
 
+$string = [];
 foreach ($columnsanswer as $columnanswer) {
     $string[$columnanswer] = get_string("$columnanswer", 'quest');
     if ($sortanswer != $columnanswer) {
@@ -614,9 +629,12 @@ echo $OUTPUT->footer();
  */
 function quest_sortfunction_answers($a, $b) {
     global $sortanswer, $diranswer;
-    if ($diranswer == 'ASC') {
-        return ($a[$sortanswer] > $b[$sortanswer]);
+    $valA = $a[$sortanswer] ?? '';
+    $valB = $b[$sortanswer] ?? '';
+    if (is_numeric($valA) && is_numeric($valB)) {
+        $cmp = $valA <=> $valB;
     } else {
-        return ($a[$sortanswer] < $b[$sortanswer]);
+        $cmp = strcasecmp((string)$valA, (string)$valB);
     }
+    return (strtoupper((string)$diranswer) === 'DESC') ? -$cmp : $cmp;
 }

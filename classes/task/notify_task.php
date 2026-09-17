@@ -234,7 +234,7 @@ class notify_task extends \core\task\scheduled_task {
                                     $userscount++;
 
                                     $msgdata = quest_compose_message_data($user,
-                                            "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission",
+                                            "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge",
                                             'challenge_start', $quest, $submission, '', $userfrom);
                                     $usermessages[$user->id][] = $msgdata;
                                 }

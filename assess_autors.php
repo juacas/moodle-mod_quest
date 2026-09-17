@@ -63,8 +63,8 @@ $url = new moodle_url('/mod/quest/assess_autors.php',
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add(get_string('submission', 'quest') . ': ' . $submission->title,
-        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
+$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
+        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge')));
 
 echo $OUTPUT->header();
 
@@ -95,7 +95,7 @@ if (!$assessment) {
     $assessment->commentsforteacher = '';
     $assessment->commentsteacher = '';
     if (!$assessment->id = $DB->insert_record("quest_assessments_autors", $assessment)) {
-        print_error('inserterror', 'quest', null, "quest_assessments_autors");
+        throw new \moodle_exception('inserterror', 'quest', '', "quest_assessments_autors");
     }
 }
 $assessment->dateassessment = $now;
@@ -103,18 +103,18 @@ $assessment->dateassessment = $now;
 // ...if it's the teacher and the quest is error banded set all the elements to Yes.
 if ($cangrade and ($quest->gradingstrategy == 2)) {
     for ($i = 0; $i < $quest->nelements; $i++) {
-        unset($element);
+        $element = new stdClass();
         $element->questid = $quest->id;
         $element->assessmentautorid = $assessment->id;
         $element->elementno = $i;
         $element->userid = $USER->id;
         $element->calification = 1;
         if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-            print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
+            throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
         }
     }
     // ...now set the adjustment.
-    unset($element);
+    $element = new stdClass();
     $i = $quest->nelements;
     $element->questid = $quest->id;
     $element->assessmentautorid = $assessment->id;
@@ -122,7 +122,7 @@ if ($cangrade and ($quest->gradingstrategy == 2)) {
     $element->userid = $USER->id;
     $element->calification = 0;
     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-        print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
+        throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
     }
 }
 

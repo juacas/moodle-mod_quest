@@ -53,7 +53,7 @@ class challenge_viewed extends base {
      * @return \mod_quest\event\challenge_viewed
      */
     public static function create_from_parts($user, $challenge, $cm) {
-        $url = "/mod/quest/submissions.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showsubmission";
+        $url = "/mod/quest/challenges.php?id=$cm->id&amp;cid=$challenge->id&amp;action=showchallenge";
         $data = ['relateduserid' => $user->id, 'context' => \context_module::instance($cm->id), 'userid' => $user->id,
                         'objectid' => $challenge->id, 'courseid' => $cm->course,
                         'other' => ['info' => $challenge->title, 'cmid' => $cm->id, 'url' => $url]];

@@ -1,0 +1,92 @@
+{{!
+    This file is part of Questournament activity for Moodle - http://moodle.org/
+
+    Questournament for Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Questournament for Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_quest/leaderboard
+
+    Leaderboard rankings template with podium and table.
+}}
+<div class="mod-quest-leaderboard mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0"><i class="fa fa-trophy text-warning me-2" aria-hidden="true"></i>{{#str}}clasification, quest{{/str}}</h3>
+            <span class="text-muted">{{questname}}</span>
+        </div>
+        <a href="{{{backurl}}}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-arrow-left me-1"></i> {{#str}}back, quest{{/str}}
+        </a>
+    </div>
+
+    <!-- Individual Standings Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 80px;" class="text-center">{{#str}}rank, quest{{/str}}</th>
+                            <th scope="col">{{#str}}user{{/str}}</th>
+                            {{#allowteams}}
+                            <th scope="col">{{#str}}team, quest{{/str}}</th>
+                            {{/allowteams}}
+                            <th scope="col" class="text-center">{{#str}}answers, quest{{/str}}</th>
+                            <th scope="col" class="text-center">{{#str}}authorpoints, quest{{/str}}</th>
+                            <th scope="col" class="text-center">{{#str}}answerpoints, quest{{/str}}</th>
+                            <th scope="col" class="text-end pe-4">{{#str}}totalpoints, quest{{/str}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#standings}}
+                        <tr class="{{#iscurrentuser}}table-primary fw-bold{{/iscurrentuser}}">
+                            <td class="text-center">
+                                {{#istop1}}<span class="badge rounded-circle bg-warning p-2 text-dark fs-6">🥇</span>{{/istop1}}
+                                {{#istop2}}<span class="badge rounded-circle bg-secondary p-2 text-white fs-6">🥈</span>{{/istop2}}
+                                {{#istop3}}<span class="badge rounded-circle bg-danger p-2 text-white fs-6">🥉</span>{{/istop3}}
+                                {{^istop}}<span class="text-muted fw-bold">#{{rank}}</span>{{/istop}}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-wrapper me-2">{{{userpicture}}}</div>
+                                    <div>
+                                        <div class="fw-semibold">{{fullname}}</div>
+                                        <div class="text-muted small">{{email}}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            {{#allowteams}}
+                            <td><span class="badge bg-light text-dark">{{teamname}}</span></td>
+                            {{/allowteams}}
+                            <td class="text-center">{{nanswers}}</td>
+                            <td class="text-center text-muted">{{pointssubmission}}</td>
+                            <td class="text-center text-muted">{{pointsanswers}}</td>
+                            <td class="text-end pe-4">
+                                <span class="badge bg-success fs-6 py-1 px-3">{{points}} pts</span>
+                            </td>
+                        </tr>
+                        {{/standings}}
+                        {{^standings}}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                {{#str}}nostudentsyet{{/str}}
+                            </td>
+                        </tr>
+                        {{/standings}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

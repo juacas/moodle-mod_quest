@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-class backup_quest_activity_structure_step extends backup_activity_structure_step {
+class backup_quest_activity_structure_step extends backup_questions_activity_structure_step {
     /**
      *
      * {@inheritDoc}
@@ -44,7 +44,7 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
                                 'datestart', 'dateend', 'gradingstrategy', 'nelements', 'timemaxquestion', 'nmaxanswers',
                                 'maxcalification', 'mincalification', 'typecalification', 'allowteams', 'ncomponents', 'phase', 'format', 'visible',
                                 'tinitial', 'gradingstrategyautor', 'nelementsautor', 'initialpoints', 'teamporcent',
-                                'showclasifindividual', 'showauthoringdetails', 'typegrade', 'permitviewautors', 'completionpass'));
+                                'showclasifindividual', 'showauthoringdetails', 'typegrade', 'permitviewautors', 'completionpass', 'autoexportqbank'));
         // Grading Elements for Submissions.
         $defaultelements = new backup_nested_element('elements');
         $defaultelement = new backup_nested_element('element', null,
@@ -52,15 +52,10 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $particularelements = new backup_nested_element('particular_elements');
         $particularelement = new backup_nested_element('particular_element', null,
                 array('elementno', 'description', 'scale', 'maxscore', 'weight'));
-        $rubrics = new backup_nested_element('rubrics');
-        $rubric = new backup_nested_element('rubric', array('id'), array('submissionsid', 'elementno', 'rubricno', 'description'));
         // Grading Elements for autors.
         $elementsautor = new backup_nested_element('elements_autor');
         $elementautor = new backup_nested_element('element_autor', null,
                 array('elementno', 'description', 'scale', 'maxscore', 'weight'));
-
-        $rubricsautor = new backup_nested_element('rubrics_autor');
-        $rubricautor = new backup_nested_element('rubric_autor', array('id'), array('elementno', 'rubricno', 'description'));
         // Submissions (challenges).
 
         $challenges = new backup_nested_element('challenges');
@@ -77,7 +72,8 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
                 array('userid', 'title', 'description', 'descriptionformat', 'descriptiontrust',
                                 'attachment', 'date',
                                 'pointsmax', 'grade', 'commentforteacher', 'phase', 'state',
-                                'permitsubmit', 'perceiveddifficulty'));
+                                'permitsubmit', 'perceiveddifficulty', 'questionusageid'));
+        $this->add_question_references($challenge, 'mod_quest', 'challenge_question');
         $assessments = new backup_nested_element('assessments');
         $assessment = new backup_nested_element('assessment', array('id'),
                 array('questid', 'userid', 'teacherid', 'pointsautor', 'pointsteacher', 'dateassessment', 'pointsmax',
@@ -108,13 +104,9 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         // Build the tree.
         $quest->add_child($defaultelements);
         $defaultelements->add_child($defaultelement);
-        $defaultelement->add_child($rubrics);
-        $rubrics->add_child($rubric);
 
         $quest->add_child($elementsautor);
         $elementsautor->add_child($elementautor);
-        $elementautor->add_child($rubricsautor);
-        $rubricsautor->add_child($rubricautor);
 
         $quest->add_child($challenges);
         $challenges->add_child($challenge);
@@ -144,13 +136,6 @@ class backup_quest_activity_structure_step extends backup_activity_structure_ste
         $particularelement->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid= ?',
                 array(backup::VAR_ACTIVITYID, backup::VAR_PARENTID));
         $elementautor->set_source_table('quest_elementsautor', array('questid' => backup::VAR_PARENTID));
-
-        $rubric->set_source_sql(
-                'SELECT * FROM {quest_rubrics} WHERE questid = ? and submissionsid=0 and elementno = ? ORDER BY elementno',
-                array(backup::VAR_ACTIVITYID, '../../elementno'));
-        $rubricautor->set_source_sql(
-                'SELECT * FROM {quest_rubrics_autor} WHERE questid = ? and elementno = ? ORDER BY elementno',
-                array(backup::VAR_ACTIVITYID, '../../elementno'));
 
         $challenge->set_source_table('quest_submissions', array('questid' => backup::VAR_PARENTID));
         if ($userinfo) { // TODO con userinfo copiar también los challenges.

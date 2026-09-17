@@ -37,7 +37,6 @@ $group = optional_param('group', -1, PARAM_INT);
 
 $actionclasification = optional_param('actionclasification', 'global', PARAM_ALPHA);
 $repeatactionsbelow = false;
-$local = setlocale(LC_CTYPE, 'esn');
 
 if (empty($actionclasification)) {
     if (!isset($USER->showclasifindividual)) {
@@ -60,7 +59,7 @@ $ismanager = has_capability('mod/quest:manage', $context);
 require_capability('mod/quest:view', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-    print_error('modulehiddenerror', 'quest');
+    throw new \moodle_exception('modulehiddenerror', 'quest');
 }
 
 // Mark as viewed.
@@ -73,7 +72,6 @@ $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
-$straction = ($action) ? '-> ' . get_string($action, 'quest') : '';
 
 $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
 $groupmode = groups_get_activity_group($cm); // Groups are being used?
@@ -235,7 +233,7 @@ if (has_capability('mod/quest:manage', $context)) {
                         array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {
                     if ($quest->ncomponents > $team->ncomponents) {
                         $team->ncomponents++;
-                        $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, array("id" => $teamid));
+                        $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, array("id" => $team->id));
                         $calificationuser->teamid = $team->id;
                         $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
                                 array("id" => $calificationuser->id));
@@ -252,13 +250,7 @@ if (has_capability('mod/quest:manage', $context)) {
     }
 }
 // Log event.
-if ($CFG->version >= 2014051200) {
-    require_once('classes/event/quest_viewed.php');
-    \mod_quest\event\quest_viewed::create_from_parts($USER, $quest, $cm)->trigger();
-} else {
-    $url = "view.php?id=$cm->id";
-    add_to_log($course->id, "quest", "view", $url, "$quest->id");
-}
+\mod_quest\event\quest_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 echo $OUTPUT->header();
 
 // Display final grade (for students).
@@ -426,6 +418,7 @@ if ($action == 'displayfinalgrade') {
                     'calification');
     $table->width = "95%";
 
+    $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -480,88 +473,72 @@ if ($action == 'displayfinalgrade') {
     echo $OUTPUT->heading(get_string('description', 'quest'));
     echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
 } else if ($action == 'teachersview' || $action == 'studentsview') {
-    // Student's and teacher's unified view.
     $canviewauthors = has_capability('mod/quest:viewotherattemptsowners', $context);
-    // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_BOOL);
-    $groupmode = groups_get_activity_group($cm); // Groups are being used?
-
     $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation
-                                        // Print settings and things in a table across the top.
-    echo '<table align="right"  border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-    // Allow the teacher to change groups (for this session). Disabled.
-    if ($groupmode and $ismanager) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            echo '<td>';
-            echo '</td>';
-        }
+    $currentgroup = false; // JPC group support desactivation.
+
+    // 1. Gather Summary Data (Resumen de datos en la parte inicial de la página).
+    $summarydata = [
+        'ismanager' => $ismanager,
+        'challengegradinghtml' => '',
+        'answergradinghtml' => '',
+        'introattachments' => '',
+        'simplecalificationhtml' => '',
+        'clasificationswitchurl' => '',
+        'clasificationswitchlabel' => '',
+    ];
+
+    if ($ismanager) {
+        ob_start();
+        quest_print_challenge_grading_link($cm, $context, $quest);
+        $summarydata['challengegradinghtml'] = ob_get_clean();
+
+        ob_start();
+        quest_print_answer_grading_link($cm, $context, $quest);
+        $summarydata['answergradinghtml'] = ob_get_clean();
     }
-    quest_print_quest_heading($quest);
-    echo "<b>";
-    quest_print_challenge_grading_link($cm, $context, $quest);
-    echo "<br/>";
-    quest_print_answer_grading_link($cm, $context, $quest);
-    echo "</b>";
 
-    echo "<table width=\"100%\" border=\"0\" cellpadding=\"3\" cellspacing=\"0\">";
-    echo "<tr><td height=\"30\"> </td></tr>";
-    echo "<tr valign=\"top\">";
-    echo "<td width=\"70%\" align=\"center\">";
-    echo "<b>" . get_string('description', 'quest') . "</b>";
-    echo "</td><td width=\"30%\" align=\"center\">";
-    echo "<b>" . get_string('clasification', 'quest') . "</b>";
-    echo "</td></tr>";
-    echo "<tr><td width=\"70%\" valign=\"top\">";
-    echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
+    ob_start();
     quest_print_attachments($context, 'introattachment', false, 'timemodified');
-
-    echo "</td><td width=\"30%\" valign=\"top\">";
+    $summarydata['introattachments'] = ob_get_clean();
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {
         if ($actionclasification == 'global') {
-            echo " <center><a href=\"view.php?actionclasification=teams&amp;id=$cm->id\">" . get_string('resumeteams', 'quest') .
-                     "</a></center>";
-            echo '<br>';
+            $summarydata['clasificationswitchurl'] = (new moodle_url('/mod/quest/view.php', [
+                'actionclasification' => 'teams',
+                'id' => $cm->id,
+            ]))->out(false);
+            $summarydata['clasificationswitchlabel'] = get_string('resumeteams', 'quest');
         } else {
-            echo " <center><a href=\"view.php?actionclasification=global&amp;id=$cm->id\">" .
-                    get_string('resumeindividual', 'quest') . "</a></center>";
-            echo '<br>';
+            $summarydata['clasificationswitchurl'] = (new moodle_url('/mod/quest/view.php', [
+                'actionclasification' => 'global',
+                'id' => $cm->id,
+            ]))->out(false);
+            $summarydata['clasificationswitchlabel'] = get_string('resumeindividual', 'quest');
         }
     }
 
+    ob_start();
     quest_print_simple_calification($quest, $course, $currentgroup, $actionclasification);
+    $summarydata['simplecalificationhtml'] = ob_get_clean();
 
-    echo " <center><b><a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-             get_string('viewclasification', 'quest') . "</a></b></center>";
-    echo '<br><br>';
-    echo "</td></tr></table>";
-
-    echo "<br><b><a href=\"myplace.php?id=$cm->id\">" . get_string('myplace', 'quest') . "</a></b>";
-    echo $OUTPUT->help_icon('myplace', 'quest');
-
-    if (($ismanager) && ($quest->allowteams)) {
-        echo "&nbsp;/&nbsp;<b><a href=\"team.php?id=$cm->id\">" . get_string('changeteamteacher', 'quest') . "</a></b>";
-        echo $OUTPUT->help_icon("changeteamteacher", "quest");
-    }
-    if (!has_capability('mod/quest:addchallenge', $context)) {
-        echo ("&nbsp;/&nbsp;" . get_string('need_to_be_editor', 'quest'));
-    } else if ($quest->dateend > $timenow) {
-        echo ("<a href=\"submissions.php?action=submitchallenge&amp;id=$cm->id\">" . '&nbsp;/&nbsp;<b>' .
-                 get_string('addsubmission', 'quest') . "</b></a>");
-    } else {
-        echo "&nbsp;/&nbsp;" . get_string('phase3', 'quest', '');
-    }
-
-    echo $OUTPUT->help_icon('submitchallengeassignment', 'quest');
-    echo '<br/>';
-
-    // Now prepare table with student assessments and submissions.
+    // 2. Prepare detail table with student assessments and submissions.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
     $indice = 0;
+    $initialpoints = [];
+    $nanswerscorrect = [];
+    $datesstart = [];
+    $datesend = [];
+    $dateanswercorrect = [];
+    $pointsmax = [];
+    $pointsmin = [];
+    $pointsanswercorrect = [];
+    $tinitial = [];
+    $state = [];
+    $pointsnmaxanswers = [];
+    $forms = [];
     if ($submissions = quest_get_submissions($quest)) {
         foreach ($submissions as $submission) {
             // Get the author of this submission.
@@ -609,9 +586,9 @@ if ($action == 'displayfinalgrade') {
                      ($submission->state != SUBMISSION_STATE_APROVED)) or ($ismanager)) {
                 $editicon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
-                $titletext .= "<a href=\"submissions.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" . $editicon .
+                $titletext .= "<a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . $editicon .
                         '</a>' .
-                         " <a href=\"submissions.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id\">" . $deleteicon .
+                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" . $deleteicon .
                          '</a>';
             }
 
@@ -663,9 +640,9 @@ if ($action == 'displayfinalgrade') {
             $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
             $sortdata['dateend'] = $submission->dateend;
 
-            $grade = "<form ><input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"\" " .
-                    "size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; " .
-                    "font-size : 14pt; text-align : center;\" ></form>";
+            $grade = "<form class=\"d-inline\"><input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"\" " .
+                    "size=\"10\" readonly=\"1\" style=\"background-color : White; border : 1px solid #ced4da; border-radius: 4px; color : Black; " .
+                    "font-size : 12pt; text-align : center; font-weight: bold;\" ></form>";
 
             $initialpoints[] = (float) $submission->initialpoints;
             $nanswerscorrect[] = (int) $submission->nanswerscorrect;
@@ -699,11 +676,7 @@ if ($action == 'displayfinalgrade') {
                         $pointsnmaxanswers, $servertime, null];
         $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
     }
-    if ($canviewauthors) {
-        $sort = optional_param('sort', 'dateend', PARAM_ALPHA);
-    } else {
-        $sort = optional_param('sort', 'dateend', PARAM_ALPHA);
-    }
+    $sort = optional_param('sort', 'dateend', PARAM_ALPHA);
     uasort($tablesort->sortdata, 'quest_sortfunction');
 
     $table = new html_table();
@@ -719,6 +692,7 @@ if ($action == 'displayfinalgrade') {
                         'datestart', 'dateend', 'calification');
     }
     // Define a new variable for each column with heading texts.
+    $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -733,46 +707,45 @@ if ($action == 'displayfinalgrade') {
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $$column = "<a href=\"view.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
+        $$column = "<a href=\"view.php?id=$id&amp;sort=$column&amp;dir=$columndir&amp;view=list\">" . $string[$column] . "</a>$columnicon";
     }
 
     if ($canviewauthors) {
         $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-        $columns = array('title', 'firstname', 'lastname', 'phase', 'nanswersshort', 'nanswerscorrectshort',
-                        'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
         $table->head = array("$title", "$firstname / $lastname", "$phase",
                         "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
                         "$dateend", "$calification");
         $table->headspan = array(1, 2, 1, 1, 1, 1, 1);
     } else { // ...hide personal column.
-        $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-        $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess', 'datestart',
-                        'dateend', 'calification');
+        $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
         $table->head = array("$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
                         "$dateend", "$calification");
     }
-    $table->width = "95%";
+    $table->attributes['class'] = 'table table-hover table-striped align-middle mb-0';
 
-    echo html_writer::table($table);
+    $detailtablehtml = !empty($table->data) ? html_writer::table($table) : '';
     $grafic = $OUTPUT->pix_icon('t/check', 'ok');
-    echo "<center>";
-    echo get_string('legend', 'quest', $grafic);
-    echo "</center>";
+    $legendhtml = !empty($table->data) ? get_string('legend', 'quest', $grafic) : '';
 
-    if ($repeatactionsbelow) {
-        if ($quest->dateend > $timenow) {
-            echo ("<center><b><a href=\"view.php?action=submitchallenge&amp;id=$cm->id\">" . get_string('addsubmission', 'quest') .
-                     "</a></b></center>");
-        }
+    // 3. Get challenges for cards.
+    $challenges = \mod_quest\service\tournament_manager::get_challenges($quest->id, $USER->id);
+    $canaddchallenge = has_capability('mod/quest:addchallenge', $context) && ($quest->dateend > $timenow);
 
-        echo "<br><b><a href=\"myplace.php?id=$cm->id\">" . get_string('myplace', 'quest') . "</a></b>";
-
-        if ((has_capability('mod/quest:manage', $context)) && ($quest->allowteams)) {
-            echo "&nbsp;/&nbsp;<b><a href=\"team.php?id=$cm->id\">" . get_string('changeteamteacher', 'quest') . "</a></b><br><br>";
-        }
-    }
+    // 4. Render unified view page (Resumen al inicio + Desafíos Cards/List).
+    $viewpage = new \mod_quest\output\view_page(
+        $quest,
+        $course,
+        $cm,
+        $challenges,
+        $canaddchallenge,
+        $summarydata,
+        $detailtablehtml,
+        $legendhtml
+    );
+    $renderer = $PAGE->get_renderer('mod_quest');
+    echo $renderer->render_view_page($viewpage);
 } else {
-    print_error('unknownactionerror', 'quest', null, $action);
+    throw new \moodle_exception('unknownactionerror', 'quest', '', $action);
 }
 // Finish the page.
 echo $OUTPUT->footer();

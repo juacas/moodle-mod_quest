@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-class restore_quest_activity_structure_step extends restore_activity_structure_step {
+class restore_quest_activity_structure_step extends restore_questions_activity_structure_step {
     /**
      *
      * {@inheritDoc}
@@ -39,10 +39,10 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
 
         $paths[] = new restore_path_element('quest', '/activity/quest');
         $paths[] = new restore_path_element('quest_element', '/activity/quest/elements/element');
-        $paths[] = new restore_path_element('quest_rubric', '/activity/quest/elements/element/rubrics/rubric');
         $paths[] = new restore_path_element('quest_element_autor', '/activity/quest/elements_autor/element_autor');
-        $paths[] = new restore_path_element('quest_rubric_autor', '/activity/quest/elements_autor/element_autor/rubrics/rubric');
-        $paths[] = new restore_path_element('quest_challenge', '/activity/quest/challenges/challenge');
+        $challenge = new restore_path_element('quest_challenge', '/activity/quest/challenges/challenge');
+        $paths[] = $challenge;
+        $this->add_question_references($challenge, $paths);
         $paths[] = new restore_path_element('quest_particular_element',
                 '/activity/quest/challenges/challenge/particular_elements/particular_element');
 
@@ -125,37 +125,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
      * Process data for this level of the backup.
      * @param \stdClass $data
      */
-    protected function process_quest_rubric_autor($data) {
-        global $DB;
-
-        $data = (object) $data;
-        $oldid = $data->id;
-
-        $data->questid = $this->get_new_parentid('quest');
-        $data->submissionsid = $this->get_mappingid('quest_challenge', $data->submissionsid);
-
-        $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
-        $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
-    }
-    /**
-     * Process data for this level of the backup.
-     * @param \stdClass $data
-     */
-    protected function process_quest_rubric($data) {
-        global $DB;
-
-        $data = (object) $data;
-        $oldid = $data->id;
-
-        $data->questid = $this->get_new_parentid('quest');
-
-        $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
-        $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
-    }
-    /**
-     * Process data for this level of the backup.
-     * @param \stdClass $data
-     */
     protected function process_quest_challenge($data) {
         global $DB, $USER;
 
@@ -227,6 +196,9 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->submissionid = $this->get_new_parentid('quest_challenge');
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->date = $this->apply_date_offset($data->date);
+        if (!isset($data->questionusageid)) {
+            $data->questionusageid = 0;
+        }
 
         $newitemid = $DB->insert_record('quest_answers', $data);
 
@@ -300,11 +272,21 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_assessment', $oldid, $newitemid);
     }
     /**
+     * Inform the new usage id.
+     *
+     * @param int $newusageid
+     */
+    protected function inform_new_usage_id($newusageid) {
+        // Not used directly in this activity module.
+    }
+
+    /**
      *
      * {@inheritDoc}
      * @see restore_structure_step::after_execute()
      */
     protected function after_execute() {
+        parent::after_execute();
         // Add quest related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_quest', 'intro', null);
         $this->add_related_files('mod_quest', 'introattachment', null);

@@ -51,11 +51,11 @@ $changeform = optional_param('change_form', null, PARAM_INT); // Flag: if you ch
 $viewgeneral = optional_param('viewgeneral', -1, PARAM_INT); // Flag: view general form =1,.
                                                              // ...particular form view of one
                                                              // submission = 0.
-global $DB, $OUTPUT, $PAGE;
+global $DB, $OUTPUT, $PAGE, $questscales, $questeweights;
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 
-$context = context_module::instance($id);
+$context = context_module::instance($cm->id);
 $isteacher = has_capability('mod/quest:manage', $context);
 
 $strquests = get_string("modulenameplural", "quest");
@@ -100,7 +100,7 @@ if ($action == 'displaygradingform') {
             echo $OUTPUT->continue_button(new moodle_url("view.php", array('id' => $id)));
         } else {
             echo $OUTPUT->continue_button(
-                    new moodle_url("submissions.php", array('id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission')));
+                    new moodle_url("challenges.php", array('id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge')));
         }
     }
     echo $OUTPUT->footer();
@@ -110,7 +110,7 @@ if ($action == 'displaygradingform') {
     require_sesskey();
     $authorid = isset($sid) ? $DB->get_field('quest_submissions', 'userid', array('id' => $sid)) : null;
     if (!$isteacher && $authorid != $USER->id) {
-        print_error("Only teachers or author can look at this page");
+        throw new \moodle_exception('nopermissions', 'error', '', "Only teachers or author can look at this page");
     }
     // If the elements have not been defined for the questournament $newform=0..
     if ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) == 0) {
@@ -187,14 +187,15 @@ if ($action == 'displaygradingform') {
                 $iplus1 = $i + 1;
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td>\n";
+                quest_print_editor("description[$i]", "id_desc_$i", $elements[$i]->description, $context, 3);
                 echo "  </td></tr>\n";
                 echo "<tr valign=\"top\">\n";
                 echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
                 echo "</tr>\n";
             }
             if ($newform == 1) {
-                $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sidtarget));
+                $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sid));
             } else if ($newform == 0) {
                 $var = $DB->get_field("course_modules", "instance", array("id" => $id));
                 $DB->set_field("quest", "nelements", $num, array("id" => $var));
@@ -211,7 +212,8 @@ if ($action == 'displaygradingform') {
 
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td><textarea name=\"description[]\" rows=\"3\" cols=\"75\">" . $elements[$i]->description . "</textarea>\n";
+                echo "<td>\n";
+                quest_print_editor("description[$i]", "id_desc_$i", $elements[$i]->description, $context, 3);
                 echo "  </td></tr>\n";
                 echo "<tr valign=\"top\">\n";
                 echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
@@ -240,11 +242,7 @@ if ($action == 'displaygradingform') {
             throw new InvalidArgumentException('Unknown grading strategy.');
     }
     // ...close table and form..
-    if ($newform == 0) {
-        $nf = 0;
-    } else if ($newform == 1) {
-        $nf = 1;
-    }
+    $nf = !empty($newform) ? 1 : 0;
     $stringsavechanges = get_string("savechanges");
     $stringcancel = get_string("cancel");
     $stringadd = get_string("addelement", 'quest');
@@ -305,7 +303,7 @@ FORM;
         require_sesskey();
         $authorid = $DB->get_field('quest_submissions', 'userid', array('id' => $sid));
         if (!$isteacher && $authorid != $USER->id) {
-            print_error("Only teachers or author can look at this page");
+            throw new \moodle_exception('nopermissions', 'error', '', "Only teachers or author can look at this page");
         }
         // ...let's not fool around here, dump the junk!.
         if ($newform == 0) {
@@ -323,7 +321,7 @@ FORM;
                     // Insert all the elements that contain something.
                 foreach ($descriptions as $key => $description) {
                     if ($description) {
-                        unset($element);
+                        $element = new stdClass();
                         $element->description = $description;
                         $element->questid = $quest->id;
                         if ($newform == 0) {
@@ -333,7 +331,7 @@ FORM;
                         }
                         $element->elementno = $key;
                         if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                            print_error('inserterror', 'quest', null, "quest_elements");
+                            throw new \moodle_exception('inserterror', 'quest', '', "quest_elements");
                         }
                     }
                 }
@@ -342,7 +340,6 @@ FORM;
                     // Insert all the elements that contain something.
                 foreach ($descriptions as $key => $description) {
                     if ($description) {
-                        unset($element);
                         $element = new stdClass();
                         $element->description = $description;
                         $element->questid = $quest->id;
@@ -368,7 +365,7 @@ FORM;
                             $element->weight = $weights[$key];
                         }
                         if (!$element->id = $DB->insert_record("quest_elements", $element)) {
-                            print_error('inserterror', 'quest', null, "quest_elements");
+                            throw new \moodle_exception('inserterror', 'quest', '', "quest_elements");
                         }
                     }
                 }
@@ -383,8 +380,8 @@ FORM;
     if ($viewgeneral == 1) {
         $urlto = new moodle_url("view.php", ['id' => $cm->id]);
     } else {
-        $urlto = new moodle_url("submissions.php",
-                ['id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission']);
+        $urlto = new moodle_url("challenges.php",
+                ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']);
     }
     redirect($urlto, $msg);
 
@@ -398,7 +395,7 @@ FORM;
     $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
     // Check access.
     if (!$isteacher && $USER->id != $submission->userid) {
-        print_error('nopermissionassessment', 'quest');
+        throw new \moodle_exception('nopermissionassessment', 'quest');
     }
     $timenow = time();
     if ($quest->validateassessment == 1) {
@@ -414,7 +411,7 @@ FORM;
             // END profesor valida....
         } else { // Si no es profesor la fase siempre será phase=0. La nota queda pendiente....
             if ($assessment->phase != ASSESSMENT_PHASE_APPROVAL_PENDING) {
-                print_error('unkownactionerror', 'quest', null, 'Bad PHASE of assessment', "Error grave: no puede actualizar una evaluacion ya validada por el profesor.");
+                throw new \moodle_exception('unknownactionerror', 'quest', '', 'Bad PHASE of assessment', "Error grave: no puede actualizar una evaluacion ya validada por el profesor.");
             }
         }
     } else { // Este QUEST no requiere validación....
@@ -595,13 +592,7 @@ FORM;
         }
     }
     // Log the event.
-    if ($CFG->version >= 2014051200) {
-        require_once('classes/event/answer_assessed.php');
-        \mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
-    } else {
-        add_to_log($course->id, "quest", "assess_answer", "viewassessment.php?id=$cm->id&amp;asid=$assessment->id",
-                "$assessment->id", "$cm->id");
-    }
+    \mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
     // ...set up return address..
     $returnto = optional_param('returnto', "view.php?id=$cm->id", PARAM_URL);
     // ...show grade if grading strategy is not zero..
@@ -613,5 +604,5 @@ FORM;
     }
     redirect($returnto, $msg);
 } else {
-    print_error('unkownactionerror', 'quest', null, $action);
+    throw new \moodle_exception('unknownactionerror', 'quest', '', $action);
 }

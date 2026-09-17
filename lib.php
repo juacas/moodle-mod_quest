@@ -113,30 +113,53 @@ function quest_supports($feature) {
     }
 }
 /**
+ * Check validity of challenge dates.
+ *
+ * @param \stdClass $challenge
+ * @return boolean
+ */
+function quest_check_challenge_dates($challenge) {
+    return ($challenge->datestart >= $challenge->questdatestart and
+            $challenge->dateend <= $challenge->questdateend and
+             $challenge->questdateend > $challenge->questdatestart);
+}
+
+/**
+ * Legacy wrapper for quest_check_challenge_dates.
  *
  * @param \stdClass $newsubmission
  * @return boolean
  */
 function quest_check_submission_dates($newsubmission) {
-    return ($newsubmission->datestart >= $newsubmission->questdatestart and
-            $newsubmission->dateend <= $newsubmission->questdateend and
-             $newsubmission->questdateend > $newsubmission->questdatestart);
+    return quest_check_challenge_dates($newsubmission);
 }
+
 /**
+ * Check validity of challenge title and description text.
+ *
+ * @param \stdClass $challenge
+ * @return boolean
+ */
+function quest_check_challenge_text($challenge) {
+    $validate = true;
+
+    if (empty($challenge->title)) {
+        $validate = false;
+    }
+    if (empty($challenge->description)) {
+        $validate = false;
+    }
+    return $validate;
+}
+
+/**
+ * Legacy wrapper for quest_check_challenge_text.
  *
  * @param \stdClass $newsubmission
  * @return boolean
  */
 function quest_check_submission_text($newsubmission) {
-    $validate = true;
-
-    if (empty($newsubmission->title)) {
-        $validate = false;
-    }
-    if (empty($newsubmission->description)) {
-        $validate = false;
-    }
-    return $validate;
+    return quest_check_challenge_text($newsubmission);
 }
 /** Update the configuration of the Quest
  *
@@ -231,12 +254,6 @@ function quest_delete_instance($id) {
         if (!$DB->delete_records("quest_calification_teams", array("questid" => $quest->id))) {
             $result = false;
         }
-    }
-    if (!$DB->delete_records("quest_rubrics", array("questid" => $quest->id))) {
-        $result = false;
-    }
-    if (!$DB->delete_records("quest_rubrics_autor", array("questid" => $quest->id))) {
-        $result = false;
     }
     if (!$DB->delete_records("quest", array("id" => $quest->id))) {
         $result = false;
@@ -419,19 +436,19 @@ function quest_user_complete($course, $user, $mod, $quest) {
  * @param \stdClass $user
  */
 function quest_print_feedback($course, $submission, $user) {
-    global $CFG, $rating, $DB;
+    global $CFG, $rating, $DB, $OUTPUT;
 
     $strgrade = get_string('grade', 'quest');
     $strnograde = get_string('nograde', 'quest');
     $strnoanswers = get_string('noanswers', 'quest');
     $strnoassessments = get_string('noassessments', 'quest');
 
-    if (!$answers = $DB->get_records('quest_answers', 'submissionid', $submission->id)) {
+    if (!$answers = $DB->get_records('quest_answers', ['submissionid' => $submission->id])) {
 
         echo '<table cellspacing="0" class="workshop_feedbackbox">';
         echo '<tr>';
         echo '<td>';
-        print_user_picture($user->id, $course->id, $user->picture);
+        echo $OUTPUT->user_picture($user, ['courseid' => $course->id]);
         echo '</td>';
         echo '<td>' . fullname($user) . '</td>';
 
@@ -450,7 +467,7 @@ function quest_print_feedback($course, $submission, $user) {
             echo '<table cellspacing="0" class="workshop_feedbackbox">';
             echo '<tr>';
             echo '<td>';
-            print_user_picture($user->id, $course->id, $user->picture);
+            echo $OUTPUT->user_picture($user, ['courseid' => $course->id]);
             echo '</td>';
             echo '<td>' . fullname($user) . '</td>';
 
@@ -469,7 +486,7 @@ function quest_print_feedback($course, $submission, $user) {
 
             echo '<tr>';
             echo '<td>';
-            print_user_picture($user->id, $course->id, $user->picture);
+            echo $OUTPUT->user_picture($user, ['courseid' => $course->id]);
             echo '</td>';
             echo '<td align="left">' . fullname($user) . '</td>';
 
@@ -600,7 +617,7 @@ function quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, 
     $data->admin = $CFG->supportname . ' (' . $CFG->supportemail . ')';
     $data->title = $submission->title;
     $data->name = $quest->name;
-    $data->link = $CFG->wwwroot . "/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission";
+    $data->link = $CFG->wwwroot . "/mod/quest/challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge";
     $message = get_string('emailaddsubmission', 'quest', $data);
 
     $posttext .= format_text_email($message, 1);
@@ -635,8 +652,8 @@ function quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, 
              $course->id . '">' . $strquests . '</a> &raquo; ' . '<a target="_blank" href="' . $CFG->wwwroot .
              '/mod/quest/view.php?id=' . $cm->id . '">' . format_string($quest->name, true) . '</a>';
 
-    $posthtml .= ' &raquo; <a target="_blank" href="' . $CFG->wwwroot . '/mod/quest/submissions.php?id=' . $cm->id .
-             '&amp;action=showsubmission&amp;sid=' . $submission->id . '">' . format_string($submission->title, true) . '</a></div>';
+    $posthtml .= ' &raquo; <a target="_blank" href="' . $CFG->wwwroot . '/mod/quest/challenges.php?id=' . $cm->id .
+             '&amp;action=showchallenge&amp;cid=' . $submission->id . '">' . format_string($submission->title, true) . '</a></div>';
 
     $posthtml .= quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submission, $cm);
 
@@ -689,7 +706,7 @@ function quest_make_mail_post($quest, $userfrom, $userto, $course, $user, $submi
     $data->sitename = $site->fullname;
     $data->title = $submission->title;
     $data->name = $quest->name;
-    $data->link = $CFG->wwwroot . "/mod/quest/submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission" .
+    $data->link = $CFG->wwwroot . "/mod/quest/challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge" .
              '&amp;p=' . $userto->secret . '&amp;s=' . $userto->username;
     $message = get_string('emailaddsubmission', 'quest', $data);
     $messagehtml = text_to_html($message, false, false, true);
@@ -1006,7 +1023,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
                 $tmpactivity->section = $post->section;
 
                 $tmpactivity->content = new stdClass();
-                $tmpactivity->content->id = 'submissions.php?action=showsubmission&amp;id=' . $questcmid . '&amp;id=' . $post->id;
+                $tmpactivity->content->id = 'challenges.php?action=showchallenge&amp;id=' . $questcmid . '&amp;cid=' . $post->id;
                 $tmpactivity->content->title = $post->title;
 
                 $tmpactivity->user = new stdClass();
@@ -1022,7 +1039,8 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
     // ... get the answers submitted.
     $posts = $DB->get_records_sql(
             "SELECT a.*, u.firstname, u.lastname,
-            u.picture, cm.instance, q.name, cm.section
+            u.picture, u.imagealt, u.email, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename,
+            cm.instance, q.name, cm.section
             FROM {quest_answers} a
             JOIN {user} u ON a.userid = u.id
             JOIN {quest} q ON a.questid = q.id
@@ -1298,13 +1316,24 @@ function quest_get_user_answers($submission, $user) {
             array($submission->id, $user->id), "date DESC");
 }
 /**
+ * Gets all answers for a challenge.
+ *
+ * @param \stdClass $challenge
+ * @return array
+ */
+function quest_get_challenge_answers($challenge) {
+    global $DB;
+    return $DB->get_records_select("quest_answers", "submissionid = ? AND date > 0", array($challenge->id), "date DESC");
+}
+
+/**
+ * Legacy wrapper for quest_get_challenge_answers.
  *
  * @param \stdClass $submission
  * @return array
  */
 function quest_get_submission_answers($submission) {
-    global $DB;
-    return $DB->get_records_select("quest_answers", "submissionid = ? AND date > 0", array($submission->id), "date DESC");
+    return quest_get_challenge_answers($submission);
 }
 /**
  *

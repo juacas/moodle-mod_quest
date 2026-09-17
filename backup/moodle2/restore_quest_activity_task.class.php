@@ -80,11 +80,13 @@ class restore_quest_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('quest', 'update', 'view.php?id={course_module}', '{quest}');
         $rules[] = new restore_log_rule('quest', 'view', 'view.php?id={course_module}', '{quest}');
         $rules[] = new restore_log_rule('quest', 'read_submission',
-                'submissions.php?id={course_module}&sid={submission}&action=showsubmission', '{quest}');
+                'challenges.php?id={course_module}&cid={submission}&action=showchallenge', '{quest}');
+        $rules[] = new restore_log_rule('quest', 'read_challenge',
+                'challenges.php?id={course_module}&cid={submission}&action=showchallenge', '{quest}');
         $rules[] = new restore_log_rule('quest', 'read_answer', 'answer.php?sid={submission}&aid={answer}&action=showanswer',
                 '{quest}');
         $rules[] = new restore_log_rule('quest', 'newattachment',
-                'submissions.php?id={course_module}&id={submission}&action=showsubmission', '{quest}');
+                'challenges.php?id={course_module}&cid={submission}&action=showchallenge', '{quest}');
 
         return $rules;
     }

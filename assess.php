@@ -53,7 +53,7 @@ $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
-$strsubmission = "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+$strsubmission = "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\">$submission->title</a>";
 
 $url = new moodle_url('/mod/quest/assess.php',
         array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
@@ -62,8 +62,8 @@ $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add(get_string('submission', 'quest') . ': ' . $submission->title,
-        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
+$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
+        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge')));
 $PAGE->navbar->add(get_string('answername', 'quest', $answer));
 echo $OUTPUT->header();
 
@@ -79,7 +79,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
     } else if (($submission->userid == $USER->id) && (!$cangrade)) {
         $assessment->userid = $USER->id;
     } else {
-        print_error('assess_forbidden', 'quest');
+        throw new \moodle_exception('assess_forbidden', 'quest');
     }
 
     $assessment->answerid = $answer->id;
@@ -88,7 +88,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
     $assessment->commentsteacher = '';
 
     if (!$assessment->id = $DB->insert_record("quest_assessments", $assessment)) {
-        print_error('inserterror', 'quest', null, "quest_assessments");
+        throw new \moodle_exception('inserterror', 'quest', '', "quest_assessments");
     }
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
     if ($cangrade and ($quest->gradingstrategy == 2)) {
@@ -98,18 +98,18 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
             $num = $DB->get_field("quest_submissions", "numelements", array("id" => $submission->id));
         }
         for ($i = 0; $i < $num; $i++) {
-            unset($element);
+            $element = new stdClass();
             $element->questid = $quest->id;
             $element->assessmentid = $assessment->id;
             $element->elementno = $i;
             $element->userid = $USER->id;
             $element->calification = 1;
             if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                print_error('inserterror', 'quest', null, "quest_elements_assessments");
+                throw new \moodle_exception('inserterror', 'quest', '', "quest_elements_assessments");
             }
         }
         // ...now set the adjustment.
-        unset($element);
+        $element = new stdClass();
         $i = $num;
         $element->questid = $quest->id;
         $element->assessmentid = $assessment->id;
@@ -117,7 +117,7 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
         $element->userid = $USER->id;
         $element->calification = 0;
         if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-            print_error('inserterror', 'quest', null, "quest_elements_assessments");
+            throw new \moodle_exception('inserterror', 'quest', '', "quest_elements_assessments");
         }
     }
 }
@@ -134,8 +134,8 @@ if (has_capability('mod/quest:preview', $context)) {
 }
 
 $title .= " " . get_string('tothechallenge', 'quest') .
-         "<a name=\"sid_$submission->id\" href=\"submissions.php?" .
-        "id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\">$submission->title</a>";
+         "<a name=\"cid_$submission->id\" href=\"challenges.php?" .
+        "id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\">$submission->title</a>";
 
 echo $OUTPUT->heading($title);
 
@@ -158,7 +158,7 @@ if ($cangrade) {
 if ($nextanswer !== null ) {
     $returnto = new moodle_url('assess.php', ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $nextanswer->id, 'sesskey' => sesskey() ]);
 } else {
-    $returnto = new moodle_url('submissions.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission' ]);
+    $returnto = new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge' ]);
 }
 quest_print_assessment($quest, $submission->id, $assessment, true, $allowcomments, $returnto);
 

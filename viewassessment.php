@@ -52,21 +52,21 @@ $ismanager = has_capability('mod/quest:manage', $context);
 $url = new moodle_url('/mod/quest/viewassessment.php',
         array('asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
 $PAGE->set_url($url);
-$PAGE->navbar->add(get_string('submission', 'quest') . ':' . $submission->title,
-        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission')));
+$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
+        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge')));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 if (!$ismanager && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
-    print_error('nopermissions', 'error', null, "Unauthorized access!");
+    throw new \moodle_exception('nopermissions', 'error', '', "Unauthorized access!");
 }
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("viewassessment", "quest");
 
 if (!$redirect) {
-    $redirect = "submissions.php?id=$cm->id&sid=$sid&action=showsubmission#sid=$sid";
+    $redirect = "challenges.php?id=$cm->id&cid=$sid&action=showchallenge#cid=$sid";
 }
 
 echo $OUTPUT->heading_with_help(get_string('seeassessment', 'quest'), "seeassessment", "quest");
@@ -94,7 +94,7 @@ if ($answer->userid == $USER->id) {
     echo "<tr valign=\"top\">";
     echo "<td align=\"right\"><b>" . get_string("commentsforteacher", "quest") . "</b></td>";
     echo "<td>";
-    echo "<textarea name=\"teachercomment\" rows=\"5\" cols=\"75\">$answer->commentforteacher</textarea>";
+    quest_print_editor("teachercomment", "id_teachercomment", $answer->commentforteacher, $context, 5);
     echo " </td>";
     echo "</tr>";
 
@@ -122,8 +122,8 @@ if (($ismanager || ($answer->userid == $USER->id))) {
 }
 
 $title .= " " . get_string('tothechallenge', 'quest') .
-         "<a name=\"sid_$sid\" href=\"submissions.php?" .
-        "id=$cm->id&amp;action=showsubmission&amp;sid=$sid\">$submission->title</a>";
+         "<a name=\"cid_$sid\" href=\"challenges.php?" .
+        "id=$cm->id&amp;action=showchallenge&amp;cid=$sid\">$submission->title</a>";
 
 echo $OUTPUT->heading($title);
 
