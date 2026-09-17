@@ -19,6 +19,7 @@ const SELECTORS = {
     SWITCH_TO_OTHER_BANK: 'button[data-action="switch-question-bank"]',
     CMID_FORM_ELEMENT: 'form#questionsubmit input[name="cmid"]',
     ADD_TO_QUEST_CONTAINER: 'td.action_column',
+    USE_QUESTION: 'button[data-action="quest-use-question"]',
 };
 
 export default class ModalQuestQuestionBank extends Modal {
@@ -118,6 +119,14 @@ export default class ModalQuestQuestionBank extends Modal {
                 .filter(input => /^q\d+$/.test(input.name)).map(input => Number(input.name.slice(1)));
             if (ids.length) {
                 this.useQuestion(ids[0]);
+            }
+        });
+
+        this.getModal().on('click', SELECTORS.USE_QUESTION, (e) => {
+            e.preventDefault();
+            const questionId = e.currentTarget.dataset.questionid;
+            if (questionId) {
+                this.useQuestion(Number(questionId));
             }
         });
 

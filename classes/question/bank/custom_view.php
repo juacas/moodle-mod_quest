@@ -114,13 +114,11 @@ class custom_view extends \core_question\local\bank\view {
         }
 
         $this->sqlparams = [
-            'questcontext' => $this->contexts->lowest()->id,
             'questready' => 'ready',
             'questnewready' => 'ready',
         ];
         $where = [
             'q.parent = 0',
-            'qc.contextid = :questcontext',
             'qv.status = :questready',
             'NOT EXISTS (SELECT 1 FROM {question_versions} newer
               WHERE newer.questionbankentryid = qv.questionbankentryid
