@@ -713,6 +713,7 @@ if ($action == 'displayfinalgrade') {
     $legendhtml = !empty($table->data) ? get_string('legend', 'quest', $grafic) : '';
 
     // 3. Get challenges for cards.
+    \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
     $challenges = \mod_quest\service\tournament_manager::get_challenges($quest->id, $USER->id);
     $canaddchallenge = has_capability('mod/quest:addchallenge', $context) && ($quest->dateend > $timenow);
 

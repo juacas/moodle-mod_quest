@@ -20,6 +20,7 @@ use core_question\local\bank\question_bank_helper;
 use core_question\local\bank\question_version_status;
 use stdClass;
 use cm_info;
+use context_module;
 use moodle_exception;
 
 /**
@@ -129,5 +130,54 @@ class bank_provider {
         }
 
         return $question;
+    }
+
+    /**
+     * Get or create the activity question category in context_module.
+     *
+     * @param context_module $context
+     * @return stdClass
+     */
+    public static function get_or_create_activity_category(context_module $context): stdClass {
+        return open_question_exporter::get_or_create_activity_category($context);
+    }
+
+    /**
+     * Ensure student role has local capabilities to add/edit/view their own questions in this activity context.
+     *
+     * @param context_module $context
+     * @return void
+     */
+    public static function ensure_student_question_capabilities(context_module $context): void {
+        global $DB;
+        $caps = [
+            'mod/quest:addchallenge',
+            'moodle/question:add',
+            'moodle/question:editmine',
+            'moodle/question:viewmine',
+            'moodle/question:usemine',
+        ];
+
+        // Ensure student archetype roles have local permission in this context_module.
+        $studentroles = get_archetype_roles('student');
+        foreach ($studentroles as $role) {
+            foreach ($caps as $cap) {
+                assign_capability($cap, CAP_ALLOW, $role->id, $context->id, true);
+            }
+        }
+
+        // Also ensure any roles held by the current user in course/module context have these capabilities.
+        $userroles = get_user_roles($context, 0, false);
+        if (empty($userroles)) {
+            $coursecontext = $context->get_course_context();
+            $userroles = get_user_roles($coursecontext, 0, false);
+        }
+        foreach ($userroles as $ra) {
+            foreach ($caps as $cap) {
+                assign_capability($cap, CAP_ALLOW, $ra->roleid, $context->id, true);
+            }
+        }
+
+        $context->mark_dirty();
     }
 }

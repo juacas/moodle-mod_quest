@@ -250,6 +250,10 @@ class open_question_exporter {
             );
         }
 
+        if (isset($submission->state) && (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING) {
+            question_reference_service::tag_approval_pending((int)$savedquestion->id, $context);
+        }
+
         return $savedquestion;
         } finally {
             if ($resetuser) {

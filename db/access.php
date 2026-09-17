@@ -37,7 +37,7 @@ $capabilities = array(
                 // about it, for example the start date and time limit.
                 'mod/quest:view' => array('captype' => 'read', 'contextlevel' => CONTEXT_MODULE,
                                 'archetypes' => array('guest' => CAP_ALLOW, 'student' => CAP_ALLOW, 'teacher' => CAP_ALLOW,
-                                                'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW, 'teacher' => CAP_ALLOW)),
+                                                'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW)),
                 // Ability to do the questournament as a 'student'.
                 'mod/quest:attempt' => array('riskbitmask' => RISK_SPAM, 'captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
                                 'archetypes' => array('student' => CAP_ALLOW)),
@@ -55,7 +55,8 @@ $capabilities = array(
                                 'contextlevel' => CONTEXT_MODULE,
                                 'archetypes' => array('editingteacher' => CAP_ALLOW,
                                                 'manager' => CAP_ALLOW,
-                                                'teacher' => CAP_ALLOW)),
+                                                'teacher' => CAP_ALLOW,
+                                                'student' => CAP_ALLOW)),
                 // Edit questournament challenge mine.
                 'mod/quest:editchallengemine' => array('riskbitmask' => RISK_SPAM, 'captype' => 'write',
                                 'contextlevel' => CONTEXT_MODULE,

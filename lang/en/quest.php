@@ -855,6 +855,17 @@ $string['notsubmittedanswers'] = 'No answers submitted';
 // Canonical challenge terminology strings (aliasing legacy submission strings).
 $string['challenge'] = 'Challenge';
 $string['addchallenge'] = 'Add challenge';
+$string['addquestionchallenge'] = 'Add challenge with question';
+$string['approvalpending'] = 'Approval pending';
+$string['challengeadded'] = 'Challenge created successfully';
+$string['useexistingquestion'] = 'Use this question';
+$string['viewinquestionbank'] = 'View in question bank';
+$string['exporttoquestionbank'] = 'Export to question bank';
+$string['questionbank'] = 'Question bank';
+$string['author'] = 'Author';
+$string['phase_stationary'] = 'Stationary Phase';
+$string['phase_inflation'] = 'Inflationary Phase';
+$string['phase_deflation'] = 'Deflationary Phase';
 $string['showchallenge'] = 'Show Challenge';
 $string['showchallenges'] = 'Show Challenges';
 $string['showchallengesteam'] = 'Show Team Challenges';
@@ -1003,3 +1014,7 @@ $string['privacy:metadata:core_question'] = 'Question engine attempt data genera
 
 $string['privacy:request:deleted:title'] = '[Deleted challenge]';
 $string['privacy:request:deleted:content'] = '[The author requested the deletion of their personal data]';
+
+
+$string['selectquestionbank'] = 'Question bank';
+$string['editbankquestion'] = 'Edit question in question bank';

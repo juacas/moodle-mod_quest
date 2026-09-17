@@ -123,6 +123,15 @@ class view_page implements renderable, templatable {
                 $cardstyle = 'background-color: #f8f9fa; border: 1px solid #e9ecef; border-top: 4px solid #6c757d; border-radius: 8px;';
             }
 
+            // If the challenge is pending approval, override the phase badge regardless of scoring phase.
+            // SUBMISSION_STATE_APPROVAL_PENDING = 1 (defined in locallib.php).
+            if ((int)$c->state === 1) {
+                $phaseclass = 'bg-warning text-dark';
+                $phasename = get_string('approvalpending', 'quest');
+                $cardstyle = 'background-color: #fffdf0; border: 1px solid #ffe69c; border-top: 4px solid #fd7e14; border-radius: 8px;';
+            }
+
+
             $timeleft = '';
             if ($timenow < $c->dateend) {
                 $diff = $c->dateend - $timenow;
@@ -185,6 +194,10 @@ class view_page implements renderable, templatable {
             'addchallengeurl' => (new moodle_url('/mod/quest/challenges.php', [
                 'id' => $this->cm->id,
                 'action' => 'submitchallenge',
+            ]))->out(false),
+            'addqchallengeurl' => (new moodle_url('/mod/quest/challenges.php', [
+                'id' => $this->cm->id,
+                'action' => 'addqchallenge',
             ]))->out(false),
             'leaderboardurl' => (new moodle_url('/mod/quest/viewclasification.php', [
                 'id' => $this->cm->id,

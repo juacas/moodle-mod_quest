@@ -14,7 +14,7 @@
 }
 
 .quest-criterion-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .quest-criterion-header {
@@ -67,8 +67,19 @@
 
 .quest-action-bar-sticky {
     padding: 1rem;
-    background: #ffffff;
+    background: #fff;
     border-top: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Fix for question bank modal width on smaller screens */
+.quest-questionbank-modal .modal-dialog.modal-xl {
+    max-width: 95%;
+}
+.quest-questionbank-modal .modal-body {
+    overflow-x: auto;
+}
+.quest-questionbank-modal table.question-bank-table {
+    width: 100%;
 }

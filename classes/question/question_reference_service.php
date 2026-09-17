@@ -126,6 +126,16 @@ class question_reference_service {
                 'entryid' => $ref->questionbankentryid,
                 'status' => question_version_status::QUESTION_STATUS_READY,
             ], IGNORE_MULTIPLE);
+
+            if (!$question) {
+                // Fallback to highest version regardless of status (e.g. pending approval).
+                $sql = "SELECT q.*
+                          FROM {question} q
+                          JOIN {question_versions} qv ON qv.questionid = q.id
+                         WHERE qv.questionbankentryid = :entryid
+                      ORDER BY qv.version DESC";
+                $question = $DB->get_record_sql($sql, ['entryid' => $ref->questionbankentryid], IGNORE_MULTIPLE);
+            }
         }
 
         return $question ?: null;
@@ -143,5 +153,66 @@ class question_reference_service {
             'questionarea' => self::QUESTIONAREA,
             'itemid' => $challengeid,
         ]);
+    }
+
+    public const TAG_APPROVAL_PENDING = 'approval_pending';
+
+    /**
+     * Add 'approval_pending' tag to a question.
+     *
+     * @param int $questionid
+     * @param context $context
+     */
+    public static function tag_approval_pending(int $questionid, context $context): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/tag/classes/tag.php');
+
+        $tags = \core_tag_tag::get_item_tags_array('core_question', 'question', $questionid);
+        if (!in_array(self::TAG_APPROVAL_PENDING, $tags, true)) {
+            $tags[] = self::TAG_APPROVAL_PENDING;
+            \core_tag_tag::set_item_tags('core_question', 'question', $questionid, $context, $tags);
+        }
+    }
+
+    /**
+     * Mark a question as approved: remove 'approval_pending' tag and set status to READY.
+     *
+     * @param int $questionid
+     * @param context $context
+     */
+    public static function mark_as_approved(int $questionid, context $context): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/tag/classes/tag.php');
+
+        $tags = \core_tag_tag::get_item_tags_array('core_question', 'question', $questionid);
+        if (in_array(self::TAG_APPROVAL_PENDING, $tags, true)) {
+            $tags = array_values(array_filter($tags, static fn($t) => $t !== self::TAG_APPROVAL_PENDING));
+            \core_tag_tag::set_item_tags('core_question', 'question', $questionid, $context, $tags);
+        }
+
+        // Ensure question version status is READY.
+        $DB->execute(
+            "UPDATE {question_versions}
+                SET status = :status
+              WHERE questionid = :qid",
+            [
+                'status' => question_version_status::QUESTION_STATUS_READY,
+                'qid' => $questionid,
+            ]
+        );
+    }
+
+    /**
+     * Check if a question has the 'approval_pending' tag.
+     *
+     * @param int $questionid
+     * @return bool
+     */
+    public static function is_approval_pending(int $questionid): bool {
+        global $CFG;
+        require_once($CFG->dirroot . '/tag/classes/tag.php');
+
+        $tags = \core_tag_tag::get_item_tags_array('core_question', 'question', $questionid);
+        return in_array(self::TAG_APPROVAL_PENDING, $tags, true);
     }
 }

@@ -1394,3 +1394,81 @@ function quest_get_maxpoints_teams(stdClass $quest) {
     }
     return $maxpoints;
 }
+
+function mod_quest_build_required_parameters_for_custom_view(array $params, array $extraparams): array {
+    global $CFG;
+    require_once($CFG->dirroot . "/question/editlib.php");
+    $viewclass = $extraparams['view'] ?? null;
+    $defaultpagesize = $viewclass ? $viewclass::DEFAULT_PAGE_SIZE : 20;
+    [$thispageurl, $contexts, $cmid, $cm, , $pagevars] = question_build_edit_resources(
+            'editq',
+            '/mod/quest/challenges.php',
+            array_merge($params, $extraparams),
+            $defaultpagesize);
+    $extraparams['cmid'] = $cmid;
+    $extraparams['requirebankswitch'] = true;
+    return [$contexts, $thispageurl, $cm, $pagevars, $extraparams];
+}
+
+/** Render the complete official question bank view in the Quest picker. */
+function mod_quest_output_fragment_quest_question_bank(array $args): string {
+    $params = [];
+    $extraparams = [];
+    $querystring = parse_url($args['querystring'] ?? '', PHP_URL_QUERY) ?? '';
+    parse_str($querystring, $params);
+
+    $params['cmid'] = clean_param($args['bankcmid'], PARAM_INT);
+    $viewclass = \mod_quest\question\bank\custom_view::class;
+    $extraparams['view'] = $viewclass;
+    $extraparams['questcmid'] = clean_param($args['questcmid'], PARAM_INT);
+
+    $destination = \context_module::instance($extraparams['questcmid']);
+    require_capability("mod/quest:manage", $destination);
+    \mod_quest\question\bank_provider::require_bank($params['cmid']);
+
+    [$contexts, $thispageurl, $cm, $pagevars, $extraparams] =
+            mod_quest_build_required_parameters_for_custom_view($params, $extraparams);
+
+    $course = get_course($cm->course);
+    $questionbank = new $viewclass($contexts, $thispageurl, $course, $cm, $pagevars, $extraparams);
+    
+    ob_start();
+    try {
+        $questionbank->display();
+        return ob_get_contents();
+    } finally {
+        ob_end_clean();
+    }
+}
+
+/** Render filtered/paginated question data for the official view. */
+function mod_quest_output_fragment_quest_question_data(array $args): string {
+    if (empty($args)) {
+        return '';
+    }
+
+    [$params, $extraparams] = \core_question\local\bank\filter_condition_manager::extract_parameters_from_fragment_args($args);
+    
+    $cmid = clean_param($args['cmid'] ?? $args['bankcmid'] ?? 0, PARAM_INT);
+    $params['cmid'] = $cmid;
+    
+    $questcmid = clean_param($extraparams['questcmid'] ?? 0, PARAM_INT);
+    $extraparams['questcmid'] = $questcmid;
+    $extraparams['view'] = clean_param($args['view'] ?? \mod_quest\question\bank\custom_view::class, PARAM_NOTAGS);
+    
+    $destination = \context_module::instance($questcmid);
+    require_capability("mod/quest:manage", $destination);
+    \mod_quest\question\bank_provider::require_bank($params['cmid']);
+
+    [$contexts, $thispageurl, $cm, $pagevars, $extraparams] =
+            mod_quest_build_required_parameters_for_custom_view($params, $extraparams);
+
+    $course = get_course($cm->course);
+    $viewclass = $extraparams['view'];
+    $questionbank = new $viewclass($contexts, $thispageurl, $course, $cm, $pagevars, $extraparams);
+    
+    $questionbank->add_standard_search_conditions();
+    ob_start();
+    $questionbank->display_question_list();
+    return ob_get_clean();
+}

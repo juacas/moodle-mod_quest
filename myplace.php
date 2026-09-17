@@ -83,12 +83,20 @@ echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 
 $actionbuttons = [];
 
-if ($quest->dateend > $timenow) {
+\mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
+if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $timenow) {
+    $addqurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'addqchallenge']);
+    $actionbuttons[] = html_writer::link(
+        $addqurl,
+        '<i class="fa fa-question-circle me-1" aria-hidden="true"></i>' . get_string('addquestionchallenge', 'quest'),
+        ['class' => 'btn btn-primary shadow-sm']
+    );
+
     $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
     $actionbuttons[] = html_writer::link(
         $addurl,
-        '<i class="fa fa-plus-circle me-1" aria-hidden="true"></i>' . get_string('addchallenge', 'quest'),
-        ['class' => 'btn btn-primary shadow-sm']
+        '<i class="fa fa-pencil-square-o me-1" aria-hidden="true"></i>' . get_string('addchallenge', 'quest'),
+        ['class' => 'btn btn-outline-primary shadow-sm']
     );
 }
 

@@ -608,9 +608,12 @@ function quest_upload_challenge(
         }
     } else {
         $isnew = false;
-        if ($canapprove && $action === 'approve') { // ...the challenge is approved by the
-                                                    // teacher..
+        if ($canapprove && $action === 'approve') { // ...the challenge is approved by the teacher..
             $newsubmission->state = SUBMISSION_STATE_APROVED;
+            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$newsubmission->id);
+            if ($linkedq) {
+                \mod_quest\question\question_reference_service::mark_as_approved((int)$linkedq->id, $context);
+            }
         } else { // The challenge is modified, the status does not change.
             $newsubmission->state = $DB->get_field('quest_submissions', 'state', ['id' => $newsubmission->id]);
         }
