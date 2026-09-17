@@ -297,7 +297,7 @@ foreach ($columns as $column) {
         } else {
             $columnicon = $dir == 'ASC' ? 'down' : 'up';
         }
-        $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+        $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
     }
     $$column = "<a href=\"myplace.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
 }
@@ -428,7 +428,7 @@ foreach ($columnsanswer as $columnanswer) {
         } else {
             $columniconanswer = $diranswer == 'ASC' ? 'down' : 'up';
         }
-        $columniconanswer = " <img src=\"" . $CFG->wwwroot . "/pix/t/$columniconanswer.png\" alt=\"$columniconanswer\" />";
+        $columniconanswer = $OUTPUT->pix_icon("t/$columniconanswer", $columniconanswer);
     }
     $$columnanswer = "<a href=\"myplace.php?id=$cm->id&amp;sortanswer=$columnanswer&amp;diranswer=$columndiranswer\">" .
          $string[$columnanswer] . "</a>$columniconanswer";
@@ -524,7 +524,7 @@ if (!$ismanager) {
             } else {
                 $columnicon = $dir == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=$column&amp;dir=$columndir\">" .
                     $string[$column] . "</a>$columnicon";
@@ -624,7 +624,7 @@ if ((!$ismanager) && ($quest->allowteams)) {
             } else {
                     $columnicon = $dir == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"view.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }

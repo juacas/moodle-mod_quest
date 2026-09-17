@@ -729,7 +729,7 @@ if ($action == 'confirmdelete') {
             } else {
                 $columnicon = $dir == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = $OUTPUT->pix_icon("/t/$columnicon", $columnicon);
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"challenges.php?id=$id&amp;sid=$sid&amp;uid=$user->id&amp;action=showsubmissionsuser&amp;" .
                 "sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
@@ -869,7 +869,7 @@ if ($action == 'confirmdelete') {
             } else {
                 $columnicon = $dir == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"challenges.php?id=$cm->id&amp;sid=$sid&amp;uid=$user->id&amp;action=showanswersuser&amp;" .
                 "sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";

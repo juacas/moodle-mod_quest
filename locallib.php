@@ -1373,7 +1373,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
             } else {
                 $columnicon = $dir == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/i/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge',
                                                     'sort' => $column, 'dir' => $columndir]))->out();
@@ -3865,7 +3865,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
             } else {
                 $columnicon = $dirteam == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"view.php?id=$cm->id&amp;sortteam=$column&amp;dirteam=$columndir\">" . $string[$column] .
                  "</a>$columnicon";
@@ -4331,6 +4331,14 @@ function quest_send_message_data($data) {
     $messagedata->fullmessageformat = FORMAT_HTML;
     $messagedata->notification = true;
     $messagedata->courseid = $data->courseid;
+    if (!empty($data->link)) {
+        $messagedata->contexturl = $data->link;
+        if (!empty($data->title)) {
+            $messagedata->contexturlname = $data->title;
+        } else if (!empty($data->subject)) {
+            $messagedata->contexturlname = $data->subject;
+        }
+    }
     $msgid = message_send($messagedata);
     return $msgid;
 }
