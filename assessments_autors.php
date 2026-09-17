@@ -38,6 +38,12 @@ require_once("scores_lib.php");
 $id = required_param('id', PARAM_INT); // Course Module ID.
 $action = required_param('action', PARAM_ALPHA);
 global $DB, $OUTPUT, $PAGE, $questscales, $questeweights;
+if (!is_array($questscales)) {
+    $questscales = quest_get_default_scales();
+}
+if (!is_array($questeweights)) {
+    $questeweights = quest_get_default_weights();
+}
 // Get some useful stuff...
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
@@ -59,6 +65,21 @@ $strassessments = get_string("assessments", "quest");
 if ($action == 'displaygradingform') {
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string("specimenassessmentformsubmission", "quest"), "specimensubmission", "quest");
+    if ($ismanager) {
+        $editurl = new moodle_url('/mod/quest/assessments_autors.php', [
+            'id' => $cm->id,
+            'action' => 'editelements',
+            'sesskey' => sesskey()
+        ]);
+        echo html_writer::div(
+            html_writer::link(
+                $editurl,
+                '<i class="fa fa-sliders me-1" aria-hidden="true"></i> ' . get_string('amendassessmentelements', 'quest'),
+                ['class' => 'btn btn-outline-primary']
+            ),
+            'text-end mb-3'
+        );
+    }
     quest_print_assessment_autor($quest);
     $id = required_param('id', PARAM_INT);
     // Called with no assessment.

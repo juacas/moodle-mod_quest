@@ -143,7 +143,6 @@ define([], function() {
         svg.style.aspectRatio = '1 / 1';
         svg.style.display = 'block';
         svg.style.maxWidth = '100%';
-        svg.style.maxHeight = '320px';
         svg.style.overflow = 'hidden';
         svg.style.fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
@@ -303,7 +302,7 @@ define([], function() {
         inflPath.setAttribute('stroke-linecap', 'round');
         svg.appendChild(inflPath);
 
-        // Tramo 3: Deflacionario.
+        // Tramo 3: Deflacionario (actual, if correct answer exists).
         if (hasCorrect) {
             var deflEndY = getY(data.pointsmin || 0);
             var deflPath = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -315,19 +314,25 @@ define([], function() {
             deflPath.setAttribute('stroke-width', '3.5');
             deflPath.setAttribute('stroke-linecap', 'round');
             svg.appendChild(deflPath);
-        } else {
-            // Si aún no hay respuesta correcta, mostrar proyección deflacionaria punteada.
-            var projStartY = getY(data.pointsmax);
+        }
+
+        // Hypothetical dotted deflation projection (always shown: from end-of-inflation to dateend).
+        // When hasCorrect: shows what WOULD have happened if no answer had been given (full deflation).
+        // When !hasCorrect: shows the future projection from current inflation end.
+        {
+            var projInflEnd = hasCorrect ? data.dateanswercorrect : inflEnd;
+            var projInflX = getX(projInflEnd);
+            var projInflY = getY(getScoreAtTime(data, projInflEnd));
             var projEndY = getY(data.pointsmin || 0);
             var projPath = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            projPath.setAttribute('x1', inflX);
-            projPath.setAttribute('y1', projStartY);
+            projPath.setAttribute('x1', projInflX);
+            projPath.setAttribute('y1', projInflY);
             projPath.setAttribute('x2', endX);
             projPath.setAttribute('y2', projEndY);
             projPath.setAttribute('stroke', '#8b5cf6');
-            projPath.setAttribute('stroke-width', '2');
+            projPath.setAttribute('stroke-width', hasCorrect ? '1.5' : '2');
             projPath.setAttribute('stroke-dasharray', '4,3');
-            projPath.setAttribute('opacity', '0.6');
+            projPath.setAttribute('opacity', hasCorrect ? '0.35' : '0.6');
             svg.appendChild(projPath);
         }
 

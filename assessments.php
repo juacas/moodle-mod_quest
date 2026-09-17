@@ -52,6 +52,12 @@ $viewgeneral = optional_param('viewgeneral', -1, PARAM_INT); // Flag: view gener
                                                              // ...particular form view of one
                                                              // submission = 0.
 global $DB, $OUTPUT, $PAGE, $questscales, $questeweights;
+if (!is_array($questscales)) {
+    $questscales = quest_get_default_scales();
+}
+if (!is_array($questeweights)) {
+    $questeweights = quest_get_default_weights();
+}
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
 
@@ -89,6 +95,23 @@ $PAGE->set_heading($course->fullname);
 if ($action == 'displaygradingform') {
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string("specimenassessmentformanswer", "quest"), 'specimenanswer', "quest");
+
+    if ($isteacher) {
+        $editurl = new moodle_url('/mod/quest/assessments.php', [
+            'id' => $cm->id,
+            'viewgeneral' => 1,
+            'action' => 'editelements',
+            'sesskey' => sesskey()
+        ]);
+        echo html_writer::div(
+            html_writer::link(
+                $editurl,
+                '<i class="fa fa-sliders me-1" aria-hidden="true"></i> ' . get_string('amendassessmentelements', 'quest'),
+                ['class' => 'btn btn-outline-primary']
+            ),
+            'text-end mb-3'
+        );
+    }
 
     quest_print_assessment($quest, $sid, false, null);
     // ...called with no assessment..
@@ -203,6 +226,10 @@ if ($action == 'displaygradingform') {
             break;
         case 1: // ...accumulative grading..
                 // ...set up scales name..
+            // Ensure $questscales is populated (global may be null in some include contexts).
+            if (!is_array($questscales)) {
+                $questscales = quest_get_default_scales();
+            }
             $scales = [];
             foreach ($questscales as $key => $scale) {
                 $scales[] = $scale['name'];

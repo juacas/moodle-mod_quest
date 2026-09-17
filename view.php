@@ -281,13 +281,6 @@ if ($action == 'displayfinalgrade') {
     $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;sid=&amp;action=displaygradingform\">" .
              get_string("specimenassessmentformsubmission", "quest") . "</a>";
     $text .= $OUTPUT->help_icon('specimensubmission', 'quest');
-
-    if ($ismanager and $quest->nelements) {
-        $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-
-        $text .= " <a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&sesskey=" . sesskey() . "\">" . $editicon .
-                 '</a>';
-    }
     $text .= "</b></center>";
 
     echo ($text);

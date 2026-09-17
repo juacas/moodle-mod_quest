@@ -159,70 +159,74 @@
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                     {{#challenges}}
                     <div class="col">
-                        <div class="card h-100 border-0 shadow-sm quest-challenge-card position-relative" style="cursor: pointer;" onclick="window.location.href='{{{viewurl}}}';">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge {{phaseclass}}">{{phasename}}</span>
-                                    <span class="badge bg-success fs-7">{{currentpoints}} pts</span>
+                        <div class="card border-0 shadow-sm quest-challenge-card position-relative" style="height: 340px; cursor: pointer;" onclick="window.location.href='{{{viewurl}}}'">
+                            <div class="card-body d-flex flex-column h-100 p-3">
+
+                                {{! Header: Title & Phase badge left, Points badge & Plot top-right }}
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-2 flex-shrink-0">
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="mb-1">
+                                            <span class="badge {{phaseclass}}">{{phasename}}</span>
+                                        </div>
+                                        <h5 class="card-title fw-bold mb-0 text-truncate" title="{{title}}">
+                                            <a href="{{{viewurl}}}" class="text-decoration-none text-dark stretched-link">{{title}}</a>
+                                        </h5>
+                                    </div>
+
+                                    {{#minichartsvg}}
+                                    <div class="d-flex flex-column align-items-end flex-shrink-0" style="width: 100px;">
+                                        <span class="badge bg-success fs-7 mb-1">{{currentpoints}} pts</span>
+                                        <div class="quest-card-chart-full w-100" title="{{#str}}questgraphtitle, quest{{/str}}" style="aspect-ratio: 1 / 1; overflow: hidden;">
+                                            {{{minichartsvg}}}
+                                        </div>
+                                    </div>
+                                    {{/minichartsvg}}
+                                    {{^minichartsvg}}
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-success fs-7">{{currentpoints}} pts</span>
+                                    </div>
+                                    {{/minichartsvg}}
                                 </div>
 
-                                <h5 class="card-title fw-bold mb-2">
-                                    <a href="{{{viewurl}}}" class="text-decoration-none text-dark stretched-link">{{title}}</a>
-                                </h5>
-
-                                <p class="card-text text-muted small flex-grow-1 mb-2">
-                                    {{descriptionexcerpt}}
-                                </p>
-
-                                {{#minichartsvg}}
-                                <div class="quest-card-chart-wrapper my-2" title="{{#str}}questgraphtitle, quest{{/str}}">
-                                    {{{minichartsvg}}}
+                                {{! Description: formatted text with vertical overflow scroll }}
+                                <div class="card-text text-secondary small flex-grow-1 my-2 quest-challenge-description overflow-auto pe-1" style="max-height: 180px; position: relative; z-index: 2;" onclick="event.stopPropagation();">
+                                    {{{description}}}
                                 </div>
-                                {{/minichartsvg}}
 
-                                <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top text-muted small">
+                                {{! Footer stats }}
+                                <div class="d-flex justify-content-between align-items-center pt-2 mt-auto border-top text-muted small flex-shrink-0">
                                     <span><i class="fa fa-comments-o me-1"></i>{{nanswers}} {{#str}}answers, quest{{/str}}</span>
                                     <span><i class="fa fa-clock-o me-1"></i>{{timeleft}}</span>
                                 </div>
+
                             </div>
                         </div>
                     </div>
                     {{/challenges}}
                 </div>
                 {{/haschallenges}}
-
                 {{^haschallenges}}
-                <div class="card border-0 shadow-sm text-center p-5">
-                    <div class="card-body">
-                        <i class="fa fa-lightbulb-o fa-3x text-muted mb-3" aria-hidden="true"></i>
-                        <h5 class="text-muted">{{#str}}nochallengestoshow, quest{{/str}}</h5>
-                        {{#canaddchallenge}}
-                        <a href="{{{addchallengeurl}}}" class="btn btn-primary mt-2">
-                            <i class="fa fa-plus me-1"></i> {{#str}}addchallenge, quest{{/str}}
-                        </a>
-                        {{/canaddchallenge}}
-                    </div>
+                <div class="alert alert-info text-center my-3" role="alert">
+                    <i class="fa fa-info-circle me-1" aria-hidden="true"></i> {{#str}}nochallenges, quest{{/str}}
                 </div>
                 {{/haschallenges}}
             </div>
 
-            <!-- VISTA 2: LIST / DETAILED TABLE -->
+            <!-- VISTA 2: LIST (Tabla de detalles) -->
             <div id="quest-challenges-list-view" style="display: none;">
                 {{#hasdetailtable}}
                 <div class="table-responsive">
                     {{{detailtablehtml}}}
                 </div>
                 {{#legendhtml}}
-                <div class="text-muted small text-center mt-3">
+                <div class="mt-3">
                     {{{legendhtml}}}
                 </div>
                 {{/legendhtml}}
                 {{/hasdetailtable}}
-
                 {{^hasdetailtable}}
-                <div class="text-center p-5 text-muted">
-                    <i class="fa fa-inbox fa-3x text-muted mb-3" aria-hidden="true"></i>
-                    <h5>{{#str}}nochallengestoshow, quest{{/str}}</h5>
+                <div class="alert alert-info text-center my-3" role="alert">
+                    <i class="fa fa-info-circle me-1" aria-hidden="true"></i> {{#str}}nochallenges, quest{{/str}}
                 </div>
                 {{/hasdetailtable}}
             </div>
@@ -272,17 +276,17 @@
         setView('list');
     });
 
-    var urlParams = new URLSearchParams(window.location.search);
-    var hasSort = urlParams.has('sort') || urlParams.has('dir') || urlParams.get('view') === 'list';
     var savedMode = '';
     try {
         savedMode = localStorage.getItem('quest_challenges_view_mode');
     } catch (e) {}
 
-    if (hasSort || savedMode === 'list') {
-        setView('list');
+    if (savedMode === 'list' || savedMode === 'cards') {
+        setView(savedMode);
     } else {
-        setView('cards');
+        var urlParams = new URLSearchParams(window.location.search);
+        var hasSort = urlParams.has('sort') || urlParams.has('dir') || urlParams.get('view') === 'list';
+        setView(hasSort ? 'list' : 'cards');
     }
 })();
 {{/js}}

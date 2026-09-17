@@ -355,13 +355,8 @@ if ($action == 'confirmdelete') {
     }
 
     $title = '"' . $submission->title . '"';
-    // Convenient editing button for teachers.
-    if (has_capability('mod/quest:editchallengeall', $context)) {
-        $title .= "<a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;sid=$submission->id\">" .
-                 $OUTPUT->pix_icon('/t/edit', get_string('modif', 'quest')) . '</a> ';
-    }
     if (($canpreview) || ($submission->userid == $USER->id) || ($permitviewautors == 1)) {
-        $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
+        $title .= ' ' . get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
     }
 
     $PAGE->set_title(format_string($quest->name . ' ' . $submission->title));
@@ -369,103 +364,173 @@ if ($action == 'confirmdelete') {
     $PAGE->navbar->add(\format_string($submission->title));
 
     echo $OUTPUT->header();
-    /*
-     * Flag to force a recalculation of team statistics and scores.
-     * Only to solve errors in calculations.
-     */
+
+    // Flag to force a recalculation of team statistics and scores.
     $debugrecalculate = optional_param('recalculate', 'no', PARAM_ALPHA);
-    /*
-     * Flag to force a recalculation of team statistics and scores.
-     * Only to solve errors in calcularions.
-     */
     $recalculatelink = '';
     if ($debugrecalculate === 'yes') {
         require_once("scores_lib.php");
         print("<p>Fixing submission stats...</p>");
         $submission = quest_update_submission_counts($submission->id);
-    } else if ($ismanager) {
-        // Link to recalculate challenge stats.
-        $recalculatelink = '/ <a href="' . $CFG->wwwroot .
-                 "/mod/quest/challenges.php?id=$cm->id&action=showsubmission&sid=$submission->id&recalculate=yes" .
-                 '">Recalc.</a>';
     }
+
+    // ── ACTION BAR ────────────────────────────────────────────────────────────
+    // Build actions bar: Modify | Answer | See assessment | Re-assess | Recalc | Export
+    $actionbarbtns = '';
+
+    // Modify button (teacher only).
+    if (has_capability('mod/quest:editchallengeall', $context)) {
+        $modifurl = new moodle_url('/mod/quest/challenges.php',
+            ['action' => 'modif', 'id' => $cm->id, 'sid' => $submission->id]);
+        $actionbarbtns .= '<a href="' . $modifurl->out() . '" class="btn btn-sm btn-outline-secondary">' .
+            '<i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('modif', 'quest') . '</a> ';
+    }
+
+    // Approve button.
+    if (has_capability('mod/quest:approvechallenge', $context) &&
+            $submission->state == SUBMISSION_STATE_APPROVAL_PENDING) {
+        $approveurl = new moodle_url('/mod/quest/challenges.php',
+            ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'approve']);
+        $actionbarbtns .= '<a href="' . $approveurl->out() . '" class="btn btn-sm btn-success">' .
+            '<i class="fa fa-check me-1" aria-hidden="true"></i>' . get_string('approve', 'quest') . '</a> ';
+    }
+
+    // Answer button (if user can answer and is not the author).
+    $cananswer = has_capability('mod/quest:attempt', $context);
+    if ($ismanager || ($cananswer && $submission->userid != $USER->id)) {
+        $answered = false;
+        if ($answers = quest_get_user_answers($submission, $USER)) {
+            foreach ($answers as $answer) {
+                if ($answer->submissionid == $submission->id) {
+                    $answered = true;
+                    break;
+                }
+            }
+        }
+        if (($ismanager && !$answered) ||
+                ($answered == false && $submission->phase == SUBMISSION_PHASE_ACTIVE &&
+                $submission->state == SUBMISSION_STATE_APROVED)) {
+            $answerurl = new moodle_url('/mod/quest/answer.php',
+                ['id' => $cm->id, 'uid' => $USER->id, 'action' => 'answer', 'sid' => $submission->id]);
+            $actionbarbtns .= '<a href="' . $answerurl->out() . '" class="btn btn-sm btn-primary">' .
+                '<i class="fa fa-reply me-1" aria-hidden="true"></i>' . get_string('reply', 'quest') . '</a> ';
+        }
+    }
+
+    // See assessment (author or manager).
+    if ($ismanager || ($submission->userid == $USER->id || $submission->phase != SUBMISSION_PHASE_ACTIVE)) {
+        $assessmentautor = quest_get_challenge_assessment($submission);
+        if ($assessmentautor) {
+            $actionbarbtns .= '<a href="viewassessmentautor.php?aid=' . $assessmentautor->id .
+                '" class="btn btn-sm btn-outline-info">' .
+                '<i class="fa fa-eye me-1" aria-hidden="true"></i>' .
+                get_string('seeassessmentautor', 'quest') . '</a> ';
+        }
+    }
+
+    // Re-assess / Evaluate (manager only).
+    if ($ismanager) {
+        $assessmentautor = quest_get_challenge_assessment($submission);
+        $evalurl = new moodle_url('/mod/quest/assess_autors.php',
+            ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'evaluate']);
+        $evalLabel = $assessmentautor ? get_string('reevaluate', 'quest') : get_string('evaluate', 'quest');
+        $actionbarbtns .= '<a href="' . $evalurl->out() . '" class="btn btn-sm btn-outline-warning">' .
+            '<i class="fa fa-star-half-o me-1" aria-hidden="true"></i>' . $evalLabel . '</a> ';
+    }
+
+    // Recalc (manager, debug).
+    if ($ismanager) {
+        $recalcurl = new moodle_url('/mod/quest/challenges.php',
+            ['id' => $cm->id, 'action' => 'showsubmission', 'sid' => $submission->id, 'recalculate' => 'yes']);
+        $actionbarbtns .= '<a href="' . $recalcurl->out() . '" class="btn btn-sm btn-outline-secondary" title="Recalc stats">' .
+            '<i class="fa fa-refresh me-1" aria-hidden="true"></i>Recalc</a> ';
+    }
+
+    // Specimen assessment form link (always).
+    $specimenurl = new moodle_url('/mod/quest/assessments.php',
+        ['id' => $cm->id, 'sid' => $submission->id, 'viewgeneral' => 0,
+         'action' => 'displaygradingform', 'sesskey' => sesskey()]);
+    $actionbarbtns .= '<a href="' . $specimenurl->out() . '" class="btn btn-sm btn-outline-secondary">' .
+        '<i class="fa fa-list-alt me-1" aria-hidden="true"></i>' .
+        get_string('specimenassessmentformanswer', 'quest') . '</a> ';
+    $actionbarbtns .= $OUTPUT->help_icon('specimenanswer', 'quest');
+
+    // Amend assessment elements (author or manager, if applicable).
+    if (($ismanager || $USER->id == $submission->userid) && $quest->nelementsautor) {
+        if ($submission->numelements == 0) {
+            $amendurl = new moodle_url('/mod/quest/challenges.php',
+                ['id' => $cm->id, 'newform' => 1, 'sid' => $sid, 'cambio' => 0, 'action' => 'confirmchangeform']);
+        } else {
+            $amendurl = new moodle_url('/mod/quest/assessments.php',
+                ['id' => $cm->id, 'sid' => $sid, 'newform' => 1, 'change_form' => 0,
+                 'action' => 'editelements', 'sesskey' => sesskey()]);
+        }
+        $actionbarbtns .= '<a href="' . $amendurl->out() . '" class="btn btn-sm btn-outline-secondary">' .
+            '<i class="fa fa-sliders me-1" aria-hidden="true"></i>' .
+            get_string('amendassessmentelements', 'quest') . '</a> ';
+    }
+
+    // Export to Question Bank (manager only, at the END of the bar).
     $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
     if ($linkedq) {
-        echo '<div class="alert alert-info d-flex align-items-center mb-3"><i class="fa fa-database fa-2x me-3"></i><div>' .
-             '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' . format_string($linkedq->name) . ' (' . $linkedq->qtype . ')' .
+        echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
+             '<i class="fa fa-database fa-2x me-3"></i><div>' .
+             '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
+             format_string($linkedq->name) . ' (' . $linkedq->qtype . ')' .
              ' <span class="badge bg-success ms-2">Auto-graded</span></div></div>';
     } else if ($ismanager) {
         $exporturl = new moodle_url('/mod/quest/challenges.php', [
-            'id' => $cm->id,
-            'sid' => $submission->id,
-            'action' => 'exporttoqbank',
-            'sesskey' => sesskey(),
+            'id' => $cm->id, 'sid' => $submission->id,
+            'action' => 'exporttoqbank', 'sesskey' => sesskey(),
         ]);
-        echo '<div class="mb-3"><a href="' . $exporturl->out() . '" class="btn btn-sm btn-outline-secondary">' .
-             '<i class="fa fa-upload me-1"></i> ' . get_string('exporttoquestionbank', 'quest') . '</a></div>';
+        $actionbarbtns .= '<a href="' . $exporturl->out() . '" class="btn btn-sm btn-outline-dark ms-2">' .
+            '<i class="fa fa-upload me-1"></i> ' . get_string('exporttoquestionbank', 'quest') . '</a>';
     }
+
+    // Render the action bar.
+    echo '<div class="quest-challenge-action-bar d-flex flex-wrap align-items-center gap-2 mb-3 p-2' .
+         ' bg-light rounded border">' . $actionbarbtns . '</div>';
+    // ── END ACTION BAR ────────────────────────────────────────────────────────
 
     echo $OUTPUT->heading($title);
     echo '<div class="row g-4 align-items-start mb-4">';
     echo '<div class="col-lg-8 col-md-7">';
     quest_print_submission_info($quest, $submission);
     echo '</div>';
-    echo '<div class="col-lg-4 col-md-5 d-flex justify-content-center justify-content-md-end">';
-    // INCRUSTA GRÁFICO DE EVOLUCION DE PUNTOS.
+    echo '<div class="col-lg-4 col-md-5 d-flex justify-content-end">';
+    // Score evolution graph (1:1, floated right).
     quest_print_score_graph($quest, $submission);
     echo '</div>';
     echo '</div>';
-    
-    $text = "<center><b>";
-    $text .= "<a href=\"assessments.php?" .
-    "id=$cm->id&amp;sid=$submission->id&amp;viewgeneral=0&amp;action=displaygradingform&amp;sesskey=" .
-    sesskey() . "\">" . get_string("specimenassessmentformanswer", "quest") . "</a>";
-    $text .= $OUTPUT->help_icon('specimenanswer', 'quest');
-    // Actions links.
-    if ((($ismanager || $USER->id == $submission->userid) and $quest->nelementsautor) && ($submission->numelements == 0)) {
-        $text .= "&nbsp;<a href=\"challenges.php?id=$cm->id&newform=1&sid=$sid&cambio=0&amp;action=confirmchangeform\">" .
-        $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) . '</a>';
-    } else if ((($ismanager || $USER->id == $submission->userid) and $quest->nelementsautor) && ($submission->numelements != 0)) {
-        $assessmentsurl = new moodle_url('/mod/quest/assessments.php',
-        array('id' => $cm->id, 'sid' => $sid, 'newform' => 1, 'change_form' => 0, 'action' => 'editelements',
-        'sesskey' => sesskey()));
-        $text .= "&nbsp;<a href=\"$assessmentsurl\">" .
-        $OUTPUT->pix_icon('/t/edit', get_string('amendassessmentelements', 'quest')) .
-        '</a>';
-    }
-    $text .= "</b></center>";
-    echo ($text);
-    
+
     echo $OUTPUT->heading(get_string('description', 'quest'));
     /*
-    * *
     * Wording of the challenge
-    * *
     */
     quest_print_challenge($quest, $submission);
-    
+
     $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
     $currentgroup = groups_get_course_group($course);
-    
+
     if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
     ($submission->nanswerscorrect < $quest->nmaxanswers)) {
         $submission->phase = SUBMISSION_PHASE_ACTIVE;
     }
-    
-   
+
+    // Answers action links (Answer / phase status).
     $actionlinks = '';
     if (!has_capability('mod/quest:manage', $context, $submission->userid) && ($groupmode == 2)) {
-        
-        if ($currentgroup && !groups_is_member($currentgroup, $submission->userid) && !($submission->dateend < time())) {
+        if ($currentgroup && !groups_is_member($currentgroup, $submission->userid) &&
+                !($submission->dateend < time())) {
             echo get_string('cantRespond_WARN_notingroup_or_challengeended', 'quest');
         } else {
-            $actionlinks = quest_actions_challenge($course, $submission, $quest, $cm, array('recalification' => false));
+            $actionlinks = quest_actions_challenge($course, $submission, $quest, $cm, ['recalification' => false]);
         }
     } else {
-        $actionlinks = quest_actions_challenge($course, $submission, $quest, $cm, array('recalification' => false));
+        $actionlinks = quest_actions_challenge($course, $submission, $quest, $cm, ['recalification' => false]);
     }
-    echo $actionlinks . $recalculatelink;
+    echo $actionlinks;
     echo "<br>";
 
     $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);

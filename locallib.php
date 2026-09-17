@@ -67,6 +67,46 @@ $questfweights = [0 => 0, 1 => 0.1, 2 => 0.25, 3 => 0.5, 4 => 0.75, 5 => 1.0, 6 
                 8 => 3.0, 9 => 5.0, 10 => 7.5, 11 => 10.0, 12 => 50.0];
 $questeweightsrecalif = [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25,
                 7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
+
+/**
+ * Returns the default quest scales array.
+ * Use as a safe fallback when the global $questscales is not populated.
+ *
+ * @return array
+ */
+function quest_get_default_scales() {
+    return [
+        0 => ['name' => get_string('scaleyes', 'quest'), 'type' => 'radio', 'size' => 2,
+              'start' => get_string('yes'), 'end' => get_string('no')],
+        1 => ['name' => get_string('scalepresent', 'quest'), 'type' => 'radio', 'size' => 2,
+              'start' => get_string('present', 'quest'), 'end' => get_string('absent', 'quest')],
+        2 => ['name' => get_string('scalecorrect', 'quest'), 'type' => 'radio', 'size' => 2,
+              'start' => get_string('correct', 'quest'), 'end' => get_string('incorrect', 'quest')],
+        3 => ['name' => get_string('scalegood3', 'quest'), 'type' => 'radio', 'size' => 3,
+              'start' => get_string('good', 'quest'), 'end' => get_string('poor', 'quest')],
+        4 => ['name' => get_string('scaleexcellent4', 'quest'), 'type' => 'radio', 'size' => 4,
+              'start' => get_string('excellent', 'quest'), 'end' => get_string('verypoor', 'quest')],
+        5 => ['name' => get_string('scaleexcellent5', 'quest'), 'type' => 'radio', 'size' => 5,
+              'start' => get_string('excellent', 'quest'), 'end' => get_string('verypoor', 'quest')],
+        6 => ['name' => get_string('scaleexcellent7', 'quest'), 'type' => 'radio', 'size' => 7,
+              'start' => get_string('excellent', 'quest'), 'end' => get_string('verypoor', 'quest')],
+        7 => ['name' => get_string('scale10', 'quest'), 'type' => 'selection', 'size' => 10],
+        8 => ['name' => get_string('scale20', 'quest'), 'type' => 'selection', 'size' => 20],
+        9 => ['name' => get_string('scale100', 'quest'), 'type' => 'selection', 'size' => 100],
+    ];
+}
+
+/**
+ * Returns the default quest element weights array.
+ * Use as a safe fallback when the global $questeweights is not populated.
+ *
+ * @return array
+ */
+function quest_get_default_weights() {
+    return [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25,
+            7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
+}
+
 /** assesment->state
  * 0 sin realizar
  * 1 realizada autor
@@ -1660,6 +1700,14 @@ function quest_print_editor($name, $id, $text, $context, $rows = 4) {
  * @param string $returnto */
 function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false, $showcommentlinks = false, $returnto = '') {
     global $CFG, $USER, $questscales, $questeweights, $DB, $OUTPUT;
+    // Ensure global arrays are always populated, even if include order caused them to be null.
+    if (!is_array($questscales)) {
+        $questscales = quest_get_default_scales();
+    }
+    if (!is_array($questeweights)) {
+        $questeweights = quest_get_default_weights();
+    }
+
     $course = $DB->get_record("course", ["id" => $quest->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
     $context = context_module::instance($cm->id);
@@ -1824,7 +1872,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
                 echo "  <td>" . format_text($elements[$i]->description);
                 echo "<p align=\"right\"><font size=\"1\">" . get_string("weight", "quest") . ": " .
-                         number_format($questeweights[$elements[$i]->weight], 2) . "</font></p>\n";
+                         number_format(isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0, 2) . "</font></p>\n";
                 echo "</td></tr>\n";
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
@@ -1833,7 +1881,8 @@ FORM;
 
                     // ...get the appropriate scale.
                     $scalenumber = $elements[$i]->scale;
-                    $scale = (object) $questscales[$scalenumber];
+                    $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
+                    $scale = (object) $scaledata;
                     switch ($scale->type) {
                         case 'radio':
                             // ...show selections highest first.
@@ -2051,6 +2100,10 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
 /** Calculate a percentual grade for an answer. */
 function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
+    // Ensure $questeweights is always an array, even if global was not populated.
+    if (!is_array($questeweights)) {
+        $questeweights = quest_get_default_weights();
+    }
     $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id], '*', MUST_EXIST);
     // Has personalized elements?
@@ -2106,7 +2159,7 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
                 $element->elementno = $key;
-                $element->answer = $feedbacks[$key];
+                $element->answer = isset($feedbacks[$key]) ? $feedbacks[$key] : '';
                 $element->calification = $thegrade;
                 $element->commentteacher = '';
 
@@ -2118,18 +2171,21 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
             $rawgrade = 0;
             $totalweight = 0;
             foreach ($grades as $key => $grade) {
+                if (!isset($elements[$key]) || !is_object($elements[$key])) {
+                    continue;
+                }
                 $elem  = $elements[$key];
-                $maxscore = $elem->maxscore;
-                $weight = $questeweights[$elem->weight];
+                $maxscore = isset($elem->maxscore) ? (float)$elem->maxscore : 0;
+                $weight = (isset($elem->weight) && is_array($questeweights) && isset($questeweights[$elem->weight])) ? (float)$questeweights[$elem->weight] : 0.0;
                 if ($weight > 0) {
                     $totalweight += $weight;
                 }
 
-                $rawgrade += ($grade / $maxscore) * $weight;
+                $rawgrade += $maxscore > 0 ? ($grade / $maxscore) * $weight : 0;
             }
 
             // Process grade into quest assesment.
-            $percent = ($rawgrade / $totalweight);
+            $percent = ($totalweight > 0) ? ($rawgrade / $totalweight) : 0;
             break;
         default:
             throw new InvalidArgumentException('Unknown grading strategy.');
@@ -2234,6 +2290,13 @@ function quest_print_assessment_autor(
     $returnto = ''
 ) {
     global $CFG, $USER, $questscales, $questeweights, $DB, $OUTPUT;
+    // Ensure global arrays are always populated, even if include order caused them to be null.
+    if (!is_array($questscales)) {
+        $questscales = quest_get_default_scales();
+    }
+    if (!is_array($questeweights)) {
+        $questeweights = quest_get_default_weights();
+    }
 
     $course = $DB->get_record("course", ["id" => $quest->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
@@ -2380,7 +2443,7 @@ FORM;
                 echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
                 echo "  <td>" . format_text($elements[$i]->description);
                 echo "<p align=\"right\"><font size=\"1\">" . get_string("weight", "quest") . ": " .
-                         number_format($questeweights[$elements[$i]->weight], 2) . "</font></p>\n";
+                         number_format(isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0, 2) . "</font></p>\n";
                 echo "</td></tr>\n";
                 if ($showgrades) {
                     echo "<tr valign=\"top\">\n";
@@ -2390,7 +2453,8 @@ FORM;
 
                     // ...get the appropriate scale.
                     $scalenumber = $elements[$i]->scale;
-                    $scale = (object) $questscales[$scalenumber];
+                    $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
+                    $scale = (object) $scaledata;
                     switch ($scale->type) {
                         case 'radio':
                             // ...show selections highest first.
@@ -3586,16 +3650,21 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             $rawgrade = 0;
             $totalweight = 0;
             foreach ($grades as $key => $grade) {
-                $maxscore = $elements[$key]->maxscore;
-                $weight = $questeweightsrecalif[$elements[$key]->weight];
+                if (!isset($elements[$key]) || !is_object($elements[$key])) {
+                    continue;
+                }
+                $maxscore = isset($elements[$key]->maxscore) ? (float)$elements[$key]->maxscore : 0;
+                $wkey = $elements[$key]->weight ?? null;
+                $weight = ($wkey !== null && isset($questeweightsrecalif[$wkey])) ? $questeweightsrecalif[$wkey] : 0.0;
                 if ($weight > 0) {
                     $totalweight += $weight;
                 }
-                $rawgrade += ($grade / $maxscore) * $weight;
+                $rawgrade += $maxscore > 0 ? ($grade / $maxscore) * $weight : 0;
             }
             $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $totalweight);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
+            $percent = $totalweight > 0 ? ($rawgrade / $totalweight) : 0;
+            $grade = $points * $percent;
+            if ((100.0 * $percent) >= 50.0000) {
                 $submission->points = $grade;
 
                 if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
