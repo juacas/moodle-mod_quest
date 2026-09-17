@@ -922,3 +922,81 @@ $string['assessthischallenge_help'] = '<P align="justify">This page allows the t
 <P align="justify">It is also possible to make a general comment about the work assessed. This comment must be respectful and constructive. The score and comments made will be accessible to the author of the challenge. The teacher will be able to manually modify the global score, in case it is necessary to adjust the score automatically calculated.';
 $string['notauthorizedtodeletechallenge'] = 'You are not authorized to delete this challenge.';
 $string['cannotgetchallengerecord'] = 'Cannot retrieve challenge record.';
+
+// Privacy strings.
+$string['privacy:metadata:quest_submissions'] = 'Stores challenges proposed by users in the QUESTOURnament activity.';
+$string['privacy:metadata:quest_submissions:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_submissions:userid'] = 'The ID of the user proposing the challenge.';
+$string['privacy:metadata:quest_submissions:title'] = 'The title of the proposed challenge.';
+$string['privacy:metadata:quest_submissions:description'] = 'The description or body of the proposed challenge.';
+$string['privacy:metadata:quest_submissions:attachment'] = 'Attached files associated with the proposed challenge.';
+$string['privacy:metadata:quest_submissions:timecreated'] = 'Timestamp when the challenge was created.';
+$string['privacy:metadata:quest_submissions:points'] = 'The points allocated or earned for this challenge.';
+$string['privacy:metadata:quest_submissions:commentteacherpupil'] = 'Teacher comments for the challenge author and pupils.';
+$string['privacy:metadata:quest_submissions:commentteacherauthor'] = 'Teacher feedback for the challenge author.';
+
+$string['privacy:metadata:quest_answers'] = 'Stores answers submitted by users to challenges.';
+$string['privacy:metadata:quest_answers:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_answers:submissionid'] = 'The ID of the challenge being answered.';
+$string['privacy:metadata:quest_answers:userid'] = 'The ID of the user submitting the answer.';
+$string['privacy:metadata:quest_answers:title'] = 'The title of the answer.';
+$string['privacy:metadata:quest_answers:description'] = 'The answer content or description.';
+$string['privacy:metadata:quest_answers:attachment'] = 'Attached files submitted with the answer.';
+$string['privacy:metadata:quest_answers:date'] = 'Timestamp when the answer was submitted.';
+$string['privacy:metadata:quest_answers:pointsmax'] = 'Maximum points achievable for this answer.';
+$string['privacy:metadata:quest_answers:grade'] = 'Grade or points awarded for the answer.';
+$string['privacy:metadata:quest_answers:commentforteacher'] = 'Private comments from the student to the teacher.';
+$string['privacy:metadata:quest_answers:perceiveddifficulty'] = 'Student perceived difficulty rating of the challenge.';
+$string['privacy:metadata:quest_answers:questionusageid'] = 'Question engine attempt usage identifier for autograded questions.';
+
+$string['privacy:metadata:quest_assessments'] = 'Stores assessments performed on answers to challenges.';
+$string['privacy:metadata:quest_assessments:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_assessments:answerid'] = 'The ID of the answer being assessed.';
+$string['privacy:metadata:quest_assessments:userid'] = 'The ID of the user who performed the assessment.';
+$string['privacy:metadata:quest_assessments:teacherid'] = 'The ID of the teacher who reviewed the assessment.';
+$string['privacy:metadata:quest_assessments:pointsautor'] = 'Points awarded by the challenge author.';
+$string['privacy:metadata:quest_assessments:pointsteacher'] = 'Points awarded by the teacher.';
+$string['privacy:metadata:quest_assessments:dateassessment'] = 'Timestamp when the assessment was created.';
+$string['privacy:metadata:quest_assessments:commentsforteacher'] = 'Private comments for the teacher regarding the assessment.';
+$string['privacy:metadata:quest_assessments:commentsteacher'] = 'Teacher comments regarding the assessment.';
+
+$string['privacy:metadata:quest_assessments_autors'] = 'Stores assessments of the authoring work of challenges.';
+$string['privacy:metadata:quest_assessments_autors:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_assessments_autors:submissionid'] = 'The ID of the challenge being assessed.';
+$string['privacy:metadata:quest_assessments_autors:userid'] = 'The ID of the user who evaluated the challenge.';
+$string['privacy:metadata:quest_assessments_autors:points'] = 'Points awarded for authoring the challenge.';
+$string['privacy:metadata:quest_assessments_autors:dateassessment'] = 'Timestamp when the author assessment was performed.';
+$string['privacy:metadata:quest_assessments_autors:commentsforteacher'] = 'Private comments for the teacher.';
+$string['privacy:metadata:quest_assessments_autors:commentsteacher'] = 'Teacher feedback for the author.';
+
+$string['privacy:metadata:quest_elements_assessments'] = 'Stores criterion-level evaluation details for answer assessments.';
+$string['privacy:metadata:quest_elements_assessments:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_elements_assessments:assessmentid'] = 'The ID of the parent assessment.';
+$string['privacy:metadata:quest_elements_assessments:userid'] = 'The ID of the evaluating user.';
+$string['privacy:metadata:quest_elements_assessments:answer'] = 'Evaluation text or feedback for the element.';
+$string['privacy:metadata:quest_elements_assessments:commentteacher'] = 'Teacher comment on the element.';
+$string['privacy:metadata:quest_elements_assessments:calification'] = 'Score or grade awarded for the element.';
+
+$string['privacy:metadata:quest_items_assesments_autor'] = 'Stores criterion-level evaluation details for author assessments.';
+$string['privacy:metadata:quest_items_assesments_autor:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_items_assesments_autor:assessmentautorid'] = 'The ID of the parent author assessment.';
+$string['privacy:metadata:quest_items_assesments_autor:userid'] = 'The ID of the evaluating user.';
+$string['privacy:metadata:quest_items_assesments_autor:answer'] = 'Evaluation text or feedback for the element.';
+$string['privacy:metadata:quest_items_assesments_autor:commentteacher'] = 'Teacher comment on the element.';
+$string['privacy:metadata:quest_items_assesments_autor:calification'] = 'Score or grade awarded for the element.';
+
+$string['privacy:metadata:quest_calification_users'] = 'Stores cumulative points and participation statistics for users in a tournament.';
+$string['privacy:metadata:quest_calification_users:questid'] = 'The ID of the QUESTOURnament activity.';
+$string['privacy:metadata:quest_calification_users:userid'] = 'The ID of the user.';
+$string['privacy:metadata:quest_calification_users:teamid'] = 'The ID of the team the user belongs to.';
+$string['privacy:metadata:quest_calification_users:points'] = 'Total score accumulated in the tournament.';
+$string['privacy:metadata:quest_calification_users:nanswers'] = 'Total number of answers submitted.';
+$string['privacy:metadata:quest_calification_users:nsubmissions'] = 'Total number of challenges proposed.';
+$string['privacy:metadata:quest_calification_users:pointssubmission'] = 'Points earned from proposing challenges.';
+$string['privacy:metadata:quest_calification_users:pointsanswers'] = 'Points earned from answering challenges.';
+
+$string['privacy:metadata:core_files'] = 'Files attached to challenges and answers submitted in QUESTOURnament.';
+$string['privacy:metadata:core_question'] = 'Question engine attempt data generated when answering autograded questions.';
+
+$string['privacy:request:deleted:title'] = '[Deleted challenge]';
+$string['privacy:request:deleted:content'] = '[The author requested the deletion of their personal data]';
