@@ -133,12 +133,28 @@ class view_page implements renderable, templatable {
                 $timeleft = get_string('closed', 'quest');
             }
 
+            $desc = file_rewrite_pluginfile_urls(
+                $c->description,
+                'pluginfile.php',
+                $context->id,
+                'mod_quest',
+                'submission',
+                $c->id
+            );
             $challengesdata[] = [
                 'id' => $c->id,
                 'title' => format_string($c->title),
-                'description' => file_rewrite_pluginfile_urls(format_text($c->description, FORMAT_HTML), 'pluginfile.php', $context->id, 'mod_quest', 'submission', $c->id),
+                'description' => format_text($desc, $c->descriptionformat ?: FORMAT_HTML, ['context' => $context]),
                 'descriptionexcerpt' => shorten_text(strip_tags($c->description), 120),
-                'currentpoints' => round($curpoints, 1),
+                'currentpoints' => number_format($curpoints, 4),
+                'datestart' => (int)$c->datestart,
+                'dateend' => (int)$c->dateend,
+                'tinitial' => $tinitial,
+                'dateanswercorrect' => !empty($c->dateanswercorrect) ? (int)$c->dateanswercorrect : 0,
+                'initialpoints' => (float)$c->initialpoints,
+                'pointsmax' => (float)$c->pointsmax,
+                'pointsmin' => (float)$c->pointsmin,
+                'type' => (int)$this->quest->typecalification,
                 'phaseclass' => $phaseclass,
                 'phasename' => $phasename,
                 'cardstyle' => $cardstyle,
@@ -157,6 +173,7 @@ class view_page implements renderable, templatable {
         $hasdetailtable = !empty($this->detailtablehtml);
 
         return [
+            'servertime' => $timenow,
             'questname' => format_string($this->quest->name),
             'intro' => format_module_intro('quest', $this->quest, $this->cm->id),
             'introattachments' => $this->summarydata['introattachments'] ?? '',

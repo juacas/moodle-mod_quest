@@ -108,6 +108,8 @@ function quest_supports($feature) {
             return true;
         case FEATURE_BACKUP_MOODLE2:
             return true;
+        case FEATURE_USES_QUESTIONS:
+            return true;
         default:
             return null;
     }
@@ -1279,22 +1281,20 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
     global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
     $questobject = $DB->get_record("quest", array("id" => $PAGE->cm->instance));
-    if (empty($PAGE->cm->context)) {
-        $PAGE->cm->context = context_module::instance($PAGE->cm->instance);
-    }
+    $context = $PAGE->cm->context;
 
     $questnode->add('Questournaments', new moodle_url('/mod/quest/index.php', array('id' => $PAGE->course->id)),
             navigation_node::TYPE_SETTING);
 
     // ...manage Teams.
-    if (has_capability('mod/quest:manage', $PAGE->cm->context)) {
-        if ($questobject->allowteams) {
+    if (has_capability('mod/quest:manage', $context)) {
+        if ($questobject && $questobject->allowteams) {
             $questnode->add(get_string('changeteamteacher', 'quest'),
                     new moodle_url('/mod/quest/team.php', array('id' => $PAGE->cm->id, 'action' => 'change')),
                     navigation_node::TYPE_SETTING);
         }
     }
-    if (has_capability('mod/quest:downloadlogs', $PAGE->cm->context)) {
+    if (has_capability('mod/quest:downloadlogs', $context)) {
         $catnode = $questnode->add(get_string('adminlogs', 'quest'), null, navigation_node::TYPE_CONTAINER);
         $catnode->add(get_string('gettechnicallogs', 'quest'),
                 new moodle_url('/mod/quest/getLogs.php', array('id' => $PAGE->cm->id)),
@@ -1302,6 +1302,17 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
         $catnode->add(get_string('fullactivitylisting', 'quest'),
                 new moodle_url('/mod/quest/report.php', array('id' => $PAGE->cm->id)),
                 navigation_node::TYPE_SETTING);
+    }
+
+    // Question bank integration.
+    if (has_capability('moodle/question:managecategory', $context) ||
+            has_capability('moodle/question:add', $context) ||
+            has_capability('moodle/question:viewall', $context)) {
+        require_once($CFG->libdir . '/questionlib.php');
+        $qnode = question_extend_settings_navigation($questnode, $context);
+        if ($qnode) {
+            $qnode->trim_if_empty();
+        }
     }
 }
 /**

@@ -175,7 +175,7 @@
 
                                     {{#minichartsvg}}
                                     <div class="d-flex flex-column align-items-end flex-shrink-0" style="width: 100px;">
-                                        <span class="badge bg-success fs-7 mb-1">{{currentpoints}} pts</span>
+                                        <span class="badge bg-success fs-7 mb-1"><span class="quest-score-counter" data-datestart="{{datestart}}" data-dateend="{{dateend}}" data-tinitial="{{tinitial}}" data-dateanswercorrect="{{dateanswercorrect}}" data-initialpoints="{{initialpoints}}" data-pointsmax="{{pointsmax}}" data-pointsmin="{{pointsmin}}" data-type="{{type}}">{{currentpoints}}</span> pts</span>
                                         <div class="quest-card-chart-full w-100" title="{{#str}}questgraphtitle, quest{{/str}}" style="aspect-ratio: 1 / 1; overflow: hidden;">
                                             {{{minichartsvg}}}
                                         </div>
@@ -183,7 +183,7 @@
                                     {{/minichartsvg}}
                                     {{^minichartsvg}}
                                     <div class="flex-shrink-0">
-                                        <span class="badge bg-success fs-7">{{currentpoints}} pts</span>
+                                        <span class="badge bg-success fs-7"><span class="quest-score-counter" data-datestart="{{datestart}}" data-dateend="{{dateend}}" data-tinitial="{{tinitial}}" data-dateanswercorrect="{{dateanswercorrect}}" data-initialpoints="{{initialpoints}}" data-pointsmax="{{pointsmax}}" data-pointsmin="{{pointsmin}}" data-type="{{type}}">{{currentpoints}}</span> pts</span>
                                     </div>
                                     {{/minichartsvg}}
                                 </div>
@@ -235,6 +235,10 @@
 </div>
 
 {{#js}}
+require(['mod_quest/counter'], function(counter) {
+    counter.init({{servertime}});
+});
+
 (function() {
     var cardsBtn = document.getElementById('quest-toggle-cards-btn');
     var listBtn = document.getElementById('quest-toggle-list-btn');

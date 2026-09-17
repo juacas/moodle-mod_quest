@@ -107,17 +107,28 @@ echo $OUTPUT->heading($title);
 
 quest_print_submission_info($quest, $submission);
 
-echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">" .
-         get_string("specimenassessmentform", "quest") . "</a></b></center>");
+echo '<div class="text-center my-3">';
+echo '<a class="btn btn-outline-secondary btn-sm" href="assessments_autors.php?id=' . $cm->id . '&amp;action=displaygradingform">';
+echo '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' . get_string("specimenassessmentform", "quest");
+echo '</a>';
+echo '</div>';
 
-$OUTPUT->heading(get_string('description', 'quest'));
+echo '<div class="quest-assessment-container my-4">';
+echo '<div class="card shadow-sm border-0">';
+echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('description', 'quest');
+echo '</div>';
+echo '<div class="card-body p-4">';
 quest_print_submission($quest, $submission);
+echo '</div></div></div>';
 
 $timenow = time();
 if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
     ($submission->nanswerscorrect < $quest->nmaxanswers)) {
     $submission->phase = SUBMISSION_PHASE_ACTIVE;
 }
-echo "<br><br>";
-echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER'] . '#sid=' . $submission->id);
+echo '<div class="text-center my-4">';
+$returl = !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : (new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge']))->out();
+echo $OUTPUT->continue_button($returl);
+echo '</div>';
 echo $OUTPUT->footer();

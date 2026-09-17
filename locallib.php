@@ -850,6 +850,15 @@ function quest_print_challenge_info($quest, $challenge) {
     // Form field for the countdown of score.
     $string .= '<form name="puntos"><b>' . get_string('points', 'quest') .
                 ";&nbsp;&nbsp;<input name=\"calificacion\" id=\"formscore\" type=\"text\" " .
+                "class=\"quest-score-counter\" " .
+                "data-datestart=\"" . (int)$challenge->datestart . "\" " .
+                "data-dateend=\"" . (int)$challenge->dateend . "\" " .
+                "data-tinitial=\"" . ((int)$quest->tinitial * 86400) . "\" " .
+                "data-dateanswercorrect=\"" . (int)$challenge->dateanswercorrect . "\" " .
+                "data-initialpoints=\"" . (float)$challenge->initialpoints . "\" " .
+                "data-pointsmax=\"" . (float)$challenge->pointsmax . "\" " .
+                "data-pointsmin=\"" . (float)$challenge->pointsmin . "\" " .
+                "data-type=\"" . (int)$quest->typecalification . "\" " .
                 "value=\"0.000\" size=\"10\" readonly=\"1\" " .
                 "style=\"background-color:White; border:black; color:Black; font-size:14pt; text-align : center;\"></form></b><br>";
     if (($USER->id == $challenge->userid) || ($canpreview) || ($challenge->dateend < time())) {
@@ -880,30 +889,9 @@ function quest_print_challenge_info($quest, $challenge) {
     }
     echo $string;
 
-    $initialpoints = [(float) $challenge->initialpoints];
-    $nanswerscorrect = [(int) $challenge->nanswerscorrect];
-    $datesstart = [(int) $challenge->datestart];
-    $datesend = [(int) $challenge->dateend];
-    $dateanswercorrect = [(int) $challenge->dateanswercorrect];
-    $pointsmax = [(float) $challenge->pointsmax];
-    $pointsmin = [(float) $challenge->pointsmin];
-    $pointsanswercorrect = [(float) $challenge->pointsanswercorrect];
-    $tinitial = [$quest->tinitial * 86400];
-    $state = [(int) $challenge->state];
-    $type = $quest->typecalification;
-    $nmaxanswers = (int) $quest->nmaxanswers;
-    $pointsnmaxanswers = [(float) $challenge->points];
-    // Javascript counter support.
-    $forms = ["#formscore"];
-    $incline = [0];
-    $servertime = time();
-    $params = [1, $pointsmax, $pointsmin, $initialpoints, $tinitial,
-                    $datesstart, $state, $nanswerscorrect, $dateanswercorrect,
-                    $pointsanswercorrect, $datesend,
-                    $forms, $type, $nmaxanswers, $pointsnmaxanswers,
-                    $servertime, null];
     global $PAGE;
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+    $servertime = time();
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
 
     echo $OUTPUT->box_end();
 }
@@ -1689,7 +1677,7 @@ function quest_print_editor($name, $id, $text, $context, $rows = 4) {
 /**
  * @param stdClass $quest record
  * @param int $sid submissionid
- * @param stdClass $assessment
+ * @param stdClass|bool $assessment
  * @param boolean $allowchanges
  * @param boolean $showcommentlinks
  * @param string $returnto */
@@ -1728,50 +1716,59 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
         $showgrades = true;
     }
 
-    echo "<center>\n";
+    echo '<div class="quest-assessment-container my-4">';
 
     if (!isset($answer)) {
         $answer = new stdClass();
         $answer->id = -1;
     }
     // ...now print the grading form with the grading grade if any.
-    // FORM is needed for Mozilla browsers, else radio bttons are not checked..
     $sesskey = sesskey();
-    $formfragment = <<<FORM
-<form name="assessmentform" method="post" action="assessments.php">
-	<input type="hidden" name="id" value="$cm->id" /> <input
-		type="hidden" name="aid" value="$answer->id" /> <input
-		type="hidden" name="sid" value="$sid" /> <input
-		type="hidden" name="sesskey" value="$sesskey" /> <input
-		type="hidden" name="action" value="updateassessment" /> <input
-		type="hidden" name="returnto" value="$returnto" /> <input
-		type="hidden" name="elementno" value="" /> <input type="hidden"
-		name="stockcommentid" value="" />
-FORM;
-    echo $formfragment;
-    echo '<center> <table cellpadding="2" border="1">';
+    echo '<form name="assessmentform" method="post" action="assessments.php">';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="aid" value="' . $answer->id . '" />';
+    echo '<input type="hidden" name="sid" value="' . $sid . '" />';
+    echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
+    echo '<input type="hidden" name="action" value="updateassessment" />';
+    echo '<input type="hidden" name="returnto" value="' . s($returnto) . '" />';
+    echo '<input type="hidden" name="elementno" value="" />';
+    echo '<input type="hidden" name="stockcommentid" value="" />';
 
-    echo "<tr valign=\"top\">\n";
-    echo "  <td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
+    // Header Card.
+    echo '<div class="card shadow-sm border-0 mb-4 bg-light">';
+    echo '<div class="card-body d-flex flex-wrap justify-content-between align-items-center py-3 px-4 gap-2">';
+    echo '<div>';
+    echo '<h5 class="card-title mb-1 fw-bold text-dark">';
+    echo '<i class="fa fa-clipboard-check text-primary me-2" aria-hidden="true"></i>';
     if ($assessment) {
-        if ((isset($assessment->teacherid) && $assessment->teacherid != 0)) {
+        if (!empty($assessment->teacherid)) {
             $user = $DB->get_record('user', ['id' => $assessment->teacherid]);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
-        } else if (isset($assessment->userid) && $assessment->userid != 0 && $ismanager) {
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+        } else if (!empty($assessment->userid) && $ismanager) {
             $user = get_complete_user_data('id', $assessment->userid);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
-        } else if (isset($assessment->userid) && ($assessment->userid != 0) && ($assessment->userid == $USER->id) && !$ismanager) {
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+        } else if (!empty($assessment->userid) && ($assessment->userid == $USER->id) && !$ismanager) {
             $user = $DB->get_record('user', ['id' => $assessment->userid]);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
         } else {
-            print_string('assessment', 'quest');
+            echo get_string('assessment', 'quest');
         }
-
-        echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
-        echo "</tr>\n";
+        echo '</h5>';
+        if (!empty($assessment->dateassessment)) {
+            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>' . userdate($assessment->dateassessment) . '</small>';
+        }
     } else {
-        print_string('assessment', 'quest');
+        echo get_string('specimenassessmentform', 'quest') . '</h5>';
     }
+    echo '</div>';
+    echo '<div>';
+    if ($allowchanges) {
+        echo '<span class="badge bg-primary fs-7 px-3 py-2"><i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('editing', 'quest') . '</span>';
+    } else {
+        echo '<span class="badge bg-secondary fs-7 px-3 py-2"><i class="fa fa-eye me-1" aria-hidden="true"></i>' . get_string('view') . '</span>';
+    }
+    echo '</div>';
+    echo '</div></div>';
 
     // ...get the assignment elements....
     if (($DB->count_records("quest_elements", ["submissionsid" => $sid])) == 0) {
@@ -1827,238 +1824,189 @@ FORM;
             $grades[$i]->calification = 0;
         }
     }
-    if ($allowchanges == false) {
-        $enabled = "disabled=\"true\"";
-    } else {
-        $enabled = "";
-    }
-    // ...determine what sort of grading.
-    switch ($quest->gradingstrategy) {
-        case 0: // ...no grading.
-                // ...now print the form.
-            for ($i = 0; $i < count($elements); $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "</td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
-                echo "  <td>\n";
-                if ($allowchanges) {
-                    quest_print_editor("feedback[$i]", "id_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
-                } else {
-                    echo format_text($grades[$i]->answer);
-                }
-                echo "  </td>\n";
-                echo "</tr>\n";
 
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+    // ...render elements as modern cards.
+    if ($elements) {
+        $count = count($elements);
+        for ($i = 0; $i < $count; $i++) {
+            $iplus1 = $i + 1;
+            $weightval = isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0;
+            $weightstr = number_format($weightval, 2);
+
+            echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
+            echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
+            echo '<span class="fw-bold text-dark">';
+            echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>' . get_string('element', 'quest') . " $iplus1";
+            echo '</span>';
+            if ($quest->gradingstrategy == 1) {
+                echo '<span class="badge bg-secondary">' . get_string('weight', 'quest') . ": $weightstr</span>";
             }
-            break;
+            echo '</div>';
 
-        case 1: // ...accumulative grading.
-                // ...now print the form.
-            for ($i = 0; $i < count($elements); $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "<p align=\"right\"><font size=\"1\">" . get_string("weight", "quest") . ": " .
-                         number_format(isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0, 2) . "</font></p>\n";
-                echo "</td></tr>\n";
-                if ($showgrades) {
-                    echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "quest") . ":</b></p></td>\n";
-                    echo "  <td valign=\"top\">\n";
+            echo '<div class="card-body p-3">';
+            echo '<div class="criterion-description mb-3 text-secondary">';
+            echo format_text($elements[$i]->description);
+            echo '</div>';
 
-                    // ...get the appropriate scale.
-                    $scalenumber = $elements[$i]->scale;
-                    $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
-                    $scale = (object) $scaledata;
-                    switch ($scale->type) {
-                        case 'radio':
-                            // ...show selections highest first.
-                            echo "<center><b>$scale->start</b>&nbsp;&nbsp;&nbsp;";
-                            for ($j = $scale->size - 1; $j >= 0; $j--) {
-                                $checked = false;
-                                if (isset($grades[$i]->calification)) {
-                                    if ($j == $grades[$i]->calification) {
-                                        $checked = true;
-                                    }
-                                } else { // ...there's no previous grade so check the lowest option.
-                                    if ($j == 0) {
-                                        $checked = true;
-                                    }
-                                }
-                                if ($checked) {
-                                    echo " <input type=\"radio\" $enabled name=\"grade[$i]\" value=\"$j\" " .
-                                        "checked=\"checked\" alt=\"$j\" /> &nbsp;&nbsp;&nbsp;\n";
-                                } else {
-                                    echo " <input type=\"radio\" $enabled name=\"grade[$i]\" value=\"$j\" alt=\"$j\" /> " .
-                                    "&nbsp;&nbsp;&nbsp;\n";
-                                }
-                            }
-                            echo "&nbsp;&nbsp;&nbsp;<b>$scale->end</b></center>\n";
-                            break;
-                        case 'selection':
-                            unset($numbers);
-                            for ($j = 0; $j <= $scale->size; $j++) {
-                                $numbers[$j] = $j;
-                            }
-                            if (isset($grades[$i]->calification)) {
-                                $selected = $grades[$i]->calification;
-                            } else {
-                                $selected = '';
-                            }
+            // Grading scale block.
+            if ($showgrades && $quest->gradingstrategy == 1) {
+                echo '<div class="p-3 mb-3 bg-light rounded border">';
+                echo '<label class="form-label fw-bold d-block mb-2 text-dark">';
+                echo '<i class="fa fa-star text-warning me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ':';
+                echo '</label>';
 
-                            // Choose_from_menu: $numbers, "grade[$i]".
-                            echo html_writer::select(
-                                $numbers,
-                                "grade[$i]",
-                                $selected,
-                                false,
-                                $allowchanges ? null : ['disabled' => 'true']
-                            );
+                $scalenumber = $elements[$i]->scale;
+                $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
+                $scale = (object) $scaledata;
 
-                            break;
-                    }
-
-                    echo "  </td>\n";
-                    echo "</tr>\n";
-                }
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
-                echo "  <td>\n";
                 if ($allowchanges) {
-                    quest_print_editor("feedback[$i]", "id_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
-                } else {
-                    if (isset($grades[$i]->answer)) {
-                        echo format_text($grades[$i]->answer);
+                    if ($scale->type === 'radio') {
+                        echo '<div class="quest-scale-radio-group">';
+                        if (!empty($scale->start)) {
+                            echo '<span class="fw-bold text-muted me-2 small">' . s($scale->start) . '</span>';
+                        }
+                        for ($j = $scale->size - 1; $j >= 0; $j--) {
+                            $checked = (isset($grades[$i]->calification) && $j == $grades[$i]->calification) ||
+                                       (!isset($grades[$i]->calification) && $j == 0);
+                            $checkedattr = $checked ? 'checked="checked"' : '';
+                            echo "<label class=\"quest-scale-option\"><input type=\"radio\" name=\"grade[$i]\" value=\"$j\" $checkedattr /> <span class=\"badge bg-white text-dark border\">$j</span></label>";
+                        }
+                        if (!empty($scale->end)) {
+                            echo '<span class="fw-bold text-muted ms-2 small">' . s($scale->end) . '</span>';
+                        }
+                        echo '</div>';
+                    } else { // selection
+                        unset($numbers);
+                        for ($j = 0; $j <= $scale->size; $j++) {
+                            $numbers[$j] = $j;
+                        }
+                        $selected = isset($grades[$i]->calification) ? $grades[$i]->calification : '';
+                        echo html_writer::select($numbers, "grade[$i]", $selected, false, ['class' => 'form-select w-auto d-inline-block']);
                     }
+                } else {
+                    // Review mode: prominent badge.
+                    $selectedval = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
+                    echo '<div class="d-flex align-items-center gap-2">';
+                    echo '<span class="badge bg-primary fs-6 py-2 px-3"><i class="fa fa-check me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ": $selectedval</span>";
+                    if (!empty($scale->start) || !empty($scale->end)) {
+                        echo '<span class="text-muted small">(' . s($scale->start) . ' &rarr; ' . s($scale->end) . ')</span>';
+                    }
+                    echo '</div>';
                 }
-                echo "</td>\n";
-                echo "</tr>\n";
-
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+                echo '</div>';
             }
-            break;
-        default:
-            throw new InvalidArgumentException('Unknown grading strategy.');
-    } // ...end of outer switch.
-      // ...now get the general comment (present in all types).
-    echo "<tr valign=\"top\">\n";
-    switch ($quest->gradingstrategy) {
-        case 0:
-        case 1:
-        case 4: // ...no grading, accumulative and rubic.
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
-            $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
-            break;
+
+            // Feedback area.
+            echo '<div class="criterion-feedback">';
+            echo '<label class="form-label fw-bold mb-2 text-dark">';
+            echo '<i class="fa fa-comment-o text-info me-1" aria-hidden="true"></i>' . get_string('feedback') . ':';
+            echo '</label>';
+            if ($allowchanges) {
+                quest_print_editor("feedback[$i]", "id_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
+            } else {
+                if (!empty($grades[$i]->answer)) {
+                    echo '<div class="quest-review-feedback-box">' . format_text($grades[$i]->answer) . '</div>';
+                } else {
+                    echo '<p class="text-muted fst-italic mb-0">' . get_string('nofeedback', 'quest') . '</p>';
+                }
+            }
+            echo '</div>'; // end criterion-feedback
+            echo '</div>'; // end card-body
+            echo '</div>'; // end card
+        }
     }
-    echo "  <td>\n";
+
+    // General comment section.
+    echo '<div class="card shadow-sm mb-4 border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-comments-o text-info me-2" aria-hidden="true"></i>' . get_string('generalcomment', 'quest');
+    echo ' ' . $OUTPUT->help_icon('generalcomment', 'quest');
+    echo '</div>';
+    echo '<div class="card-body p-3">';
     quest_print_general_comment_box($course, $allowchanges, $assessment);
+    echo '</div></div>';
 
-    echo "&nbsp;</td>\n";
-    echo "</tr>\n";
-
+    // Teacher and author cross-comments.
     if (!$ismanager) {
         if (!empty($assessment->commentsteacher)) {
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>" . get_string("commentsteacher", "quest") . ":</b></p></td>\n";
-            echo "  <td>\n";
-            echo format_text($assessment->commentsteacher);
-            echo "&nbsp;</td>\n";
-            echo "</tr>\n";
+            echo '<div class="card shadow-sm mb-4 border-0">';
+            echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+            echo '<i class="fa fa-user-circle text-primary me-2" aria-hidden="true"></i>' . get_string('commentsteacher', 'quest');
+            echo '</div>';
+            echo '<div class="card-body p-3 quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
+            echo '</div>';
         }
     } else {
         if (!empty($assessment->commentsforteacher)) {
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>" . get_string("commentsauthor", "quest") . ":</b></p></td>\n";
-            echo "  <td>\n";
-            echo format_text($assessment->commentsforteacher);
-            echo "&nbsp;</td>\n";
-            echo "</tr>\n";
+            echo '<div class="card shadow-sm mb-4 border-0">';
+            echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+            echo '<i class="fa fa-user-circle text-info me-2" aria-hidden="true"></i>' . get_string('commentsauthor', 'quest');
+            echo '</div>';
+            echo '<div class="card-body p-3 quest-review-feedback-box">' . format_text($assessment->commentsforteacher) . '</div>';
+            echo '</div>';
         }
     }
 
-    $timenow = time();
-    // ...now show the grading grade if available....
+    // Global Assessment Summary (when evaluated).
     if (isset($assessment->state)) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\" align=\"center\"><b>" .
-                get_string('assessmentglobal', 'quest') . "</b></td>\n";
-        echo "</tr>\n";
-
+        echo '<div class="card quest-global-score-card mb-4 shadow-sm">';
+        echo '<div class="card-body p-4 text-center">';
+        echo '<h5 class="card-title fw-bold text-success mb-3"><i class="fa fa-trophy me-2" aria-hidden="true"></i>' . get_string('assessmentglobal', 'quest') . '</h5>';
+        echo '<div class="d-flex flex-wrap justify-content-center align-items-center gap-4">';
         if ($assessment->state == 2) {
             if (!empty($assessment->pointsautor)) {
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>";
-                print_string('gradeautor', 'quest');
-                echo ":</b></p></td><td>\n";
                 $perct = $assessment->pointsmax == 0 ? 0 : $assessment->pointsautor / $assessment->pointsmax;
-                echo number_format($perct, 1) . '% (';
-                echo number_format($assessment->pointsautor, 4);
-                echo ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ') ';
-                echo "&nbsp;</td>\n";
-                echo "</tr>\n";
+                echo '<div class="text-center">';
+                echo '<span class="text-muted small d-block mb-1">' . get_string('gradeautor', 'quest') . '</span>';
+                echo '<span class="badge bg-secondary fs-6 py-2 px-3">' . number_format($perct * 100, 1) . '% (' . number_format($assessment->pointsautor, 4) . ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
+                echo '</div>';
             }
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>";
-            print_string('grade', 'quest');
-            echo ":</b></p></td><td>\n";
-
-            echo number_format($answer->grade, 1) . '% (';
-            echo number_format($assessment->pointsteacher, 4);
-
-            echo ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ') ';
+            echo '<div class="text-center">';
+            echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($answer->grade, 1) . '% (' . number_format($assessment->pointsteacher, 4) . ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
+            echo '</div>';
+        } else if ($assessment->state == 1) {
+            echo '<div class="text-center">';
+            echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
+            $oftext = ($answer->pointsmax == 0) ? get_string('phase4submission', 'quest') : get_string('of', 'quest') . ' (' . number_format($answer->pointsmax, 4) . ')';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->pointsautor, 4) . ' ' . $oftext . '</span>';
+            echo '</div>';
         }
-        if ($assessment->state == 1) {
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>";
-            print_string('grade', 'quest');
-            echo ":</b></p></td><td>\n";
-
-            echo number_format($assessment->pointsautor, 4);
-            if ($answer->pointsmax == 0) {
-                echo ' ' . get_string('phase4submission', 'quest') . ')';
-            } else {
-                echo ' ' . get_string('of', 'quest') . ' (' . number_format($answer->pointsmax, 4) . ')';
-            }
-        }
-        echo "&nbsp;</td>\n";
-        echo "</tr>\n";
+        echo '</div></div></div>';
     }
 
-    /*
-     * Manual Grading Form
-     */
-    if ($allowchanges == true) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-        echo get_string('changemanualcalification', 'quest') . '</b></center></td></tr>';
-        echo "<tr valign=\"top\">";
-        echo "<td align=\"right\"><p><b>" . get_string('newcalification', 'quest') . ": </b></p></td>\n";
-        echo "<td><input size=\"3\" maxlength=\"3\" name=\"manualcalification\" type=\"text\">%</td></tr>";
+    // Manual qualification override.
+    if ($allowchanges) {
+        echo '<div class="card mb-4 border-warning shadow-sm">';
+        echo '<div class="card-header bg-warning text-dark fw-bold py-2 px-3">';
+        echo '<i class="fa fa-sliders me-2" aria-hidden="true"></i>' . get_string('changemanualcalification', 'quest');
+        echo '</div>';
+        echo '<div class="card-body p-3">';
+        echo '<div class="d-flex align-items-center gap-2" style="max-width: 320px;">';
+        echo '<label class="form-label mb-0 fw-bold small">' . get_string('newcalification', 'quest') . ':</label>';
+        echo '<div class="input-group">';
+        echo '<input type="text" name="manualcalification" class="form-control" placeholder="0 - 100" maxlength="3" />';
+        echo '<span class="input-group-text">%</span>';
+        echo '</div></div></div></div>';
     }
 
-    // ...and close the table, show submit button if needed....
-    echo "</table>\n";
-    if ($assessment) {
-        if ($allowchanges) {
-            echo "<input type=\"submit\" value=\"" . get_string("savemyassessment", "quest") . "\" />\n";
+    // Action buttons.
+    if ($assessment && $allowchanges) {
+        echo '<div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top gap-2">';
+        if (!empty($returnto)) {
+            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary"><i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</a>';
+        } else {
+            echo '<div></div>';
         }
+        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
+        echo '</div>';
     }
 
-    echo "</center>";
-    echo "</form>\n";
+    echo '</form>';
+    echo '</div>'; // end quest-assessment-container
 }
 
-/** */
+/** Print general comment box with modern styles */
 function quest_print_general_comment_box($course, $allowchanges, $assessment) {
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
@@ -2068,12 +2016,10 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
             $text = isset($assessment->commentsteacher) ? $assessment->commentsteacher : '';
             quest_print_editor("generalcomment", "id_generalcomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsteacher)) {
-                    echo format_text($assessment->commentsteacher);
-                }
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     } else {
@@ -2081,12 +2027,10 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
             $text = isset($assessment->commentsforteacher) ? $assessment->commentsforteacher : '';
             quest_print_editor("generalteachercomment", "id_generalteachercomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsforteacher)) {
-                    echo format_text($assessment->commentsforteacher);
-                }
+            if ($assessment && !empty($assessment->commentsforteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsforteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     }
@@ -2319,14 +2263,7 @@ function quest_print_assessment_autor(
         $showgrades = true;
     }
 
-    if ($assessment) {
-        // ...set the internal flag if necessary.
-        if ($allowchanges) {
-            $showgrades = true;
-        }
-
-        echo "<center>\n";
-    }
+    echo '<div class="quest-assessment-container my-4">';
 
     if (!$assessment) {
         $assessment = new stdClass();
@@ -2341,34 +2278,43 @@ function quest_print_assessment_autor(
     }
     $numelements = min(count($elementsraw), $quest->nelementsautor);
     // Now print the grading form with the grading grade if any.
-    $formfragment = <<<FORM
-        <form name="assessmentform" method="post"
-		action="assessments_autors.php">
-		<input type="hidden" name="id" value="$cm->id" /> <input
-			type="hidden" name="aid" value="$assessment->id" /> <input
-			type="hidden" name="action" value="updateassessment" /> <input
-			type="hidden" name="returnto" value="$returnto" /> <input
-			type="hidden" name="elementno" value="$numelements" /> <input type="hidden"
-			name="stockcommentid" value="" />
-		<center>
-			<table cellpadding="2" border="1">
-FORM;
-    echo $formfragment;
-    echo "<tr valign=\"top\">\n";
-    echo "  <td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-    if ($assessment) {
+    echo '<form name="assessmentform" method="post" action="assessments_autors.php">';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="aid" value="' . $assessment->id . '" />';
+    echo '<input type="hidden" name="action" value="updateassessment" />';
+    echo '<input type="hidden" name="returnto" value="' . s($returnto) . '" />';
+    echo '<input type="hidden" name="elementno" value="' . $numelements . '" />';
+    echo '<input type="hidden" name="stockcommentid" value="" />';
+
+    // Header Card.
+    echo '<div class="card shadow-sm border-0 mb-4 bg-light">';
+    echo '<div class="card-body d-flex flex-wrap justify-content-between align-items-center py-3 px-4 gap-2">';
+    echo '<div>';
+    echo '<h5 class="card-title mb-1 fw-bold text-dark">';
+    echo '<i class="fa fa-user-check text-primary me-2" aria-hidden="true"></i>';
+    if ($assessment && !empty($assessment->id)) {
         if ($assessment->userid != 0) {
             $user = $DB->get_record('user', ['id' => $assessment->userid]);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
         } else {
-            print_string('assessment', 'quest');
+            echo get_string('assessment', 'quest');
         }
+        echo '</h5>';
+        if (!empty($assessment->dateassessment)) {
+            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>' . userdate($assessment->dateassessment) . '</small>';
+        }
+    } else {
+        echo get_string('specimenassessmentform', 'quest') . '</h5>';
     }
-
-    if ($assessment->dateassessment != null) {
-        echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
+    echo '</div>';
+    echo '<div>';
+    if ($allowchanges) {
+        echo '<span class="badge bg-primary fs-7 px-3 py-2"><i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('editing', 'quest') . '</span>';
+    } else {
+        echo '<span class="badge bg-secondary fs-7 px-3 py-2"><i class="fa fa-eye me-1" aria-hidden="true"></i>' . get_string('view') . '</span>';
     }
-    echo "</tr>\n";
+    echo '</div>';
+    echo '</div></div>';
 
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
@@ -2378,8 +2324,7 @@ FORM;
         $elements = null;
     }
     $grades = [];
-    if ($assessment) {
-        // ...get any previous grades....
+    if ($assessment && !empty($assessment->id)) {
         if (
             $gradesraw = $DB->get_records(
                 "quest_items_assesments_autor",
@@ -2394,146 +2339,118 @@ FORM;
     }
 
     if (empty($grades)) {
-        // ...setup dummy grades array.
-        for ($i = 0; $i < $numelements; $i++) { // ...gives a suitable sized loop.
+        for ($i = 0; $i < $numelements; $i++) {
             $grades[$i] = new stdClass();
             $grades[$i]->answer = '';
-            get_string("yourfeedbackgoeshere", "quest");
             $grades[$i]->calification = 0;
         }
     }
-    // ...determine what sort of grading.
-    switch ($quest->gradingstrategyautor) {
-        case 0: // ...no grading.
-                // ...now print the form.
-            for ($i = 0; $i < $numelements; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "</td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") .
-                $OUTPUT->help_icon('feedback', 'quest') . ":</b></p></td>\n";
-                echo "  <td>\n";
-                if ($allowchanges) {
-                    quest_print_editor("feedback[$i]", "id_autor_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
-                } else {
-                    echo format_text($grades[$i]->answer);
-                }
-                echo "  </td>\n";
-                echo "</tr>\n";
 
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
-            }
-            break;
+    // Render elements as cards.
+    for ($i = 0; $i < $numelements; $i++) {
+        $iplus1 = $i + 1;
+        $weightval = isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0;
+        $weightstr = number_format($weightval, 2);
 
-        case 1: // ...accumulative grading.
-                // ...now print the form.
-            for ($i = 0; $i < $numelements; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "<p align=\"right\"><font size=\"1\">" . get_string("weight", "quest") . ": " .
-                         number_format(isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0, 2) . "</font></p>\n";
-                echo "</td></tr>\n";
-                if ($showgrades) {
-                    echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "quest") .
-                    ":</b></p></td>\n";
-                    echo "  <td valign=\"top\">\n";
+        echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
+        echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
+        echo '<span class="fw-bold text-dark">';
+        echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>' . get_string('element', 'quest') . " $iplus1";
+        echo '</span>';
+        if ($quest->gradingstrategyautor == 1) {
+            echo '<span class="badge bg-secondary">' . get_string('weight', 'quest') . ": $weightstr</span>";
+        }
+        echo '</div>';
 
-                    // ...get the appropriate scale.
-                    $scalenumber = $elements[$i]->scale;
-                    $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
-                    $scale = (object) $scaledata;
-                    switch ($scale->type) {
-                        case 'radio':
-                            // ...show selections highest first.
-                            echo "<center><b>$scale->start</b>&nbsp;&nbsp;&nbsp;";
-                            for ($j = $scale->size - 1; $j >= 0; $j--) {
-                                $checked = false;
-                                if (isset($grades[$i]->calification)) {
-                                    if ($j == $grades[$i]->calification) {
-                                        $checked = true;
-                                    }
-                                } else { // ...there's no previous grade so check the lowest option.
-                                    if ($j == 0) {
-                                        $checked = true;
-                                    }
-                                }
-                                if ($checked) {
-                                    echo "<input type=\"radio\" name=\"grade[$i]\" value=\"$j\" " .
-                                        "checked=\"checked\" alt=\"$j\" /> &nbsp;&nbsp;&nbsp;\n";
-                                } else {
-                                    echo "<input type=\"radio\" name=\"grade[$i]\" value=\"$j\" alt=\"$j\" /> &nbsp;&nbsp;&nbsp;\n";
-                                }
-                            }
-                            echo "&nbsp;&nbsp;&nbsp;<b>$scale->end</b></center>\n";
-                            break;
-                        case 'selection':
-                            unset($numbers);
-                            for ($j = $scale->size; $j >= 0; $j--) {
-                                $numbers[$j] = $j;
-                            }
-                            if (isset($grades[$i]->calification)) {
-                                echo html_writer::select($numbers, "grade[$i]", $grades[$i]->calification, "");
-                            } else {
-                                echo html_writer::select($numbers, "grade[$i]", 0, "");
-                            }
-                            break;
+        echo '<div class="card-body p-3">';
+        echo '<div class="criterion-description mb-3 text-secondary">';
+        echo format_text($elements[$i]->description);
+        echo '</div>';
+
+        // Grading scale block.
+        if ($showgrades && $quest->gradingstrategyautor == 1) {
+            echo '<div class="p-3 mb-3 bg-light rounded border">';
+            echo '<label class="form-label fw-bold d-block mb-2 text-dark">';
+            echo '<i class="fa fa-star text-warning me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ':';
+            echo '</label>';
+
+            $scalenumber = $elements[$i]->scale;
+            $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
+            $scale = (object) $scaledata;
+
+            if ($allowchanges) {
+                if ($scale->type === 'radio') {
+                    echo '<div class="quest-scale-radio-group">';
+                    if (!empty($scale->start)) {
+                        echo '<span class="fw-bold text-muted me-2 small">' . s($scale->start) . '</span>';
                     }
-
-                    echo "  </td>\n";
-                    echo "</tr>\n";
-                }
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") .
-                        $OUTPUT->help_icon('feedback', 'quest') . ":</b></p></td>\n";
-                echo "  <td>\n";
-                if ($allowchanges) {
-                    quest_print_editor("feedback[$i]", "id_autor_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
-                } else {
-                    if (isset($grades[$i]->answer)) {
-                        echo format_text($grades[$i]->answer);
+                    for ($j = $scale->size - 1; $j >= 0; $j--) {
+                        $checked = (isset($grades[$i]->calification) && $j == $grades[$i]->calification) ||
+                                   (!isset($grades[$i]->calification) && $j == 0);
+                        $checkedattr = $checked ? 'checked="checked"' : '';
+                        echo "<label class=\"quest-scale-option\"><input type=\"radio\" name=\"grade[$i]\" value=\"$j\" $checkedattr /> <span class=\"badge bg-white text-dark border\">$j</span></label>";
                     }
+                    if (!empty($scale->end)) {
+                        echo '<span class="fw-bold text-muted ms-2 small">' . s($scale->end) . '</span>';
+                    }
+                    echo '</div>';
+                } else { // selection
+                    unset($numbers);
+                    for ($j = $scale->size; $j >= 0; $j--) {
+                        $numbers[$j] = $j;
+                    }
+                    $selected = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
+                    echo html_writer::select($numbers, "grade[$i]", $selected, false, ['class' => 'form-select w-auto d-inline-block']);
                 }
-                echo "  </td>\n";
-                echo "</tr>\n";
-
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+            } else {
+                // Review mode: badge display.
+                $selectedval = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
+                echo '<div class="d-flex align-items-center gap-2">';
+                echo '<span class="badge bg-primary fs-6 py-2 px-3"><i class="fa fa-check me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ": $selectedval</span>";
+                if (!empty($scale->start) || !empty($scale->end)) {
+                    echo '<span class="text-muted small">(' . s($scale->start) . ' &rarr; ' . s($scale->end) . ')</span>';
+                }
+                echo '</div>';
             }
-            break;
-        default:
-            throw new InvalidArgumentException('Unknown grading strategy.');
-    } // ...end of outer switch.
-      // ...now get the general comment (present in all types).
-    echo "<tr valign=\"top\">\n";
-    switch ($quest->gradingstrategy) {
-        case 0:
-        case 1:
-        case 4: // ...no grading, accumulative and rubic.
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
-                    $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
-            break;
+            echo '</div>';
+        }
+
+        // Feedback block.
+        echo '<div class="criterion-feedback">';
+        echo '<label class="form-label fw-bold mb-2 text-dark">';
+        echo '<i class="fa fa-comment-o text-info me-1" aria-hidden="true"></i>' . get_string('feedback');
+        echo ' ' . $OUTPUT->help_icon('feedback', 'quest') . ':';
+        echo '</label>';
+        if ($allowchanges) {
+            quest_print_editor("feedback[$i]", "id_autor_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
+        } else {
+            if (!empty($grades[$i]->answer)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($grades[$i]->answer) . '</div>';
+            } else {
+                echo '<p class="text-muted fst-italic mb-0">' . get_string('nofeedback', 'quest') . '</p>';
+            }
+        }
+        echo '</div>'; // end criterion-feedback
+        echo '</div>'; // end card-body
+        echo '</div>'; // end card
     }
-    echo "  <td>\n";
+
+    // General comment section.
+    echo '<div class="card shadow-sm mb-4 border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-comments-o text-info me-2" aria-hidden="true"></i>' . get_string('generalcomment', 'quest');
+    echo ' ' . $OUTPUT->help_icon('generalcomment', 'quest');
+    echo '</div>';
+    echo '<div class="card-body p-3">';
     if ($ismanager) {
         if ($allowchanges) {
             $text = isset($assessment->commentsteacher) ? $assessment->commentsteacher : '';
             quest_print_editor("generalcomment", "id_autor_generalcomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsteacher)) {
-                    echo format_text($assessment->commentsteacher);
-                }
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     } else {
@@ -2541,64 +2458,58 @@ FORM;
             $text = isset($assessment->commentsteacher) ? $assessment->commentsteacher : '';
             quest_print_editor("generalteachercomment", "id_autor_generalteachercomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsteacher)) {
-                    echo format_text($assessment->commentsteacher);
-                }
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     }
+    echo '</div></div>';
 
-    echo "&nbsp;</td>\n";
-    echo "</tr>\n";
-
-    $timenow = time();
-    // ...now show the grading grade if available....
+    // Global Assessment Summary (when evaluated).
     if (isset($assessment->state)) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\" align=\"center\"><b>" .
-                get_string('assessmentglobal', 'quest') . "</b></td>\n";
-        echo "</tr>\n";
-
-        echo "<tr valign=\"top\">\n";
-        echo "  <td align=\"right\"><p><b>";
-        print_string('grade', 'quest');
-        echo ":</b></p></td><td>\n";
-
+        echo '<div class="card quest-global-score-card mb-4 shadow-sm">';
+        echo '<div class="card-body p-4 text-center">';
+        echo '<h5 class="card-title fw-bold text-success mb-3"><i class="fa fa-trophy me-2" aria-hidden="true"></i>' . get_string('assessmentglobal', 'quest') . '</h5>';
+        echo '<div class="d-flex flex-wrap justify-content-center align-items-center gap-4">';
         if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
-            echo number_format($assessment->points, 4);
-            echo ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format(
-                $submission->initialpoints,
-                2
-            );
+            echo '<div class="text-center">';
+            echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->points, 4) . ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format($submission->initialpoints, 2) . '</span>';
+            echo '</div>';
         }
-        echo "&nbsp;</td>\n";
-        echo "</tr>\n";
+        echo '</div></div></div>';
     }
 
-    /*
-     * Manual Grading Form
-     */
+    // Manual qualification override (for teachers when $allowchanges).
     if ($allowchanges == true) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-        echo get_string('changemanualcalification', 'quest') . '</b></center></td></tr>';
-        echo "<tr valign=\"top\">";
-        echo "<td align=\"right\"><p><b>" . get_string('newcalification', 'quest') . ": </b></p></td>\n";
-        echo "<td><input size=\"3\" maxlength=\"3\" name=\"manualcalification\" type=\"text\">%</td></tr>";
+        echo '<div class="card mb-4 border-warning shadow-sm">';
+        echo '<div class="card-header bg-warning text-dark fw-bold py-2 px-3">';
+        echo '<i class="fa fa-sliders me-2" aria-hidden="true"></i>' . get_string('changemanualcalification', 'quest');
+        echo '</div>';
+        echo '<div class="card-body p-3">';
+        echo '<div class="d-flex align-items-center gap-2" style="max-width: 320px;">';
+        echo '<label class="form-label mb-0 fw-bold small">' . get_string('newcalification', 'quest') . ':</label>';
+        echo '<div class="input-group">';
+        echo '<input type="text" name="manualcalification" class="form-control" placeholder="0 - 100" maxlength="3" />';
+        echo '<span class="input-group-text">%</span>';
+        echo '</div></div></div></div>';
     }
 
-    // ...and close the table, show submit button if needed....
-    echo "</table>\n";
-    if ($assessment) {
-        if ($allowchanges) {
-            echo "<input type=\"submit\" value=\"" . get_string("savemyassessment", "quest") . "\" />\n";
+    // Action buttons.
+    if ($assessment && $allowchanges) {
+        echo '<div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top gap-2">';
+        if (!empty($returnto)) {
+            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary"><i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</a>';
+        } else {
+            echo '<div></div>';
         }
+        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
+        echo '</div>';
     }
-    echo "</center>";
-    echo "</form>\n";
+    echo '</form>';
+    echo '</div>'; // end quest-assessment-container
 }
 
 /** Sort callback
@@ -2636,11 +2547,17 @@ function quest_print_score_graph($quest, $submission) {
     $templatedata = [
         'containerid' => $containerid,
         'chartdatajson' => json_encode($chartdata),
-        'currentpoints' => $chartdata['currentpoints'],
+        'currentpoints' => number_format((float)$chartdata['currentpoints'], 4),
         'currentphase' => $chartdata['currentphase'],
-        'initialpoints' => $submission->initialpoints,
-        'pointsmax' => $submission->pointsmax,
-        'pointsmin' => $submission->pointsmin,
+        'datestart' => (int)$submission->datestart,
+        'dateend' => (int)$submission->dateend,
+        'tinitial' => $tinit,
+        'dateanswercorrect' => !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : 0,
+        'initialpoints' => (float)$submission->initialpoints,
+        'pointsmax' => (float)$submission->pointsmax,
+        'pointsmin' => (float)$submission->pointsmin,
+        'type' => (int)$quest->typecalification,
+        'servertime' => time(),
     ];
 
     echo $OUTPUT->render_from_template('mod_quest/score_chart', $templatedata);

@@ -113,7 +113,7 @@ if ($action == 'displaygradingform') {
         );
     }
 
-    quest_print_assessment($quest, $sid, false, null);
+    quest_print_assessment($quest, $sid, false, false);
     // ...called with no assessment..
     echo '<p>';
     if ($viewgeneral == 1) {
@@ -203,72 +203,6 @@ if ($action == 'displaygradingform') {
                                            // ...the first time..
         $viewgeneral = 1;
     }
-    // TODO: replace with quest_print_assessment from locallib.php!.
-    switch ($quest->gradingstrategy) {
-        case 0: // ...no grading..
-            for ($i = 0; $i < $num; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td>\n";
-                quest_print_editor("description[$i]", "id_desc_$i", $elements[$i]->description, $context, 3);
-                echo "  </td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
-            }
-            if ($newform == 1) {
-                $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sid));
-            } else if ($newform == 0) {
-                $var = $DB->get_field("course_modules", "instance", array("id" => $id));
-                $DB->set_field("quest", "nelements", $num, array("id" => $var));
-            }
-            break;
-        case 1: // ...accumulative grading..
-                // ...set up scales name..
-            // Ensure $questscales is populated (global may be null in some include contexts).
-            if (!is_array($questscales)) {
-                $questscales = quest_get_default_scales();
-            }
-            $scales = [];
-            foreach ($questscales as $key => $scale) {
-                $scales[] = $scale['name'];
-            }
-            for ($i = 0; $i < $num; $i++) {
-                $iplus1 = $i + 1;
-
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td>\n";
-                quest_print_editor("description[$i]", "id_desc_$i", $elements[$i]->description, $context, 3);
-                echo "  </td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
-                echo "<td valign=\"top\">\n";
-                echo html_writer::select($scales, "scale[]", $elements[$i]->scale, "");
-                if ($elements[$i]->weight == '') { // ...not set.
-                    $elements[$i]->weight = 11; // ...unity.
-                }
-                echo "</td></tr>\n";
-                echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
-                quest_choose_from_menu($questeweights, "weight[]", $elements[$i]->weight, "");
-                echo "      </td>\n";
-                echo "</tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
-            }
-            if ($newform == 1) {
-                $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sid));
-            } else if ($newform == 0) {
-                $var = $DB->get_field("course_modules", "instance", array("id" => $id));
-                $DB->set_field("quest", "nelements", $num, array("id" => $var));
-            }
-            break;
-        default:
-            throw new InvalidArgumentException('Unknown grading strategy.');
-    }
-    // ...close table and form..
     $nf = !empty($newform) ? 1 : 0;
     $stringsavechanges = get_string("savechanges");
     $stringcancel = get_string("cancel");
@@ -277,51 +211,115 @@ if ($action == 'displaygradingform') {
     $numincr = $num + 1;
     $numdecr = $num - 1;
     $sesskey = sesskey();
-    $formfragment = <<<FORM
-</table>
-<br />
-<center>
-	<input type="hidden" name="newform" value="$nf" /> <input
-		type="hidden" name="sid" value="$sid" /> <input
-		type="hidden" name="viewgeneral" value="$viewgeneral" />
-	<input type="hidden" name="n_elem_when_change"
-		value="$num" /> <input type="submit"
-		value="$stringsavechanges" />
-    <input type="submit"
-		name="cancel" value="$stringcancel" /> <input
-		type="hidden" name="sesskey" value="$sesskey" />
-</center>
 
-</form>
-<center>
-	<form ACTION="assessments.php">
-		<input type="hidden" name="newform" value="$nf" /> <input
-			type="hidden" name="change_form" value="1" /> <input type="hidden"
-			name="id" value="$cm->id" /> <input type="hidden"
-			name="sid" value="$sid" /> <input type="hidden"
-			name="viewgeneral" value="$viewgeneral" /> <input
-			type="hidden" name="num_elems_when_change"
-			value="$numincr" /> <input type="hidden" name="action"
-			value="editelements" /> <input type="submit"
-			value="$stringadd" /> <input
-			type="hidden" name="sesskey" value="$sesskey" />
-	</form>
+    echo '<div class="quest-assessment-container my-4">';
 
-	<form ACTION="">
-		<input type="hidden" name="newform" value="$nf" /> <input
-			type="hidden" name="change_form" value="1" /> <input type="hidden"
-			name="id" value="$cm->id" /> <input type="hidden"
-			name="sid" value="$sid" /> <input type="hidden"
-			name="viewgeneral" value="$viewgeneral" /> <input
-			type="hidden" name="num_elems_when_change"
-			value="$numdecr" /> <input type="hidden" name="action"
-			value="editelements" /> <input type="submit"
-			value="$stringremove" /> <input
-			type="hidden" name="sesskey" value="$sesskey" />
-	</form>
-</center>
-FORM;
-    echo $formfragment;
+    // Element count and Add / Remove toolbar.
+    echo '<div class="card shadow-sm border-0 bg-light p-3 mb-4">';
+    echo '<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">';
+    echo '<div class="text-muted">';
+    echo '<i class="fa fa-list-ol me-1" aria-hidden="true"></i>' . get_string('elements', 'quest') . ': <strong class="badge bg-primary fs-7 ms-1">' . $num . '</strong>';
+    echo '</div>';
+    echo '<div class="d-flex gap-2">';
+
+    // Add element.
+    echo '<form action="assessments.php" method="get" class="d-inline m-0">';
+    echo '<input type="hidden" name="newform" value="' . $nf . '" />';
+    echo '<input type="hidden" name="change_form" value="1" />';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="sid" value="' . s($sid) . '" />';
+    echo '<input type="hidden" name="viewgeneral" value="' . s($viewgeneral) . '" />';
+    echo '<input type="hidden" name="num_elems_when_change" value="' . $numincr . '" />';
+    echo '<input type="hidden" name="action" value="editelements" />';
+    echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
+    echo '<button type="submit" class="btn btn-outline-success btn-sm"><i class="fa fa-plus me-1" aria-hidden="true"></i>' . $stringadd . '</button>';
+    echo '</form>';
+
+    if ($num > 1) {
+        // Remove element.
+        echo '<form action="assessments.php" method="get" class="d-inline m-0">';
+        echo '<input type="hidden" name="newform" value="' . $nf . '" />';
+        echo '<input type="hidden" name="change_form" value="1" />';
+        echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+        echo '<input type="hidden" name="sid" value="' . s($sid) . '" />';
+        echo '<input type="hidden" name="viewgeneral" value="' . s($viewgeneral) . '" />';
+        echo '<input type="hidden" name="num_elems_when_change" value="' . $numdecr . '" />';
+        echo '<input type="hidden" name="action" value="editelements" />';
+        echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
+        echo '<button type="submit" class="btn btn-outline-danger btn-sm"><i class="fa fa-minus me-1" aria-hidden="true"></i>' . $stringremove . '</button>';
+        echo '</form>';
+    }
+    echo '</div></div></div>';
+
+    // Main edit form.
+    echo '<form name="form" method="post" action="assessments.php">';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="action" value="insertelements" />';
+    echo '<input type="hidden" name="newform" value="' . $nf . '" />';
+    echo '<input type="hidden" name="sid" value="' . s($sid) . '" />';
+    echo '<input type="hidden" name="viewgeneral" value="' . s($viewgeneral) . '" />';
+    echo '<input type="hidden" name="n_elem_when_change" value="' . $num . '" />';
+    echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
+
+    // Ensure $questscales is populated.
+    if (!is_array($questscales)) {
+        $questscales = quest_get_default_scales();
+    }
+    $scales = [];
+    foreach ($questscales as $key => $scale) {
+        $scales[] = $scale['name'];
+    }
+
+    // Render criterion cards.
+    for ($i = 0; $i < $num; $i++) {
+        $iplus1 = $i + 1;
+        echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
+        echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
+        echo '<span class="fw-bold text-dark">';
+        echo '<i class="fa fa-sliders text-primary me-2" aria-hidden="true"></i>' . get_string('element', 'quest') . " $iplus1";
+        echo '</span>';
+        echo '</div>';
+        echo '<div class="card-body p-3">';
+        echo '<div class="mb-3">';
+        echo '<label class="form-label fw-semibold text-secondary">' . get_string('description', 'quest') . '</label>';
+        quest_print_editor("description[$i]", "id_desc_$i", $elements[$i]->description, $context, 3);
+        echo '</div>';
+
+        if ($quest->gradingstrategy == 1) { // Accumulative.
+            echo '<div class="row g-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label fw-semibold text-secondary">' . get_string('typeofscale', 'quest') . '</label>';
+            echo html_writer::select($scales, "scale[]", $elements[$i]->scale, false, ['class' => 'form-select']);
+            echo '</div>';
+            if ($elements[$i]->weight == '') {
+                $elements[$i]->weight = 11;
+            }
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label fw-semibold text-secondary">' . get_string('elementweight', 'quest') . '</label>';
+            echo html_writer::select($questeweights, "weight[]", $elements[$i]->weight, false, ['class' => 'form-select']);
+            echo '</div>';
+            echo '</div>';
+        }
+        echo '</div></div>';
+    }
+
+    if ($newform == 1) {
+        $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sid));
+    } else if ($newform == 0) {
+        $var = $DB->get_field("course_modules", "instance", array("id" => $id));
+        $DB->set_field("quest", "nelements", $num, array("id" => $var));
+    }
+
+    // Sticky action bar.
+    echo '<div class="quest-action-bar-sticky d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">';
+    echo '<div class="d-flex gap-2">';
+    echo '<button type="submit" class="btn btn-primary px-4"><i class="fa fa-floppy-o me-1" aria-hidden="true"></i>' . $stringsavechanges . '</button>';
+    echo '<button type="submit" name="cancel" value="1" class="btn btn-outline-secondary px-3"><i class="fa fa-times me-1" aria-hidden="true"></i>' . $stringcancel . '</button>';
+    echo '</div>';
+    echo '</div>';
+
+    echo '</form>';
+    echo '</div>'; // .quest-assessment-container
     echo $OUTPUT->footer();
 
 } else if ($action == 'insertelements') {

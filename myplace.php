@@ -152,19 +152,6 @@ $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
                 'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
 
 $indice = 0;
-$initialpoints = [];
-$nanswerscorrect = [];
-$datesstart = [];
-$datesend = [];
-$dateanswercorrect = [];
-$pointsmax = [];
-$pointsmin = [];
-$pointsanswercorrect = [];
-$tinitial = [];
-$state = [];
-$pointsnmaxanswers = [];
-$forms = [];
-$incline = [];
 
 if ($submissions = quest_get_user_submissions($quest, $USER)) {
     foreach ($submissions as $submission) {
@@ -235,22 +222,17 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
 
             $grade = "<form><input name=\"calificacion\" id=\"formscore$indice\" type=\"text\" value=\"\" " .
                     "size=\"10\" readonly=\"1\" " .
+                    "class=\"quest-score-counter\" " .
+                    "data-datestart=\"" . (int)$submission->datestart . "\" " .
+                    "data-dateend=\"" . (int)$submission->dateend . "\" " .
+                    "data-tinitial=\"" . ((int)$quest->tinitial * 86400) . "\" " .
+                    "data-dateanswercorrect=\"" . (int)$submission->dateanswercorrect . "\" " .
+                    "data-initialpoints=\"" . (float)$submission->initialpoints . "\" " .
+                    "data-pointsmax=\"" . (float)$submission->pointsmax . "\" " .
+                    "data-pointsmin=\"" . (float)$submission->pointsmin . "\" " .
+                    "data-type=\"" . (int)$quest->typecalification . "\" " .
                     "style=\"background-color : White; border : Black; color : Black; font-size : 14pt; " .
                     "text-align : center;\" ></form>";
-
-            $initialpoints[] = (float) $submission->initialpoints;
-            $nanswerscorrect[] = (int) $submission->nanswerscorrect;
-            $datesstart[] = (int) $submission->datestart;
-            $datesend[] = (int) $submission->dateend;
-            $dateanswercorrect[] = (int) $submission->dateanswercorrect;
-            $pointsmax[] = (float) $submission->pointsmax;
-            $pointsmin[] = (float) $submission->pointsmin;
-            $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-            $tinitial[] = (int) $quest->tinitial * 86400;
-            $state[] = (int) $submission->state;
-            $type = $quest->typecalification;
-            $nmaxanswers = (int) $quest->nmaxanswers;
-            $pointsnmaxanswers[] = (float) $submission->points;
 
             $data[] = $grade;
             $sortdata['calification'] = quest_get_points($submission, $quest, '');
@@ -315,16 +297,9 @@ echo get_string('legend', 'quest', $clearicon);
 echo "</center>";
 
 // Javascript counter support.
-for ($i = 0; $i < $indice; $i++) {
-    $forms[$i] = "#formscore$i";
-    $incline[$i] = 0;
-}
 $servertime = time();
 if ($indice > 0) {
-    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers, $pointsnmaxanswers,
-                $servertime, null];
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
 }
 echo '</td></tr>';
 

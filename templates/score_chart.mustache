@@ -26,7 +26,7 @@
                 <i class="fa fa-line-chart text-primary me-2" aria-hidden="true"></i>{{#str}}questgraphtitle, quest{{/str}}
             </h6>
             <div class="badge bg-success fs-7 py-1 px-2">
-                <i class="fa fa-star me-1" aria-hidden="true"></i>{{#str}}currentscore, quest{{/str}}: <strong>{{currentpoints}} pts</strong>
+                <i class="fa fa-star me-1" aria-hidden="true"></i>{{#str}}currentscore, quest{{/str}}: <strong><span class="quest-score-counter" data-datestart="{{datestart}}" data-dateend="{{dateend}}" data-tinitial="{{tinitial}}" data-dateanswercorrect="{{dateanswercorrect}}" data-initialpoints="{{initialpoints}}" data-pointsmax="{{pointsmax}}" data-pointsmin="{{pointsmin}}" data-type="{{type}}">{{currentpoints}}</span> pts</strong>
                 <span class="badge bg-light text-dark ms-1 text-uppercase">{{currentphase}}</span>
             </div>
         </div>
@@ -50,7 +50,8 @@
 </div>
 
 {{#js}}
-require(['mod_quest/score_chart'], function(scoreChart) {
+require(['mod_quest/score_chart', 'mod_quest/counter'], function(scoreChart, counter) {
     scoreChart.init('#{{containerid}}', {{{chartdatajson}}});
+    counter.init({{servertime}});
 });
 {{/js}}

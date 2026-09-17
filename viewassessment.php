@@ -78,36 +78,42 @@ if (($ismanager) || ($answer->userid == $USER->id) || ($assessment->userid == $U
 
 echo "<br>";
 if ($answer->userid == $USER->id) {
-
     if (!isset($answer->commentforteacher)) {
         $answer->commentforteacher = '';
     }
 
-    echo "<form name=\"gradingform\" action=\"answer.php\" method=\"post\">";
-    echo "<a name=\"Claims\"><input type=\"hidden\" name=\"action\" value=\"updatecomment\" /></a>";
-    echo "<input type=\"hidden\" name=\"redirect\" value=\"$redirect\"/>";
-    echo "<input type=\"hidden\" name=\"sid\" value=\"$sid\" /> ";
-    echo "<input type=\"hidden\" name=\"aid\" value=\"$answer->id\" /> ";
-    echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" /> ";
-    echo "<center>";
-    echo "<table cellpadding=\"5\" border=\"1\">";
-    echo "<tr valign=\"top\">";
-    echo "<td align=\"right\"><b>" . get_string("commentsforteacher", "quest") . "</b></td>";
-    echo "<td>";
+    echo '<div class="quest-assessment-container my-4">';
+    echo '<div class="card shadow-sm border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-commenting-o text-primary me-2" aria-hidden="true"></i>' . get_string("commentsforteacher", "quest");
+    echo '</div>';
+    echo '<div class="card-body p-3">';
+    echo '<form name="gradingform" action="answer.php" method="post">';
+    echo '<a name="Claims"><input type="hidden" name="action" value="updatecomment" /></a>';
+    echo '<input type="hidden" name="redirect" value="' . s($redirect) . '"/>';
+    echo '<input type="hidden" name="sid" value="' . $sid . '" />';
+    echo '<input type="hidden" name="aid" value="' . $answer->id . '" />';
+    echo '<input type="hidden" name="sesskey" value="' . sesskey() . '" />';
+    echo '<div class="mb-3">';
     quest_print_editor("teachercomment", "id_teachercomment", $answer->commentforteacher, $context, 5);
-    echo " </td>";
-    echo "</tr>";
-
-    echo "</table>";
-    echo "<input type=\"submit\" value=\"" . get_string("save", "quest") . "\" />";
-    echo "</center>";
-    echo "</form>";
+    echo '</div>';
+    echo '<div class="text-end">';
+    echo '<button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane me-1" aria-hidden="true"></i>' . get_string("save", "quest") . '</button>';
+    echo '</div>';
+    echo '</form>';
+    echo '</div></div></div>';
 }
 if ($ismanager) {
     if (!empty($answer->commentforteacher)) {
-        echo "<a name=\"Claims\"></a>";
-        echo "<b>" . get_string("commentsforteacher", "quest") . "</b><br>";
-        echo $OUTPUT->box(format_text($answer->commentforteacher), 'center');
+        echo '<div class="quest-assessment-container my-4">';
+        echo '<div class="card shadow-sm border-0">';
+        echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+        echo '<a name="Claims"></a>';
+        echo '<i class="fa fa-commenting-o text-info me-2" aria-hidden="true"></i>' . get_string("commentsforteacher", "quest");
+        echo '</div>';
+        echo '<div class="card-body p-3 quest-review-feedback-box">';
+        echo format_text($answer->commentforteacher);
+        echo '</div></div></div>';
     }
 }
 
@@ -128,10 +134,14 @@ $title .= " " . get_string('tothechallenge', 'quest') .
 echo $OUTPUT->heading($title);
 
 quest_print_answer_info($quest, $answer);
-echo $OUTPUT->box_start();
-echo $OUTPUT->heading(get_string('answercontent', 'quest'));
+echo '<div class="quest-assessment-container my-4">';
+echo '<div class="card shadow-sm border-0">';
+echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('answercontent', 'quest');
+echo '</div>';
+echo '<div class="card-body p-4">';
 quest_print_answer($quest, $answer);
-echo $OUTPUT->box_end();
+echo '</div></div></div>';
 if (!empty($redirect)) {
     echo $OUTPUT->continue_button($redirect);
 }

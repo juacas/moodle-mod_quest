@@ -325,10 +325,20 @@ if ($action == 'confirmdelete') {
     require_sesskey();
     require_capability('mod/quest:manage', $context);
     $submission = $DB->get_record("quest_submissions", array('id' => $sid), '*', MUST_EXIST);
-    \mod_quest\question\open_question_exporter::export_challenge($quest, $submission, $context);
+    $question = \mod_quest\question\open_question_exporter::export_challenge($quest, $submission, $context);
+    $catparam = !empty($question->category) ? "{$question->category},{$context->id}" : '';
+    $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
+    $qbanklink = \html_writer::link(
+        $qbankurl,
+        get_string('viewinquestionbank', 'quest'),
+        ['class' => 'alert-link font-weight-bold ms-1 text-decoration-underline']
+    );
+    $message = get_string('exportedtoquestionbank', 'quest') . ' [' . $qbanklink . ']';
     redirect(
         new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'sid' => $sid, 'action' => 'showsubmission']),
-        get_string('exportedtoquestionbank', 'quest')
+        $message,
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
     );
 } else if ($action == 'showsubmission') {
     // $sid was already read at the top (accepting both 'sid' and 'cid' params).
@@ -458,11 +468,22 @@ if ($action == 'confirmdelete') {
     // Export to Question Bank (manager only, at the END of the bar).
     $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
     if ($linkedq) {
+        $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
+        $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
+        $badgetext = $isautograded ? ' <span class="badge bg-success ms-2">Auto-graded</span>' : '';
+
+        $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
+        $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
+        $viewlink = '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-primary ms-3 py-0 px-2">' .
+            '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' .
+            get_string('viewinquestionbank', 'quest') . '</a>';
+
         echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
              '<i class="fa fa-database fa-2x me-3"></i><div>' .
              '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
-             format_string($linkedq->name) . ' (' . $linkedq->qtype . ')' .
-             ' <span class="badge bg-success ms-2">Auto-graded</span></div></div>';
+             '<a href="' . $qbankurl->out() . '" class="alert-link font-weight-bold">' .
+             format_string($linkedq->name) . '</a> (' . $linkedq->qtype . ')' .
+             $badgetext . $viewlink . '</div></div>';
     } else if ($ismanager) {
         $exporturl = new moodle_url('/mod/quest/challenges.php', [
             'id' => $cm->id, 'sid' => $submission->id,
@@ -674,24 +695,19 @@ if ($action == 'confirmdelete') {
             $sortdata['dateend'] = $submission->dateend;
             $currentpoints = quest_get_points($submission, $quest, '');
             $sortdata['calification'] = $currentpoints;
-            $currentpoints = number_format($currentpoints, 4);
-            $grade = "<form name=\"puntos$indice\"><input name=\"calificacion\" id=\"formscore$indice\" ".
-                    "type=\"text\" value=\"$currentpoints\" size=\"10\" readonl=\"1\" style=\"background-color : White; " .
-                    "border : Black; color : Black; font-size : 14pt; text-align : center;\" ></form>";
+            $tinitialval = (int)$quest->tinitial * 86400;
+            $grade = "<form name=\"puntos$indice\"><input name=\"calificacion\" id=\"formscore$indice\" " .
+                    "class=\"quest-score-counter\" type=\"text\" value=\"$currentpoints\" size=\"10\" readonly=\"1\" " .
+                    "data-datestart=\"{$submission->datestart}\" " .
+                    "data-dateend=\"{$submission->dateend}\" " .
+                    "data-tinitial=\"{$tinitialval}\" " .
+                    "data-dateanswercorrect=\"{$submission->dateanswercorrect}\" " .
+                    "data-initialpoints=\"{$submission->initialpoints}\" " .
+                    "data-pointsmax=\"{$submission->pointsmax}\" " .
+                    "data-pointsmin=\"{$submission->pointsmin}\" " .
+                    "data-type=\"{$quest->typecalification}\" " .
+                    "style=\"background-color : White; border : Black; color : Black; font-size : 14pt; text-align : center;\"></form>";
 
-            $initialpoints[] = (float) $submission->initialpoints;
-            $nanswerscorrect[] = (int) $submission->nanswerscorrect;
-            $datesstart[] = (int) $submission->datestart;
-            $datesend[] = (int) $submission->dateend;
-            $dateanswercorrect[] = (int) $submission->dateanswercorrect;
-            $pointsmax[] = (float) $submission->pointsmax;
-            $pointsmin[] = (float) $submission->pointsmin;
-            $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-            $tinitial[] = (int) $quest->tinitial * 86400;
-            $state[] = $submission->state;
-            $type = $quest->typecalification;
-            $nmaxanswers = (int) $quest->nmaxanswers;
-            $pointsnmaxanswers[] = (float) $submission->points;
             $data[] = $grade;
 
             $indice++;
@@ -744,18 +760,9 @@ if ($action == 'confirmdelete') {
     echo "<center>";
     echo get_string('legend', 'quest', $grafic);
     echo "</center>";
+    // Javascript counter support via DOM data attributes.
     $servertime = time();
-
-    // Javascript counter support.
-    $servertime = time();
-    for ($i = 0; $i < $indice; $i++) {
-        $forms[$i] = "#formscore$i";
-        $incline[$i] = 0;
-    }
-    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                    $pointsnmaxanswers, $servertime, null];
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
 
     $continueurl = new moodle_url('viewclasification.php', ['id' => $cm->id]);
     echo $OUTPUT->continue_button($continueurl);
@@ -979,24 +986,20 @@ if ($action == 'confirmdelete') {
                 $currentpoints = quest_get_points($submission, $quest, '');
                 $sortdata['calification'] = $currentpoints;
                 $currentpoints = number_format($currentpoints, 4);
+                $tinitialval = (int) $quest->tinitial * 86400;
                 $grade = "<form name=\"puntos$indice\">" .
-                         "<input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"$currentpoints\" " .
-                        "size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : Black; " .
-                        "font-size : 14pt; text-align : center;\" ></form>";
-
-                $initialpoints[] = (float) $submission->initialpoints;
-                $nanswerscorrect[] = (int) $submission->nanswerscorrect;
-                $datesstart[] = (int) $submission->datestart;
-                $datesend[] = (int) $submission->dateend;
-                $dateanswercorrect[] = (int) $submission->dateanswercorrect;
-                $pointsmax[] = (float) $submission->pointsmax;
-                $pointsmin[] = (float) $submission->pointsmin;
-                $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-                $tinitial[] = (int) $quest->tinitial * 86400;
-                $state[] = $submission->state;
-                $type = $quest->typecalification;
-                $nmaxanswers = (int) $quest->nmaxanswers;
-                $pointsnmaxanswers[] = (float) $submission->points;
+                         "<input id=\"formscore$indice\" class=\"quest-score-counter\" name=\"calificacion\" " .
+                         "type=\"text\" value=\"$currentpoints\" size=\"10\" readonly=\"1\" " .
+                         "data-datestart=\"{$submission->datestart}\" " .
+                         "data-dateend=\"{$submission->dateend}\" " .
+                         "data-tinitial=\"{$tinitialval}\" " .
+                         "data-dateanswercorrect=\"{$submission->dateanswercorrect}\" " .
+                         "data-initialpoints=\"{$submission->initialpoints}\" " .
+                         "data-pointsmax=\"{$submission->pointsmax}\" " .
+                         "data-pointsmin=\"{$submission->pointsmin}\" " .
+                         "data-type=\"{$quest->typecalification}\" " .
+                         "style=\"background-color : White; border : Black; color : Black; " .
+                         "font-size : 14pt; text-align : center;\" ></form>";
 
                 $data[] = $grade;
 
@@ -1053,16 +1056,9 @@ if ($action == 'confirmdelete') {
     echo get_string('legend', 'quest', $grafic);
     echo "</center>";
 
-    // Javascript counter support.
+    // Javascript counter support via DOM data attributes.
     $servertime = time();
-    for ($i = 0; $i < $indice; $i++) {
-        $forms[$i] = "#formscore$i";
-        $incline[$i] = 0;
-    }
-    $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                    $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                    $pointsnmaxanswers, $servertime, null];
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
 
     $continueurl = new moodle_url('challenges.php', ['action' => 'showsubmission', 'sid' => $submission->id, 'id' => $cm->id]);
     echo $OUTPUT->continue_button($continueurl);

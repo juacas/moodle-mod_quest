@@ -102,9 +102,12 @@ if ($action == 'displaygradingform') {
     $heading = get_string("editingassessmentelementsofautors", "quest") . ' (' . $gradingstrategy . ')';
     echo $OUTPUT->heading_with_help($heading, "elementsautor", "quest");
 
+    echo '<div class="quest-assessment-container my-4">';
     echo '<form name="form" method="post" action="assessments_autors.php">';
-    echo '<input type="hidden" name="id" value="' . $cm->id . '" /> <input type="hidden" name="action" value="insertelements" />';
-    echo '<table align="center" border="1">';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="action" value="insertelements" />';
+    echo '<input type="hidden" name="sesskey" value="' . sesskey() . '" />';
+
     $elements = [];
     if ($elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC")) {
         foreach ($elementsraw as $element) {
@@ -112,7 +115,7 @@ if ($action == 'displaygradingform') {
         }
     }
     // Check for missing elements (this happens either the first time round or when the number of
-    // elements is icreased).
+    // elements is increased).
     for ($i = 0; $i < $quest->nelementsautor; $i++) {
         if (!isset($elements[$i])) {
             $elements[$i] = new stdClass();
@@ -122,65 +125,65 @@ if ($action == 'displaygradingform') {
             $elements[$i]->weight = 11;
         }
     }
-    switch ($quest->gradingstrategyautor) {
-        case 0: // ...no grading.
-            for ($i = 0; $i < $quest->nelementsautor; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td>\n";
-                quest_print_editor("description[$i]", "id_autor_desc_$i", $elements[$i]->description, $context, 3);
-                echo "  </td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
-            }
-            break;
 
-        case 1: // Accumulative grading.
-                // Set up scales name.
-            $scales = [];
-            foreach ($questscales as $key => $scale) {
-                $scales[] = $scale['name'];
-            }
-            for ($i = 0; $i < $quest->nelementsautor; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("element", "quest") . " $iplus1:</b></td>\n";
-                echo "<td>\n";
-                quest_print_editor("description[$i]", "id_autor_desc_$i", $elements[$i]->description, $context, 3);
-                echo "  </td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><b>" . get_string("typeofscale", "quest") . ":</b></td>\n";
-                echo "<td valign=\"top\">\n";
-                echo html_writer::select($scales, "scale[]", $elements[$i]->scale);
-                if ($elements[$i]->weight == '') { // Not set.
-                    $elements[$i]->weight = 11; // ...unity.
-                }
-                echo "</td></tr>\n";
-                echo "<tr valign=\"top\"><td align=\"right\"><b>" . get_string("elementweight", "quest") . ":</b></td><td>\n";
-                quest_choose_from_menu($questeweights, "weight[]", $elements[$i]->weight, "");
-                echo "      </td>\n";
-                echo "</tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"questassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
-            }
-            break;
-        default:
-            throw new InvalidArgumentException('Unknown grading strategy.');
+    // Set up scales name.
+    $scales = [];
+    foreach ($questscales as $key => $scale) {
+        $scales[] = $scale['name'];
     }
-    // Close table and form.
-    echo "</table><br />";
-    echo '<input type="submit" value="' . get_string("savechanges") . '" />';
-    echo '<input type="submit" name="cancel" value="' . get_string("cancel") . '" />';
+
+    for ($i = 0; $i < $quest->nelementsautor; $i++) {
+        $iplus1 = $i + 1;
+        echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
+        echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
+        echo '<span class="fw-bold text-dark">';
+        echo '<i class="fa fa-sliders text-primary me-2" aria-hidden="true"></i>' . get_string('element', 'quest') . " $iplus1";
+        echo '</span>';
+        echo '</div>';
+        echo '<div class="card-body p-3">';
+        echo '<div class="mb-3">';
+        echo '<label class="form-label fw-semibold text-secondary">' . get_string('description', 'quest') . '</label>';
+        quest_print_editor("description[$i]", "id_autor_desc_$i", $elements[$i]->description, $context, 3);
+        echo '</div>';
+
+        if ($quest->gradingstrategyautor == 1) { // Accumulative grading.
+            echo '<div class="row g-3">';
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label fw-semibold text-secondary">' . get_string('typeofscale', 'quest') . '</label>';
+            echo html_writer::select($scales, "scale[]", $elements[$i]->scale, false, ['class' => 'form-select']);
+            echo '</div>';
+            if ($elements[$i]->weight == '') { // Not set.
+                $elements[$i]->weight = 11; // ...unity.
+            }
+            echo '<div class="col-md-6">';
+            echo '<label class="form-label fw-semibold text-secondary">' . get_string('elementweight', 'quest') . '</label>';
+            echo html_writer::select($questeweights, "weight[]", $elements[$i]->weight, false, ['class' => 'form-select']);
+            echo '</div>';
+            echo '</div>';
+        }
+        echo '</div></div>';
+    }
+
+    // Sticky action bar.
+    echo '<div class="quest-action-bar-sticky d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">';
+    echo '<div class="d-flex gap-2">';
+    echo '<button type="submit" class="btn btn-primary px-4"><i class="fa fa-floppy-o me-1" aria-hidden="true"></i>' . get_string('savechanges') . '</button>';
+    echo '<button type="submit" name="cancel" value="1" class="btn btn-outline-secondary px-3"><i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</button>';
+    echo '</div>';
+    echo '</div>';
+
     echo '</form>';
+    echo '</div>'; // .quest-assessment-container
     echo $OUTPUT->footer();
 
 } else if ($action == 'insertelements') {
     // Insert/update assignment elements (for teachers).
     if (!$ismanager) {
         throw new \moodle_exception('nopermissions', 'error', '', "Only teachers can look at this page");
+    }
+    require_sesskey();
+    if (optional_param('cancel', null, PARAM_ALPHA)) {
+        redirect("view.php?id=$cm->id");
     }
     $descriptions = required_param_array('description', PARAM_RAW);
     $weights = optional_param_array('weight', null, PARAM_INT);

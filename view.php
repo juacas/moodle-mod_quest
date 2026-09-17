@@ -633,41 +633,33 @@ if ($action == 'displayfinalgrade') {
             $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
             $sortdata['dateend'] = $submission->dateend;
 
-            $grade = "<form class=\"d-inline\"><input id=\"formscore$indice\" name=\"calificacion\" type=\"text\" value=\"\" " .
-                    "size=\"10\" readonly=\"1\" style=\"background-color : White; border : 1px solid #ced4da; border-radius: 4px; color : Black; " .
-                    "font-size : 12pt; text-align : center; font-weight: bold;\" ></form>";
-
-            $initialpoints[] = (float) $submission->initialpoints;
-            $nanswerscorrect[] = (int) $submission->nanswerscorrect;
-            $datesstart[] = (int) $submission->datestart;
-            $datesend[] = (int) $submission->dateend;
-            $dateanswercorrect[] = (int) $submission->dateanswercorrect;
-            $pointsmax[] = (float) $submission->pointsmax;
-            $pointsmin[] = (float) $submission->pointsmin;
-            $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-            $tinitial[] = $quest->tinitial * 86400;
-            $state[] = (int) $submission->state;
-            $type = $quest->typecalification;
-            $nmaxanswers = (int) $quest->nmaxanswers;
-            $pointsnmaxanswers[] = (float) $submission->points;
+            $tinitialval = (int)$quest->tinitial * 86400;
+            $currentpoints = quest_get_points($submission, $quest, '');
+            $currentformatted = number_format($currentpoints, 4);
+            $grade = "<form class=\"d-inline\"><input id=\"formscore$indice\" class=\"quest-score-counter\" " .
+                    "name=\"calificacion\" type=\"text\" value=\"$currentformatted\" size=\"10\" readonly=\"1\" " .
+                    "data-datestart=\"{$submission->datestart}\" " .
+                    "data-dateend=\"{$submission->dateend}\" " .
+                    "data-tinitial=\"{$tinitialval}\" " .
+                    "data-dateanswercorrect=\"{$submission->dateanswercorrect}\" " .
+                    "data-initialpoints=\"{$submission->initialpoints}\" " .
+                    "data-pointsmax=\"{$submission->pointsmax}\" " .
+                    "data-pointsmin=\"{$submission->pointsmin}\" " .
+                    "data-type=\"{$quest->typecalification}\" " .
+                    "style=\"background-color : White; border : 1px solid #ced4da; border-radius: 4px; color : Black; " .
+                    "font-size : 12pt; text-align : center; font-weight: bold;\"></form>";
 
             $data[] = $grade;
-            $sortdata['calification'] = quest_get_points($submission, $quest, '');
+            $sortdata['calification'] = $currentpoints;
 
             $indice++;
 
             $tablesort->data[] = $data;
             $tablesort->sortdata[] = $sortdata;
         }
-        // Javascript counter support.
-        for ($i = 0; $i < $indice; $i++) {
-            $forms[$i] = "#formscore$i";
-        }
+        // Javascript counter support via DOM data attributes.
         $servertime = time();
-        $params = [$indice, $pointsmax, $pointsmin, $initialpoints, $tinitial, $datesstart, $state, $nanswerscorrect,
-                        $dateanswercorrect, $pointsanswercorrect, $datesend, $forms, $type, $nmaxanswers,
-                        $pointsnmaxanswers, $servertime, null];
-        $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+        $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
     }
     $sort = optional_param('sort', 'dateend', PARAM_ALPHA);
     uasort($tablesort->sortdata, 'quest_sortfunction');
@@ -725,6 +717,9 @@ if ($action == 'displayfinalgrade') {
     $canaddchallenge = has_capability('mod/quest:addchallenge', $context) && ($quest->dateend > $timenow);
 
     // 4. Render unified view page (Resumen al inicio + Desafíos Cards/List).
+    $servertime = time();
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
+
     $viewpage = new \mod_quest\output\view_page(
         $quest,
         $course,
