@@ -170,6 +170,10 @@ if ($action == 'confirmdelete') {
                 // ...now delete the assessments...
                 $DB->delete_records("quest_assessments", array("answerid" => $answer->id, "questid" => $quest->id));
             }
+            if (!empty($answer->questionusageid)) {
+                require_once($CFG->libdir . '/questionlib.php');
+                question_engine::delete_questions_usage_by_activity((int)$answer->questionusageid);
+            }
             $DB->delete_records("quest_answers", array("id" => $answer->id));
 
             // ...now get rid of all answer files.
@@ -188,6 +192,11 @@ if ($action == 'confirmdelete') {
     quest_grade_updated($quest, $submission->userid);
     $DB->delete_records_select('event', 'modulename = ? AND instance = ? and ' . $DB->sql_compare_text('description') . ' = ?',
             array('modulename' => 'quest', 'instance' => $quest->id, 'description' => $submission->description));
+    if (!empty($submission->questionusageid)) {
+        require_once($CFG->libdir . '/questionlib.php');
+        question_engine::delete_questions_usage_by_activity((int)$submission->questionusageid);
+    }
+    \mod_quest\question\question_reference_service::delete_challenge_reference((int)$submission->id);
     // ...and the submission record...
     $DB->delete_records("quest_submissions", array("id" => $submission->id));
     // ...and finally the submitted files
@@ -262,10 +271,28 @@ if ($action == 'confirmdelete') {
     echo $OUTPUT->header();
 
 
-    // ── OFFICIAL QUESTION BANK SELECTOR ───────────────────────────────────
-    $availablebanks = $ismanager ? \mod_quest\question\bank_provider::get_available_banks($course->id) : [];
-    if (!empty($availablebanks)) {
-        $defaultbank = reset($availablebanks);
+    // ── QUESTION BANK SELECTOR ─────────────────────────────────────────────
+    // Moodle 5.0+: shared question banks via question_bank_helper (mod_qbank).
+    // Moodle 4.x:  direct listing of course question bank questions.
+    if ($ismanager && \mod_quest\question\bank_provider::has_bank_helper()) {
+        // Moodle 5.0+: shared-bank modal picker.
+        $availablebanks = \mod_quest\question\bank_provider::get_available_banks($course->id);
+        if (!empty($availablebanks)) {
+            $defaultbank = reset($availablebanks);
+            echo html_writer::start_div("generalbox boxwidthnormal boxaligncenter mb-4", ["id" => "quest-question-bank-picker"]);
+            echo $OUTPUT->heading(get_string("addfromquestionbank", "quest"), 3);
+            echo html_writer::tag("button", get_string("addfromquestionbank", "quest"), [
+                "type" => "button",
+                "class" => "btn btn-outline-primary",
+                "data-action" => "questionbank",
+                "data-header" => get_string("addfromquestionbank", "quest"),
+            ]);
+            echo html_writer::end_div();
+            $PAGE->requires->js_call_amd("mod_quest/modal_quest_question_bank", "init",
+                [$context->id, (int)$defaultbank->modid, $cm->id, $course->id]);
+        }
+    } else if ($ismanager) {
+        // Moodle 4.x: modal question bank picker.
         echo html_writer::start_div("generalbox boxwidthnormal boxaligncenter mb-4", ["id" => "quest-question-bank-picker"]);
         echo $OUTPUT->heading(get_string("addfromquestionbank", "quest"), 3);
         echo html_writer::tag("button", get_string("addfromquestionbank", "quest"), [
@@ -275,142 +302,25 @@ if ($action == 'confirmdelete') {
             "data-header" => get_string("addfromquestionbank", "quest"),
         ]);
         echo html_writer::end_div();
-        $PAGE->requires->js_call_amd("mod_quest/modal_quest_question_bank", "init", [$context->id, (int)$defaultbank->modid, $cm->id, $course->id]);
+        $PAGE->requires->js_call_amd("mod_quest/modal_quest_question_bank_45", "init",
+            [$context->id, (int)$cm->id, (int)$course->id]);
     }
 
-
-    echo $OUTPUT->heading($chooseqtype);
-    $hiddenparams = [
-        'category' => $category->id,
-        'cmid' => $cm->id,
-        'returnurl' => $returnurl->out_as_local_url(false),
-    ];
 
     require_once($CFG->dirroot . '/question/editlib.php');
     require_once($CFG->dirroot . '/question/bank/editquestion/classes/editquestion_helper.php');
 
-    // Moodle CSS hides .chooserdialoguebody and .choosertitle by default (display:none)
-    // because they are designed to appear inside a YUI modal dialogue.
-    // We override this so the chooser renders inline as a regular form on this page.
-    echo html_writer::tag('style', '
-        #quest-qchooser-wrapper .chooserdialoguebody,
-        #quest-qchooser-wrapper .choosertitle {
-            display: block !important;
-        }
-        #quest-qchooser-wrapper .choosertitle {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 0.5em;
-        }
-        #quest-qchooser-wrapper .choosercontainer {
-            max-height: none !important;
-        }
-        #quest-qchooser-wrapper .alloptions {
-            max-height: none !important;
-            overflow: visible !important;
-        }
-    ');
+    $params = [
+        'cmid' => $cm->id,
+        'returnurl' => $returnurl->out_as_local_url(false),
+    ];
 
-    echo html_writer::start_div('generalbox boxwidthnormal boxaligncenter my-4', ['id' => 'quest-qchooser-wrapper']);
-    echo \qbank_editquestion\editquestion_helper::print_choose_qtype_to_add_form($hiddenparams, null, false);
-    echo html_writer::end_div();
+    $canadd = has_capability('moodle/question:add', $context) || has_capability('mod/quest:addchallenge', $context);
 
-    // ── USE EXISTING QUESTION (managers / teachers only) ─────────────────────
-    if ($ismanager) {
-        // Fetch all latest-version questions in this activity's category.
-        // We JOIN on question_versions to get the highest version per entry,
-        // and also retrieve the createdby of that version row (= createdby on the question).
-        $existingqs = $DB->get_records_sql(
-            "SELECT q.id, q.name, q.qtype, q.createdby,
-                    qv.version, qv.status, qv.questionbankentryid,
-                    qbe.questioncategoryid
-               FROM {question} q
-               JOIN {question_versions} qv ON qv.questionid = q.id
-               JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
-               JOIN (
-                   SELECT qv2.questionbankentryid, MAX(qv2.version) AS maxver
-                     FROM {question_versions} qv2
-                     JOIN {question_bank_entries} qbe2 ON qbe2.id = qv2.questionbankentryid
-                    WHERE qbe2.questioncategoryid = :catid
-                    GROUP BY qv2.questionbankentryid
-               ) latest ON latest.questionbankentryid = qv.questionbankentryid
-                        AND qv.version = latest.maxver
-              WHERE qbe.questioncategoryid = :catid2
-              ORDER BY q.name ASC",
-            ['catid' => $category->id, 'catid2' => $category->id]
-        );
-
-        if (!empty($existingqs)) {
-            echo '<hr class="my-4">';
-            echo '<h4 class="mb-3"><i class="fa fa-list me-2 text-secondary"></i>' .
-                 get_string('useexistingquestion', 'quest') . '</h4>';
-            echo '<div class="table-responsive">';
-            echo '<table class="table table-sm table-hover align-middle" id="quest-existing-questions">';
-            echo '<thead class="table-light"><tr>';
-            echo '<th>' . get_string('question', 'question') . '</th>';
-            echo '<th>' . get_string('type', 'question') . '</th>';
-            echo '<th>' . get_string('version') . '</th>';
-            echo '<th>' . get_string('author', 'quest') . '</th>';
-            echo '<th>' . get_string('status') . '</th>';
-            echo '<th></th>';
-            echo '</tr></thead><tbody>';
-
-            foreach ($existingqs as $eq) {
-                $isauthor = ((int)$eq->createdby === (int)$USER->id);
-
-                // Status badge.
-                $statuslabel = $eq->status;
-                $statusclass = 'bg-secondary';
-                if ($eq->status === 'ready') {
-                    $statuslabel = get_string('questionstatusready', 'qbank_editquestion');
-                    $statusclass = 'bg-success';
-                } elseif ($eq->status === 'draft') {
-                    $statuslabel = get_string('questionstatusdraft', 'qbank_editquestion');
-                    $statusclass = 'bg-warning text-dark';
-                }
-                if (\mod_quest\question\question_reference_service::is_approval_pending((int)$eq->id)) {
-                    $statuslabel .= ' <i class="fa fa-clock-o ms-1" title="' . get_string('approvalpending', 'quest') . '"></i>';
-                    $statusclass = 'bg-warning text-dark';
-                }
-
-                $authorname = fullname($DB->get_record('user', ['id' => $eq->createdby], 'id,firstname,lastname', IGNORE_MISSING) ?: new stdClass());
-
-                $useurl = new moodle_url('/mod/quest/challenges.php', [
-                    'id'         => $cm->id,
-                    'action'     => 'processexistingqchallenge',
-                    'questionid' => $eq->id,
-                    'sesskey'    => sesskey(),
-                ]);
-
-                echo '<tr>';
-                echo '<td><strong>' . s(shorten_text($eq->name, 60)) . '</strong></td>';
-                echo '<td><span class="badge bg-light text-dark border">' . s($eq->qtype) . '</span></td>';
-                echo '<td>v' . (int)$eq->version . '</td>';
-                echo '<td>' . s($authorname) . '</td>';
-                echo '<td><span class="badge ' . $statusclass . '">' . $statuslabel . '</span></td>';
-                echo '<td class="text-nowrap">';
-                // Use button.
-                echo '<a href="' . $useurl->out() . '" class="btn btn-sm btn-primary me-1">';
-                echo '<i class="fa fa-link me-1"></i>' . get_string('useexistingquestion', 'quest') . '</a>';
-                // Edit button — only if current user is the author of the latest version.
-                if ($isauthor) {
-                    $editurl = new moodle_url('/question/bank/editquestion/question.php', [
-                        'id'   => $eq->id,
-                        'cmid' => $cm->id,
-                    ]);
-                    echo '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary">';
-                    echo '<i class="fa fa-pencil me-1"></i>' . get_string('edit') . '</a>';
-                }
-                echo '</td></tr>';
-            }
-
-            echo '</tbody></table></div>';
-        } else {
-            echo '<p class="text-muted mt-3"><i class="fa fa-info-circle me-1"></i>' .
-                 get_string('noquestionsincategory', 'question') . '</p>';
-        }
-    }
-    // ── END USE EXISTING QUESTION ───────────────────────────────────────
+    echo html_writer::start_div('generalbox boxwidthnormal boxaligncenter my-4', ['id' => 'quest-qtype-create-container']);
+    echo $OUTPUT->heading(get_string('createnewquestion', 'question'), 3);
+    echo $OUTPUT->render(new \qbank_editquestion\output\add_new_question((int)$category->id, $params, $canadd));
+    echo html_writer::end_div(); // End quest-qtype-create-container.
 
     echo $OUTPUT->footer();
     exit();
@@ -914,12 +824,13 @@ if ($action == 'confirmdelete') {
         echo '<div class="card border-0 mb-4" id="quest-qpreview-panel">';
         echo '  <div class="card-body p-4 bg-white rounded shadow-sm">';
         
-        $quba = question_engine::make_questions_usage_by_activity('mod_quest', $context);
-        $quba->set_preferred_behaviour('deferredfeedback');
-        $loadedq = \question_bank::load_question($any_linkedq->id);
-        $slot = $quba->add_question($loadedq, $submission->pointsmax);
-        $quba->start_all_questions();
-        
+        [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
+            $quest,
+            $submission,
+            $any_linkedq,
+            $context
+        );
+
         echo \mod_quest\service\autograde_service::render_question($quba, $slot, true);
         
         echo '  </div>';

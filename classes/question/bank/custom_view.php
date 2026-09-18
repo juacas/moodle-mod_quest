@@ -80,7 +80,7 @@ class custom_view extends \core_question\local\bank\view {
 
     /** {@inheritDoc} */
     protected function display_question_bank_header(): void {
-        if (!empty($this->extraparams['requirebankswitch'])) {
+        if (!empty($this->extraparams['requirebankswitch']) && \mod_quest\question\bank_provider::has_bank_helper()) {
             $bankname = format_string($this->cm->name ?? '');
             echo \html_writer::start_div('d-flex align-items-center mb-2');
             echo \html_writer::tag('h5', $bankname, ['class' => 'm-0']);
@@ -153,8 +153,12 @@ class custom_view extends \core_question\local\bank\view {
      * Whether a question can be linked to a Quest challenge.
      */
     public static function selectable($question): bool {
+        $usable = method_exists('\question_bank', 'is_qtype_usable')
+            ? \question_bank::is_qtype_usable($question->qtype)
+            : (\question_bank::is_qtype_installed($question->qtype) && $question->qtype !== 'missingtype');
+
         return $question->parent == 0 && $question->status === 'ready' &&
-            \question_bank::is_qtype_usable($question->qtype) && question_has_capability_on($question, 'use');
+            $usable && question_has_capability_on($question, 'use');
     }
 
     /**

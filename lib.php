@@ -317,11 +317,94 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
     $fs = get_file_storage();
     $hash = $fs->get_pathname_hash($context->id, 'mod_quest', $filearea, $entryid, '/', $filename);
     if (!$file = $fs->get_file_by_hash($hash) or $file->is_directory()) {
-        return false;
+        // Fallback for submissions linked to a question bank question:
+        if (($filearea === 'attachment' || $filearea === 'submission') && !empty($entryid)) {
+            require_once($CFG->dirroot . '/mod/quest/classes/question/question_reference_service.php');
+            require_once($CFG->libdir . '/questionlib.php');
+            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge($entryid);
+            if ($linkedq) {
+                $loadedq = \question_bank::load_question((int)$linkedq->id);
+                $qhash = $fs->get_pathname_hash($loadedq->contextid, 'question', 'questiontext', $loadedq->id, '/', $filename);
+                $file = $fs->get_file_by_hash($qhash);
+            }
+        }
+        if (!$file || $file->is_directory()) {
+            return false;
+        }
     }
 
     // Finally send the file.
-    send_stored_file($file, 0, 0, true, $options); // download MUST be forced - security!
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
+ * Serve question files belonging to quest question usages.
+ *
+ * Called by question_pluginfile() in lib/questionlib.php when component is 'mod_quest'.
+ *
+ * @param stdClass $course course settings object
+ * @param context $context context object (question category/course context)
+ * @param string $component the name of the component we are serving files for ('question')
+ * @param string $filearea the name of the file area ('questiontext', etc.)
+ * @param int $qubaid the attempt usage id
+ * @param int $slot the id of a question in this attempt
+ * @param array $args the remaining bits of the file path
+ * @param bool $forcedownload whether the user must be forced to download the file
+ * @param array $options additional options affecting the file serving
+ * @return void Sends file or calls send_file_not_found()
+ */
+function quest_question_pluginfile($course, $context, $component,
+        $filearea, $qubaid, $slot, $args, $forcedownload, array $options = []) {
+    global $CFG, $DB;
+
+    require_once($CFG->libdir . '/questionlib.php');
+
+    try {
+        $quba = question_engine::load_questions_usage_by_activity($qubaid);
+    } catch (\Exception $e) {
+        send_file_not_found();
+    }
+
+    $owningcontext = $quba->get_owning_context();
+    if ($owningcontext && $owningcontext->contextlevel == CONTEXT_MODULE) {
+        list($modcontext, $course, $cm) = get_context_info_array($owningcontext->id);
+        require_course_login($course, true, $cm);
+        if (!has_capability('mod/quest:view', $owningcontext)) {
+            send_file_not_found();
+        }
+    } else {
+        require_login();
+    }
+
+    $displayoptions = new question_display_options();
+    $displayoptions->feedback = question_display_options::VISIBLE;
+    $displayoptions->numpartscorrect = question_display_options::VISIBLE;
+    $displayoptions->generalfeedback = question_display_options::VISIBLE;
+    $displayoptions->rightanswer = question_display_options::VISIBLE;
+    $displayoptions->manualcomment = question_display_options::VISIBLE;
+    $displayoptions->history = question_display_options::VISIBLE;
+
+    if (!$quba->check_file_access($slot, $displayoptions, $component, $filearea, $args, $forcedownload)) {
+        send_file_not_found();
+    }
+
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/{$context->id}/{$component}/{$filearea}/{$relativepath}";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        send_file_not_found();
+    }
+
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
+ * Alternative callback alias for quest_question_pluginfile.
+ */
+function mod_quest_question_pluginfile($course, $context, $component,
+        $filearea, $qubaid, $slot, $args, $forcedownload, array $options = []) {
+    quest_question_pluginfile($course, $context, $component,
+        $filearea, $qubaid, $slot, $args, $forcedownload, $options);
 }
 
 /**
@@ -1406,7 +1489,9 @@ function mod_quest_build_required_parameters_for_custom_view(array $params, arra
             array_merge($params, $extraparams),
             $defaultpagesize);
     $extraparams['cmid'] = $cmid;
-    $extraparams['requirebankswitch'] = true;
+    if (\mod_quest\question\bank_provider::has_bank_helper()) {
+        $extraparams['requirebankswitch'] = true;
+    }
     return [$contexts, $thispageurl, $cm, $pagevars, $extraparams];
 }
 
@@ -1417,10 +1502,14 @@ function mod_quest_output_fragment_quest_question_bank(array $args): string {
     $querystring = parse_url($args['querystring'] ?? '', PHP_URL_QUERY) ?? '';
     parse_str($querystring, $params);
 
-    $params['cmid'] = clean_param($args['bankcmid'], PARAM_INT);
+    $params['cmid'] = clean_param($args['bankcmid'] ?? 0, PARAM_INT);
     $viewclass = \mod_quest\question\bank\custom_view::class;
     $extraparams['view'] = $viewclass;
-    $extraparams['questcmid'] = clean_param($args['questcmid'], PARAM_INT);
+    $extraparams['questcmid'] = clean_param($args['questcmid'] ?? 0, PARAM_INT);
+
+    if (empty($params['cmid'])) {
+        $params['cmid'] = $extraparams['questcmid'];
+    }
 
     $destination = \context_module::instance($extraparams['questcmid']);
     require_capability("mod/quest:manage", $destination);
@@ -1450,9 +1539,12 @@ function mod_quest_output_fragment_quest_question_data(array $args): string {
     [$params, $extraparams] = \core_question\local\bank\filter_condition_manager::extract_parameters_from_fragment_args($args);
     
     $cmid = clean_param($args['cmid'] ?? $args['bankcmid'] ?? 0, PARAM_INT);
+    $questcmid = clean_param($extraparams['questcmid'] ?? $args['questcmid'] ?? 0, PARAM_INT);
+    if (empty($cmid)) {
+        $cmid = $questcmid;
+    }
     $params['cmid'] = $cmid;
     
-    $questcmid = clean_param($extraparams['questcmid'] ?? 0, PARAM_INT);
     $extraparams['questcmid'] = $questcmid;
     $extraparams['view'] = clean_param($args['view'] ?? \mod_quest\question\bank\custom_view::class, PARAM_NOTAGS);
     

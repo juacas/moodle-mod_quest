@@ -104,6 +104,55 @@ class autograde_service {
     }
 
     /**
+     * Get or create a persistent question usage for previewing a challenge.
+     *
+     * @param stdClass $quest
+     * @param stdClass $submission
+     * @param stdClass $question
+     * @param \context $context
+     * @return array [\question_usage_by_activity $quba, int $slot]
+     */
+    public static function get_or_create_challenge_preview_usage(
+        stdClass $quest,
+        stdClass $submission,
+        stdClass $question,
+        \context $context
+    ): array {
+        global $DB;
+
+        require_once($GLOBALS['CFG']->libdir . '/questionlib.php');
+
+        if (!empty($submission->questionusageid)) {
+            try {
+                $quba = \question_engine::load_questions_usage_by_activity((int)$submission->questionusageid);
+                $usedq = $quba->get_question(1, false);
+                if ($usedq && (int)$usedq->id === (int)$question->id) {
+                    return [$quba, 1];
+                }
+            } catch (\Exception $e) {
+                // Usage missing or question changed; recreate below.
+            }
+        }
+
+        $quba = \question_engine::make_questions_usage_by_activity('mod_quest', $context);
+        $quba->set_preferred_behaviour('deferredfeedback');
+        $loadedquestion = \question_bank::load_question((int)$question->id);
+        $slot = $quba->add_question($loadedquestion, $submission->pointsmax);
+        $quba->start_all_questions();
+
+        \question_engine::save_questions_usage_by_activity($quba);
+
+        $submission->questionusageid = (int)$quba->get_id();
+        try {
+            $DB->set_field('quest_submissions', 'questionusageid', $submission->questionusageid, ['id' => $submission->id]);
+        } catch (\Exception $e) {
+            // In case DB upgrade hasn't run yet.
+        }
+
+        return [$quba, $slot];
+    }
+
+    /**
      * Render the question engine question to HTML for display in answer form.
      *
      * @param \question_usage_by_activity $quba
@@ -112,6 +161,11 @@ class autograde_service {
      * @return string HTML output
      */
     public static function render_question(\question_usage_by_activity $quba, int $slot = 1, bool $readonly = false): string {
+        // Guarantee that the usage is saved so question text URLs have valid numeric usage IDs.
+        if (!is_numeric($quba->get_id())) {
+            \question_engine::save_questions_usage_by_activity($quba);
+        }
+
         $options = new question_display_options();
         $options->readonly = $readonly;
         $options->flags = question_display_options::HIDDEN;

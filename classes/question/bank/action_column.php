@@ -48,7 +48,11 @@ class action_column extends \core_question\local\bank\column_base {
                 ]);
         }
 
-        if (question_has_capability_on($question, 'use') && \question_bank::is_qtype_usable($question->qtype)) {
+        $usable = method_exists('\question_bank', 'is_qtype_usable')
+            ? \question_bank::is_qtype_usable($question->qtype)
+            : (\question_bank::is_qtype_installed($question->qtype) && $question->qtype !== 'missingtype');
+
+        if (question_has_capability_on($question, 'use') && $usable) {
             $title = get_string('preview');
             echo \html_writer::link(
                 new \moodle_url('/question/bank/previewquestion/preview.php', ['id' => $question->id]),

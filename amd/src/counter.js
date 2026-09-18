@@ -1,3 +1,4 @@
+/* eslint-disable */
 // This file is part of QUESTOURNAMENT activity for Moodle http://moodle.org/
 //
 // QUESTOURNAMENT for Moodle is free software: you can redistribute it and/or modify
