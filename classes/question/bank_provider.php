@@ -16,8 +16,9 @@
 
 namespace mod_quest\question;
 
-use core_question\local\bank\question_bank_helper;
-use core_question\local\bank\question_version_status;
+// NOTE: core_question\local\bank\question_bank_helper and question_version_status
+// were introduced in Moodle 5.0. Conditional use aliases are not possible in PHP,
+// so all references to these classes are guarded by self::has_bank_helper() at runtime.
 use stdClass;
 use cm_info;
 use context_module;
@@ -26,7 +27,8 @@ use moodle_exception;
 /**
  * Question bank discovery and permission validator for Quest.
  *
- * Compatible with Moodle 5.0+ shared question banks (mod_qbank).
+ * Compatible with Moodle 4.5 (legacy question categories) and
+ * Moodle 5.0+ shared question banks (mod_qbank).
  *
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
@@ -35,6 +37,29 @@ use moodle_exception;
 class bank_provider {
 
     public const CAPS = ['moodle/question:useall', 'moodle/question:usemine'];
+
+    /**
+     * Check if the Moodle 5.0+ question_bank_helper class is available.
+     *
+     * @return bool True on Moodle 5.0+, false on 4.x.
+     */
+    public static function has_bank_helper(): bool {
+        return class_exists('core_question\\local\\bank\\question_bank_helper');
+    }
+
+    /**
+     * Check if a question version status constant is available (Moodle 5.0+).
+     *
+     * @param string $status
+     * @return string The status string value.
+     */
+    private static function get_ready_status(): string {
+        if (class_exists('core_question\\local\\bank\\question_version_status')) {
+            return \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
+        }
+        // Moodle 4.x uses the plain string value.
+        return 'ready';
+    }
 
     /**
      * Return authorized question banks available to the user in a course.
@@ -46,16 +71,20 @@ class bank_provider {
         global $CFG;
         require_once($CFG->libdir . '/questionlib.php');
 
-        if (!class_exists('core_question\local\bank\question_bank_helper')) {
+        if (!self::has_bank_helper()) {
+            // Moodle 4.x: no shared question bank support via question_bank_helper.
             return [];
         }
 
-        $localbanks = question_bank_helper::get_activity_instances_with_shareable_questions(
+        /** @var \core_question\local\bank\question_bank_helper $helper */
+        $helper = 'core_question\\local\\bank\\question_bank_helper';
+
+        $localbanks = $helper::get_activity_instances_with_shareable_questions(
             incourseids: [$courseid],
             havingcap: self::CAPS
         );
 
-        $otherbanks = question_bank_helper::get_activity_instances_with_shareable_questions(
+        $otherbanks = $helper::get_activity_instances_with_shareable_questions(
             notincourseids: [$courseid],
             havingcap: self::CAPS
         );
@@ -76,12 +105,25 @@ class bank_provider {
     public static function require_bank(int $cmid): cm_info {
         global $DB;
         $cm = cm_info::create(get_coursemodule_from_id(null, $cmid, 0, false, MUST_EXIST));
-        if (!in_array($cm->modname, question_bank_helper::get_activity_types_with_shareable_questions(), true)) {
-            throw new moodle_exception('banknotavailable', 'quest');
+
+        if (self::has_bank_helper()) {
+            // Moodle 5.0+: validate via question_bank_helper.
+            /** @var \core_question\local\bank\question_bank_helper $helper */
+            $helper = 'core_question\\local\\bank\\question_bank_helper';
+            if (!in_array($cm->modname, $helper::get_activity_types_with_shareable_questions(), true)) {
+                throw new moodle_exception('banknotavailable', 'quest');
+            }
+            if ($cm->modname === 'qbank' &&
+                    $DB->get_field('qbank', 'type', ['id' => $cm->instance]) === $helper::TYPE_PREVIEW) {
+                throw new moodle_exception('banknotavailable', 'quest');
+            }
+        } else {
+            // Moodle 4.x fallback: only allow qbank instances.
+            if ($cm->modname !== 'qbank') {
+                throw new moodle_exception('banknotavailable', 'quest');
+            }
         }
-        if ($cm->modname === 'qbank' && $DB->get_field('qbank', 'type', ['id' => $cm->instance]) === question_bank_helper::TYPE_PREVIEW) {
-            throw new moodle_exception('banknotavailable', 'quest');
-        }
+
         if ($cm->deletioninprogress || !has_any_capability(self::CAPS, $cm->context)) {
             throw new moodle_exception('nopermissions', 'error');
         }
@@ -120,12 +162,16 @@ class bank_provider {
         $question = self::get_question($questionid);
         $context = \context::instance_by_id($question->contextid);
         if ($context->contextlevel === CONTEXT_MODULE) {
+            // On Moodle 4.x, require_bank() uses a safe fallback (qbank-only check).
             self::require_bank($context->instanceid);
         }
 
         question_require_capability_on($question, 'use');
 
-        if ($question->parent || $question->status !== question_version_status::QUESTION_STATUS_READY) {
+        // Check that the question is in a usable state.
+        // On Moodle 5.0+ compare against the enum; on 4.x use the plain 'ready' string.
+        $readystatus = self::get_ready_status();
+        if ($question->parent || $question->status !== $readystatus) {
             throw new moodle_exception('questionnotusable', 'quest');
         }
 

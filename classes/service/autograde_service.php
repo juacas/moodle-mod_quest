@@ -55,25 +55,50 @@ class autograde_service {
         }
 
         // Check if there is an existing unfinished attempt or past answer.
-        $lastanswer = $DB->get_record('quest_answers', [
-            'submissionid' => $submission->id,
-            'userid' => $userid,
-        ], '*', IGNORE_MULTIPLE);
+        $lastanswer = $DB->get_record_sql("
+            SELECT * FROM {quest_answers}
+            WHERE submissionid = ? AND userid = ?
+            ORDER BY id DESC
+        ", [$submission->id, $userid], IGNORE_MULTIPLE);
 
         if ($lastanswer && !empty($lastanswer->questionusageid)) {
-            $quba = question_engine::load_questions_usage_by_activity($lastanswer->questionusageid);
-            return [$quba, 1];
+            if ($lastanswer->phase == 0) { // Unfinished!
+                $quba = question_engine::load_questions_usage_by_activity($lastanswer->questionusageid);
+                return [$quba, 1];
+            }
         }
 
         // Create new attempt usage.
         $quba = question_engine::make_questions_usage_by_activity('mod_quest', $context);
-        $quba->set_preferred_behaviour('immediatefeedback');
+        $quba->set_preferred_behaviour('deferredfeedback');
 
         $loadedquestion = \question_bank::load_question($question->id);
         $slot = $quba->add_question($loadedquestion, $submission->pointsmax);
         $quba->start_all_questions();
 
         question_engine::save_questions_usage_by_activity($quba);
+
+        // Create initial answer record to persist the usage ID.
+        $answer = new stdClass();
+        $answer->questid = (int)$quest->id;
+        $answer->submissionid = (int)$submission->id;
+        $answer->userid = $userid;
+        $answer->title = get_string('answer', 'quest') . ' - In progress';
+        $answer->description = get_string('questionbank', 'quest') . ' autograded attempt';
+        $answer->descriptionformat = FORMAT_PLAIN;
+        $answer->descriptiontrust = 0;
+        $answer->attachment = '';
+        $answer->date = time();
+        $answer->pointsmax = $submission->pointsmax; 
+        $answer->grade = 0;
+        $answer->commentforteacher = '';
+        $answer->phase = 0; // Phase 0 = UNGRADED
+        $answer->state = 0;
+        $answer->permitsubmit = 0;
+        $answer->perceiveddifficulty = -1;
+        $answer->questionusageid = $quba->get_id();
+
+        $answer->id = $DB->insert_record('quest_answers', $answer);
 
         return [$quba, $slot];
     }
@@ -122,6 +147,48 @@ class autograde_service {
         $quba->finish_all_questions($timenow);
         question_engine::save_questions_usage_by_activity($quba);
 
+        $question = $quba->get_question($slot);
+        $state = $quba->get_question_state($slot);
+        $ismanual = $question->qtype->is_manual_graded() || ($state == \question_state::$needsgrading);
+
+        // Update the existing answer record.
+        $answer = $DB->get_record('quest_answers', [
+            'questionusageid' => $quba->get_id()
+        ], '*', MUST_EXIST);
+
+        $tinitial = (int)($quest->tinitial * 86400);
+        $pointsmax = scoring_calculator::calculate_points(
+            $timenow,
+            (int)$submission->datestart,
+            (int)$submission->dateend,
+            $tinitial,
+            !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : null,
+            (float)$submission->initialpoints,
+            (float)$submission->pointsmax,
+            (float)$submission->pointsmin
+        );
+
+        $answer->title = get_string('answer', 'quest') . ' - ' . userdate($timenow, get_string('strftimedatetime', 'langconfig'));
+        $answer->date = $timenow;
+        $answer->pointsmax = $pointsmax;
+
+        if ($ismanual) {
+            $answer->phase = 0; // ANSWER_PHASE_UNGRADED = Pending evaluation
+            $answer->grade = 0.0;
+            $DB->update_record('quest_answers', $answer);
+
+            tournament_manager::update_submission_counts($submission->id);
+
+            return [
+                'passed' => true,
+                'grade' => 0.0,
+                'points' => 0.0,
+                'fraction' => 0.0,
+                'message' => get_string('autograde_manual_pending', 'quest'),
+                'answerid' => $answer->id,
+            ];
+        }
+
         $fraction = $quba->get_question_fraction($slot);
         if ($fraction === null) {
             $fraction = 0.0;
@@ -130,21 +197,18 @@ class autograde_service {
         $grade = round($fraction * 100, 2);
         $passed = ($grade >= 50.0);
 
-        // Record the answer in quest_answers.
-        $title = get_string('answer', 'quest') . ' - ' . userdate($timenow, get_string('strftimedatetime', 'langconfig'));
-        $description = get_string('questionbank', 'quest') . ' autograded attempt';
+        $answer->grade = $grade;
+        $answer->phase = 3; // Phase 3 = auto-evaluated / approved.
+        $DB->update_record('quest_answers', $answer);
 
-        $answer = tournament_manager::record_answer(
-            $quest,
-            $submission,
-            $userid,
-            $title,
-            $description,
-            FORMAT_PLAIN,
-            $grade,
-            3, // Phase 3 = auto-evaluated / approved.
-            $quba->get_id()
-        );
+        // Update submission aggregations and inflection points.
+        tournament_manager::update_submission_counts($submission->id);
+
+        // Update user achievement points.
+        leaderboard_service::update_user_scores($quest, $userid);
+        if ($submission->userid != $userid) {
+            leaderboard_service::update_user_scores($quest, $submission->userid);
+        }
 
         $points = 0.0;
         if ($passed) {

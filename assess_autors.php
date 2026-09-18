@@ -81,14 +81,18 @@ echo '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' . get_string(
 echo '</a>';
 echo '</div>';
 
-echo '<div class="quest-assessment-container my-4">';
-echo '<div class="card shadow-sm border-0">';
-echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
-echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('description', 'quest');
-echo '</div>';
-echo '<div class="card-body p-4">';
-quest_print_submission($quest, $submission);
-echo '</div></div></div>';
+$any_linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+
+if (!$any_linkedq) {
+    echo '<div class="quest-assessment-container my-4">';
+    echo '<div class="card shadow-sm border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('description', 'quest');
+    echo '</div>';
+    echo '<div class="card-body p-4">';
+    quest_print_submission($quest, $submission);
+    echo '</div></div></div>';
+}
 
     // ── Helper: author of a challenge pending approval ────────────────────────
     $isownpending = ($submission->userid == $USER->id)
@@ -97,7 +101,7 @@ echo '</div></div></div>';
     // ── QUESTION BANK PREVIEW (managers and own-pending authors) ─────────────
     if (has_capability('mod/quest:editchallengeall', $context) || $isownpending) {
 
-        $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+        $linkedq = $any_linkedq;
         if ($linkedq) {
             $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
             $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;

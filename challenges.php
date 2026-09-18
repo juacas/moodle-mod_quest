@@ -842,10 +842,12 @@ if ($action == 'confirmdelete') {
         get_string('specimenassessmentformanswer', 'quest') . '</a> ';
     $actionbarbtns .= $OUTPUT->help_icon('specimenanswer', 'quest');
 
+    $any_linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+
     // Export / Question Bank notification (manager, or own challenge with linked question).
     if ($ismanager || $isownpending) {
 
-        $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+        $linkedq = $any_linkedq;
         if ($linkedq) {
             $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
             $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
@@ -857,16 +859,23 @@ if ($action == 'confirmdelete') {
 
             $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
             $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
-            $viewlink = '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-primary ms-3 py-0 px-2">' .
-                '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' .
-                get_string('viewinquestionbank', 'quest') . '</a>';
+            $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
+                'id' => $linkedq->id, 'cmid' => $cm->id,
+            ]);
+            $previewurl = \qbank_previewquestion\helper::question_preview_url(
+                $linkedq->id, null, null, null, null, $context, $cm->id
+            );
+
+            // Add buttons to the action bar
+            $actionbarbtns .= '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary"><i class="fa fa-pencil me-1"></i>' . get_string('edit') . '</a> ';
+            $actionbarbtns .= '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-secondary"><i class="fa fa-external-link me-1"></i>' . get_string('viewinquestionbank', 'quest') . '</a> ';
+            $actionbarbtns .= '<a href="' . $previewurl->out() . '" class="btn btn-sm btn-outline-secondary" onclick="window.open(this.href,\'qpreview\',\'width=800,height=600,scrollbars=yes\');return false;"><i class="fa fa-eye me-1"></i>' . get_string('preview') . '</a> ';
 
             echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
                  '<i class="fa fa-database fa-2x me-3"></i><div>' .
                  '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
-                 '<a href="' . $qbankurl->out() . '" class="alert-link font-weight-bold">' .
-                 format_string($linkedq->name) . '</a> (' . $linkedq->qtype . ')' .
-                 $badgetext . $viewlink . '</div></div>';
+                 format_string($linkedq->name) . ' (' . $linkedq->qtype . ')' .
+                 $badgetext . '</div></div>';
         } else {
             $exporturl = new moodle_url('/mod/quest/challenges.php', [
                 'id' => $cm->id, 'sid' => $submission->id,
@@ -893,63 +902,28 @@ if ($action == 'confirmdelete') {
     echo '</div>';
     echo '</div>';
 
-    echo $OUTPUT->heading(get_string('description', 'quest'));
-    /*
-    * Wording of the challenge
-    */
-    quest_print_challenge($quest, $submission);
-
-    // ── QUESTION BANK PREVIEW (managers and own-pending authors) ─────────────
-    if (has_capability('mod/quest:editchallengeall', $context) || $isownpending) {
-
-        $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
-        if ($linkedq) {
-            $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
-            $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
-
-            // Badges.
-            $badges = '';
-            if ($isautograded) {
-                $badges .= ' <span class="badge bg-success ms-1">Auto-graded</span>';
-            }
-            if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedq->id)) {
-                $badges .= ' <span class="badge bg-warning text-dark ms-1">' .
-                    '<i class="fa fa-clock-o me-1" aria-hidden="true"></i>' .
-                    get_string('approvalpending', 'quest') . '</span>';
-            }
-
-            // Edit link.
-            $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
-            $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
-            $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
-                'id' => $linkedq->id, 'cmid' => $cm->id,
-            ]);
-
-            // Preview URL (opens in popup).
-            $previewurl = \qbank_previewquestion\helper::question_preview_url(
-                $linkedq->id, null, null, null, null, $context, $cm->id
-            );
-
-            echo '<div class="card border-info mb-4" id="quest-qpreview-panel">';
-            echo '  <div class="card-header bg-info text-white d-flex align-items-center justify-content-between">';
-            echo '    <span><i class="fa fa-database me-2" aria-hidden="true"></i>';
-            echo      '<strong>' . get_string('questionbank', 'quest') . ':</strong> ';
-            echo      format_string($linkedq->name) . ' <em class="small">(' . $linkedq->qtype . ')</em>' . $badges;
-            echo '    </span>';
-            echo '    <span class="d-flex gap-2">';
-            echo '      <a href="' . $editurl->out() . '" class="btn btn-sm btn-light"><i class="fa fa-pencil me-1"></i>' . get_string('edit') . '</a>';
-            echo '      <a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-light"><i class="fa fa-external-link me-1"></i>' . get_string('viewinquestionbank', 'quest') . '</a>';
-            echo '      <a href="' . $previewurl->out() . '" class="btn btn-sm btn-outline-light"';
-            echo '         onclick="window.open(this.href,\'qpreview\',\'width=800,height=600,scrollbars=yes\');return false;">';
-            echo '        <i class="fa fa-eye me-1"></i>' . get_string('preview') . '</a>';
-            echo '    </span>';
-            echo '  </div>';
-            echo '  <div class="card-body p-0">';
-            echo '    <iframe src="' . $previewurl->out() . '" class="w-100 border-0" style="min-height:350px;" ';
-            echo '            title="' . s(get_string('preview') . ': ' . format_string($linkedq->name)) . '" loading="lazy"></iframe>';
-            echo '  </div>';
-            echo '</div>';
-        }
+    if (!$any_linkedq) {
+        echo $OUTPUT->heading(get_string('description', 'quest'));
+        /*
+        * Wording of the challenge
+        */
+        quest_print_challenge($quest, $submission);
+    } else {
+        echo $OUTPUT->heading(get_string('description', 'quest'));
+        
+        echo '<div class="card border-0 mb-4" id="quest-qpreview-panel">';
+        echo '  <div class="card-body p-4 bg-white rounded shadow-sm">';
+        
+        $quba = question_engine::make_questions_usage_by_activity('mod_quest', $context);
+        $quba->set_preferred_behaviour('deferredfeedback');
+        $loadedq = \question_bank::load_question($any_linkedq->id);
+        $slot = $quba->add_question($loadedq, $submission->pointsmax);
+        $quba->start_all_questions();
+        
+        echo \mod_quest\service\autograde_service::render_question($quba, $slot, true);
+        
+        echo '  </div>';
+        echo '</div>';
     }
     // ── END QUESTION BANK PREVIEW ─────────────────────────────────────────────
 

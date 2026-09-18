@@ -820,6 +820,7 @@ $string['autoexportqbank'] = 'Automatically export open challenges to question b
 $string['autoexportqbank_help'] = 'When enabled, challenges approved by a teacher will be automatically added as essay questions in the activity question bank.';
 $string['autograde_passed'] = 'Correct! Your answer was automatically graded and awarded {$a} points.';
 $string['autograde_failed'] = 'Incorrect answer. You may try again if attempts remain.';
+$string['autograde_manual_pending'] = 'Your answer has been submitted and is pending evaluation.';
 $string['cannotanswerownchallenge'] = 'You cannot submit an answer to your own challenge.';
 $string['challengenotstarted'] = 'This challenge has not started yet.';
 $string['challengeclosed'] = 'This challenge is now closed for answers.';

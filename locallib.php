@@ -1562,36 +1562,52 @@ function quest_print_answer_info($quest, $answer) {
  * 2 modified */
 function quest_answer_phase($answer, $course, $style = '') {
     global $USER, $DB;
+    $string = '';
 
     if ($answer->phase == ANSWER_PHASE_UNGRADED) {
         $string = get_string('phase1answer' . $style, 'quest');
     } else {
         $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id]);
 
-        if ($answer->phase == ANSWER_PHASE_GRADED) {
-            if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
-                $string = get_string('phase2answer' . $style, 'quest');
-            } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+        if ($assessment) {
+            if ($answer->phase == ANSWER_PHASE_GRADED) {
+                if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
+                    $string = get_string('phase2answer' . $style, 'quest');
+                } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+                    $string = get_string('phase3answer' . $style, 'quest');
+                }
+                if ($answer->state == ANSWER_STATE_MODIFIED) {
+                    $string .= get_string('modified', 'quest');
+                }
+            } else if ($answer->phase == ANSWER_PHASE_PASSED) {
+                if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
+                    $string = get_string('phase4answer' . $style, 'quest');
+                } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+                    $string = get_string('phase5answer' . $style, 'quest');
+                }
+                if ($answer->state == ANSWER_STATE_MODIFIED) {
+                    $string .= " " . get_string('modified', 'quest');
+                }
+            }
+            if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
+                if (!isset($string)) {
+                    $string = "*";
+                } else {
+                    $string .= "*";
+                }
+            }
+        } else {
+            if ($answer->phase == ANSWER_PHASE_GRADED) {
                 $string = get_string('phase3answer' . $style, 'quest');
-            }
-            if ($answer->state == ANSWER_STATE_MODIFIED) {
-                $string .= get_string('modified', 'quest');
-            }
-        } else if ($answer->phase == ANSWER_PHASE_PASSED) {
-            if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
-                $string = get_string('phase4answer' . $style, 'quest');
-            } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+            } else if ($answer->phase == ANSWER_PHASE_PASSED) {
                 $string = get_string('phase5answer' . $style, 'quest');
             }
             if ($answer->state == ANSWER_STATE_MODIFIED) {
-                $string .= " " . get_string('modified', 'quest');
-            }
-        }
-        if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
-            if (!isset($string)) {
-                $string = "*";
-            } else {
-                $string .= "*";
+                if (!isset($string)) {
+                    $string = get_string('modified', 'quest');
+                } else {
+                    $string .= " " . get_string('modified', 'quest');
+                }
             }
         }
     }
@@ -1615,15 +1631,26 @@ function quest_print_answer($quest, $answer) {
     $description = $answer->description;
     $context = context_module::instance($cm->id);
 
-    $description = file_rewrite_pluginfile_urls($description, 'pluginfile.php', $context->id, 'mod_quest', 'answer', $answer->id);
+    if (!empty($answer->questionusageid)) {
+        require_once($CFG->libdir . '/questionlib.php');
+        $quba = question_engine::load_questions_usage_by_activity($answer->questionusageid);
+        
+        echo '<div class="card border-0 shadow-sm mb-4">';
+        echo '  <div class="card-body p-4">';
+        echo \mod_quest\service\autograde_service::render_question($quba, 1, true);
+        echo '  </div>';
+        echo '</div>';
+    } else {
+        $description = file_rewrite_pluginfile_urls($description, 'pluginfile.php', $context->id, 'mod_quest', 'answer', $answer->id);
 
-    $options = new stdClass();
-    $options->para = false;
-    $options->trusted = $answer->descriptiontrust;
-    $options->context = $context;
-    $options->overflowdiv = true;
-    $description = format_text($description, $answer->descriptionformat, $options);
-    echo $OUTPUT->box($description);
+        $options = new stdClass();
+        $options->para = false;
+        $options->trusted = $answer->descriptiontrust;
+        $options->context = $context;
+        $options->overflowdiv = true;
+        $description = format_text($description, $answer->descriptionformat, $options);
+        echo $OUTPUT->box($description);
+    }
 
     $ismanager = has_capability('mod/quest:manage', $context);
     if (!empty($answer->commentsforteacher)) {
