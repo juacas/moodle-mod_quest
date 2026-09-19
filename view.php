@@ -390,26 +390,38 @@ if ($action == 'notavailable') {
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
             }
-            $attentionstatus = quest_get_challenge_attention_status($submission, $cm, $context);
-            if ($attentionstatus) {
+            $attentionstatuses = quest_get_challenge_attention_status($submission, $cm, $context);
+            $phaseparts = [];
+            $statuslabels = [];
+            foreach ($attentionstatuses as $attentionstatus) {
                 $attentionlabel = html_writer::tag(
                     'i',
                     '',
                     ['class' => $attentionstatus['icon'], 'aria-hidden' => 'true']
                 ) . ' ' . s($attentionstatus['label']);
-                $phasehtml = html_writer::link(
+                $phaseparts[] = html_writer::link(
                     $attentionstatus['url'],
                     $attentionlabel,
                     [
                         'class' => $attentionstatus['class'],
                         'title' => $attentionstatus['label'],
+                        'onclick' => 'event.stopPropagation();',
                     ]
                 );
-                $sortdata['phase'] = strtolower($attentionstatus['label']);
-            } else {
-                $phasehtml = quest_submission_phase($submission, $quest, $course);
-                $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
+                $statuslabels[] = $attentionstatus['label'];
             }
+            $phaselabel = quest_submission_phase($submission, $quest, $course);
+            if (!in_array($phaselabel, $statuslabels, true)) {
+                $phaseparts[] = html_writer::span(
+                    $phaselabel,
+                    'badge quest-phase-badge quest-challenge-phase-badge'
+                );
+            }
+            $phasehtml = html_writer::div(
+                implode(' ', $phaseparts),
+                'quest-challenge-status-badges d-flex flex-wrap gap-1'
+            );
+            $sortdata['phase'] = strtolower(implode(' ', array_merge($statuslabels, [$phaselabel])));
             $data[] = $phasehtml;
 
             $nanswersassess = 0;
@@ -434,10 +446,48 @@ if ($action == 'notavailable') {
             $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-            $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
+            $datestarttext = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
+            if ($ismanager) {
+                $datefield = html_writer::span($datestarttext, 'quest-view-date-field', [
+                    'data-cid' => $submission->id,
+                    'data-field' => 'start',
+                    'data-date' => $submission->datestart,
+                    'role' => 'button',
+                    'tabindex' => '0',
+                    'title' => get_string('clicktoeditdate', 'quest'),
+                ]);
+                $datecell = new html_table_cell($datefield);
+                $datecell->attributes = [
+                    'class' => 'quest-view-date-cell',
+                    'data-cid' => $submission->id,
+                    'data-field' => 'start',
+                ];
+                $data[] = $datecell;
+            } else {
+                $data[] = $datestarttext;
+            }
             $sortdata['datestart'] = $submission->datestart;
 
-            $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
+            $dateendtext = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
+            if ($ismanager) {
+                $datefield = html_writer::span($dateendtext, 'quest-view-date-field', [
+                    'data-cid' => $submission->id,
+                    'data-field' => 'end',
+                    'data-date' => $submission->dateend,
+                    'role' => 'button',
+                    'tabindex' => '0',
+                    'title' => get_string('clicktoeditdate', 'quest'),
+                ]);
+                $datecell = new html_table_cell($datefield);
+                $datecell->attributes = [
+                    'class' => 'quest-view-date-cell',
+                    'data-cid' => $submission->id,
+                    'data-field' => 'end',
+                ];
+                $data[] = $datecell;
+            } else {
+                $data[] = $dateendtext;
+            }
             $sortdata['dateend'] = $submission->dateend;
 
             $tinitialval = (int)$quest->tinitial * 86400;
@@ -514,6 +564,7 @@ if ($action == 'notavailable') {
                         "$dateend", "$calification");
     }
     $table->attributes['class'] = 'table table-hover table-striped align-middle mb-0';
+    $table->id = 'quest-challenges-detail-table';
 
     $detailtablehtml = !empty($table->data) ? html_writer::table($table) : '';
     $grafic = $OUTPUT->pix_icon('t/check', 'ok');
@@ -527,6 +578,19 @@ if ($action == 'notavailable') {
     // 4. Render unified view page (Resumen al inicio + Desafíos Cards/List).
     $servertime = time();
     $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
+
+    if ($ismanager) {
+        $PAGE->requires->js_call_amd('mod_quest/challenge_dates', 'init', [[
+            'tableId' => 'quest-challenges-detail-table',
+            'modalId' => 'quest-view-date-modal',
+            'saveUrl' => (new moodle_url('/mod/quest/schedule.php', [
+                'id' => $cm->id,
+                'action' => 'saveschedule',
+            ]))->out(false),
+            'sesskey' => sesskey(),
+            'locale' => current_language(),
+        ]]);
+    }
 
     $viewpage = new \mod_quest\output\view_page(
         $quest,
@@ -545,4 +609,3 @@ if ($action == 'notavailable') {
 }
 // Finish the page.
 echo $OUTPUT->footer();
-

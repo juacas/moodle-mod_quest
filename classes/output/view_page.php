@@ -105,34 +105,26 @@ class view_page implements renderable, templatable {
                 !empty($c->dateanswercorrect) ? (int)$c->dateanswercorrect : null
             );
 
-            $phaseclass = 'bg-primary';
+            $phaseclass = 'quest-phase-badge';
             $phasename = get_string('phase_stationary', 'quest');
             $cardstyle = 'background-color: #f0f7ff; border: 1px solid #cce5ff; border-top: 4px solid #0d6efd; border-radius: 8px;';
 
             if ($phase === scoring_calculator::PHASE_INFLATION) {
-                $phaseclass = 'bg-warning text-dark';
+                $phaseclass = 'quest-phase-badge';
                 $phasename = get_string('phase_inflation', 'quest');
                 $cardstyle = 'background-color: #fffbf0; border: 1px solid #ffeeba; border-top: 4px solid #ffc107; border-radius: 8px;';
             } elseif ($phase === scoring_calculator::PHASE_DEFLATION) {
-                $phaseclass = 'bg-purple text-white';
+                $phaseclass = 'quest-phase-badge';
                 $phasename = get_string('phase_deflation', 'quest');
                 $cardstyle = 'background-color: #f9f5ff; border: 1px solid #e2d9f3; border-top: 4px solid #6f42c1; border-radius: 8px;';
             } elseif ($phase === scoring_calculator::PHASE_ENDED) {
-                $phaseclass = 'bg-secondary text-white';
+                $phaseclass = 'quest-phase-badge quest-phase-badge-closed';
                 $phasename = get_string('closed', 'quest');
                 $cardstyle = 'background-color: #f8f9fa; border: 1px solid #e9ecef; border-top: 4px solid #6c757d; border-radius: 8px;';
             }
 
-            // If the challenge is pending approval, override the phase badge regardless of scoring phase.
-            // SUBMISSION_STATE_APPROVAL_PENDING = 1 (defined in locallib.php).
-            if ((int)$c->state === 1) {
-                $phaseclass = 'bg-warning text-dark';
-                $phasename = get_string('approvalpending', 'quest');
-                $cardstyle = 'background-color: #fffdf0; border: 1px solid #ffe69c; border-top: 4px solid #fd7e14; border-radius: 8px;';
-            }
 
-
-            $attentionstatus = \quest_get_challenge_attention_status($c, $this->cm, $context);
+            $attentionstatuses = \quest_get_challenge_attention_status($c, $this->cm, $context);
 
             $timeleft = '';
             if ($timenow < $c->dateend) {
@@ -168,7 +160,7 @@ class view_page implements renderable, templatable {
                 'type' => (int)$this->quest->typecalification,
                 'phaseclass' => $phaseclass,
                 'phasename' => $phasename,
-                'attentionstatus' => $attentionstatus,
+                'attentionstatuses' => $attentionstatuses,
                 'cardstyle' => $cardstyle,
                 'nanswers' => $c->nanswers,
                 'timeleft' => $timeleft,
@@ -224,6 +216,7 @@ class view_page implements renderable, templatable {
             'hasdetailtable' => $hasdetailtable,
             'detailtablehtml' => $this->detailtablehtml,
             'legendhtml' => $this->legendhtml,
+            'caneditdates' => !empty($this->summarydata['ismanager']),
         ];
     }
 

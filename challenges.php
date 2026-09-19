@@ -618,6 +618,7 @@ if ($action == 'confirmdelete') {
     // ── ACTION BAR ────────────────────────────────────────────────────────────
     // Build actions bar: Modify | Answer | See assessment | Re-assess | Recalc | Export
     $actionbarbtns = '';
+    $answerbutton = '';
     // Modify button: teachers always; authors while their challenge is pending approval.
     if (has_capability('mod/quest:editchallengeall', $context) || $isownpending) {
         $modifurl = new moodle_url('/mod/quest/challenges.php',
@@ -650,8 +651,9 @@ if ($action == 'confirmdelete') {
                 $submission->state == SUBMISSION_STATE_APROVED)) {
             $answerurl = new moodle_url('/mod/quest/answer.php',
                 ['id' => $cm->id, 'uid' => $USER->id, 'action' => 'answer', 'sid' => $submission->id]);
-            $actionbarbtns .= '<a href="' . $answerurl->out() . '" class="btn btn-sm btn-primary">' .
-                '<i class="fa fa-reply me-1" aria-hidden="true"></i>' . get_string('reply', 'quest') . '</a> ';
+            $answerbutton = '<a href="' . $answerurl->out() . '" class="btn btn-sm btn-primary">' .
+                '<i class="fa fa-reply me-1" aria-hidden="true"></i>' . get_string('reply', 'quest') . '</a>';
+            $actionbarbtns .= $answerbutton . ' ';
         }
     }
     // See assessment (author or manager).
@@ -731,6 +733,27 @@ if ($action == 'confirmdelete') {
          ' bg-light rounded border">' . $actionbarbtns . '</div>';
     // ── END ACTION BAR ────────────────────────────────────────────────────────
     echo $OUTPUT->heading($title);
+    $attentionstatuses = quest_get_challenge_attention_status($submission, $cm, $context);
+    $challengebadges = [];
+    foreach ($attentionstatuses as $attentionstatus) {
+        $attentionlabel = html_writer::tag('i', '', ['class' => $attentionstatus['icon'], 'aria-hidden' => 'true']) .
+            ' ' . s($attentionstatus['label']);
+        $challengebadges[] = html_writer::link(
+            $attentionstatus['url'],
+            $attentionlabel,
+            ['class' => $attentionstatus['class'], 'title' => $attentionstatus['label']]
+        );
+    }
+    $challengephaselabel = quest_challenge_phase($submission, $quest, $course);
+    $attentionlabels = array_column($attentionstatuses, 'label');
+    if (!in_array($challengephaselabel, $attentionlabels, true)) {
+        $challengebadges[] = html_writer::span(
+            $challengephaselabel,
+            'badge quest-phase-badge quest-challenge-phase-badge'
+        );
+    }
+    echo '<div class="quest-challenge-status-badges d-flex flex-wrap gap-2 mb-3">' .
+        implode(' ', $challengebadges) . '</div>';
     echo '<div class="row g-4 align-items-start mb-4">';
     echo '<div class="col-lg-8 col-md-7">';
     quest_print_submission_info($quest, $submission);
@@ -758,6 +781,11 @@ if ($action == 'confirmdelete') {
         );
         echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
         echo '  </div>';
+        echo '</div>';
+    }
+    if (!empty($answerbutton)) {
+        echo '<div class="quest-question-answer-action d-flex justify-content-center mb-4">';
+        echo $answerbutton;
         echo '</div>';
     }
     // ── END QUESTION BANK PREVIEW ─────────────────────────────────────────────
@@ -1011,8 +1039,9 @@ if ($action == 'confirmdelete') {
                      $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                      get_string('delete', 'quest') . '" /></a>';
             $sortdata['title'] = strtolower($answer->title);
-            $data[] = quest_answer_phase($answer, $course);
-            $sortdata['phase'] = quest_answer_phase($answer, $course);
+            $phasehtml = quest_answer_phase($answer, $course);
+            $data[] = $phasehtml;
+            $sortdata['phase'] = strip_tags($phasehtml);
             $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateanswer'] = $answer->date;
             if (($answer->phase == ANSWER_PHASE_GRADED) || ($answer->phase == ANSWER_PHASE_PASSED)) {
@@ -1266,8 +1295,9 @@ if ($action == 'confirmdelete') {
                     $sortdata['firstname'] = strtolower($user->firstname);
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
-                $data[] = quest_answer_phase($answer, $course);
-                $sortdata['phase'] = quest_answer_phase($answer, $course);
+                $phasehtml = quest_answer_phase($answer, $course);
+                $data[] = $phasehtml;
+                $sortdata['phase'] = strip_tags($phasehtml);
                 $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateanswer'] = $answer->date;
                 if (($answer->phase == 1) || ($answer->phase == 2)) {

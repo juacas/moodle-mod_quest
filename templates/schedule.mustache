@@ -81,9 +81,11 @@
             <div class="d-flex align-items-center gap-2">
                 <label for="quest-schedule-snap" class="small fw-bold text-muted mb-0">Snap:</label>
                 <select id="quest-schedule-snap" class="form-select form-select-sm" style="width: auto;">
-                    <option value="86400" selected>1 day</option>
-                    <option value="43200">12 hours</option>
+                    <option value="1800">30 minutes</option>
                     <option value="3600">1 hour</option>
+                    <option value="14400">4 hours</option>
+                    <option value="43200">12 hours</option>
+                    <option value="86400" selected>1 day</option>
                 </select>
             </div>
 
@@ -271,15 +273,15 @@
                             <td class="quest-col-datestart text-nowrap" role="button" tabindex="0"
                                 title="{{#str}}clicktoeditdate, quest{{/str}}">
                                 <span class="quest-tbl-start badge bg-light text-dark border p-2">{{datestartstr}}</span>
-                                <i class="fa fa-pencil text-muted ms-1 quest-col-edit-icon small opacity-50" aria-hidden="true"></i>
+                                <i class="fa fa-pencil ms-1 quest-col-edit-icon small" aria-hidden="true"></i>
                             </td>
                             <td class="quest-col-dateend text-nowrap" role="button" tabindex="0"
                                 title="{{#str}}clicktoeditdate, quest{{/str}}">
                                 <span class="quest-tbl-end badge bg-light text-dark border p-2">{{dateendstr}}</span>
-                                <i class="fa fa-pencil text-muted ms-1 quest-col-edit-icon small opacity-50" aria-hidden="true"></i>
+                                <i class="fa fa-pencil ms-1 quest-col-edit-icon small" aria-hidden="true"></i>
                             </td>
                             <td>
-                                <span class="quest-tbl-dur badge quest-duration-badge p-2">{{duration_days}}d</span>
+                                <span class="quest-tbl-dur badge quest-duration-badge p-2">{{durationstr}}</span>
                             </td>
                             <td class="text-end">
                                 <a href="{{{viewurl}}}" class="btn btn-sm btn-outline-secondary" title="View challenge" target="_blank">

@@ -258,6 +258,11 @@ class tournament_manager {
                 continue;
             }
 
+            // Ignore unchanged dates so no database, calendar or event update is generated.
+            if ((int)$submission->datestart === $datestart && (int)$submission->dateend === $dateend) {
+                continue;
+            }
+
             $chtitle = format_string($submission->title);
 
             // 1. Positive timestamps and order coherence check.
@@ -337,6 +342,19 @@ class tournament_manager {
             ];
         }
 
+        if (empty($validateditems)) {
+            return [
+                'success' => true,
+                'message' => get_string('schedulesavedcount', 'quest', 0),
+                'updated' => 0,
+                'quest_updated' => false,
+                'quest_datestart' => $queststart,
+                'quest_dateend' => $questend,
+                'errors' => [],
+                'schedules' => [],
+            ];
+        }
+
         // =========================================================================
         // Phase 2: Tournament Boundary Expansion / Synchronization.
         // =========================================================================
@@ -359,6 +377,7 @@ class tournament_manager {
         // Phase 3: Delegated Transaction & Synchronized Event Updates.
         // =========================================================================
         $updated = 0;
+        $persisted = [];
         $transaction = $DB->start_delegated_transaction();
 
         try {
@@ -370,7 +389,19 @@ class tournament_manager {
                 $sub->datestart = $item['datestart'];
                 $sub->dateend = $item['dateend'];
 
-                $DB->update_record('quest_submissions', $sub);
+                if (!$DB->update_record('quest_submissions', $sub)) {
+                    throw new \dml_exception('dmlwriteexception');
+                }
+                $stored = $DB->get_record('quest_submissions', ['id' => $sub->id], 'id, datestart, dateend', MUST_EXIST);
+                if ((int)$stored->datestart !== (int)$sub->datestart ||
+                        (int)$stored->dateend !== (int)$sub->dateend) {
+                    throw new \dml_exception('dmlwriteexception');
+                }
+                $persisted[] = [
+                    'id' => (int)$stored->id,
+                    'datestart' => (int)$stored->datestart,
+                    'dateend' => (int)$stored->dateend,
+                ];
 
                 // Update challenge calendar events in {event} (openchallenge and closechallenge).
                 if (function_exists('quest_update_challenge_calendar')) {
@@ -435,7 +466,7 @@ class tournament_manager {
             'quest_datestart' => $newqueststart,
             'quest_dateend' => $newquestend,
             'errors' => [],
+            'schedules' => $persisted,
         ];
     }
 }
-

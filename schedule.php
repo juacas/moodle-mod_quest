@@ -40,9 +40,24 @@ require_capability('mod/quest:manage', $context);
 
 // Handle AJAX save.
 if ($action === 'saveschedule') {
-    require_sesskey();
     header('Content-Type: application/json; charset=utf-8');
 
+    // The sesskey may arrive in the JSON body rather than in POST.
+    $body = file_get_contents('php://input');
+    $bodydata = !empty($body) ? json_decode($body, true) : null;
+    $sesskey = optional_param('sesskey', '', PARAM_RAW);
+    if (empty($sesskey) && is_array($bodydata)) {
+        $sesskey = clean_param($bodydata['sesskey'] ?? '', PARAM_RAW);
+    }
+    if (!confirm_sesskey($sesskey)) {
+        $message = get_string('invalidsesskey', 'error');
+        echo json_encode([
+            'success' => false,
+            'message' => $message,
+            'errors' => [$message],
+        ]);
+        exit;
+    }
     $schedules = [];
     $autoexpand = optional_param('autoexpand', 1, PARAM_BOOL);
     $rawjson = optional_param('schedules', '', PARAM_RAW);
@@ -52,9 +67,8 @@ if ($action === 'saveschedule') {
             $schedules = $decoded;
         }
     } else {
-        $body = file_get_contents('php://input');
-        if (!empty($body)) {
-            $data = json_decode($body, true);
+        if (is_array($bodydata)) {
+            $data = $bodydata;
             if (!empty($data['schedules']) && is_array($data['schedules'])) {
                 $schedules = $data['schedules'];
             }
@@ -102,6 +116,9 @@ $submissions = $DB->get_records_sql($sql, ['questid' => $quest->id]);
 $challengesdata = [];
 $tabledateformat = get_string('strftimedatetimeshort', 'langconfig');
 $headerdateformat = get_string('strftimedatetime', 'langconfig');
+$queststart = (int)$quest->datestart;
+$questend = (int)$quest->dateend;
+$hourlyscale = ($questend - $queststart) <= (7 * 86400);
 
 foreach ($submissions as $s) {
     $datestart = (int)$s->datestart;
@@ -109,6 +126,16 @@ foreach ($submissions as $s) {
     $diffsec = max(0, $dateend - $datestart);
     $durdays = round($diffsec / 86400, 1);
     $durhours = round($diffsec / 3600, 1);
+    if ($hourlyscale) {
+        $totalminutes = (int)round($diffsec / 60);
+        $durationhours = intdiv($totalminutes, 60);
+        $durationminutes = $totalminutes % 60;
+        $durationstr = $durationhours > 0
+            ? $durationhours . 'h' . ($durationminutes > 0 ? ' ' . $durationminutes . 'm' : '')
+            : $durationminutes . 'm';
+    } else {
+        $durationstr = $durdays . 'd';
+    }
 
     $challengesdata[] = [
         'id' => (int)$s->id,
@@ -120,6 +147,7 @@ foreach ($submissions as $s) {
         'dateendstr' => userdate($dateend, $tabledateformat),
         'duration_days' => $durdays,
         'duration_hours' => $durhours,
+        'durationstr' => $durationstr,
         'state' => (int)$s->state,
         'pointsmax' => (float)$s->pointsmax,
         'pointsmin' => (float)$s->pointsmin,
@@ -132,8 +160,6 @@ foreach ($submissions as $s) {
     ];
 }
 
-$queststart = (int)$quest->datestart;
-$questend = (int)$quest->dateend;
 $totalquestdays = max(1, round(($questend - $queststart) / 86400, 1));
 
 $PAGE->requires->js_call_amd('mod_quest/schedule_calendar', 'init', [[

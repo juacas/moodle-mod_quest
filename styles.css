@@ -86,7 +86,7 @@
 
 /* Challenge Scheduling Timeline styles */
 .quest-timeline-wrapper {
-    overflow-x: auto;
+    overflow-x: hidden;
     position: relative;
     background: #fff;
     border: 1px solid #dee2e6;
@@ -141,15 +141,13 @@
     min-width: 0;
 }
 
-/* Bootstrap's .bg-* and .text-* utilities use !important, so keep
- * the component selector more specific than those utility classes. */
 .badge.quest-duration-badge {
-    --bs-bg-opacity: 1 !important;
-    --bs-badge-color: #0c4a6e !important;
-    background: #e0f2fe !important;
-    background-color: #e0f2fe !important;
-    border: 1px solid #0369a1 !important;
-    color: #0c4a6e !important;
+    --bs-bg-opacity: 1;
+    --bs-badge-color: #0c4a6e;
+    background: #e0f2fe;
+    background-color: #e0f2fe;
+    border: 1px solid #0369a1;
+    color: #0c4a6e;
     font-weight: 700;
     white-space: nowrap;
 }
@@ -209,14 +207,42 @@
 
 #quest-schedule-table td.quest-col-datestart:hover,
 #quest-schedule-table td.quest-col-dateend:hover {
-    background-color: #eff6ff !important;
+    background-color: #eff6ff;
     color: #1d4ed8;
+}
+
+#quest-schedule-table .quest-col-edit-icon {
+    color: #64748b;
+    opacity: 0.5;
+    transition: color 0.15s ease, opacity 0.15s ease;
 }
 
 #quest-schedule-table td.quest-col-datestart:hover .quest-col-edit-icon,
 #quest-schedule-table td.quest-col-dateend:hover .quest-col-edit-icon {
-    opacity: 1 !important;
-    color: #2563eb !important;
+    opacity: 1;
+    color: #2563eb;
+}
+
+#quest-challenges-detail-table .quest-view-date-cell,
+#quest-challenges-detail-table .quest-view-date-field {
+    cursor: pointer;
+}
+
+#quest-challenges-detail-table .quest-view-date-field {
+    display: inline-block;
+    border-bottom: 1px dashed #2563eb;
+    color: #1e3a8a;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#quest-challenges-detail-table .quest-view-date-cell:hover,
+#quest-challenges-detail-table .quest-view-date-cell:focus-within,
+#quest-challenges-detail-table .quest-view-date-field:hover,
+#quest-challenges-detail-table .quest-view-date-field:focus {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    outline: 2px solid #93c5fd;
+    outline-offset: 1px;
 }
 
 .quest-timeline-right-area {
@@ -454,4 +480,80 @@
 
 .quest-question-preview .disabled {
     opacity: 0.65;
+}
+
+.quest-answer-phase-badge {
+    white-space: nowrap;
+}
+
+.quest-answer-actions {
+    min-width: max-content;
+}
+
+.quest-answer-action {
+    white-space: nowrap;
+}
+
+.quest-attention-badge {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 800;
+    gap: 0.3rem;
+    line-height: 1.2;
+    padding: 0.35rem 0.65rem;
+    text-decoration: none;
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.quest-attention-badge:hover,
+.quest-attention-badge:focus {
+    filter: brightness(0.94);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.quest-answer-phase-badge,
+.quest-attention-badge {
+    white-space: nowrap;
+}
+
+.quest-challenge-phase-badge {
+    white-space: nowrap;
+}
+
+
+/* Accessible challenge status and phase badges. */
+.quest-phase-badge {
+    background-color: #dcfce7;
+    border: 1px solid #86efac;
+    color: #14532d;
+    font-weight: 700;
+}
+
+.quest-phase-badge-closed,
+.badge.bg-secondary,
+.badge.bg-secondary.text-white {
+    --bs-secondary-rgb: 229, 231, 235;
+    --bs-white-rgb: 31, 41, 55;
+    background-color: #e5e7eb;
+    border: 1px solid #9ca3af;
+    color: #1f2937;
+}
+
+.quest-attention-badge-approval {
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #713f12;
+}
+
+.quest-attention-badge-unevaluated {
+    background-color: #fee2e2;
+    border: 1px solid #f87171;
+    color: #7f1d1d;
+}
+
+.quest-challenge-status-badges {
+    align-items: center;
 }

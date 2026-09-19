@@ -174,7 +174,7 @@ class autograde_service {
         $options->generalfeedback = $readonly ? question_display_options::VISIBLE : question_display_options::HIDDEN;
         $options->correctness = question_display_options::VISIBLE;
 
-        return $quba->render_question($slot, $options);
+        return $quba->render_question($slot, $options, (string) $slot);
     }
 
     /**

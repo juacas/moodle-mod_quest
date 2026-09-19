@@ -1029,37 +1029,39 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
  * @param \stdClass $challenge Challenge submission.
  * @param \stdClass $cm Course module.
  * @param \context_module $context Activity context.
- * @return array|null Badge data or null when no action is available.
+ * @return array List of actionable badge data, possibly empty.
  */
-function quest_get_challenge_attention_status($challenge, $cm, $context): ?array {
+function quest_get_challenge_attention_status($challenge, $cm, $context): array {
+    $statuses = [];
+
     if ((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING
             && has_capability('mod/quest:approvechallenge', $context)) {
-        return [
+        $statuses[] = [
             'label' => get_string('approvalpending', 'quest'),
             'url' => (new moodle_url('/mod/quest/challenges.php', [
                 'id' => $cm->id,
                 'cid' => $challenge->id,
                 'action' => 'approve',
             ]))->out(false),
-            'class' => 'quest-attention-badge quest-attention-badge-approval',
+            'class' => 'badge quest-attention-badge quest-attention-badge-approval',
             'icon' => 'fa fa-clock-o',
         ];
     }
 
     if (empty($challenge->evaluated) && has_capability('mod/quest:grade', $context)) {
-        return [
+        $statuses[] = [
             'label' => get_string('challenge_not_evaluated', 'quest'),
             'url' => (new moodle_url('/mod/quest/assess_autors.php', [
                 'id' => $cm->id,
                 'sid' => $challenge->id,
                 'action' => 'evaluate',
             ]))->out(false),
-            'class' => 'quest-attention-badge quest-attention-badge-unevaluated',
+            'class' => 'badge quest-attention-badge quest-attention-badge-unevaluated',
             'icon' => 'fa fa-exclamation-circle',
         ];
     }
 
-    return null;
+    return $statuses;
 }
 
 /**
@@ -1358,8 +1360,9 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
                 // Answer Phase.
-                $data[] = quest_answer_phase($answer, $course);
-                $sortdata['phase'] = quest_answer_phase($answer, $course);
+                $phasehtml = quest_answer_phase($answer, $course);
+                $data[] = $phasehtml;
+                $sortdata['phase'] = strip_tags($phasehtml);
 
                 $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateanswer'] = $answer->date;
@@ -1482,6 +1485,34 @@ function quest_print_answer_title($quest, $answer, $submission) {
     return "<a name=\"sid_$answer->id\" href=\"$url\">$answer->title</a>";
 }
 /**
+ * Render an answer action as a compact Bootstrap button.
+ *
+ * @param moodle_url|string $url Action URL.
+ * @param string $label Button label.
+ * @param string $icon Font Awesome icon name without the fa- prefix.
+ * @param string $class Bootstrap button classes.
+ * @param string|null $name Optional anchor name.
+ * @return string
+ */
+function quest_answer_action_button(
+    $url,
+    string $label,
+    string $icon,
+    string $class = 'btn btn-sm btn-outline-secondary',
+    ?string $name = null
+): string {
+    $attributes = ['class' => $class . ' quest-answer-action'];
+    if ($name !== null) {
+        $attributes['name'] = $name;
+    }
+    $content = html_writer::tag(
+        'i',
+        '',
+        ['class' => 'fa fa-' . $icon . ' me-1', 'aria-hidden' => 'true']
+    ) . s($label);
+    return html_writer::link($url, $content, $attributes);
+}
+/**
  *
  * @param \stdClass $cm
  * @param \stdClass $answer
@@ -1492,99 +1523,174 @@ function quest_print_answer_title($quest, $answer, $submission) {
  */
 function quest_print_actions_answers($cm, $answer, $submission, $course, $assessment) {
     global $USER;
-    // Returns the teacher or peer grade and a hyperlinked list of grades for this submission..
-    $str = '';
 
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $isassessed = in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true);
+    $buttons = [];
+
+    $answerurl = new moodle_url('/mod/quest/answer.php', [
+        'sid' => $submission->id,
+        'aid' => $answer->id,
+        'action' => 'showanswer',
+        'sesskey' => sesskey(),
+    ]);
+    $assessurl = new moodle_url('/mod/quest/assess.php', [
+        'id' => $cm->id,
+        'sid' => $submission->id,
+        'aid' => $answer->id,
+        'action' => 'evaluate',
+        'sesskey' => sesskey(),
+    ]);
 
     if (!$ismanager && ($answer->userid == $USER->id)) {
-        if (($answer->phase == 1) || ($answer->phase == 2)) {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"viewassessment.php?asid=$assessment->id\">" . get_string(
-                'seevaluate',
-                'quest'
-            ) . "</a>";
+        if ($isassessed && $assessment) {
+            $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                'sid' => $submission->id,
+                'asid' => $assessment->id,
+                'aid' => $answer->id,
+                'sesskey' => sesskey(),
+            ]);
+            $buttons[] = quest_answer_action_button(
+                $viewurl,
+                get_string('seevaluate', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-info',
+                'sid_' . $answer->id
+            );
         } else {
-            $url = (new moodle_url('answer.php', ['sid' => $submission->id, 'action' => 'showanswer',
-                                                  'aid' => $answer->id]))->out();
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$url\">" . get_string(
-                'see',
-                'quest'
-            ) . "</a>";
+            $buttons[] = quest_answer_action_button(
+                $answerurl,
+                get_string('see', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-secondary',
+                'sid_' . $answer->id
+            );
         }
     } else if ($ismanager) {
-        $assessurl = new moodle_url(
-            "/mod/quest/assess.php",
-            ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
-        );
-        if (($answer->phase == 1) || ($answer->phase == 2)) {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$assessurl\">" . get_string('reevaluate', 'quest') . "</a>";
-
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" " .
-                    "href=\"viewassessment.php?sid=$submission->id&amp;asid=$assessment->id&amp;aid=$answer->id\">" . get_string(
-                        'seevaluate',
-                        'quest'
-                    ) . "</a>";
-        } else if ($answer->phase == 0) {
-            $str .= '&nbsp;&nbsp;<a href="' . $assessurl . '">' . get_string('evaluate', 'quest') . '</a>';
+        if ($isassessed) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('reevaluate', 'quest'),
+                'refresh',
+                'btn btn-sm btn-outline-warning',
+                'sid_' . $answer->id
+            );
+            if ($assessment) {
+                $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                    'sid' => $submission->id,
+                    'asid' => $assessment->id,
+                    'aid' => $answer->id,
+                    'sesskey' => sesskey(),
+                ]);
+                $buttons[] = quest_answer_action_button(
+                    $viewurl,
+                    get_string('seevaluate', 'quest'),
+                    'eye',
+                    'btn btn-sm btn-outline-info',
+                    'sid_' . $answer->id
+                );
+            }
+        } else if ($answer->phase == ANSWER_PHASE_UNGRADED) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('evaluate', 'quest'),
+                'check',
+                'btn btn-sm btn-primary',
+                'sid_' . $answer->id
+            );
         } else {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" " .
-                    "href=\"answer.php?aid=$answer->id&amp;action=showanswer&amp;sid=$submission->id\">" . get_string(
-                        'see',
-                        'quest'
-                    ) . "</a>";
+            $buttons[] = quest_answer_action_button(
+                $answerurl,
+                get_string('see', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-secondary',
+                'sid_' . $answer->id
+            );
         }
     } else if ($submission->userid == $USER->id) {
-        if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 1)) {
-            $assessurl = new moodle_url(
-                "/mod/quest/assess.php",
-                ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+        if ($isassessed && $assessment && $assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('reevaluate', 'quest'),
+                'refresh',
+                'btn btn-sm btn-outline-warning',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$assessurl\">" . get_string('reevaluate', 'quest') . "</a>";
-            $viewurl = new moodle_url(
-                "/mod/quest/viewassessment.php",
-                ['sid' => $submission->id, 'asid' => $assessment->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+            $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                'sid' => $submission->id,
+                'asid' => $assessment->id,
+                'aid' => $answer->id,
+                'sesskey' => sesskey(),
+            ]);
+            $buttons[] = quest_answer_action_button(
+                $viewurl,
+                get_string('seevaluate', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-info',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$viewurl" . get_string('seevaluate', 'quest') . "</a>";
-        } else if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 2)) {
-            $viewurl = new moodle_url(
-                "/mod/quest/viewassessment.php",
-                ['sid' => $submission->id, 'asid' => $assessment->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+        } else if ($isassessed && $assessment && $assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+            $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                'sid' => $submission->id,
+                'asid' => $assessment->id,
+                'aid' => $answer->id,
+                'sesskey' => sesskey(),
+            ]);
+            $buttons[] = quest_answer_action_button(
+                $viewurl,
+                get_string('seevaluate', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-info',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$viewurl\">" . get_string('seevaluate', 'quest') . "</a>";
-        } else if ($answer->phase == 0) {
-            $assessurl = new moodle_url(
-                "/mod/quest/assess.php",
-                ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey(),
-                'action' => 'evaluate']
+        } else if ($answer->phase == ANSWER_PHASE_UNGRADED) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('evaluate', 'quest'),
+                'check',
+                'btn btn-sm btn-primary',
+                'sid_' . $answer->id
             );
-            $assessmsg = get_string('evaluate', 'quest');
-            $str .= "&nbsp;&nbsp;<a href=\"$assessurl\">$assessmsg</a>";
         } else {
-            $answerurl = new moodle_url(
-                "/mod/quest/answer.php",
-                ['sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+            $buttons[] = quest_answer_action_button(
+                $answerurl,
+                get_string('see', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-secondary',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"$answerurl\">" . get_string('see', 'quest') . "</a>";
         }
     } else {
-        $answerurl = new moodle_url(
-            "/mod/quest/answer.php",
-            ['sid' => $submission->id, 'aid' => $answer->id, 'action' => 'showanswer', 'sesskey' => sesskey()]
+        $buttons[] = quest_answer_action_button(
+            $answerurl,
+            get_string('see', 'quest'),
+            'eye',
+            'btn btn-sm btn-outline-secondary',
+            'sid_' . $answer->id
         );
-        $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$answerurl\">" . get_string('see', 'quest') . "</a>";
     }
-    if (
-        (($ismanager) || ($submission->userid == $USER->id)) && (($answer->phase == 1) || ($answer->phase == 2)) &&
-             ($answer->permitsubmit == 0)
-    ) {
-        $answerurl = new moodle_url(
-            "/mod/quest/answer.php",
-            ['sid' => $submission->id, 'aid' => $answer->id, 'action' => 'permitsubmit', 'sesskey' => sesskey()]
+
+    if (($ismanager || ($submission->userid == $USER->id))
+            && $isassessed && $answer->permitsubmit == 0) {
+        $permiturl = new moodle_url('/mod/quest/answer.php', [
+            'sid' => $submission->id,
+            'aid' => $answer->id,
+            'action' => 'permitsubmit',
+            'sesskey' => sesskey(),
+        ]);
+        $buttons[] = quest_answer_action_button(
+            $permiturl,
+            get_string('permitsubmit', 'quest'),
+            'unlock-alt',
+            'btn btn-sm btn-outline-success',
+            'sid_' . $answer->id
         );
-        $str .= "&nbsp;&nbsp;<a href=\"$answerurl\">" . get_string('permitsubmit', 'quest') . "</a>";
     }
-    return $str;
+
+    return $buttons
+        ? html_writer::div(implode(' ', $buttons), 'quest-answer-actions d-flex flex-wrap gap-1')
+        : '';
 }
 /**
  *
@@ -1640,58 +1746,65 @@ function quest_print_answer_info($quest, $answer) {
  * answer->state 1
  * 2 modified */
 function quest_answer_phase($answer, $course, $style = '') {
-    global $USER, $DB;
+    global $DB;
+
     $string = '';
+    $badgeclass = 'bg-secondary text-dark';
 
     if ($answer->phase == ANSWER_PHASE_UNGRADED) {
         $string = get_string('phase1answer' . $style, 'quest');
+        $badgeclass = 'bg-danger text-white';
     } else {
-        $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id]);
+        $assessment = $DB->get_record('quest_assessments', ['answerid' => $answer->id]);
 
         if ($assessment) {
             if ($answer->phase == ANSWER_PHASE_GRADED) {
                 if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
                     $string = get_string('phase2answer' . $style, 'quest');
+                    $badgeclass = 'bg-info text-dark';
                 } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
                     $string = get_string('phase3answer' . $style, 'quest');
-                }
-                if ($answer->state == ANSWER_STATE_MODIFIED) {
-                    $string .= get_string('modified', 'quest');
+                    $badgeclass = 'bg-success text-white';
                 }
             } else if ($answer->phase == ANSWER_PHASE_PASSED) {
                 if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
                     $string = get_string('phase4answer' . $style, 'quest');
+                    $badgeclass = 'bg-success text-white';
                 } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
                     $string = get_string('phase5answer' . $style, 'quest');
-                }
-                if ($answer->state == ANSWER_STATE_MODIFIED) {
-                    $string .= " " . get_string('modified', 'quest');
+                    $badgeclass = 'bg-success text-white';
                 }
             }
+
             if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
-                if (!isset($string)) {
-                    $string = "*";
-                } else {
-                    $string .= "*";
-                }
+                $string = trim($string . ' *');
+                $badgeclass = 'bg-warning text-dark';
             }
         } else {
             if ($answer->phase == ANSWER_PHASE_GRADED) {
                 $string = get_string('phase3answer' . $style, 'quest');
+                $badgeclass = 'bg-success text-white';
             } else if ($answer->phase == ANSWER_PHASE_PASSED) {
                 $string = get_string('phase5answer' . $style, 'quest');
+                $badgeclass = 'bg-success text-white';
             }
-            if ($answer->state == ANSWER_STATE_MODIFIED) {
-                if (!isset($string)) {
-                    $string = get_string('modified', 'quest');
-                } else {
-                    $string .= " " . get_string('modified', 'quest');
-                }
-            }
+        }
+
+        if ($answer->state == ANSWER_STATE_MODIFIED) {
+            $string = trim($string . ' ' . get_string('modified', 'quest'));
+            $badgeclass = 'bg-warning text-dark';
         }
     }
 
-    return $string;
+    if ($string === '') {
+        $string = get_string('phase1answer' . $style, 'quest');
+        $badgeclass = 'bg-danger text-white';
+    }
+
+    return html_writer::span(
+        $string,
+        'badge ' . $badgeclass . ' quest-answer-phase-badge'
+    );
 }
 
 /**

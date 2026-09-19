@@ -49,12 +49,24 @@ define(['core/notification'], function(Notification) {
     }
 
     /**
-     * Format a duration in seconds into a friendly string.
+     * Format a duration using the precision shown by the timeline scale.
      *
      * @param {number} sec Duration in seconds.
+     * @param {boolean} showMinutes Whether the timeline is using hourly detail.
      * @return {string}
      */
-    function formatDuration(sec) {
+    function formatDuration(sec, showMinutes) {
+        if (showMinutes) {
+            var totalMinutes = Math.max(0, Math.round(sec / 60));
+            var detailedHours = Math.floor(totalMinutes / 60);
+            var minutes = totalMinutes % 60;
+            if (detailedHours > 0 && minutes > 0) {
+                return detailedHours + 'h ' + minutes + 'm';
+            } else if (detailedHours > 0) {
+                return detailedHours + 'h';
+            }
+            return minutes + 'm';
+        }
         var days = Math.floor(sec / 86400);
         var hours = Math.round((sec % 86400) / 3600);
         if (days > 0 && hours > 0) {
@@ -155,6 +167,7 @@ define(['core/notification'], function(Notification) {
         activeDrag: null,
         trackWidthPx: 1200,
         locale: undefined,
+        showDurationMinutes: false,
 
         /**
          * Initialize calendar timeline.
@@ -195,7 +208,8 @@ define(['core/notification'], function(Notification) {
             var totalSec = Math.max(3600, this.config.questEnd - this.config.questStart);
             var totalDays = totalSec / 86400;
             if (totalDays <= 7 && this.snapSelect) {
-                this.snapSelect.innerHTML = '<option value="3600" selected>1 hour</option>' +
+                this.snapSelect.innerHTML = '<option value="1800">30 minutes</option>' +
+                    '<option value="3600" selected>1 hour</option>' +
                     '<option value="14400">4 hours</option>' +
                     '<option value="43200">12 hours</option>' +
                     '<option value="86400">1 day</option>';
@@ -218,6 +232,8 @@ define(['core/notification'], function(Notification) {
             var totalSec = Math.max(3600, qEndSec - qStartSec);
             var totalDays = totalSec / 86400;
             var isShort = totalDays <= 7;
+            var viewportWidth = self.wrapper && self.wrapper.clientWidth ? self.wrapper.clientWidth : 1000;
+            var availableTrackWidth = Math.max(1, viewportWidth - 220);
             var weekendDays = getLocaleWeekendDays(self.locale);
             var b1 = [], b2 = [], b3 = [];
 
@@ -261,38 +277,21 @@ define(['core/notification'], function(Notification) {
                     }
                 }
 
-                // Level 3: DÍA (Day) - grouped according to scale, no hours.
+                // Level 3: DÍA (Day). Keep one column per calendar day so no day is omitted.
                 var stepDays = 1;
-                if (totalDays > 365 * 3) {
-                    stepDays = 30; // ~monthly ticks for multi-year
-                } else if (totalDays > 365) {
-                    stepDays = 14; // fortnightly for 1-3 years
-                } else if (totalDays > 90) {
-                    stepDays = 7;  // weekly for 3-12 months
-                } else if (totalDays > 31) {
-                    stepDays = 2;  // 2 days for 1-3 months
-                } else {
-                    stepDays = 1;  // daily for <= 31 days
-                }
 
                 var dayPointer = new Date(qStartSec * 1000);
                 dayPointer.setHours(0, 0, 0, 0);
 
                 while (dayPointer.getTime() / 1000 < qEndSec) {
-                    var nextDay = new Date(dayPointer.getTime() + stepDays * 86400 * 1000);
+                    var nextDay = new Date(dayPointer);
+                    nextDay.setDate(nextDay.getDate() + stepDays);
                     var dStart = Math.max(qStartSec, Math.floor(dayPointer.getTime() / 1000));
                     var dEnd = Math.min(qEndSec, Math.floor(nextDay.getTime() / 1000));
 
                     if (dEnd > dStart) {
-                        var isWkDay = (stepDays === 1) ? isDateWeekend(dayPointer, weekendDays) : false;
-                        var dLabel = '';
-                        if (stepDays === 1) {
-                            dLabel = dayPointer.getDate();
-                        } else if (stepDays <= 7) {
-                            dLabel = dayPointer.getDate();
-                        } else {
-                            dLabel = dayPointer.toLocaleDateString(self.locale, {day: 'numeric', month: 'numeric'});
-                        }
+                        var isWkDay = isDateWeekend(dayPointer, weekendDays);
+                        var dLabel = dayPointer.toLocaleDateString(self.locale, {day: 'numeric', month: 'numeric'});
                         b3.push({
                             label: String(dLabel),
                             left: ((dStart - qStartSec) / totalSec) * 100,
@@ -320,7 +319,8 @@ define(['core/notification'], function(Notification) {
                 var dPtr = new Date(qStartSec * 1000);
                 dPtr.setHours(0, 0, 0, 0);
                 while (dPtr.getTime() / 1000 < qEndSec) {
-                    var dNextP = new Date(dPtr.getTime() + 86400 * 1000);
+                    var dNextP = new Date(dPtr);
+                    dNextP.setDate(dNextP.getDate() + 1);
                     var dayS = Math.max(qStartSec, Math.floor(dPtr.getTime() / 1000));
                     var dayE = Math.min(qEndSec, Math.floor(dNextP.getTime() / 1000));
                     if (dayE > dayS) {
@@ -336,14 +336,16 @@ define(['core/notification'], function(Notification) {
                     dPtr = dNextP;
                 }
 
-                // Level 3: Hora (Hours according to scale)
-                var stepHours = 1;
-                if (totalDays > 3) {
-                    stepHours = 6;
-                } else if (totalDays > 1) {
-                    stepHours = 4;
-                } else {
-                    stepHours = 2;
+                // Level 3: Hora. Select the finest readable step that fits the available width.
+                var maxHourColumns = Math.max(1, Math.floor(availableTrackWidth / 32));
+                var hourSteps = [1, 2, 3, 4, 6, 8, 12, 24];
+                var stepHours = hourSteps[hourSteps.length - 1];
+                for (var stepIndex = 0; stepIndex < hourSteps.length; stepIndex++) {
+                    var estimatedColumns = Math.ceil(totalSec / (hourSteps[stepIndex] * 3600)) + 1;
+                    if (estimatedColumns <= maxHourColumns) {
+                        stepHours = hourSteps[stepIndex];
+                        break;
+                    }
                 }
 
                 var hPtr = new Date(qStartSec * 1000);
@@ -351,7 +353,8 @@ define(['core/notification'], function(Notification) {
                 hPtr.setHours(hPtr.getHours() - remH, 0, 0, 0);
 
                 while (hPtr.getTime() / 1000 < qEndSec) {
-                    var hNextP = new Date(hPtr.getTime() + stepHours * 3600 * 1000);
+                    var hNextP = new Date(hPtr);
+                    hNextP.setHours(hNextP.getHours() + stepHours);
                     var hS = Math.max(qStartSec, Math.floor(hPtr.getTime() / 1000));
                     var hE = Math.min(qEndSec, Math.floor(hNextP.getTime() / 1000));
                     if (hE > hS) {
@@ -378,7 +381,8 @@ define(['core/notification'], function(Notification) {
             var wBlockEnd = 0;
 
             while (curD.getTime() / 1000 < qEndSec) {
-                var nxtD = new Date(curD.getTime() + 86400 * 1000);
+                var nxtD = new Date(curD);
+                nxtD.setDate(nxtD.getDate() + 1);
                 var curDs = Math.max(qStartSec, Math.floor(curD.getTime() / 1000));
                 var curDe = Math.min(qEndSec, Math.floor(nxtD.getTime() / 1000));
                 var isCurW = isDateWeekend(curD, weekendDays);
@@ -428,11 +432,11 @@ define(['core/notification'], function(Notification) {
             var totalSec = Math.max(3600, qEnd - qStart);
 
             var bands = self.calculateBands(qStart, qEnd);
+            self.showDurationMinutes = bands.isShort;
 
-            // Compute track pixel width to ensure base units have at least 36px
-            var baseCount = Math.max(10, bands.b3.length);
-            var wrapperWidth = self.wrapper ? (self.wrapper.clientWidth - 220) : 1000;
-            self.trackWidthPx = Math.max(wrapperWidth, baseCount * 36);
+            // Keep the complete timeline inside the viewport; do not create horizontal scrolling.
+            var wrapperWidth = self.wrapper && self.wrapper.clientWidth ? self.wrapper.clientWidth : 1000;
+            self.trackWidthPx = Math.max(1, wrapperWidth - 220);
 
             var board = document.createElement('div');
             board.className = 'quest-timeline-table d-flex';
@@ -458,7 +462,7 @@ define(['core/notification'], function(Notification) {
                 rowLabel.className =
                     'quest-left-row p-2 border-bottom border-end bg-white d-flex flex-column justify-content-center';
                 rowLabel.setAttribute('data-cid', c.id);
-                var dur = formatDuration(c.dateend - c.datestart);
+                var dur = formatDuration(c.dateend - c.datestart, self.showDurationMinutes);
                 rowLabel.innerHTML = '<div class="quest-left-title fw-bold small text-dark"' +
                     ' title="' + self.escapeHtml(c.title) + '">' +
                     self.escapeHtml(c.title) + '</div>' +
@@ -629,7 +633,7 @@ define(['core/notification'], function(Notification) {
             // Center body
             var body = document.createElement('div');
             body.className = 'quest-bar-body d-flex align-items-center justify-content-between px-2 text-truncate';
-            var durStr = formatDuration(c.dateend - c.datestart);
+            var durStr = formatDuration(c.dateend - c.datestart, this.showDurationMinutes);
             body.innerHTML = '<span class="quest-bar-title fw-bold text-truncate small me-2">' +
                 this.escapeHtml(c.title) + '</span>' +
                 '<span class="quest-bar-badge badge quest-duration-badge smaller">' + durStr + '</span>';
@@ -814,7 +818,7 @@ define(['core/notification'], function(Notification) {
                 act.barElem.classList.remove('is-dragging');
 
                 // Update badge inside bar and left column.
-                var durStr = formatDuration(act.challenge.dateend - act.challenge.datestart);
+                var durStr = formatDuration(act.challenge.dateend - act.challenge.datestart, self.showDurationMinutes);
                 var badge = act.barElem.querySelector('.quest-bar-badge');
                 if (badge) {
                     badge.textContent = durStr;
@@ -981,7 +985,7 @@ define(['core/notification'], function(Notification) {
                 var end = dateTimeLocalToTimestamp(modalEnd && modalEnd.value);
                 var valid = start > 0 && end > start;
                 if (modalDuration && valid) {
-                    modalDuration.textContent = formatDuration(end - start);
+                    modalDuration.textContent = formatDuration(end - start, self.showDurationMinutes);
                 }
                 if (modalError) {
                     modalError.classList.toggle('d-none', valid);
@@ -1043,7 +1047,8 @@ define(['core/notification'], function(Notification) {
             this.hud.querySelector('.quest-hud-title').textContent = title;
             this.hud.querySelector('.quest-hud-start').textContent = formatDateTime(startSec, this.locale);
             this.hud.querySelector('.quest-hud-end').textContent = formatDateTime(endSec, this.locale);
-            this.hud.querySelector('.quest-hud-dur').textContent = 'Duration: ' + formatDuration(endSec - startSec);
+            this.hud.querySelector('.quest-hud-dur').textContent = 'Duration: ' +
+                formatDuration(endSec - startSec, this.showDurationMinutes);
 
             var wrapper = document.getElementById('quest-timeline-wrapper');
             var wrapRect = wrapper.getBoundingClientRect();
@@ -1124,7 +1129,7 @@ define(['core/notification'], function(Notification) {
                 author.textContent = challenge.author || '';
             }
             if (duration) {
-                duration.textContent = formatDuration(challenge.dateend - challenge.datestart);
+                duration.textContent = formatDuration(challenge.dateend - challenge.datestart, self.showDurationMinutes);
             }
             if (start) {
                 start.value = timestampToDateTimeLocal(challenge.datestart);
@@ -1237,7 +1242,7 @@ define(['core/notification'], function(Notification) {
                 bar.style.width = Math.max(0.4, endPct - startPct) + '%';
                 var badge = bar.querySelector('.quest-bar-badge');
                 if (badge) {
-                    badge.textContent = formatDuration(newEnd - newStart);
+                    badge.textContent = formatDuration(newEnd - newStart, self.showDurationMinutes);
                 }
             }
 
@@ -1269,7 +1274,7 @@ define(['core/notification'], function(Notification) {
                 endEl.textContent = formatDateTime(c.dateend, self.locale);
             }
             if (durEl) {
-                durEl.textContent = formatDuration(c.dateend - c.datestart);
+                durEl.textContent = formatDuration(c.dateend - c.datestart, self.showDurationMinutes);
             }
         },
 
@@ -1465,53 +1470,97 @@ define(['core/notification'], function(Notification) {
                 return;
             }
 
+            var changedChallenges = self.challenges.filter(function(challenge) {
+                var initial = self.initialChallenges.find(function(item) {
+                    return String(item.id) === String(challenge.id);
+                });
+                return !initial || Number(initial.datestart) !== Number(challenge.datestart) ||
+                    Number(initial.dateend) !== Number(challenge.dateend);
+            });
+            if (!changedChallenges.length) {
+                self.setDirty(false);
+                return;
+            }
+
             self.saveBtn.disabled = true;
             var originalText = self.saveBtn.innerHTML;
-            self.saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"' +
-                ' role="status" aria-hidden="true"></span> Saving...';
+            self.saveBtn.innerHTML =
+                "<span class=\"spinner-border spinner-border-sm me-1\" role=\"status\" " +
+                "aria-hidden=\"true\"></span> Saving...";
 
-            var payload = self.challenges.map(function(c) {
-                return {
-                    id: c.id,
-                    datestart: c.datestart,
-                    dateend: c.dateend
-                };
-            });
-
-            var formData = new URLSearchParams();
-            formData.append('sesskey', self.config.sesskey);
-            formData.append('schedules', JSON.stringify(payload));
+            var payload = {
+                sesskey: self.config.sesskey,
+                schedules: changedChallenges.map(function(c) {
+                    return {
+                        id: c.id,
+                        datestart: c.datestart,
+                        dateend: c.dateend
+                    };
+                })
+            };
 
             fetch(self.config.saveUrl, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    "Content-Type": "application/json"
                 },
-                body: formData.toString()
+                body: JSON.stringify(payload)
             })
             .then(function(res) {
-                return res.json();
+                return res.text().then(function(text) {
+                    var data = null;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        // The endpoint must return JSON; keep the response useful if it does not.
+                    }
+                    if (!data) {
+                        var snippet = text ? text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "";
+                        if (snippet.length > 200) {
+                            snippet = snippet.substring(0, 200) + "...";
+                        }
+                        throw new Error("Server returned HTTP " + res.status + (snippet ? ": " + snippet : ""));
+                    }
+                    return data;
+                });
             })
             .then(function(data) {
                 self.saveBtn.innerHTML = originalText;
-                if (data.success) {
+                if (data && data.success) {
+                    // Reconcile with the values the server actually stored.
+                    if (Array.isArray(data.schedules)) {
+                        data.schedules.forEach(function(saved) {
+                            var challenge = self.challenges.find(function(item) {
+                                return String(item.id) === String(saved.id);
+                            });
+                            if (challenge) {
+                                challenge.datestart = Number(saved.datestart);
+                                challenge.dateend = Number(saved.dateend);
+                            }
+                        });
+                    }
                     self.initialChallenges = JSON.parse(JSON.stringify(self.challenges));
-                    self.setDirty(false);
                     if (data.quest_updated) {
                         self.config.questStart = data.quest_datestart;
                         self.config.questEnd = data.quest_dateend;
                         self.renderTimeline();
                     }
-                    self.showStatus(data.message || ('Schedule saved successfully (' + data.updated + ' challenges updated).'));
+                    // Clear this only after the server has confirmed and the UI is reconciled.
+                    self.setDirty(false);
+                    self.showStatus(data.message || ("Schedule saved successfully (" + data.updated + " challenges updated)."));
+                    Notification.addNotification({
+                        message: data.message || "Schedule saved successfully.",
+                        type: "success"
+                    });
                 } else {
                     self.saveBtn.disabled = false;
-                    var errMsg = data.message || 'Failed to save schedule.';
-                    if (data.errors && data.errors.length > 1) {
-                        errMsg = data.errors.join('\n');
+                    var errMsg = data && data.message ? data.message : "Failed to save schedule.";
+                    if (data && data.errors && data.errors.length > 1) {
+                        errMsg = data.errors.join("\n");
                     }
                     Notification.addNotification({
                         message: errMsg,
-                        type: 'error'
+                        type: "error"
                     });
                 }
             })

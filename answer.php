@@ -211,7 +211,7 @@ if ($action == "answer") {
             $string = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
         }
     }
-    echo "<center><b>" . $string . "</b></center>";
+    echo html_writer::div($string, "text-center quest-answer-page-actions my-3");
     echo "<br><br>";
 
     // Log the event.
@@ -293,7 +293,6 @@ if ($action == "answer") {
     if ($assessments = quest_get_assessments($answer, 'ALL')) {
         foreach ($assessments as $assessment) {
             $DB->delete_records("quest_elements_assessments", array("assessmentid" => $assessment->id));
-            echo ".";
         }
 
         // Now delete the assessments....
@@ -327,11 +326,11 @@ if ($action == "answer") {
         }
     }
 
-    echo $OUTPUT->header();
-    echo $OUTPUT->notification(get_string('emailanswerdeletesubject', 'quest'), 'info');
-    echo $OUTPUT->continue_button($submissionurl);
-    print_string("deleting", "quest");
-    echo $OUTPUT->footer();
+    redirect(new moodle_url('/mod/quest/challenges.php', [
+        'id' => $cm->id,
+        'sid' => $submission->id,
+        'action' => 'showchallenge',
+    ]), get_string('emailanswerdeletesubject', 'quest'), null, \core\output\notification::NOTIFY_SUCCESS);
 } else if ($action == 'modif') {
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", array("id" => $aid), '*', MUST_EXIST);
