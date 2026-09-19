@@ -33,7 +33,7 @@ $id = required_param('id', PARAM_INT); // Course Module ID.
 $a = optional_param('a', '', PARAM_ALPHA); // Quest ID.
 
 $action = optional_param('action', 'global', PARAM_ALPHA);
-$sort = optional_param('sort', 'lastname', PARAM_ALPHA);
+$sort = optional_param('sort', 'rank', PARAM_ALPHA);
 $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 
 /*
@@ -60,7 +60,7 @@ if ($a !== '') {
 if ($action !== 'global') {
     $thispageurl->param('action', $action);
 }
-if ($sort !== 'lastname') {
+if ($sort !== 'rank') {
     $thispageurl->param('sort', $sort);
 }
 if ($dir !== 'ASC') {

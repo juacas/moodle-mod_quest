@@ -128,7 +128,7 @@ if (has_capability('mod/quest:manage', $context)) {
         if ($timenow < $quest->dateend) {
             $action = 'studentsview';
         } else {
-            $action = 'displayfinalgrade';
+            $action = 'studentsview';
         }
     }
 
@@ -253,219 +253,9 @@ if (has_capability('mod/quest:manage', $context)) {
 \mod_quest\event\quest_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 echo $OUTPUT->header();
 
-// Display final grade (for students).
-if ($action == 'displayfinalgrade') {
-    // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group.
-    $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
-    $groupmode = groups_get_activity_groupmode($cm, $course);
-    $currentgroup = groups_get_course_group($course);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
-                                        // Print settings and things in a table across the top.
-    echo '<table align="center" width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-
-    // Allow the teacher to change groups (for this session).
-    if ($groupmode and $ismanager) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            echo '<td>';
-            print_group_menu($groups, $groupmode, $currentgroup, "view.php?id=$cm->id");
-            echo '</td>';
-        }
-    }
-    // Print admin links.
-    echo "<td align=\"right\">";
-    echo '</td></tr>';
-    echo "</table>";
-    quest_print_quest_heading($quest);
-    $text = "<center><b>";
-    $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;sid=&amp;action=displaygradingform\">" .
-             get_string("specimenassessmentformsubmission", "quest") . "</a>";
-    $text .= $OUTPUT->help_icon('specimensubmission', 'quest');
-    $text .= "</b></center>";
-
-    echo ($text);
-
-    echo "<table width=\"100%\" border=\"0\" cellpadding=\"3\" cellspacing=\"0\">";
-    echo "<tr><td height=\"30\"> </td></tr>";
-    echo "<tr valign=\"top\">";
-    echo "<td width=\"70%\" align=\"center\">";
-    echo "<b>" . get_string('description', 'quest') . "</b>";
-    echo "</td><td width=\"30%\" align=\"center\">";
-    echo "<b>" . get_string('clasification', 'quest') . "</b>";
-    echo "</td></tr>";
-    echo "<tr><td width=\"70%\" valign=\"top\">";
-    echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id), 'left', '100%');
-    quest_print_attachments($context, 'introattachment', false, 'timemodified');
-    echo "</td><td width=\"30%\" valign=\"top\">";
-
-    if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {
-        if ($actionclasification == 'global') {
-            echo " <center><a href=\"view.php?actionclasification=teams&amp;id=$cm->id\">" .
-            get_string('resumeteams', 'quest') . "</a></center>";
-            echo '<br>';
-        } else {
-            echo " <center><a href=\"view.php?actionclasification=global&amp;id=$cm->id\">" .
-            get_string('resumeindividual', 'quest') . "</a></center>";
-            echo '<br>';
-        }
-    }
-    $users = quest_get_course_members($course->id, "u.lastname, u.firstname");
-    quest_print_simple_calification($quest, $course, $currentgroup, $actionclasification);
-    if ($users) {
-        echo " <center><b><a href=\"viewclasification.php?action=global&amp;id=$cm->id&amp;sort=points&amp;dir=DESC\">" .
-                 get_string('viewclasification', 'quest') . "</a></b></center>";
-    }
-    echo "</td></tr></table>";
-
-    echo "<br><b><a href=\"myplace.php?id=$cm->id\">" . get_string('myplace', 'quest') . "</a></b>";
-    echo "<br>";
-
-    // Get all the students.
-    if (!$users) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer();
-        exit();
-    }
-
-    // Now prepare table with student assessments and submissions.
-    $tablesort = new stdClass();
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
-
-    foreach ($users as $user) {
-        // Skip if student not in group.
-        if (!has_capability('mod/quest:manage', $context, $user->id) && ($groupmode == 1)) {
-            if ($currentgroup) {
-                if (!groups_is_member($currentgroup, $user->id)) {
-                    continue;
-                }
-            }
-        }
-        if ($submissions = quest_get_user_submissions($quest, $user)) {
-            foreach ($submissions as $submission) {
-                $data = array();
-                $sortdata = array();
-
-                if (($submission->userid == $USER->id) || (($submission->state == 2) && ($submission->datestart < $timenow))) {
-
-                    $data[] = quest_print_submission_title($quest, $submission);
-                    $sortdata['title'] = strtolower($submission->title);
-
-                    $data[] = quest_submission_phase($submission, $quest, $course);
-                    $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
-
-                    $nanswersassess = 0;
-                    if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
-                            array($quest->id, $submission->id))) {
-                        foreach ($answers as $answer) {
-                            if (($answer->phase == 1) || ($answer->phase == 2)) {
-                                $nanswersassess++;
-                            }
-                        }
-                    }
-                    $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
-                    $image = '';
-                    if ($answer = $DB->get_record("quest_answers",
-                            array("questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id))) {
-                        $image = $OUTPUT->pix_icon('t/check', 'ok');
-                    }
-
-                    $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' .
-                            $nanswerswhithoutassess . ']' . $image . '</b>';
-                    $sortdata['nanswersshort'] = $submission->nanswers;
-                    $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
-                    $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
-
-                    $data[] = userdate($submission->datestart, get_string('datestr', 'quest'));
-                    $sortdata['datestart'] = $submission->datestart;
-
-                    $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
-                    $sortdata['dateend'] = $submission->dateend;
-
-                    $points = quest_get_points($submission, $quest);
-                    $points = number_format($points, 4);
-
-                    $grade = "<form name=\"puntos\"><input name=\"calificacion\" type=\"text\" value=\"$points\" " .
-                            "size=\"10\" readonly=\"1\" style=\"background-color : White; border : Black; color : #cccccc; " .
-                            "font-size : 14pt; text-align : center;\" ></form>";
-                    $data[] = $grade;
-                    $sortdata['calification'] = quest_get_points($submission, $quest, '');
-
-                    $tablesort->data[] = $data;
-                    $tablesort->sortdata[] = $sortdata;
-                }
-            }
-        }
-    }
-    $sort = optional_param('sort', 'datestart', PARAM_ALPHA);
-    uasort($tablesort->sortdata, 'quest_sortfunction');
-    $table = new html_table();
-    $table->data = array();
-    foreach ($tablesort->sortdata as $key => $row) {
-        $table->data[] = $tablesort->data[$key];
-    }
-
-    $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-
-    $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess', 'datestart', 'dateend',
-                    'calification');
-    $table->width = "95%";
-
-    $string = [];
-    foreach ($columns as $column) {
-        $string[$column] = get_string("$column", 'quest');
-        if ($sort != $column) {
-            $columnicon = '';
-            $columndir = 'ASC';
-        } else {
-            $columndir = $dir == 'ASC' ? 'DESC' : 'ASC';
-            if ($column == 'lastaccess') {
-                $columnicon = $dir == 'ASC' ? 'up' : 'down';
-            } else {
-                $columnicon = $dir == 'ASC' ? 'down' : 'up';
-            }
-            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
-        }
-        $$column = "<a href=\"view.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
-    }
-
-    $table->head = array("$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
-                    "$dateend", "$calification");
-
-    echo html_writer::table($table);
-
-    $grafic = $OUTPUT->pix_icon('t/check', 'ok');
-    echo "<center>";
-    echo get_string('legend', 'quest', $grafic);
-    echo "</center>";
-
-    echo "<br><b><a href=\"myplace.php?id=$cm->id\">" . get_string('myplace', 'quest') . "</a></b>";
-} else if ($action == 'notavailable') {
-    // ... assignment not available (for students).
-    // Check to see if groups are being used in this quest
-    // and if so, set $currentgroup to reflect the current group.
-    $groupmode = groups_get_activity_groupmode($cm, $course); // Groups are being used?
-    $currentgroup = groups_get_course_group($course, true);
-    $groupmode = $currentgroup = false; // JPC group support desactivation.
-                                        // Print settings and things in a table across the top.
-    echo '<table align="center" width="100%" border="0" cellpadding="3" cellspacing="0"><tr valign="top">';
-    // Allow the teacher to change groups (for this session).
-    if ($groupmode and has_capability('mod/quest:manage', $context)) {
-        if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
-            echo '<td>';
-            print_group_menu($groups, $groupmode, $currentgroup, "view.php?id=$cm->id");
-            echo '</td>';
-        }
-    }
-    // Print admin links.
-    echo "<td align=\"right\">";
-    echo '</td></tr>';
-    echo "</table>";
-    quest_print_quest_heading($quest);
+if ($action == 'notavailable') {
     echo $OUTPUT->notification($message);
-    echo $OUTPUT->heading(get_string('description', 'quest'));
-    echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
-} else if ($action == 'teachersview' || $action == 'studentsview') {
+} else if ($action == 'teachersview' || $action == 'studentsview' || $action == 'displayfinalgrade') {
     $canviewauthors = has_capability('mod/quest:viewotherattemptsowners', $context);
     $currentgroup = groups_get_course_group($course);
     $currentgroup = false; // JPC group support desactivation.
@@ -481,15 +271,13 @@ if ($action == 'displayfinalgrade') {
         'clasificationswitchlabel' => '',
     ];
 
-    if ($ismanager) {
-        ob_start();
-        quest_print_challenge_grading_link($cm, $context, $quest);
-        $summarydata['challengegradinghtml'] = ob_get_clean();
+    ob_start();
+    quest_print_challenge_grading_link($cm, $context, $quest);
+    $summarydata['challengegradinghtml'] = ob_get_clean();
 
-        ob_start();
-        quest_print_answer_grading_link($cm, $context, $quest);
-        $summarydata['answergradinghtml'] = ob_get_clean();
-    }
+    ob_start();
+    quest_print_answer_grading_link($cm, $context, $quest);
+    $summarydata['answergradinghtml'] = ob_get_clean();
 
     ob_start();
     quest_print_attachments($context, 'introattachment', false, 'timemodified');
@@ -627,10 +415,10 @@ if ($action == 'displayfinalgrade') {
             $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-            $data[] = userdate($submission->datestart, get_string('datestr', 'quest'));
+            $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['datestart'] = $submission->datestart;
 
-            $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
+            $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateend'] = $submission->dateend;
 
             $tinitialval = (int)$quest->tinitial * 86400;

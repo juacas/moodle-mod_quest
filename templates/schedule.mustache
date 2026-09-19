@@ -1,0 +1,186 @@
+{{!
+    This file is part of Questournament activity for Moodle - http://moodle.org/
+
+    Questournament for Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Questournament for Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_quest/schedule
+
+    Challenge scheduling and timeline interactive view.
+}}
+<div class="quest-schedule-page container-fluid p-0 mb-5">
+    <!-- Header banner -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-3 border-bottom gap-3">
+        <div>
+            <div class="mb-1">
+                <a href="{{{backurl}}}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa fa-arrow-left me-1" aria-hidden="true"></i> {{#str}}back, moodle{{/str}}
+                </a>
+            </div>
+            <h2 class="h3 fw-bold text-dark mb-1">
+                <i class="fa fa-calendar-check-o text-primary me-2" aria-hidden="true"></i>{{#str}}reorderchallengestitle, quest{{/str}}
+            </h2>
+            <p class="text-muted small mb-0">{{#str}}reorderchallengesdesc, quest{{/str}}</p>
+        </div>
+
+        <!-- Activity timeframe metadata -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-light text-dark border py-2 px-3">
+                <i class="fa fa-calendar-check-o text-success me-1" aria-hidden="true"></i>
+                <strong>{{#str}}datestart, quest{{/str}}:</strong> {{queststartstr}}
+            </span>
+            <span class="badge bg-light text-dark border py-2 px-3">
+                <i class="fa fa-calendar-times-o text-danger me-1" aria-hidden="true"></i>
+                <strong>{{#str}}dateend, quest{{/str}}:</strong> {{questendstr}}
+            </span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-2 px-3">
+                <i class="fa fa-flag-checkered me-1" aria-hidden="true"></i>
+                <strong>{{challengecount}}</strong> {{#str}}challenges, quest{{/str}}
+            </span>
+        </div>
+    </div>
+
+    {{^haschallenges}}
+    <div class="alert alert-info py-4 text-center">
+        <i class="fa fa-info-circle fa-2x mb-2 d-block text-primary" aria-hidden="true"></i>
+        <h5>{{#str}}nosubmissionsfound, quest{{/str}}</h5>
+        <a href="{{{backurl}}}" class="btn btn-primary mt-2">
+            <i class="fa fa-arrow-left me-1" aria-hidden="true"></i> {{#str}}back, moodle{{/str}}
+        </a>
+    </div>
+    {{/haschallenges}}
+
+    {{#haschallenges}}
+    <script type="application/json" id="quest-schedule-data">
+        {{{challengesjson}}}
+    </script>
+    <!-- Control toolbar -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 d-flex flex-wrap align-items-center gap-3">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary" id="quest-schedule-autosequence" title="Evenly sequence challenges in chronological order without overlaps">
+                    <i class="fa fa-magic me-1" aria-hidden="true"></i> {{#str}}autosequence, quest{{/str}}
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="quest-schedule-reset">
+                    <i class="fa fa-undo me-1" aria-hidden="true"></i> {{#str}}resetschedule, quest{{/str}}
+                </button>
+            </div>
+
+            <!-- Snapping resolution -->
+            <div class="d-flex align-items-center gap-2">
+                <label for="quest-schedule-snap" class="small fw-bold text-muted mb-0">Snap:</label>
+                <select id="quest-schedule-snap" class="form-select form-select-sm" style="width: auto;">
+                    <option value="86400" selected>1 day</option>
+                    <option value="43200">12 hours</option>
+                    <option value="3600">1 hour</option>
+                </select>
+            </div>
+
+            <!-- Status indicator -->
+            <div class="d-flex align-items-center gap-2 ms-md-auto">
+                <span id="quest-schedule-dirty-badge" class="badge bg-warning text-dark py-2 px-3 d-none">
+                    <i class="fa fa-pencil me-1" aria-hidden="true"></i> {{#str}}unsavedchanges, quest{{/str}}
+                </span>
+                <span id="quest-schedule-status-msg" class="text-muted small"></span>
+
+                <button type="button" class="btn btn-success px-4" id="quest-schedule-save-btn" disabled>
+                    <i class="fa fa-check me-1" aria-hidden="true"></i> {{#str}}savechanges, moodle{{/str}}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Calendar Timeline Board -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-title fw-bold mb-0 text-dark">
+                <i class="fa fa-sliders text-primary me-2" aria-hidden="true"></i>{{#str}}reorderchallengestitle, quest{{/str}}
+            </h5>
+            <span class="text-muted small">
+                <i class="fa fa-arrows-h me-1" aria-hidden="true"></i> Drag bar to shift dates; drag left/right handles to resize duration
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <!-- Timeline scroll container -->
+            <div id="quest-timeline-wrapper" class="quest-timeline-wrapper position-relative">
+                <div id="quest-timeline-board" class="quest-timeline-board">
+                    <!-- Populated dynamically by schedule_calendar.js -->
+                </div>
+                <!-- Live Floating HUD / Tooltip -->
+                <div id="quest-timeline-hud" class="quest-timeline-hud d-none" aria-hidden="true">
+                    <div class="quest-hud-title fw-bold small text-truncate"></div>
+                    <div class="quest-hud-dates small">
+                        <span class="quest-hud-start"></span> &rarr; <span class="quest-hud-end"></span>
+                    </div>
+                    <div class="quest-hud-dur badge bg-dark mt-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenges Table Details & Numerical Inputs -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-title fw-bold mb-0 text-dark">
+                <i class="fa fa-table text-primary me-2" aria-hidden="true"></i>{{#str}}challenges, quest{{/str}}
+            </h5>
+            <span class="text-muted small">Synchronized in real-time with calendar timeline</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="quest-schedule-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 50px;">#</th>
+                            <th scope="col">{{#str}}title, quest{{/str}}</th>
+                            <th scope="col">{{#str}}author, quest{{/str}}</th>
+                            <th scope="col" style="min-width: 170px;">{{#str}}datestart, quest{{/str}}</th>
+                            <th scope="col" style="min-width: 170px;">{{#str}}dateend, quest{{/str}}</th>
+                            <th scope="col" style="width: 120px;">Duration</th>
+                            <th scope="col" style="width: 80px;" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#challenges}}
+                        <tr id="quest-row-{{id}}" data-cid="{{id}}">
+                            <td class="text-muted fw-bold">{{id}}</td>
+                            <td>
+                                <a href="{{{viewurl}}}" class="fw-bold text-decoration-none text-dark" target="_blank">
+                                    {{title}}
+                                </a>
+                            </td>
+                            <td class="small text-muted">{{author}}</td>
+                            <td>
+                                <span class="quest-tbl-start badge bg-light text-dark border p-2">{{datestartstr}}</span>
+                            </td>
+                            <td>
+                                <span class="quest-tbl-end badge bg-light text-dark border p-2">{{dateendstr}}</span>
+                            </td>
+                            <td>
+                                <span class="quest-tbl-dur badge bg-info text-dark p-2">{{duration_days}}d</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{{viewurl}}}" class="btn btn-sm btn-outline-secondary" title="View challenge" target="_blank">
+                                    <i class="fa fa-external-link" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {{/challenges}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {{/haschallenges}}
+</div>

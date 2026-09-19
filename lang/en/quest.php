@@ -1019,3 +1019,27 @@ $string['privacy:request:deleted:content'] = '[The author requested the deletion
 
 $string['selectquestionbank'] = 'Question bank';
 $string['editbankquestion'] = 'Edit question in question bank';
+$string['reorderchallenges'] = 'Schedule challenges';
+$string['reorderchallengestitle'] = 'Challenge Scheduling & Timeline';
+$string['reorderchallengesdesc'] = 'Drag challenges or their start/end handles to schedule them within the tournament timeframe.';
+$string['schedulesaved'] = 'Challenge schedule successfully saved.';
+$string['autosequence'] = 'Auto-sequence';
+$string['resetschedule'] = 'Reset schedule';
+$string['unsavedchanges'] = 'You have unsaved changes.';
+$string['nosubmissionsfound'] = 'No challenges found to schedule.';
+$string['durationdays'] = '{$a} days';
+$string['durationhours'] = '{$a} hours';
+$string['schedulelegend'] = 'Timeline legend';
+$string['mode'] = 'Mode';
+$string['nochallenges'] = 'No challenges found';
+$string['scheduleerrorinvaliditem'] = 'Invalid challenge schedule item.';
+$string['scheduleerrornotfound'] = 'Challenge {$a} not found in this tournament.';
+$string['scheduleerrordatesinvalid'] = 'Invalid dates for challenge \'{$a}\': end date must be strictly after start date.';
+$string['scheduleerroranswerbeforestart'] = 'Challenge \'{$a->title}\' already has answers submitted at {$a->date}. Start date cannot be moved after this time.';
+$string['scheduleerroranswerafterend'] = 'Challenge \'{$a->title}\' has answers submitted at {$a->date}. End date cannot be moved before this time.';
+$string['scheduleerroranswercorrect'] = 'Challenge \'{$a->title}\' has a verified correct answer at {$a->date}. The active schedule must encompass this date.';
+$string['scheduleboundaryexpanded'] = 'Tournament dates were synchronized with challenges ({$a->start} - {$a->end}).';
+$string['schedulesavedcount'] = 'Schedule saved successfully ({$a} challenges updated).';
+
+
+

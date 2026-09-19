@@ -1015,10 +1015,10 @@ if ($action == 'confirmdelete') {
             $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-            $data[] = userdate($submission->datestart, get_string('datestr', 'quest'));
+            $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['datestart'] = $submission->datestart;
 
-            $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
+            $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateend'] = $submission->dateend;
             $currentpoints = quest_get_points($submission, $quest, '');
             $sortdata['calification'] = $currentpoints;
@@ -1149,7 +1149,7 @@ if ($action == 'confirmdelete') {
             $data[] = quest_answer_phase($answer, $course);
             $sortdata['phase'] = quest_answer_phase($answer, $course);
 
-            $data[] = userdate($answer->date, get_string('datestr', 'quest'));
+            $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateanswer'] = $answer->date;
 
             if (($answer->phase == ANSWER_PHASE_GRADED) || ($answer->phase == ANSWER_PHASE_PASSED)) {
@@ -1305,10 +1305,10 @@ if ($action == 'confirmdelete') {
                 $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
                 $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-                $data[] = userdate($submission->datestart, get_string('datestr', 'quest'));
+                $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['datestart'] = $submission->datestart;
 
-                $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
+                $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateend'] = $submission->dateend;
                 $currentpoints = quest_get_points($submission, $quest, '');
                 $sortdata['calification'] = $currentpoints;
@@ -1452,7 +1452,7 @@ if ($action == 'confirmdelete') {
                 $data[] = quest_answer_phase($answer, $course);
                 $sortdata['phase'] = quest_answer_phase($answer, $course);
 
-                $data[] = userdate($answer->date, get_string('datestr', 'quest'));
+                $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateanswer'] = $answer->date;
 
                 if (($answer->phase == 1) || ($answer->phase == 2)) {

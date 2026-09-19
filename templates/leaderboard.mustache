@@ -27,7 +27,7 @@
                 {{#isteams}}{{#str}}teams, quest{{/str}}{{/isteams}}
                 {{^isteams}}{{#str}}globalranking, quest{{/str}}{{/isteams}}
             </h3>
-            <span class="text-muted">{{questname}}</span>
+            <!-- <span class="text-muted">{{questname}}</span> -->
         </div>
         <div class="d-flex gap-2">
             {{#isteams}}
@@ -93,10 +93,70 @@
                         {{#standings}}
                         <tr>
                             <td class="text-center">
-                                {{#istop1}}<span class="badge rounded-circle bg-warning p-2 text-dark fs-6">🥇</span>{{/istop1}}
-                                {{#istop2}}<span class="badge rounded-circle bg-secondary p-2 text-white fs-6">🥈</span>{{/istop2}}
-                                {{#istop3}}<span class="badge rounded-circle bg-danger p-2 text-white fs-6">🥉</span>{{/istop3}}
-                                {{^istop}}<span class="text-muted fw-bold">#{{rank}}</span>{{/istop}}
+                                {{#istop1}}
+                                <svg class="quest-medal quest-medal-gold" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1º">
+                                    <title>1º</title>
+                                    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+                                    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+                                    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+                                    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+                                    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+                                    <circle cx="18" cy="22" r="11" fill="#D97706"/>
+                                    <circle cx="18" cy="22" r="9.5" fill="url(#questGoldGrad)"/>
+                                    <circle cx="18" cy="22" r="7.8" stroke="#F59E0B" stroke-width="0.8" fill="none"/>
+                                    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFFBEB" stroke="#B45309" stroke-width="0.5"/>
+                                    <defs>
+                                        <linearGradient id="questGoldGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#FDE047"/>
+                                            <stop offset="0.45" stop-color="#F59E0B"/>
+                                            <stop offset="1" stop-color="#D97706"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {{/istop1}}
+                                {{#istop2}}
+                                <svg class="quest-medal quest-medal-silver" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="2º">
+                                    <title>2º</title>
+                                    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+                                    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+                                    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+                                    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+                                    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+                                    <circle cx="18" cy="22" r="11" fill="#64748B"/>
+                                    <circle cx="18" cy="22" r="9.5" fill="url(#questSilverGrad)"/>
+                                    <circle cx="18" cy="22" r="7.8" stroke="#94A3B8" stroke-width="0.8" fill="none"/>
+                                    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFFFFF" stroke="#475569" stroke-width="0.5"/>
+                                    <defs>
+                                        <linearGradient id="questSilverGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#FFFFFF"/>
+                                            <stop offset="0.45" stop-color="#CBD5E1"/>
+                                            <stop offset="1" stop-color="#94A3B8"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {{/istop2}}
+                                {{#istop3}}
+                                <svg class="quest-medal quest-medal-bronze" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3º">
+                                    <title>3º</title>
+                                    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+                                    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+                                    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+                                    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+                                    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+                                    <circle cx="18" cy="22" r="11" fill="#78350F"/>
+                                    <circle cx="18" cy="22" r="9.5" fill="url(#questBronzeGrad)"/>
+                                    <circle cx="18" cy="22" r="7.8" stroke="#D97706" stroke-width="0.8" fill="none"/>
+                                    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFEDD5" stroke="#78350F" stroke-width="0.5"/>
+                                    <defs>
+                                        <linearGradient id="questBronzeGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#FDBA74"/>
+                                            <stop offset="0.45" stop-color="#EA580C"/>
+                                            <stop offset="1" stop-color="#9A3412"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {{/istop3}}
+                                {{^istop}}<span class="quest-rank-number">{{rank}}</span>{{/istop}}
                             </td>
                             <td>
                                 <div class="fw-bold fs-6 text-dark">
@@ -167,10 +227,70 @@
                         {{#standings}}
                         <tr class="{{#iscurrentuser}}table-primary fw-bold{{/iscurrentuser}}">
                             <td class="text-center">
-                                {{#istop1}}<span class="badge rounded-circle bg-warning p-2 text-dark fs-6">🥇</span>{{/istop1}}
-                                {{#istop2}}<span class="badge rounded-circle bg-secondary p-2 text-white fs-6">🥈</span>{{/istop2}}
-                                {{#istop3}}<span class="badge rounded-circle bg-danger p-2 text-white fs-6">🥉</span>{{/istop3}}
-                                {{^istop}}<span class="text-muted fw-bold">#{{rank}}</span>{{/istop}}
+                                {{#istop1}}
+                                <svg class="quest-medal quest-medal-gold" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1º">
+                                    <title>1º</title>
+                                    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+                                    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+                                    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+                                    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+                                    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+                                    <circle cx="18" cy="22" r="11" fill="#D97706"/>
+                                    <circle cx="18" cy="22" r="9.5" fill="url(#questGoldGrad)"/>
+                                    <circle cx="18" cy="22" r="7.8" stroke="#F59E0B" stroke-width="0.8" fill="none"/>
+                                    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFFBEB" stroke="#B45309" stroke-width="0.5"/>
+                                    <defs>
+                                        <linearGradient id="questGoldGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#FDE047"/>
+                                            <stop offset="0.45" stop-color="#F59E0B"/>
+                                            <stop offset="1" stop-color="#D97706"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {{/istop1}}
+                                {{#istop2}}
+                                <svg class="quest-medal quest-medal-silver" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="2º">
+                                    <title>2º</title>
+                                    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+                                    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+                                    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+                                    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+                                    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+                                    <circle cx="18" cy="22" r="11" fill="#64748B"/>
+                                    <circle cx="18" cy="22" r="9.5" fill="url(#questSilverGrad)"/>
+                                    <circle cx="18" cy="22" r="7.8" stroke="#94A3B8" stroke-width="0.8" fill="none"/>
+                                    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFFFFF" stroke="#475569" stroke-width="0.5"/>
+                                    <defs>
+                                        <linearGradient id="questSilverGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#FFFFFF"/>
+                                            <stop offset="0.45" stop-color="#CBD5E1"/>
+                                            <stop offset="1" stop-color="#94A3B8"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {{/istop2}}
+                                {{#istop3}}
+                                <svg class="quest-medal quest-medal-bronze" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3º">
+                                    <title>3º</title>
+                                    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+                                    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+                                    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+                                    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+                                    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+                                    <circle cx="18" cy="22" r="11" fill="#78350F"/>
+                                    <circle cx="18" cy="22" r="9.5" fill="url(#questBronzeGrad)"/>
+                                    <circle cx="18" cy="22" r="7.8" stroke="#D97706" stroke-width="0.8" fill="none"/>
+                                    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFEDD5" stroke="#78350F" stroke-width="0.5"/>
+                                    <defs>
+                                        <linearGradient id="questBronzeGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#FDBA74"/>
+                                            <stop offset="0.45" stop-color="#EA580C"/>
+                                            <stop offset="1" stop-color="#9A3412"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {{/istop3}}
+                                {{^istop}}<span class="quest-rank-number">{{rank}}</span>{{/istop}}
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">

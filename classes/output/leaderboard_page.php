@@ -57,8 +57,8 @@ class leaderboard_page implements renderable, templatable {
         object $cm,
         array $standings,
         bool $isteams = false,
-        string $sort = 'points',
-        string $dir = 'DESC'
+        string $sort = 'rank',
+        string $dir = 'ASC'
     ) {
         $this->quest = $quest;
         $this->course = $course;
@@ -66,7 +66,7 @@ class leaderboard_page implements renderable, templatable {
         $this->standings = $standings;
         $this->isteams = $isteams;
         $this->sort = $sort;
-        $this->dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
+        $this->dir = strtoupper($dir) === 'DESC' ? 'DESC' : 'ASC';
     }
 
     /**
@@ -84,12 +84,13 @@ class leaderboard_page implements renderable, templatable {
         $standingsdata = [];
         if ($this->isteams) {
             foreach ($this->standings as $s) {
+                $rank = (int)($s->rank ?? 0);
                 $standingsdata[] = [
-                    'rank' => $s->rank,
-                    'istop1' => ($s->rank === 1),
-                    'istop2' => ($s->rank === 2),
-                    'istop3' => ($s->rank === 3),
-                    'istop' => ($s->rank <= 3),
+                    'rank' => $rank,
+                    'istop1' => ($rank === 1),
+                    'istop2' => ($rank === 2),
+                    'istop3' => ($rank === 3),
+                    'istop' => ($rank >= 1 && $rank <= 3),
                     'teamname' => $s->name ?? ($s->teamname ?? '-'),
                     'nanswers' => (int)($s->nanswers ?? 0),
                     'nanswerassessment' => (int)($s->nanswerassessment ?? 0),
@@ -113,13 +114,14 @@ class leaderboard_page implements renderable, templatable {
                 }
 
                 $pic = $output->user_picture($userobj, ['size' => 35]);
+                $rank = (int)($s->rank ?? 0);
 
                 $standingsdata[] = [
-                    'rank' => $s->rank,
-                    'istop1' => ($s->rank === 1),
-                    'istop2' => ($s->rank === 2),
-                    'istop3' => ($s->rank === 3),
-                    'istop' => ($s->rank <= 3),
+                    'rank' => $rank,
+                    'istop1' => ($rank === 1),
+                    'istop2' => ($rank === 2),
+                    'istop3' => ($rank === 3),
+                    'istop' => ($rank >= 1 && $rank <= 3),
                     'iscurrentuser' => (($s->userid ?? 0) == $USER->id),
                     'userpicture' => $pic,
                     'fullname' => fullname($userobj),
@@ -142,8 +144,12 @@ class leaderboard_page implements renderable, templatable {
         };
 
         $buildsort = function(string $column) use ($output): array {
-            $isactive = ($this->sort === $column || ($column === 'points' && ($this->sort === 'rank' || $this->sort === '')));
-            $nextdir = ($isactive && $this->dir === 'DESC') ? 'ASC' : 'DESC';
+            $isactive = ($this->sort === $column);
+            if ($isactive) {
+                $nextdir = ($this->dir === 'ASC') ? 'DESC' : 'ASC';
+            } else {
+                $nextdir = in_array($column, ['rank', 'lastname', 'user', 'team'], true) ? 'ASC' : 'DESC';
+            }
 
             $url = new moodle_url('/mod/quest/viewclasification.php', [
                 'id' => $this->cm->id,
@@ -186,7 +192,7 @@ class leaderboard_page implements renderable, templatable {
             'help_pointssubmission' => $gethelp('pointssubmission'),
             'help_pointsanswers' => $gethelp('pointsanswers'),
             'help_points' => $gethelp('points'),
-            'sort_rank' => $buildsort('points'),
+            'sort_rank' => $buildsort('rank'),
             'sort_user' => $buildsort('lastname'),
             'sort_team' => $buildsort('team'),
             'sort_nanswers' => $buildsort('nanswers'),

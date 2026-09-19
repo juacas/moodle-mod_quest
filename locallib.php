@@ -778,23 +778,18 @@ function quest_print_submission($quest, $submission) {
  */
 function quest_print_attachments($context, $filearea, $itemid, $order) {
     global $OUTPUT;
-    $n = 1;
-    echo "<table align=\"center\">\n";
     $fs = get_file_storage();
     if ($files = $fs->get_area_files($context->id, 'mod_quest', $filearea, $itemid, $order, false)) {
+        $n = 1;
+        echo "<ul class=\"list-unstyled mb-0 d-flex flex-wrap gap-2\">\n";
         foreach ($files as $file) {
             $filename = $file->get_filename();
             $iconimage = $OUTPUT->pix_icon(
                 file_file_icon($file),
                 get_mimetype_description($file),
                 'moodle',
-                ['class' => 'icon']
+                ['class' => 'icon me-1']
             );
-            $path = "/$context->id/mod_quest/$filearea/";
-            if ($itemid) {
-                $path .= $itemid . '/';
-            }
-            $path .= $filename;
             $filepathurl = moodle_url::make_pluginfile_url(
                 $file->get_contextid(),
                 $file->get_component(),
@@ -804,13 +799,15 @@ function quest_print_attachments($context, $filearea, $itemid, $order) {
                 $file->get_filename()
             );
             $path = $filepathurl->out();
-            echo "<tr><td><b>" . get_string("attachment", "quest") . " $n:</b> \n";
+            echo "<li class=\"d-inline-flex align-items-center bg-light border rounded px-3 py-2 shadow-sm\">";
+            echo "<span class=\"fw-bold me-2 text-muted\">" . get_string("attachment", "quest") . " $n:</span> ";
             echo $iconimage;
-            echo format_text("<a href=\"$path\">" . s($filename) . "</a>", FORMAT_HTML, ['context' => $context]);
+            echo "<a href=\"$path\" class=\"text-decoration-none fw-semibold ms-1\">" . s($filename) . "</a>";
+            echo "</li>\n";
             $n++;
         }
+        echo "</ul>\n";
     }
-    echo "</table>\n";
 }
 /**
  * Prints challenge information.
@@ -1282,7 +1279,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                 $data[] = quest_answer_phase($answer, $course);
                 $sortdata['phase'] = quest_answer_phase($answer, $course);
 
-                $data[] = userdate($answer->date, get_string('datestr', 'quest'));
+                $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateanswer'] = $answer->date;
 
                 if (($answer->phase == 1) || ($answer->phase == 2)) {

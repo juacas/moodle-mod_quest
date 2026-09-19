@@ -206,7 +206,7 @@ class leaderboard_service {
     }
 
     /**
-     * Fetch individual leaderboard standings.
+     * Fetch individual leaderboard standings with permanent official rank.
      *
      * @param int $questid
      * @param string $sort
@@ -215,18 +215,46 @@ class leaderboard_service {
      * @param int $offset
      * @return array
      */
-    public static function get_individual_standings(int $questid, string $sort = 'points', string $dir = 'DESC', int $limit = 50, int $offset = 0): array {
+    public static function get_individual_standings(
+        int $questid,
+        string $sort = 'rank',
+        string $dir = 'ASC',
+        int $limit = 50,
+        int $offset = 0
+    ): array {
         global $DB;
 
+        // 1. Calculate official tournament ranks based on competition points.
+        $allrankrecords = $DB->get_records_sql(
+            "SELECT userid, points, nanswers
+               FROM {quest_calification_users}
+              WHERE questid = :questid
+           ORDER BY points DESC, nanswers DESC, userid ASC",
+            ['questid' => $questid]
+        );
+
+        $officialranks = [];
+        $rankpos = 1;
+        foreach ($allrankrecords as $item) {
+            $officialranks[(int)$item->userid] = $rankpos++;
+        }
+
+        // 2. Determine ordering SQL for display.
         $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
         $orderbysql = match ($sort) {
+            'rank' => ($dir === 'ASC')
+                ? "qcu.points DESC, qcu.nanswers DESC, qcu.id ASC"
+                : "qcu.points ASC, qcu.nanswers ASC, qcu.id DESC",
             'lastname', 'user', 'fullname' => "u.lastname {$dir}, u.firstname {$dir}",
             'firstname' => "u.firstname {$dir}, u.lastname {$dir}",
             'team', 'teamname' => "t.name {$dir}, qcu.points DESC",
             'nanswers', 'answers' => "qcu.nanswers {$dir}, qcu.points DESC",
             'pointssubmission', 'authorpoints' => "qcu.pointssubmission {$dir}, qcu.points DESC",
             'pointsanswers', 'answerpoints' => "qcu.pointsanswers {$dir}, qcu.points DESC",
-            default => "qcu.points {$dir}, qcu.nanswers DESC",
+            'points' => ($dir === 'ASC')
+                ? "qcu.points ASC, qcu.nanswers ASC, qcu.id DESC"
+                : "qcu.points DESC, qcu.nanswers DESC, qcu.id ASC",
+            default => "qcu.points DESC, qcu.nanswers DESC, qcu.id ASC",
         };
 
         $userfields = \core_user\fields::for_userpic()->with_name()->including('email');
@@ -241,10 +269,9 @@ class leaderboard_service {
 
         $records = $DB->get_records_sql($sql, ['questid' => $questid], $offset, $limit);
 
-        $rank = $offset + 1;
         $result = [];
         foreach ($records as $r) {
-            $r->rank = $rank++;
+            $r->rank = $officialranks[(int)$r->userid] ?? 0;
             $r->points = round((float)$r->points, 2);
             $result[] = $r;
         }
@@ -253,7 +280,7 @@ class leaderboard_service {
     }
 
     /**
-     * Fetch team leaderboard standings.
+     * Fetch team leaderboard standings with permanent official rank.
      *
      * @param int $questid
      * @param string $sort
@@ -262,7 +289,13 @@ class leaderboard_service {
      * @param int $offset
      * @return array
      */
-    public static function get_team_standings(int $questid, string $sort = 'points', string $dir = 'DESC', int $limit = 50, int $offset = 0): array {
+    public static function get_team_standings(
+        int $questid,
+        string $sort = 'rank',
+        string $dir = 'ASC',
+        int $limit = 50,
+        int $offset = 0
+    ): array {
         global $DB;
 
         $teams = $DB->get_records('quest_teams', ['questid' => $questid]);
@@ -272,8 +305,27 @@ class leaderboard_service {
             }
         }
 
+        // 1. Calculate official tournament ranks for teams based on competition points.
+        $allteamranks = $DB->get_records_sql(
+            "SELECT teamid, points, nanswers
+               FROM {quest_calification_teams}
+              WHERE questid = :questid
+           ORDER BY points DESC, nanswers DESC, teamid ASC",
+            ['questid' => $questid]
+        );
+
+        $officialteamranks = [];
+        $rankpos = 1;
+        foreach ($allteamranks as $item) {
+            $officialteamranks[(int)$item->teamid] = $rankpos++;
+        }
+
+        // 2. Determine ordering SQL for display.
         $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
         $orderbysql = match ($sort) {
+            'rank' => ($dir === 'ASC')
+                ? "qct.points DESC, qct.nanswers DESC, qct.id ASC"
+                : "qct.points ASC, qct.nanswers ASC, qct.id DESC",
             'team', 'teamname', 'name' => "t.name {$dir}, qct.points DESC",
             'nanswers' => "qct.nanswers {$dir}, qct.points DESC",
             'nanswerassessment' => "qct.nanswerassessment {$dir}, qct.points DESC",
@@ -281,7 +333,10 @@ class leaderboard_service {
             'nsubmissionsassessment' => "qct.nsubmissionsassessment {$dir}, qct.points DESC",
             'pointssubmission' => "qct.pointssubmission {$dir}, qct.points DESC",
             'pointsanswers' => "qct.pointsanswers {$dir}, qct.points DESC",
-            default => "qct.points {$dir}, qct.nanswers DESC",
+            'points' => ($dir === 'ASC')
+                ? "qct.points ASC, qct.nanswers ASC, qct.id DESC"
+                : "qct.points DESC, qct.nanswers DESC, qct.id ASC",
+            default => "qct.points DESC, qct.nanswers DESC, qct.id ASC",
         };
 
         $sql = "SELECT qct.*, t.name, t.ncomponents
@@ -292,10 +347,9 @@ class leaderboard_service {
 
         $records = $DB->get_records_sql($sql, ['questid' => $questid], $offset, $limit);
 
-        $rank = $offset + 1;
         $result = [];
         foreach ($records as $r) {
-            $r->rank = $rank++;
+            $r->rank = $officialteamranks[(int)$r->teamid] ?? 0;
             $r->points = round((float)$r->points, 2);
             $result[] = $r;
         }

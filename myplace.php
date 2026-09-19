@@ -222,10 +222,10 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-            $data[] = userdate($submission->datestart, get_string('datestr', 'quest'));
+            $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['datestart'] = $submission->datestart;
 
-            $data[] = userdate($submission->dateend, get_string('datestr', 'quest'));
+            $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateend'] = $submission->dateend;
 
             $grade = "<form><input name=\"calificacion\" id=\"formscore$indice\" type=\"text\" value=\"\" " .
@@ -364,7 +364,7 @@ if ($answers) {
                 $sortdata['title'] = strtolower($answer->title);
             }
 
-            $data[] = userdate($answer->date, get_string('datestr', 'quest'));
+            $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateanswer'] = $answer->date;
 
             if (($answer->phase == 1) || ($answer->phase == 2)) {

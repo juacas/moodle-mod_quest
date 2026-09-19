@@ -210,4 +210,232 @@ class tournament_manager {
 
         return $answer;
     }
+
+    /**
+     * Update schedules for multiple challenges in a tournament safely with
+     * calendar events and dependency updates.
+     *
+     * @param stdClass $quest The quest tournament record.
+     * @param object $cm Course module object.
+     * @param array $schedules Array of items, each having 'id', 'datestart', 'dateend'.
+     * @param bool $autoexpand Whether to automatically expand tournament dates if challenges extend beyond.
+     * @return array Result array with status, updated count, errors, and updated quest boundaries.
+     */
+    public static function update_challenge_schedule(
+        stdClass $quest,
+        object $cm,
+        array $schedules,
+        bool $autoexpand = true
+    ): array {
+        global $DB, $USER;
+        require_once(__DIR__ . '/../../locallib.php');
+
+        $errors = [];
+        $validateditems = [];
+        $queststart = (int)$quest->datestart;
+        $questend = (int)$quest->dateend;
+        $minchallengestart = PHP_INT_MAX;
+        $maxchallengeend = 0;
+
+        $dateformat = get_string('strftimedatetimeshort', 'langconfig');
+
+        // =========================================================================
+        // Phase 1: Atomic Pre-validation & Dependency Safeguards.
+        // =========================================================================
+        foreach ($schedules as $item) {
+            $id = isset($item['id']) ? (int)$item['id'] : 0;
+            $datestart = isset($item['datestart']) ? (int)$item['datestart'] : 0;
+            $dateend = isset($item['dateend']) ? (int)$item['dateend'] : 0;
+
+            if ($id <= 0) {
+                $errors[] = get_string('scheduleerrorinvaliditem', 'quest');
+                continue;
+            }
+
+            $submission = $DB->get_record('quest_submissions', ['id' => $id, 'questid' => $quest->id]);
+            if (!$submission) {
+                $errors[] = get_string('scheduleerrornotfound', 'quest', $id);
+                continue;
+            }
+
+            $chtitle = format_string($submission->title);
+
+            // 1. Positive timestamps and order coherence check.
+            if ($datestart <= 0 || $dateend <= 0 || $datestart >= $dateend) {
+                $errors[] = get_string('scheduleerrordatesinvalid', 'quest', $chtitle);
+                continue;
+            }
+
+            // Minimum duration safeguard (at least 60 seconds).
+            if (($dateend - $datestart) < 60) {
+                $errors[] = get_string('scheduleerrordatesinvalid', 'quest', $chtitle);
+                continue;
+            }
+
+            // 2. Dependency check with existing student answers.
+            $answerstats = $DB->get_record_sql(
+                "SELECT MIN(date) AS min_date, MAX(date) AS max_date, COUNT(id) AS cnt
+                   FROM {quest_answers}
+                  WHERE submissionid = :sid",
+                ['sid' => $id]
+            );
+
+            if ($answerstats && (int)$answerstats->cnt > 0) {
+                $firstanswerdate = (int)$answerstats->min_date;
+                $lastanswerdate = (int)$answerstats->max_date;
+
+                // Challenge cannot start after answers have already been submitted.
+                if ($datestart > $firstanswerdate) {
+                    $errors[] = get_string('scheduleerroranswerbeforestart', 'quest', (object)[
+                        'title' => $chtitle,
+                        'date' => userdate($firstanswerdate, $dateformat),
+                    ]);
+                }
+
+                // Challenge cannot close before answers were submitted.
+                if ($dateend < $lastanswerdate) {
+                    $errors[] = get_string('scheduleerroranswerafterend', 'quest', (object)[
+                        'title' => $chtitle,
+                        'date' => userdate($lastanswerdate, $dateformat),
+                    ]);
+                }
+            }
+
+            // 3. Dependency check with correct answer inflection point.
+            if (!empty($submission->dateanswercorrect) && (int)$submission->dateanswercorrect > 0) {
+                $inflection = (int)$submission->dateanswercorrect;
+                if ($datestart > $inflection || $dateend < $inflection) {
+                    $errors[] = get_string('scheduleerroranswercorrect', 'quest', (object)[
+                        'title' => $chtitle,
+                        'date' => userdate($inflection, $dateformat),
+                    ]);
+                }
+            }
+
+            // Track tournament boundary limits.
+            if ($datestart < $minchallengestart) {
+                $minchallengestart = $datestart;
+            }
+            if ($dateend > $maxchallengeend) {
+                $maxchallengeend = $dateend;
+            }
+
+            $validateditems[] = [
+                'submission' => $submission,
+                'datestart' => $datestart,
+                'dateend' => $dateend,
+            ];
+        }
+
+        // If any item failed validation, abort immediately (zero side-effects).
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'message' => reset($errors),
+                'errors' => $errors,
+                'updated' => 0,
+            ];
+        }
+
+        // =========================================================================
+        // Phase 2: Tournament Boundary Expansion / Synchronization.
+        // =========================================================================
+        $questneedsupdate = false;
+        $newqueststart = $queststart;
+        $newquestend = $questend;
+
+        if ($autoexpand && !empty($validateditems)) {
+            if ($queststart > 0 && $minchallengestart < $queststart) {
+                $newqueststart = $minchallengestart;
+                $questneedsupdate = true;
+            }
+            if ($questend > 0 && $maxchallengeend > $questend) {
+                $newquestend = $maxchallengeend;
+                $questneedsupdate = true;
+            }
+        }
+
+        // =========================================================================
+        // Phase 3: Delegated Transaction & Synchronized Event Updates.
+        // =========================================================================
+        $updated = 0;
+        $transaction = $DB->start_delegated_transaction();
+
+        try {
+            $eventuser = (!empty($USER) && !empty($USER->id)) ? $USER : get_admin();
+
+            foreach ($validateditems as $item) {
+                /** @var stdClass $sub */
+                $sub = $item['submission'];
+                $sub->datestart = $item['datestart'];
+                $sub->dateend = $item['dateend'];
+
+                $DB->update_record('quest_submissions', $sub);
+
+                // Update challenge calendar events in {event} (openchallenge and closechallenge).
+                if (function_exists('quest_update_challenge_calendar')) {
+                    quest_update_challenge_calendar($cm, $quest, $sub);
+                }
+
+                // Trigger challenge updated event.
+                if (class_exists('\mod_quest\event\challenge_updated') && $eventuser) {
+                    \mod_quest\event\challenge_updated::create_from_parts($eventuser, $sub, $cm)->trigger();
+                }
+
+                $updated++;
+            }
+
+            // Synchronize parent tournament dates and events if bounds expanded.
+            if ($questneedsupdate) {
+                $quest->datestart = $newqueststart;
+                $quest->dateend = $newquestend;
+                $DB->update_record('quest', $quest);
+
+                if (function_exists('quest_update_quest_calendar')) {
+                    quest_update_quest_calendar($quest, $cm);
+                }
+                if (function_exists('quest_update_grades')) {
+                    quest_update_grades($quest);
+                }
+            }
+
+            // Trigger core course module update & rebuild course cache.
+            if (class_exists('\core\event\course_module_updated')) {
+                \core\event\course_module_updated::create_from_cm($cm)->trigger();
+            }
+            rebuild_course_cache($cm->course, true);
+
+            $transaction->allow_commit();
+        } catch (\Throwable $e) {
+            if (isset($transaction)) {
+                $transaction->rollback($e);
+            }
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => [$e->getMessage()],
+                'updated' => 0,
+            ];
+        }
+
+        $msg = get_string('schedulesavedcount', 'quest', $updated);
+        if ($questneedsupdate) {
+            $headerdateformat = get_string('strftimedatetime', 'langconfig');
+            $msg .= ' ' . get_string('scheduleboundaryexpanded', 'quest', (object)[
+                'start' => userdate($newqueststart, $headerdateformat),
+                'end' => userdate($newquestend, $headerdateformat),
+            ]);
+        }
+
+        return [
+            'success' => true,
+            'message' => $msg,
+            'updated' => $updated,
+            'quest_updated' => $questneedsupdate,
+            'quest_datestart' => $newqueststart,
+            'quest_dateend' => $newquestend,
+            'errors' => [],
+        ];
+    }
 }
+

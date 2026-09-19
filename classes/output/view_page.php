@@ -186,7 +186,7 @@ class view_page implements renderable, templatable {
             'questname' => format_string($this->quest->name),
             'intro' => format_module_intro('quest', $this->quest, $this->cm->id),
             'introattachments' => $this->summarydata['introattachments'] ?? '',
-            'hasintroattachments' => !empty($this->summarydata['introattachments']),
+            'hasintroattachments' => !empty(trim($this->summarydata['introattachments'] ?? '')),
             'datestartstr' => userdate($this->quest->datestart, get_string('strftimedatetime', 'langconfig')),
             'dateendstr' => userdate($this->quest->dateend, get_string('strftimedatetime', 'langconfig')),
             'allowteams' => !empty($this->quest->allowteams),
@@ -207,6 +207,9 @@ class view_page implements renderable, templatable {
             ]))->out(false),
             'teamurl' => (!empty($this->summarydata['ismanager']) && !empty($this->quest->allowteams))
                 ? (new moodle_url('/mod/quest/team.php', ['id' => $this->cm->id]))->out(false)
+                : '',
+            'scheduleurl' => !empty($this->summarydata['ismanager'])
+                ? (new moodle_url('/mod/quest/schedule.php', ['id' => $this->cm->id]))->out(false)
                 : '',
             'hasgradinglinks' => $hasgradinglinks,
             'challengegradinghtml' => $this->summarydata['challengegradinghtml'] ?? '',

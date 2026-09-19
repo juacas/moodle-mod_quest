@@ -1,0 +1,25 @@
+<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1º">
+    <title>1º</title>
+    <!-- Ribbon Left -->
+    <path d="M12 2L7 16L13 17L18 2H12Z" fill="#DC2626"/>
+    <path d="M12 2L8.5 10.5L13 17L18 2H12Z" fill="#991B1B"/>
+    <!-- Ribbon Right -->
+    <path d="M24 2L29 16L23 17L18 2H24Z" fill="#2563EB"/>
+    <path d="M24 2L27.5 10.5L23 17L18 2H24Z" fill="#1D4ED8"/>
+    <!-- Ribbon Center Fold -->
+    <path d="M15 14L18 18L21 14H15Z" fill="#7F1D1D"/>
+    <!-- Medal Outer Rim & Shadow -->
+    <circle cx="18" cy="22" r="11" fill="#D97706"/>
+    <!-- Medal Face Gold -->
+    <circle cx="18" cy="22" r="9.5" fill="url(#questGoldGrad)"/>
+    <circle cx="18" cy="22" r="7.8" stroke="#F59E0B" stroke-width="0.8" fill="none"/>
+    <!-- Star -->
+    <path d="M18 17.5L19.3 20.7L22.6 20.9L20 22.9L20.9 26.2L18 24.3L15.1 26.2L16 22.9L13.4 20.9L16.7 20.7L18 17.5Z" fill="#FFFBEB" stroke="#B45309" stroke-width="0.5"/>
+    <defs>
+        <linearGradient id="questGoldGrad" x1="12" y1="13" x2="24" y2="31" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FDE047"/>
+            <stop offset="0.45" stop-color="#F59E0B"/>
+            <stop offset="1" stop-color="#D97706"/>
+        </linearGradient>
+    </defs>
+</svg>
