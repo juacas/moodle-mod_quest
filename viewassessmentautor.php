@@ -43,10 +43,16 @@ $quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST
 list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 
 require_login($course->id, false, $cm);
+$context = context_module::instance($cm->id);
 
 $url = new moodle_url('/mod/quest/viewassessmentautor.php',
         array('aid' => $aid, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'dir' => $dir, 'sort' => $sort));
 $PAGE->set_url($url);
+$PAGE->set_context($context);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 $PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
         new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge')));
 $PAGE->set_title(format_string($quest->name));
@@ -55,7 +61,6 @@ echo $OUTPUT->header();
 
 quest_check_visibility($course, $cm);
 
-$context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 
 $strquests = get_string("modulenameplural", "quest");

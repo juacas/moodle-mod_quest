@@ -246,7 +246,7 @@ class open_question_exporter {
                 $context->id,
                 (int)$submission->id,
                 (int)$entryid,
-                1 // Fixed version 1 initially.
+                null // Follow the latest version after future edits.
             );
         }
 

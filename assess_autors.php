@@ -61,6 +61,11 @@ $strassess = get_string("assess", "quest");
 $url = new moodle_url('/mod/quest/assess_autors.php',
                 array('sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
 $PAGE->set_url($url);
+$PAGE->set_context($context);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
@@ -200,7 +205,7 @@ echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "as
 // ...show assessment autor and allow changes.
 // If user has general assess privileges get next answer to evaluate.
 
-$returnto = quest_next_submission_url($submission, $cm);
+$returnto = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
 quest_print_assessment_autor($quest, $assessment, true, $allowcomments, $returnto);
 $continueto = new moodle_url('view.php', ['id' => $cm->id ]);
 echo $OUTPUT->single_button($continueto, get_string('cancel'));

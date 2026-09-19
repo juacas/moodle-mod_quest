@@ -121,13 +121,102 @@
 }
 
 .quest-left-row {
-    height: 54px;
+    height: auto;
     box-sizing: border-box;
     transition: background-color 0.15s ease;
 }
 
+.quest-left-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+}
+
+.quest-left-meta {
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.quest-left-author {
+    min-width: 0;
+}
+
+/* Bootstrap's .bg-* and .text-* utilities use !important, so keep
+ * the component selector more specific than those utility classes. */
+.badge.quest-duration-badge {
+    --bs-bg-opacity: 1 !important;
+    --bs-badge-color: #0c4a6e !important;
+    background: #e0f2fe !important;
+    background-color: #e0f2fe !important;
+    border: 1px solid #0369a1 !important;
+    color: #0c4a6e !important;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .quest-left-row:hover {
     background-color: #f1f5f9;
+}
+
+.quest-left-row {
+    cursor: pointer;
+}
+
+.quest-row-highlight {
+    animation: questRowPulse 1.8s ease-out;
+}
+
+@keyframes questRowPulse {
+    0% {
+        background-color: #bfdbfe;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Auto-sequence strategy chooser. */
+#quest-autosequence-modal #quest-autosequence-strategy-list .list-group-item {
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+#quest-autosequence-modal #quest-autosequence-strategy-list .list-group-item:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+#quest-autosequence-modal #quest-autosequence-strategy-list .list-group-item.active {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+    color: inherit;
+}
+
+#quest-autosequence-description-panel {
+    background-color: #fff;
+    min-height: 280px;
+}
+
+/* Editable date cells in the challenge table. */
+#quest-schedule-table td.quest-col-datestart,
+#quest-schedule-table td.quest-col-dateend {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#quest-schedule-table td.quest-col-datestart:hover,
+#quest-schedule-table td.quest-col-dateend:hover {
+    background-color: #eff6ff !important;
+    color: #1d4ed8;
+}
+
+#quest-schedule-table td.quest-col-datestart:hover .quest-col-edit-icon,
+#quest-schedule-table td.quest-col-dateend:hover .quest-col-edit-icon {
+    opacity: 1 !important;
+    color: #2563eb !important;
 }
 
 .quest-timeline-right-area {
@@ -197,7 +286,8 @@
 }
 
 .quest-timeline-lane {
-    height: 54px;
+    height: auto;
+    min-height: 48px;
     box-sizing: border-box;
     position: relative;
     background: #fff;
@@ -342,3 +432,26 @@
     text-align: center;
 }
 
+
+.quest-question-preview-attachments {
+    border-left: 4px solid #0d6efd;
+}
+
+.quest-question-preview [disabled],
+.quest-question-preview [aria-disabled="true"] {
+    cursor: not-allowed;
+}
+
+.quest-question-preview .filemanager a,
+.quest-question-preview .fp-toolbar a[role="button"],
+.quest-question-preview .dndupload-target,
+.quest-question-preview [contenteditable="true"],
+.quest-question-preview iframe,
+.quest-question-preview [contenteditable="false"] {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.quest-question-preview .disabled {
+    opacity: 0.65;
+}

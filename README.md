@@ -411,7 +411,7 @@ sequenceDiagram
         alt Safeguard check fails
             Mgr-->>Endpoint: Exception: Business Rule Violation
             Endpoint-->>UI: JSON {success: false, errors: [...]}
-            Note over UI: UI displays error toast; 0 DB changes
+            Note over UI: UI displays error toast: 0 DB changes
         end
     end
     end

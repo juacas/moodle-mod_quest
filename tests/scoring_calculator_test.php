@@ -55,6 +55,31 @@ final class scoring_calculator_test extends advanced_testcase {
     }
 
     /**
+     * Test phase transitions at their exact temporal boundaries.
+     */
+    public function test_phase_boundaries(): void {
+        $start = 1000;
+        $end = 5000;
+        $tinit = 500;
+
+        $this->assertEquals(scoring_calculator::PHASE_PENDING, scoring_calculator::get_phase(
+            $start - 1, $start, $end, $tinit, null
+        ));
+        $this->assertEquals(scoring_calculator::PHASE_STATIONARY, scoring_calculator::get_phase(
+            $start, $start, $end, $tinit, null
+        ));
+        $this->assertEquals(scoring_calculator::PHASE_STATIONARY, scoring_calculator::get_phase(
+            $start + $tinit - 1, $start, $end, $tinit, null
+        ));
+        $this->assertEquals(scoring_calculator::PHASE_INFLATION, scoring_calculator::get_phase(
+            $start + $tinit, $start, $end, $tinit, null
+        ));
+        $this->assertEquals(scoring_calculator::PHASE_ENDED, scoring_calculator::get_phase(
+            $end, $start, $end, $tinit, null
+        ));
+    }
+
+    /**
      * Test inflationary phase (points increase over time until answered).
      */
     public function test_inflationary_phase(): void {
@@ -97,6 +122,29 @@ final class scoring_calculator_test extends advanced_testcase {
 
         $phase = scoring_calculator::get_phase(4250, $start, $end, $tinit, $correcttime);
         $this->assertEquals(scoring_calculator::PHASE_DEFLATION, $phase);
+    }
+
+    /**
+     * Test answers recorded before the challenge start are clamped safely.
+     */
+    public function test_answer_before_start_is_clamped(): void {
+        $start = 1000;
+        $end = 5000;
+        $tinit = 1000;
+        $initial = 40.0;
+        $max = 100.0;
+        $min = 10.0;
+
+        $points = scoring_calculator::calculate_points(
+            2000, $start, $end, $tinit, 500, $initial, $max, $min
+        );
+
+        // The answer timestamp is normalised to the challenge start.
+        $this->assertEqualsWithDelta(32.5, $points, 0.001);
+        $this->assertEquals(
+            scoring_calculator::PHASE_DEFLATION,
+            scoring_calculator::get_phase(2000, $start, $end, $tinit, 500)
+        );
     }
 
     /**
@@ -157,5 +205,32 @@ final class scoring_calculator_test extends advanced_testcase {
         $this->assertGreaterThan(0, count($data['actualcurve']));
         $this->assertNotEmpty($data['currentpoints']);
         $this->assertEquals(scoring_calculator::PHASE_DEFLATION, $data['currentphase']);
+    }
+
+    /**
+     * Test chart data without an answer or inflection point.
+     */
+    public function test_chart_data_without_inflection(): void {
+        $data = scoring_calculator::get_chart_data(
+            1000,
+            5000,
+            500,
+            null,
+            null,
+            20.0,
+            100.0,
+            5.0,
+            1000
+        );
+
+        $timestamps = array_column($data['actualcurve'], 'x');
+
+        $this->assertSame([], $data['worstcasecurve']);
+        $this->assertContains(1000, $timestamps);
+        $this->assertContains(1500, $timestamps);
+        $this->assertContains(5000, $timestamps);
+        $this->assertSame($timestamps, array_values(array_unique($timestamps)));
+        $this->assertEquals(scoring_calculator::PHASE_STATIONARY, $data['currentphase']);
+        $this->assertEquals(20.0, $data['currentpoints']);
     }
 }

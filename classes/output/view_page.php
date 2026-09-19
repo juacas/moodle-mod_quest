@@ -132,6 +132,8 @@ class view_page implements renderable, templatable {
             }
 
 
+            $attentionstatus = \quest_get_challenge_attention_status($c, $this->cm, $context);
+
             $timeleft = '';
             if ($timenow < $c->dateend) {
                 $diff = $c->dateend - $timenow;
@@ -166,6 +168,7 @@ class view_page implements renderable, templatable {
                 'type' => (int)$this->quest->typecalification,
                 'phaseclass' => $phaseclass,
                 'phasename' => $phasename,
+                'attentionstatus' => $attentionstatus,
                 'cardstyle' => $cardstyle,
                 'nanswers' => $c->nanswers,
                 'timeleft' => $timeleft,
@@ -185,8 +188,6 @@ class view_page implements renderable, templatable {
             'servertime' => $timenow,
             'questname' => format_string($this->quest->name),
             'intro' => format_module_intro('quest', $this->quest, $this->cm->id),
-            'introattachments' => $this->summarydata['introattachments'] ?? '',
-            'hasintroattachments' => !empty(trim($this->summarydata['introattachments'] ?? '')),
             'datestartstr' => userdate($this->quest->datestart, get_string('strftimedatetime', 'langconfig')),
             'dateendstr' => userdate($this->quest->dateend, get_string('strftimedatetime', 'langconfig')),
             'allowteams' => !empty($this->quest->allowteams),

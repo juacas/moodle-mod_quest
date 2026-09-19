@@ -46,8 +46,13 @@ if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $
 
 $url = new moodle_url('/mod/quest/report.php', array('id' => $cmid));
 $PAGE->set_url($url);
+$PAGE->set_context($context);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
@@ -57,7 +62,6 @@ $strquest = get_string("modulename", "quest");
 
 echo $OUTPUT->header();
 quest_print_quest_heading($quest);
-echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
 
 echo '<br/>';
 // ...iterate through submissions..

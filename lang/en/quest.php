@@ -858,6 +858,7 @@ $string['challenge'] = 'Challenge';
 $string['addchallenge'] = 'Add challenge';
 $string['addquestionchallenge'] = 'Add challenge with question';
 $string['approvalpending'] = 'Approval pending';
+$string['challenge_not_evaluated'] = 'Not evaluated';
 $string['challengeadded'] = 'Challenge created successfully';
 $string['useexistingquestion'] = 'Use this question';
 $string['viewinquestionbank'] = 'View in question bank';
@@ -1019,11 +1020,28 @@ $string['privacy:request:deleted:content'] = '[The author requested the deletion
 
 $string['selectquestionbank'] = 'Question bank';
 $string['editbankquestion'] = 'Edit question in question bank';
+$string['adjustchallenge'] = 'Adjust challenge';
+$string['editquestion'] = 'Edit question';
 $string['reorderchallenges'] = 'Schedule challenges';
 $string['reorderchallengestitle'] = 'Challenge Scheduling & Timeline';
 $string['reorderchallengesdesc'] = 'Drag challenges or their start/end handles to schedule them within the tournament timeframe.';
 $string['schedulesaved'] = 'Challenge schedule successfully saved.';
 $string['autosequence'] = 'Auto-sequence';
+$string['autosequencetitle'] = 'Auto-sequence challenges';
+$string['choosestrategy'] = 'Select sequencing strategy';
+$string['apply'] = 'Apply';
+$string['strategy_equal'] = 'Equal distribution';
+$string['strategy_equal_short'] = 'Distribute the tournament duration equally';
+$string['strategy_equal_desc'] = 'Divides the tournament duration equally among all challenges in chronological order.';
+$string['strategy_equal_tip'] = 'Ideal when all challenges should have a similar amount of time.';
+$string['strategy_sequential'] = 'Sequential chaining';
+$string['strategy_sequential_short'] = 'Chain challenges preserving their current duration';
+$string['strategy_sequential_desc'] = 'Places challenges one after another without gaps or overlaps, preserving their current durations where possible.';
+$string['strategy_sequential_tip'] = 'Useful when each challenge already has the desired duration.';
+$string['strategy_proportional'] = 'Bounded proportional';
+$string['strategy_proportional_short'] = 'Distribute time according to current durations';
+$string['strategy_proportional_desc'] = 'Allocates the tournament duration proportionally to current challenge durations while limiting extreme outliers.';
+$string['strategy_proportional_tip'] = 'Useful when some challenges need more time than others.';
 $string['resetschedule'] = 'Reset schedule';
 $string['unsavedchanges'] = 'You have unsaved changes.';
 $string['nosubmissionsfound'] = 'No challenges found to schedule.';
@@ -1040,6 +1058,13 @@ $string['scheduleerroranswerafterend'] = 'Challenge \'{$a->title}\' has answers 
 $string['scheduleerroranswercorrect'] = 'Challenge \'{$a->title}\' has a verified correct answer at {$a->date}. The active schedule must encompass this date.';
 $string['scheduleboundaryexpanded'] = 'Tournament dates were synchronized with challenges ({$a->start} - {$a->end}).';
 $string['schedulesavedcount'] = 'Schedule saved successfully ({$a} challenges updated).';
+$string['clicktoeditdate'] = 'Click to edit the date';
+$string['editdatesmodal'] = 'Edit challenge dates';
+$string['invaliddateorder'] = 'The end date must be after the start date.';
+$string['editdatesmodaltip'] = 'Changes remain unsaved until you click Save changes.';
 
 
 
+
+$string['questionpreviewattachments'] = 'This question allows up to {$a->count} attachment(s). Uploading is disabled in this preview.';
+$string['questionpreviewattachmentsrequired'] = 'This question requires at least {$a->required} attachment(s) and allows up to {$a->allowed} attachment(s). Uploading is disabled in this preview.';

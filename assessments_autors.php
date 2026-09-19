@@ -56,6 +56,10 @@ $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_context($context);
 $PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 
 quest_check_visibility($course, $cm);
 $strquests = get_string("modulenameplural", "quest");
@@ -356,21 +360,18 @@ if ($action == 'displaygradingform') {
     }
     // Log the event.
     \mod_quest\event\challenge_assessed::create_from_parts($submission, $assessment, $cm)->trigger();
-    $returnto = optional_param('returnto', "view.php?id=$cm->id", PARAM_RAW);
+    $returnto = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
     // ...show grade if grading strategy is not zero.
     if ($quest->gradingstrategyautor) {
         if (count($elementsraw) < $quest->nelementsautor) {
-            echo $OUTPUT->notification(get_string("noteonassessmentelements", "quest"));
+            $message .= " " . get_string("noteonassessmentelements", "quest");
         }
         $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (" .
                  get_string("initialpoints", 'quest') . " " . number_format($points, 2) . ")";
     } else {
         $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (Activity ignores this grading.)";
     }
-    echo $OUTPUT->header();
-    echo $OUTPUT->notification($message, 'info');
-    echo $OUTPUT->continue_button($returnto);
-    echo $OUTPUT->footer();
+    redirect($returnto, $message);
 
 } else {
     throw new \moodle_exception('unknownactionerror', 'quest', '', $action);

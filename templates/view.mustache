@@ -21,21 +21,6 @@
 }}
 <div class="mod-quest-dashboard mb-4">
     <!-- ========================================================= -->
-    <!-- 1. ADJUNTOS EXISTENTES (justo debajo del header)          -->
-    <!-- ========================================================= -->
-    {{#hasintroattachments}}
-    <div class="quest-intro-attachments mb-4 p-3 bg-white rounded border shadow-sm">
-        <div class="d-flex align-items-center mb-2">
-            <i class="fa fa-paperclip text-primary me-2" aria-hidden="true"></i>
-            <h6 class="fw-bold mb-0 text-dark">{{#str}}introattachments, quest{{/str}}</h6>
-        </div>
-        <div class="quest-attachments-list">
-            {{{introattachments}}}
-        </div>
-    </div>
-    {{/hasintroattachments}}
-
-    <!-- ========================================================= -->
     <!-- 2. LAYOUT DE DOS BLOQUES: RESUMEN Y RANKING               -->
     <!-- ========================================================= -->
     <div class="row g-4 mb-4">
@@ -59,12 +44,24 @@
                                 <i class="fa fa-calendar-times-o text-danger me-1" aria-hidden="true"></i>
                                 <strong>{{#str}}dateend, quest{{/str}}:</strong> {{dateendstr}}
                             </span>
+                            {{#scheduleurl}}
+                            <a href="{{{scheduleurl}}}" class="btn btn-outline-info">
+                                <i class="fa fa-calendar me-1" aria-hidden="true"></i> {{#str}}reorderchallenges, quest{{/str}}
+                            </a>
+                            {{/scheduleurl}}
+                        </div>
+                        <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
                             {{#allowteams}}
-                            <span class="badge bg-info text-dark py-2 px-3">
+                            <span class="badge bg-light text-dark border py-2 px-3">
                                 <i class="fa fa-users me-1" aria-hidden="true"></i>
                                 <strong>{{#str}}mode, quest{{/str}}:</strong> {{#str}}team, quest{{/str}}
                             </span>
                             {{/allowteams}}
+                            {{#teamurl}}
+                            <a href="{{{teamurl}}}" class="btn btn-outline-secondary">
+                                <i class="fa fa-users me-1" aria-hidden="true"></i> {{#str}}changeteamteacher, quest{{/str}}
+                            </a>
+                            {{/teamurl}}
                         </div>
 
                         <!-- Información de Grading -->
@@ -99,16 +96,8 @@
                             <i class="fa fa-user me-1" aria-hidden="true"></i> {{#str}}myplace, quest{{/str}}
                         </a>
                         {{/myplaceurl}}
-                        {{#teamurl}}
-                        <a href="{{{teamurl}}}" class="btn btn-outline-secondary">
-                            <i class="fa fa-users me-1" aria-hidden="true"></i> {{#str}}changeteamteacher, quest{{/str}}
-                        </a>
-                        {{/teamurl}}
-                        {{#scheduleurl}}
-                        <a href="{{{scheduleurl}}}" class="btn btn-outline-info">
-                            <i class="fa fa-calendar me-1" aria-hidden="true"></i> {{#str}}reorderchallenges, quest{{/str}}
-                        </a>
-                        {{/scheduleurl}}
+
+
                     </div>
                 </div>
             </div>
@@ -207,6 +196,15 @@
 
                                 {{! ── HEADER: badge + title. Right padding reserves space for the pinned score col ── }}
                                 <div class="flex-shrink-0 mb-2" style="padding-right:108px;">
+                                    {{#attentionstatus}}
+                                    <a href="{{{attentionstatus.url}}}"
+                                       class="{{attentionstatus.class}}"
+                                       title="{{attentionstatus.label}}"
+                                       onclick="event.stopPropagation();">
+                                        <i class="{{attentionstatus.icon}}" aria-hidden="true"></i>
+                                        {{attentionstatus.label}}
+                                    </a>
+                                    {{/attentionstatus}}
                                     <span class="badge {{phaseclass}} mb-1">{{phasename}}</span>
                                     <h5 class="card-title fw-bold mb-0 lh-sm" style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="{{title}}">
                                         <a href="{{{viewurl}}}" class="text-decoration-none text-dark stretched-link">{{title}}</a>

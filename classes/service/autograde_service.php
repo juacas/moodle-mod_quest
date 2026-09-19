@@ -178,6 +178,118 @@ class autograde_service {
     }
 
     /**
+     * Render a question preview with its configured response controls disabled.
+     *
+     * The core question renderer remains the source of truth for the question
+     * definition. This mode is intended for challenge previews, where the
+     * controls must be visible but must not create a response attempt.
+     *
+     * @param \question_usage_by_activity $quba Question usage.
+     * @param int $slot Question slot.
+     * @return string HTML output.
+     */
+    public static function render_question_preview(
+        \question_usage_by_activity $quba,
+        int $slot = 1
+    ): string {
+        $questionhtml = self::render_question($quba, $slot, false);
+        $question = $quba->get_question($slot);
+        $notice = '';
+
+        if (property_exists($question, 'attachments') && (int)$question->attachments !== 0) {
+            $allowed = (int)$question->attachments < 0
+                ? get_string('unlimited', 'moodle')
+                : (string)(int)$question->attachments;
+            if (!empty($question->attachmentsrequired)) {
+                $a = (object)[
+                    'required' => (string)(int)$question->attachmentsrequired,
+                    'allowed' => $allowed,
+                ];
+                $stringid = 'questionpreviewattachmentsrequired';
+            } else {
+                $a = (object)['count' => $allowed];
+                $stringid = 'questionpreviewattachments';
+            }
+            $notice = \html_writer::div(
+                get_string($stringid, 'quest', $a),
+                'alert alert-info quest-question-preview-attachments',
+                ['role' => 'note']
+            );
+        }
+
+        return \html_writer::div(
+            $notice . self::disable_preview_controls($questionhtml),
+            'quest-question-preview',
+            ['role' => 'group']
+        );
+    }
+
+    /**
+     * Disable interactive controls in a question preview without changing its HTML.
+     *
+     * @param string $html Rendered question HTML.
+     * @return string HTML with controls disabled.
+     */
+    private static function disable_preview_controls(string $html): string {
+        $html = preg_replace_callback(
+            '/<(input|textarea|select|button)\b([^>]*)>/i',
+            static function (array $matches): string {
+                $attributes = $matches[2];
+                if (preg_match('/\btype\s*=\s*["\']hidden["\']/i', $attributes)) {
+                    return $matches[0];
+                }
+                if (!preg_match('/\bdisabled\s*=/i', $attributes)) {
+                    $attributes .= ' disabled="disabled"';
+                }
+                if (!preg_match('/\baria-disabled\s*=/i', $attributes)) {
+                    $attributes .= ' aria-disabled="true"';
+                }
+                return '<' . $matches[1] . $attributes . '>';
+            },
+            $html
+        );
+
+        $html = preg_replace_callback(
+            '/<a\b([^>]*)>/i',
+            static function (array $matches): string {
+                $attributes = $matches[1];
+                if (!preg_match('/\brole\s*=\s*["\']button["\']/i', $attributes)) {
+                    return $matches[0];
+                }
+                if (preg_match('/\bclass\s*=\s*(["\'])(.*?)\1/i', $attributes)) {
+                    $attributes = preg_replace_callback(
+                        '/\bclass\s*=\s*(["\'])(.*?)\1/i',
+                        static function (array $classmatches): string {
+                            return 'class=' . $classmatches[1] . trim($classmatches[2] . ' disabled') .
+                                $classmatches[1];
+                        },
+                        $attributes,
+                        1
+                    );
+                } else {
+                    $attributes .= ' class="disabled"';
+                }
+                if (!preg_match('/\baria-disabled\s*=/i', $attributes)) {
+                    $attributes .= ' aria-disabled="true"';
+                }
+                if (!preg_match('/\btabindex\s*=/i', $attributes)) {
+                    $attributes .= ' tabindex="-1"';
+                }
+                return '<a' . $attributes . '>';
+            },
+            $html
+        );
+
+        return preg_replace_callback(
+            '/\scontenteditable\s*=\s*(["\'])true\1/i',
+            static function (array $matches): string {
+                return ' contenteditable="false" aria-readonly="true"';
+            },
+            $html
+        );
+    }
+
+    /**
      * Process student answer submission, grade automatically, and award points.
      *
      * @param stdClass $quest

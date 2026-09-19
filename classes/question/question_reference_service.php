@@ -76,6 +76,27 @@ class question_reference_service {
     }
 
     /**
+     * Make a challenge follow the latest ready version of its question bank entry.
+     *
+     * Older Quest references may have been created with a fixed version. Clearing
+     * that value preserves the question bank entry while allowing Moodle to
+     * resolve the newest version after a question is edited.
+     *
+     * @param int $challengeid
+     */
+    public static function use_latest_version_for_challenge(int $challengeid): void {
+        global $DB;
+
+        $ref = self::get_challenge_question_reference($challengeid);
+        if (!$ref || $ref->version === null) {
+            return;
+        }
+
+        $ref->version = null;
+        $DB->update_record('question_references', $ref);
+    }
+
+    /**
      * Get the linked question reference for a challenge, if any.
      *
      * @param int $challengeid

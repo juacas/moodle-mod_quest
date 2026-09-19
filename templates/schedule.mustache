@@ -101,6 +101,113 @@
         </div>
     </div>
 
+    <!-- Auto-sequence Strategy Chooser Modal -->
+    <div class="modal fade" id="quest-autosequence-modal" tabindex="-1" aria-labelledby="questAutosequenceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark" id="questAutosequenceModalLabel">
+                        <i class="fa fa-magic text-primary me-2" aria-hidden="true"></i>{{#str}}autosequencetitle, quest{{/str}}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="{{#str}}closebuttontitle, moodle{{/str}}"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="container-fluid p-0">
+                        <div class="row g-0">
+                            <div class="col-md-5 border-end bg-light p-3">
+                                <div class="text-uppercase small fw-bold text-muted mb-2 px-1">
+                                    {{#str}}choosestrategy, quest{{/str}}
+                                </div>
+                                <div class="list-group" id="quest-autosequence-strategy-list" role="tablist">
+                                    <label class="list-group-item list-group-item-action active cursor-pointer p-3 border rounded mb-2 d-flex align-items-center"
+                                        data-strategy="equal">
+                                        <input class="form-check-input me-3 flex-shrink-0" type="radio"
+                                            name="quest_autosequence_strategy" value="equal" checked>
+                                        <div>
+                                            <div class="fw-bold text-dark">
+                                                <i class="fa fa-balance-scale text-primary me-1" aria-hidden="true"></i>
+                                                {{#str}}strategy_equal, quest{{/str}}
+                                            </div>
+                                            <div class="smaller text-muted">{{#str}}strategy_equal_short, quest{{/str}}</div>
+                                        </div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action cursor-pointer p-3 border rounded mb-2 d-flex align-items-center"
+                                        data-strategy="sequential">
+                                        <input class="form-check-input me-3 flex-shrink-0" type="radio"
+                                            name="quest_autosequence_strategy" value="sequential">
+                                        <div>
+                                            <div class="fw-bold text-dark">
+                                                <i class="fa fa-link text-success me-1" aria-hidden="true"></i>
+                                                {{#str}}strategy_sequential, quest{{/str}}
+                                            </div>
+                                            <div class="smaller text-muted">{{#str}}strategy_sequential_short, quest{{/str}}</div>
+                                        </div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action cursor-pointer p-3 border rounded d-flex align-items-center"
+                                        data-strategy="proportional">
+                                        <input class="form-check-input me-3 flex-shrink-0" type="radio"
+                                            name="quest_autosequence_strategy" value="proportional">
+                                        <div>
+                                            <div class="fw-bold text-dark">
+                                                <i class="fa fa-sliders text-info me-1" aria-hidden="true"></i>
+                                                {{#str}}strategy_proportional, quest{{/str}}
+                                            </div>
+                                            <div class="smaller text-muted">{{#str}}strategy_proportional_short, quest{{/str}}</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-7 p-4 d-flex flex-column justify-content-between bg-white"
+                                id="quest-autosequence-description-panel" style="min-height: 280px;">
+                                <div id="quest-strategy-desc-equal" class="quest-strategy-desc-content">
+                                    <h5 class="fw-bold text-primary mb-3">
+                                        <i class="fa fa-balance-scale me-2" aria-hidden="true"></i>
+                                        {{#str}}strategy_equal, quest{{/str}}
+                                    </h5>
+                                    <p class="text-secondary mb-3">{{#str}}strategy_equal_desc, quest{{/str}}</p>
+                                    <div class="alert alert-light border small text-muted mb-0">
+                                        <i class="fa fa-info-circle text-primary me-1" aria-hidden="true"></i>
+                                        {{#str}}strategy_equal_tip, quest{{/str}}
+                                    </div>
+                                </div>
+                                <div id="quest-strategy-desc-sequential" class="quest-strategy-desc-content d-none">
+                                    <h5 class="fw-bold text-success mb-3">
+                                        <i class="fa fa-link me-2" aria-hidden="true"></i>
+                                        {{#str}}strategy_sequential, quest{{/str}}
+                                    </h5>
+                                    <p class="text-secondary mb-3">{{#str}}strategy_sequential_desc, quest{{/str}}</p>
+                                    <div class="alert alert-light border small text-muted mb-0">
+                                        <i class="fa fa-info-circle text-success me-1" aria-hidden="true"></i>
+                                        {{#str}}strategy_sequential_tip, quest{{/str}}
+                                    </div>
+                                </div>
+                                <div id="quest-strategy-desc-proportional" class="quest-strategy-desc-content d-none">
+                                    <h5 class="fw-bold text-info mb-3">
+                                        <i class="fa fa-sliders me-2" aria-hidden="true"></i>
+                                        {{#str}}strategy_proportional, quest{{/str}}
+                                    </h5>
+                                    <p class="text-secondary mb-3">{{#str}}strategy_proportional_desc, quest{{/str}}</p>
+                                    <div class="alert alert-light border small text-muted mb-0">
+                                        <i class="fa fa-info-circle text-info me-1" aria-hidden="true"></i>
+                                        {{#str}}strategy_proportional_tip, quest{{/str}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" id="quest-autosequence-cancel"
+                        data-bs-dismiss="modal">{{#str}}cancel, moodle{{/str}}</button>
+                    <button type="button" class="btn btn-primary btn-sm px-3" id="quest-autosequence-apply">
+                        <i class="fa fa-check me-1" aria-hidden="true"></i>{{#str}}apply, quest{{/str}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Interactive Calendar Timeline Board -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
@@ -123,7 +230,7 @@
                     <div class="quest-hud-dates small">
                         <span class="quest-hud-start"></span> &rarr; <span class="quest-hud-end"></span>
                     </div>
-                    <div class="quest-hud-dur badge bg-dark mt-1"></div>
+                    <div class="quest-hud-dur badge quest-duration-badge mt-1"></div>
                 </div>
             </div>
         </div>
@@ -161,14 +268,18 @@
                                 </a>
                             </td>
                             <td class="small text-muted">{{author}}</td>
-                            <td>
+                            <td class="quest-col-datestart text-nowrap" role="button" tabindex="0"
+                                title="{{#str}}clicktoeditdate, quest{{/str}}">
                                 <span class="quest-tbl-start badge bg-light text-dark border p-2">{{datestartstr}}</span>
+                                <i class="fa fa-pencil text-muted ms-1 quest-col-edit-icon small opacity-50" aria-hidden="true"></i>
                             </td>
-                            <td>
+                            <td class="quest-col-dateend text-nowrap" role="button" tabindex="0"
+                                title="{{#str}}clicktoeditdate, quest{{/str}}">
                                 <span class="quest-tbl-end badge bg-light text-dark border p-2">{{dateendstr}}</span>
+                                <i class="fa fa-pencil text-muted ms-1 quest-col-edit-icon small opacity-50" aria-hidden="true"></i>
                             </td>
                             <td>
-                                <span class="quest-tbl-dur badge bg-info text-dark p-2">{{duration_days}}d</span>
+                                <span class="quest-tbl-dur badge quest-duration-badge p-2">{{duration_days}}d</span>
                             </td>
                             <td class="text-end">
                                 <a href="{{{viewurl}}}" class="btn btn-sm btn-outline-secondary" title="View challenge" target="_blank">
@@ -179,6 +290,58 @@
                         {{/challenges}}
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit challenge dates modal -->
+    <div class="modal fade" id="quest-date-modal" tabindex="-1" aria-labelledby="questDateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-dark" id="questDateModalLabel">
+                        <i class="fa fa-calendar-check-o text-primary me-2" aria-hidden="true"></i>
+                        <span id="quest-date-modal-title">{{#str}}editdatesmodal, quest{{/str}}</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{#str}}closebuttontitle, moodle{{/str}}"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="quest-date-modal-cid" value="">
+                    <div class="mb-3 d-flex align-items-center justify-content-between">
+                        <span class="badge bg-primary text-white" id="quest-date-modal-author"></span>
+                        <span class="badge quest-duration-badge" id="quest-date-modal-duration"></span>
+                    </div>
+                    <div class="alert alert-danger d-none py-2 px-3 mb-3 small" id="quest-date-modal-error">
+                        <i class="fa fa-exclamation-circle me-1" aria-hidden="true"></i>
+                        <span>{{#str}}invaliddateorder, quest{{/str}}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quest-date-modal-start" class="form-label fw-bold small text-secondary">
+                            <i class="fa fa-play text-success me-1" aria-hidden="true"></i>
+                            {{#str}}datestart, quest{{/str}}
+                        </label>
+                        <input type="datetime-local" class="form-control" id="quest-date-modal-start" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quest-date-modal-end" class="form-label fw-bold small text-secondary">
+                            <i class="fa fa-stop text-danger me-1" aria-hidden="true"></i>
+                            {{#str}}dateend, quest{{/str}}
+                        </label>
+                        <input type="datetime-local" class="form-control" id="quest-date-modal-end" required>
+                    </div>
+                    <div class="alert alert-light border small text-muted mb-0">
+                        <i class="fa fa-info-circle text-primary me-1" aria-hidden="true"></i>
+                        {{#str}}editdatesmodaltip, quest{{/str}}
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top">
+                    <button type="button" class="btn btn-secondary btn-sm" id="quest-date-modal-cancel" data-bs-dismiss="modal">
+                        {{#str}}cancel, moodle{{/str}}
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm px-3" id="quest-date-modal-apply">
+                        <i class="fa fa-check me-1" aria-hidden="true"></i>{{#str}}apply, moodle{{/str}}
+                    </button>
+                </div>
             </div>
         </div>
     </div>

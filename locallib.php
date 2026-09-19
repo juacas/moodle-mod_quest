@@ -809,6 +809,48 @@ function quest_print_attachments($context, $filearea, $itemid, $order) {
         echo "</ul>\n";
     }
 }
+
+/**
+ * Return the activity intro together with its additional files.
+ *
+ * The returned HTML is passed to Moodle's standard activity header, so the
+ * intro and the files are rendered inside activity-information/activity-details.
+ *
+ * @param stdClass $quest Activity record.
+ * @param cm_info $cm Course module.
+ * @param context_module $context Activity module context.
+ * @return string
+ */
+function quest_get_activity_header_description($quest, $cm, $context) {
+    $description = format_module_intro('quest', $quest, $cm->id);
+
+    ob_start();
+    quest_print_attachments($context, 'introattachment', false, 'timemodified');
+    $attachments = ob_get_clean();
+
+    if (empty(trim($attachments))) {
+        return $description;
+    }
+
+    $attachmentheading = html_writer::div(
+        html_writer::tag('i', '', [
+            'class' => 'fa fa-paperclip text-primary me-2',
+            'aria-hidden' => 'true',
+        ]) .
+        html_writer::tag('h6', get_string('introattachments', 'quest'), [
+            'class' => 'fw-bold mb-0 text-dark',
+        ]),
+        'd-flex align-items-center mb-2'
+    );
+
+    $attachmentblock = html_writer::div(
+        $attachmentheading . html_writer::div($attachments, 'quest-attachments-list'),
+        'quest-intro-attachments mt-3 p-3 bg-white rounded border shadow-sm'
+    );
+
+    return $description . $attachmentblock;
+}
+
 /**
  * Prints challenge information.
  *
@@ -980,6 +1022,46 @@ function quest_challenge_phase($challenge, $quest, $course, $style = '') {
 function quest_submission_phase($submission, $quest, $course, $style = '') {
     return quest_challenge_phase($submission, $quest, $course, $style);
 }
+
+/**
+ * Get an actionable status for a challenge that needs staff attention.
+ *
+ * @param \stdClass $challenge Challenge submission.
+ * @param \stdClass $cm Course module.
+ * @param \context_module $context Activity context.
+ * @return array|null Badge data or null when no action is available.
+ */
+function quest_get_challenge_attention_status($challenge, $cm, $context): ?array {
+    if ((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING
+            && has_capability('mod/quest:approvechallenge', $context)) {
+        return [
+            'label' => get_string('approvalpending', 'quest'),
+            'url' => (new moodle_url('/mod/quest/challenges.php', [
+                'id' => $cm->id,
+                'cid' => $challenge->id,
+                'action' => 'approve',
+            ]))->out(false),
+            'class' => 'quest-attention-badge quest-attention-badge-approval',
+            'icon' => 'fa fa-clock-o',
+        ];
+    }
+
+    if (empty($challenge->evaluated) && has_capability('mod/quest:grade', $context)) {
+        return [
+            'label' => get_string('challenge_not_evaluated', 'quest'),
+            'url' => (new moodle_url('/mod/quest/assess_autors.php', [
+                'id' => $cm->id,
+                'sid' => $challenge->id,
+                'action' => 'evaluate',
+            ]))->out(false),
+            'class' => 'quest-attention-badge quest-attention-badge-unevaluated',
+            'icon' => 'fa fa-exclamation-circle',
+        ];
+    }
+
+    return null;
+}
+
 /**
  * Form for anwers.
  * @author juacas

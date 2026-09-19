@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -43,7 +42,6 @@ require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
 require_once("scores_lib.php");
-
 // Normalize query parameters if & was HTML entity-escaped as &amp; in the URL.
 foreach ($_GET as $key => $val) {
     if (str_starts_with($key, 'amp;')) {
@@ -53,25 +51,19 @@ foreach ($_GET as $key => $val) {
         }
     }
 }
-
 $id = required_param('id', PARAM_INT); // Quest coursemoduleID.
 global $DB, $OUTPUT, $PAGE, $sort, $dir;
-
 $timenow = time();
 list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
-
-
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
-
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $candeletechallenge = has_capability('mod/quest:deletechallengeall', $context);
 $canpreview = has_capability('mod/quest:preview', $context);
 $caneditchallenges = has_capability('mod/quest:editchallengeall', $context);
 $canapprove = has_capability('mod/quest:approvechallenge', $context);
-
 $action = optional_param('action', '', PARAM_ALPHA);
 if (empty($action) || $action === 'listallsubmissions' || $action === 'listallchallenges') {
     $ampaction = optional_param('amp;action', '', PARAM_ALPHA);
@@ -81,7 +73,6 @@ if (empty($action) || $action === 'listallsubmissions' || $action === 'listallch
         $action = 'listallchallenges';
     }
 }
-
 // Normalize action aliases.
 if ($action === 'showchallenge') {
     $action = 'showsubmission';
@@ -92,10 +83,8 @@ if ($action === 'showchallenge') {
 } else if ($action === 'listallchallenges') {
     $action = 'listallsubmissions';
 }
-
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
-
 // Accept cid (challenge id) as well as sid (submission id).
 $sid = optional_param('cid', null, PARAM_INT);
 if ($sid === null) {
@@ -107,21 +96,30 @@ if ($sid === null) {
 if ($sid === null) {
     $sid = optional_param('amp;sid', null, PARAM_INT);
 }
-
+if ($sid !== null && $action === 'showsubmission') {
+    $submissionquestid = $DB->get_field('quest_submissions', 'questid', ['id' => (int)$sid]);
+    if ((int)$submissionquestid === (int)$quest->id) {
+        // Editing a question creates a new version in the same question bank entry.
+        // Make existing Quest references resolve that latest version as well.
+        \mod_quest\question\question_reference_service::use_latest_version_for_challenge((int)$sid);
+    }
+}
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
 $url = new moodle_url('/mod/quest/challenges.php',
         array('id' => $id, 'sid' => $sid, 'action' => $action, 'sort' => $sort, 'dir' => $dir));
 $PAGE->set_url($url);
-
+$PAGE->set_context($context);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 if (($quest->usepassword) && (!$ismanager)) {
     quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
 }
-
 if (empty($action) || $action === 'listallsubmissions') {
     redirect(new moodle_url('/mod/quest/view.php', array('id' => $cm->id)));
 }
-
 // Confirm delete.
 if ($action == 'confirmdelete') {
     // $sid was already read at the top (accepting both 'sid' and 'cid' params).
@@ -129,7 +127,6 @@ if ($action == 'confirmdelete') {
         throw new \moodle_exception('missingparam', '', '', 'sid');
     }
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
-
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(\format_string($submission->title));
@@ -146,7 +143,6 @@ if ($action == 'confirmdelete') {
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(\format_string($submission->title));
-
     echo $OUTPUT->header();
     // ...check if the user has enough capability to delete the submission and only up to the
     // deadline.
@@ -156,7 +152,6 @@ if ($action == 'confirmdelete') {
              ($timenow < $submission->dateend)))) {
         throw new \moodle_exception("notauthorizedtodeletesubmission", 'quest');
     }
-
     if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", array($quest->id, $submission->id))) {
         foreach ($answers as $answer) {
             // ...first get any assessments...
@@ -175,7 +170,6 @@ if ($action == 'confirmdelete') {
                 question_engine::delete_questions_usage_by_activity((int)$answer->questionusageid);
             }
             $DB->delete_records("quest_answers", array("id" => $answer->id));
-
             // ...now get rid of all answer files.
             $fs = get_file_storage();
             $fs->delete_area_files($context->id, 'mod_quest', 'answer', $answer->id);
@@ -204,7 +198,6 @@ if ($action == 'confirmdelete') {
     $fs = get_file_storage();
     $fs->delete_area_files($context->id, 'mod_quest', 'submission', $submission->id);
     $fs->delete_area_files($context->id, 'mod_quest', 'attachment', $submission->id);
-
     if ($candeletechallenge) {
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
             echo $OUTPUT->heading(get_string("nostudentsyet"));
@@ -254,23 +247,17 @@ if ($action == 'confirmdelete') {
     if (!$canaddchallenge) {
         throw new \moodle_exception('nocapabilityaddchallenge', 'quest');
     }
-
     $category = \mod_quest\question\bank_provider::get_or_create_activity_category($context);
-
     $returnurl = new moodle_url('/mod/quest/challenges.php', [
         'id' => $cm->id,
         'action' => 'processnewqchallenge',
         'sesskey' => sesskey(),
     ]);
-
     $chooseqtype = get_string('chooseqtypetoadd', 'question');
     $PAGE->set_title($chooseqtype);
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add($chooseqtype);
-
     echo $OUTPUT->header();
-
-
     // ── QUESTION BANK SELECTOR ─────────────────────────────────────────────
     // Moodle 5.0+: shared question banks via question_bank_helper (mod_qbank).
     // Moodle 4.x:  direct listing of course question bank questions.
@@ -305,23 +292,17 @@ if ($action == 'confirmdelete') {
         $PAGE->requires->js_call_amd("mod_quest/modal_quest_question_bank_45", "init",
             [$context->id, (int)$cm->id, (int)$course->id]);
     }
-
-
     require_once($CFG->dirroot . '/question/editlib.php');
     require_once($CFG->dirroot . '/question/bank/editquestion/classes/editquestion_helper.php');
-
     $params = [
         'cmid' => $cm->id,
         'returnurl' => $returnurl->out_as_local_url(false),
     ];
-
     $canadd = has_capability('moodle/question:add', $context) || has_capability('mod/quest:addchallenge', $context);
-
     echo html_writer::start_div('generalbox boxwidthnormal boxaligncenter my-4', ['id' => 'quest-qtype-create-container']);
     echo $OUTPUT->heading(get_string('createnewquestion', 'question'), 3);
     echo $OUTPUT->render(new \qbank_editquestion\output\add_new_question((int)$category->id, $params, $canadd));
     echo html_writer::end_div(); // End quest-qtype-create-container.
-
     echo $OUTPUT->footer();
     exit();
 } else if ($action === 'processexistingqchallenge') {
@@ -329,9 +310,7 @@ if ($action == 'confirmdelete') {
     // Teachers only.
     require_sesskey();
     require_capability('mod/quest:manage', $context);
-
     $questionid = required_param('questionid', PARAM_INT);
-
     require_once($CFG->libdir . '/questionlib.php');
     $question = \mod_quest\question\bank_provider::require_question($questionid);
     $entryid = (int)$question->questionbankentryid;
@@ -348,7 +327,6 @@ if ($action == 'confirmdelete') {
     if (!$latestq) {
         throw new \moodle_exception('questiondoesnotexist', 'question');
     }
-
     $newsubmission = new stdClass();
     $newsubmission->questid      = $quest->id;
     $newsubmission->userid       = $USER->id;
@@ -357,7 +335,6 @@ if ($action == 'confirmdelete') {
     $newsubmission->descriptionformat = !empty($latestq->questiontextformat) ? $latestq->questiontextformat : FORMAT_HTML;
     $newsubmission->descriptiontrust  = 0;
     $newsubmission->timecreated  = time();
-
     $timenow = time();
     $newsubmission->datestart    = max($timenow, (int)$quest->datestart);
     $challengeend                = $newsubmission->datestart + (int)$quest->timemaxquestion * 24 * 3600;
@@ -371,9 +348,7 @@ if ($action == 'confirmdelete') {
     $newsubmission->nanswerscorrect = 0;
     // Teachers are approved automatically.
     $newsubmission->state        = SUBMISSION_STATE_APROVED;
-
     $newsubmission->id = $DB->insert_record('quest_submissions', $newsubmission);
-
     // Link using null version = always resolve to latest ready version.
     \mod_quest\question\question_reference_service::set_challenge_question(
         $context->id,
@@ -381,10 +356,8 @@ if ($action == 'confirmdelete') {
         (int)$entryid,
         null   // null = always use latest version
     );
-
     quest_update_challenge_calendar($cm, $quest, $newsubmission);
     quest_grade_updated($quest, $USER->id);
-
     redirect(
         new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'cid' => $newsubmission->id, 'action' => 'showchallenge']),
         get_string('challengeadded', 'quest'),
@@ -397,18 +370,15 @@ if ($action == 'confirmdelete') {
     if (!$canaddchallenge) {
         throw new \moodle_exception('nocapabilityaddchallenge', 'quest');
     }
-
     $lastchanged = optional_param('lastchanged', 0, PARAM_INT);
     if ($lastchanged <= 0) {
         redirect(new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id]));
     }
-
     require_once($CFG->libdir . '/questionlib.php');
     $question = \question_bank::load_question($lastchanged);
     if (!$question) {
         throw new \moodle_exception('questiondoesnotexist', 'question');
     }
-
     $newsubmission = new stdClass();
     $newsubmission->questid = $quest->id;
     $newsubmission->userid = $USER->id;
@@ -417,12 +387,10 @@ if ($action == 'confirmdelete') {
     $newsubmission->descriptionformat = !empty($question->questiontextformat) ? $question->questiontextformat : FORMAT_HTML;
     $newsubmission->descriptiontrust = 0;
     $newsubmission->timecreated = time();
-
     $timenow = time();
     $newsubmission->datestart = max($timenow, (int)$quest->datestart);
     $challengeend = $newsubmission->datestart + (int)$quest->timemaxquestion * 24 * 3600;
     $newsubmission->dateend = min($challengeend, (int)$quest->dateend);
-
     $newsubmission->pointsmax = $quest->maxcalification;
     $newsubmission->pointsmin = $quest->mincalification;
     $newsubmission->initialpoints = $quest->initialpoints;
@@ -430,16 +398,13 @@ if ($action == 'confirmdelete') {
     $newsubmission->perceiveddifficulty = -1;
     $newsubmission->nanswers = 0;
     $newsubmission->nanswerscorrect = 0;
-
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
     if ($canapprove) {
         $newsubmission->state = SUBMISSION_STATE_APROVED;
     } else {
         $newsubmission->state = SUBMISSION_STATE_APPROVAL_PENDING;
     }
-
     $newsubmission->id = $DB->insert_record('quest_submissions', $newsubmission);
-
     // Link question in question_references.
     $entryid = $DB->get_field_sql(
         "SELECT qv.questionbankentryid
@@ -452,18 +417,15 @@ if ($action == 'confirmdelete') {
             $context->id,
             (int)$newsubmission->id,
             (int)$entryid,
-            1
+            null
         );
     }
-
     // If state is approval pending, add approval_pending tag.
     if ((int)$newsubmission->state === SUBMISSION_STATE_APPROVAL_PENDING) {
         \mod_quest\question\question_reference_service::tag_approval_pending((int)$question->id, $context);
     }
-
     quest_update_challenge_calendar($cm, $quest, $newsubmission);
     quest_grade_updated($quest, $USER->id);
-
     $msg = get_string('challengeadded', 'quest');
     if ((int)$newsubmission->state === SUBMISSION_STATE_APPROVAL_PENDING) {
         $msg .= ' (' . get_string('phase1submission', 'quest') . ')';
@@ -488,17 +450,14 @@ if ($action == 'confirmdelete') {
     }
     $newsubmission = new stdClass();
     $newsubmission->id = null;
-
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
                     'context' => $context);
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes,
                     'context' => $context);
-
     $newsubmission = file_prepare_standard_editor($newsubmission, 'description', $descriptionoptions, $context, 'mod_quest',
             'submission', $newsubmission->id);
     $newsubmission = file_prepare_standard_filemanager($newsubmission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $newsubmission->id);
-
     $mform = new quest_print_upload_form(null,
             array('submission' => $newsubmission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
                             'attachmentoptions' => $attachmentoptions, 'action' => $action));
@@ -524,22 +483,18 @@ if ($action == 'confirmdelete') {
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
     $titlesubmission = $submission->title;
     $PAGE->navbar->add(\format_string($submission->title));
-
     if (($submission->userid != $USER->id) && (!$caneditchallenges)) {
         throw new \moodle_exception('nopermissions', 'error', '', "Edit submission: Only teachers and autors can look this page");
     }
-
     // If it's the author editing their own challenge, ensure they have the necessary
     // question bank capabilities (editmine, viewmine) so the Edit link in the
     // question bank notification works correctly.
     if ($submission->userid == $USER->id && !$caneditchallenges) {
         \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
     }
-
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
                     'context' => $context);
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
-
     $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context, 'mod_quest', 'submission',
             $submission->id);
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
@@ -561,14 +516,12 @@ if ($action == 'confirmdelete') {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading_with_help(get_string("modifsubmission", "quest", $titlesubmission), "modifsubmission", "quest");
-
         // ── QUESTION BANK NOTIFICATION (modif view) ───────────────────────────
         // Show a banner if this challenge is already linked to a question bank question.
         // Visible to: teachers (editchallengeall) and the author while in approval_pending state.
         $isownpendingmodif = ($submission->userid == $USER->id)
             && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING);
         if (has_capability('mod/quest:editchallengeall', $context) || $isownpendingmodif) {
-
             $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
             if ($linkedq) {
                 $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
@@ -588,7 +541,7 @@ if ($action == 'confirmdelete') {
                     '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' .
                     get_string('viewinquestionbank', 'quest') . '</a>';
                 $editlink = '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary ms-2 py-0 px-2">' .
-                    '<i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('edit') . '</a>';
+                    '<i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('editquestion', 'quest') . '</a>';
                 echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
                      '<i class="fa fa-database fa-2x me-3"></i><div>' .
                      '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
@@ -598,7 +551,6 @@ if ($action == 'confirmdelete') {
             }
         }
         // ── END QUESTION BANK NOTIFICATION ────────────────────────────────────
-
         $mform->display();
     }
 } else if ($action === 'exporttoqbank') {
@@ -629,7 +581,6 @@ if ($action == 'confirmdelete') {
     if ((!($canpreview)) && ($submission->userid != $USER->id && ($submission->datestart > time() || $submission->state == 1))) {
         throw new \moodle_exception('notpermissionsubmission', 'quest');
     }
-
     if (($submission->datestart < time()) && ($submission->dateend > time()) &&
             ($submission->nanswerscorrect < $quest->nmaxanswers)) {
         $submission->phase = SUBMISSION_PHASE_ACTIVE; // ...active.
@@ -643,24 +594,19 @@ if ($action == 'confirmdelete') {
     } else {
         $permitviewautors = 0;
     }
-
     // ── Helper: author of a challenge pending approval ────────────────────────
     // Authors of their own pending-approval challenge get edit-level access to
     // modify the challenge and view/edit the linked question bank question.
     $isownpending = ($submission->userid == $USER->id)
         && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING);
-
     $title = '"' . $submission->title . '"';
     if (($canpreview) || ($submission->userid == $USER->id) || ($permitviewautors == 1)) {
         $title .= ' ' . get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
     }
-
     $PAGE->set_title(format_string($quest->name . ' ' . $submission->title));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(\format_string($submission->title));
-
     echo $OUTPUT->header();
-
     // Flag to force a recalculation of team statistics and scores.
     $debugrecalculate = optional_param('recalculate', 'no', PARAM_ALPHA);
     $recalculatelink = '';
@@ -669,20 +615,16 @@ if ($action == 'confirmdelete') {
         print("<p>Fixing submission stats...</p>");
         $submission = quest_update_submission_counts($submission->id);
     }
-
     // ── ACTION BAR ────────────────────────────────────────────────────────────
     // Build actions bar: Modify | Answer | See assessment | Re-assess | Recalc | Export
     $actionbarbtns = '';
-
     // Modify button: teachers always; authors while their challenge is pending approval.
     if (has_capability('mod/quest:editchallengeall', $context) || $isownpending) {
         $modifurl = new moodle_url('/mod/quest/challenges.php',
             ['action' => 'modif', 'id' => $cm->id, 'sid' => $submission->id]);
         $actionbarbtns .= '<a href="' . $modifurl->out() . '" class="btn btn-sm btn-outline-secondary">' .
-            '<i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('modif', 'quest') . '</a> ';
+            '<i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('adjustchallenge', 'quest') . '</a> ';
     }
-
-
     // Approve button.
     if (has_capability('mod/quest:approvechallenge', $context) &&
             $submission->state == SUBMISSION_STATE_APPROVAL_PENDING) {
@@ -691,7 +633,6 @@ if ($action == 'confirmdelete') {
         $actionbarbtns .= '<a href="' . $approveurl->out() . '" class="btn btn-sm btn-success">' .
             '<i class="fa fa-check me-1" aria-hidden="true"></i>' . get_string('approve', 'quest') . '</a> ';
     }
-
     // Answer button (if user can answer and is not the author).
     $cananswer = has_capability('mod/quest:attempt', $context);
     if ($ismanager || ($cananswer && $submission->userid != $USER->id)) {
@@ -713,7 +654,6 @@ if ($action == 'confirmdelete') {
                 '<i class="fa fa-reply me-1" aria-hidden="true"></i>' . get_string('reply', 'quest') . '</a> ';
         }
     }
-
     // See assessment (author or manager).
     if ($ismanager || ($submission->userid == $USER->id || $submission->phase != SUBMISSION_PHASE_ACTIVE)) {
         $assessmentautor = quest_get_challenge_assessment($submission);
@@ -724,7 +664,6 @@ if ($action == 'confirmdelete') {
                 get_string('seeassessmentautor', 'quest') . '</a> ';
         }
     }
-
     // Re-assess / Evaluate (manager only).
     if ($ismanager) {
         $assessmentautor = quest_get_challenge_assessment($submission);
@@ -734,7 +673,6 @@ if ($action == 'confirmdelete') {
         $actionbarbtns .= '<a href="' . $evalurl->out() . '" class="btn btn-sm btn-outline-warning">' .
             '<i class="fa fa-star-half-o me-1" aria-hidden="true"></i>' . $evalLabel . '</a> ';
     }
-
     // Recalc (manager, debug).
     if ($ismanager) {
         $recalcurl = new moodle_url('/mod/quest/challenges.php',
@@ -742,7 +680,6 @@ if ($action == 'confirmdelete') {
         $actionbarbtns .= '<a href="' . $recalcurl->out() . '" class="btn btn-sm btn-outline-secondary" title="Recalc stats">' .
             '<i class="fa fa-refresh me-1" aria-hidden="true"></i>Recalc</a> ';
     }
-
     // Specimen assessment form link (always).
     $specimenurl = new moodle_url('/mod/quest/assessments.php',
         ['id' => $cm->id, 'sid' => $submission->id, 'viewgeneral' => 0,
@@ -751,12 +688,9 @@ if ($action == 'confirmdelete') {
         '<i class="fa fa-list-alt me-1" aria-hidden="true"></i>' .
         get_string('specimenassessmentformanswer', 'quest') . '</a> ';
     $actionbarbtns .= $OUTPUT->help_icon('specimenanswer', 'quest');
-
     $any_linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
-
     // Export / Question Bank notification (manager, or own challenge with linked question).
     if ($ismanager || $isownpending) {
-
         $linkedq = $any_linkedq;
         if ($linkedq) {
             $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
@@ -766,7 +700,6 @@ if ($action == 'confirmdelete') {
                 $badgetext .= ' <span class="badge bg-warning text-dark ms-1"><i class="fa fa-clock-o me-1" aria-hidden="true"></i>' .
                     get_string('approvalpending', 'quest') . '</span>';
             }
-
             $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
             $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
             $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
@@ -775,12 +708,10 @@ if ($action == 'confirmdelete') {
             $previewurl = \qbank_previewquestion\helper::question_preview_url(
                 $linkedq->id, null, null, null, null, $context, $cm->id
             );
-
             // Add buttons to the action bar
-            $actionbarbtns .= '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary"><i class="fa fa-pencil me-1"></i>' . get_string('edit') . '</a> ';
+            $actionbarbtns .= '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary"><i class="fa fa-pencil me-1"></i>' . get_string('editquestion', 'quest') . '</a> ';
             $actionbarbtns .= '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-secondary"><i class="fa fa-external-link me-1"></i>' . get_string('viewinquestionbank', 'quest') . '</a> ';
             $actionbarbtns .= '<a href="' . $previewurl->out() . '" class="btn btn-sm btn-outline-secondary" onclick="window.open(this.href,\'qpreview\',\'width=800,height=600,scrollbars=yes\');return false;"><i class="fa fa-eye me-1"></i>' . get_string('preview') . '</a> ';
-
             echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
                  '<i class="fa fa-database fa-2x me-3"></i><div>' .
                  '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
@@ -795,12 +726,10 @@ if ($action == 'confirmdelete') {
                 '<i class="fa fa-upload me-1"></i> ' . get_string('exporttoquestionbank', 'quest') . '</a>';
         }
     }
-
     // Render the action bar.
     echo '<div class="quest-challenge-action-bar d-flex flex-wrap align-items-center gap-2 mb-3 p-2' .
          ' bg-light rounded border">' . $actionbarbtns . '</div>';
     // ── END ACTION BAR ────────────────────────────────────────────────────────
-
     echo $OUTPUT->heading($title);
     echo '<div class="row g-4 align-items-start mb-4">';
     echo '<div class="col-lg-8 col-md-7">';
@@ -811,7 +740,6 @@ if ($action == 'confirmdelete') {
     quest_print_score_graph($quest, $submission);
     echo '</div>';
     echo '</div>';
-
     if (!$any_linkedq) {
         echo $OUTPUT->heading(get_string('description', 'quest'));
         /*
@@ -820,52 +748,29 @@ if ($action == 'confirmdelete') {
         quest_print_challenge($quest, $submission);
     } else {
         echo $OUTPUT->heading(get_string('description', 'quest'));
-        
         echo '<div class="card border-0 mb-4" id="quest-qpreview-panel">';
         echo '  <div class="card-body p-4 bg-white rounded shadow-sm">';
-        
         [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
             $quest,
             $submission,
             $any_linkedq,
             $context
         );
-
-        echo \mod_quest\service\autograde_service::render_question($quba, $slot, true);
-        
+        echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
         echo '  </div>';
         echo '</div>';
     }
     // ── END QUESTION BANK PREVIEW ─────────────────────────────────────────────
-
     $changegroup = optional_param('group', -1, PARAM_INT);// Group change requested?
     $groupmode = groups_get_activity_group($cm); // Groups are being used?
     $currentgroup = groups_get_course_group($course);
-
     if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
     ($submission->nanswerscorrect < $quest->nmaxanswers)) {
         $submission->phase = SUBMISSION_PHASE_ACTIVE;
     }
-
-    // Answers action links (Answer / phase status).
-    $actionlinks = '';
-    if (!has_capability('mod/quest:manage', $context, $submission->userid) && ($groupmode == 2)) {
-        if ($currentgroup && !groups_is_member($currentgroup, $submission->userid) &&
-                !($submission->dateend < time())) {
-            echo get_string('cantRespond_WARN_notingroup_or_challengeended', 'quest');
-        } else {
-            $actionlinks = quest_actions_challenge($course, $submission, $quest, $cm, ['recalification' => false]);
-        }
-    } else {
-        $actionlinks = quest_actions_challenge($course, $submission, $quest, $cm, ['recalification' => false]);
-    }
-    echo $actionlinks;
-    echo "<br>";
-
     $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
     $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
     quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir);
-    
     if (!empty($repeatactionsbelow)) {
         echo $actionlinks . $recalculatelink;
     }
@@ -878,25 +783,20 @@ if ($action == 'confirmdelete') {
     if (!$canapprove) {
         throw new \moodle_exception('nopermissions', 'error', '', "Approve challenge: Not enought permissions to take this action");
     }
-
     $descriptionoptions = array('trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
                     'context' => $context);
     $attachmentoptions = array('subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes);
-
     $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context, 'mod_quest', 'submission',
             $submission->id);
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $submission->id);
-
     $mform = new quest_print_upload_form(null,
             array('submission' => $submission, 'quest' => $quest,
                             'cm' => $cm, 'definitionoptions' => $descriptionoptions,
                             'attachmentoptions' => $attachmentoptions, 'action' => $action));
-
     if ($mform->is_cancelled()) {
         redirect("challenges.php?id=$cm->id&amp;action=showsubmission&amp;sid=$sid");
     } else if ($submission = $mform->get_data()) {
-
         if (isset($submission->submitbuttonapprove)) {
             quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions,
                                     $attachmentoptions, $context, 'approve', $authorid);
@@ -910,26 +810,20 @@ if ($action == 'confirmdelete') {
                     $attachmentoptions, $context, 'modif', $authorid);
         }
     } else {
-
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-
         echo $OUTPUT->heading_with_help(get_string("approvesubmission", "quest"), "approvesubmission", "quest");
-
         $mform->display();
     }
 } else if ($action == 'showsubmissionsuser') {
     if (!$canpreview) {
         throw new \moodle_exception('nopermissions', 'error', '', "Only teachers can look at this page");
     }
-
     $userid = required_param('uid', PARAM_INT);
-
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-
     // Now prepare table with student assessments and submissions.
     $tablesort = new stdclass();
     $tablesort->data = array();
@@ -941,7 +835,6 @@ if ($action == 'confirmdelete') {
         echo $OUTPUT->footer();
         exit();
     }
-
     $usertemp = null;
     foreach ($users as $u) {
         if ($u->id == $userid) {
@@ -953,13 +846,11 @@ if ($action == 'confirmdelete') {
         $usertemp = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
     }
     $user = $usertemp;
-
     $title = get_string('showsubmissions', 'quest');
     if ($canpreview) {
         $title .= ' ' . get_string('of', 'quest') . ' ' . quest_fullname($user->id, $course->id);
     }
     echo $OUTPUT->heading($title);
-
     // Skip if student not in group.
     $initialpoints = [];
     $nanswerscorrect = [];
@@ -978,7 +869,6 @@ if ($action == 'confirmdelete') {
         foreach ($submissions as $submission) {
             $data = array();
             $sortdata = array();
-
             if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
                      ($submission->nanswerscorrect < $quest->nmaxanswers)) {
                 $submission->phase = SUBMISSION_PHASE_ACTIVE;
@@ -989,10 +879,8 @@ if ($action == 'confirmdelete') {
                      " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" .
                      $OUTPUT->pix_icon('/t/delete', get_string('delete', 'quest')) . '</a>';
             $sortdata['title'] = strtolower($submission->title);
-
             $data[] = quest_challenge_phase($submission, $quest, $course);
             $sortdata['phase'] = quest_challenge_phase($submission, $quest, $course);
-
             $nanswersassess = 0;
             if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
                     array($quest->id, $submission->id))) {
@@ -1008,16 +896,13 @@ if ($action == 'confirmdelete') {
                     array('questid' => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id))) {
                 $image = $OUTPUT->pix_icon('/t/clear', 'OK');
             }
-
             $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' . $nanswerswhithoutassess . ']' .
                      $image . '</b>';
             $sortdata['nanswersshort'] = $submission->nanswers;
             $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
-
             $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['datestart'] = $submission->datestart;
-
             $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateend'] = $submission->dateend;
             $currentpoints = quest_get_points($submission, $quest, '');
@@ -1034,16 +919,12 @@ if ($action == 'confirmdelete') {
                     "data-pointsmin=\"{$submission->pointsmin}\" " .
                     "data-type=\"{$quest->typecalification}\" " .
                     "style=\"background-color : White; border : Black; color : Black; font-size : 14pt; text-align : center;\"></form>";
-
             $data[] = $grade;
-
             $indice++;
-
             $tablesort->data[] = $data;
             $tablesort->sortdata[] = $sortdata;
         }
     }
-
     $sort = optional_param('sort', "datestart", PARAM_ALPHA);
     $dir = optional_param('dir', "ASC", PARAM_ALPHA);
     uasort($tablesort->sortdata, 'quest_sortfunction');
@@ -1052,13 +933,10 @@ if ($action == 'confirmdelete') {
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
-
     $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
     $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess',
                     'datestart', 'dateend', 'calification');
-
     $table->width = "95%";
-
     $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
@@ -1077,12 +955,9 @@ if ($action == 'confirmdelete') {
         $$column = "<a href=\"challenges.php?id=$id&amp;sid=$sid&amp;uid=$user->id&amp;action=showsubmissionsuser&amp;" .
                 "sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
-
     $table->head = array("$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
                     "$dateend", "$calification");
-
     echo html_writer::table($table);
-
     $grafic = $OUTPUT->pix_icon('t/clear', 'OK');
     echo "<center>";
     echo get_string('legend', 'quest', $grafic);
@@ -1090,18 +965,15 @@ if ($action == 'confirmdelete') {
     // Javascript counter support via DOM data attributes.
     $servertime = time();
     $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
-
     $continueurl = new moodle_url('viewclasification.php', ['id' => $cm->id]);
     echo $OUTPUT->continue_button($continueurl);
 } else if ($action == "showanswersuser") {
     $uid = required_param('uid', PARAM_INT);
-
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
         echo $OUTPUT->footer();
         exit();
     }
-
     $usertemp = null;
     foreach ($users as $u) {
         if ($u->id == $uid) {
@@ -1113,29 +985,24 @@ if ($action == 'confirmdelete') {
         $usertemp = $DB->get_record('user', ['id' => $uid], '*', MUST_EXIST);
     }
     $user = $usertemp;
-
     $title = get_string('showanswers', 'quest');
     if ($canpreview) {
         $user->imagealt = quest_fullname($user->id, $course->id);
         $title .= ' ' . get_string('of', 'quest') . ' ' . $OUTPUT->user_picture($user) . $user->imagealt;
     }
-
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
     echo $OUTPUT->heading($title);
-
     // Now prepare table with student assessments and submissions.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
-
     // ...skip if student not in group.
     if ($answers = quest_get_answers($quest, $user)) {
         foreach ($answers as $answer) {
             $data = array();
             $sortdata = array();
-
             $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
             $data[] = quest_print_answer_title($quest, $answer, $submission) .
                      " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id\">" . "<img src=\"" . $CFG->wwwroot .
@@ -1143,15 +1010,11 @@ if ($action == 'confirmdelete') {
                      " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;aid=$answer->id\">" . "<img src=\"" .
                      $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                      get_string('delete', 'quest') . '" /></a>';
-
             $sortdata['title'] = strtolower($answer->title);
-
             $data[] = quest_answer_phase($answer, $course);
             $sortdata['phase'] = quest_answer_phase($answer, $course);
-
             $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
             $sortdata['dateanswer'] = $answer->date;
-
             if (($answer->phase == ANSWER_PHASE_GRADED) || ($answer->phase == ANSWER_PHASE_PASSED)) {
                 $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id));
             } else {
@@ -1160,9 +1023,7 @@ if ($action == 'confirmdelete') {
             $submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid), '*', MUST_EXIST);
             $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
             $sortdata['tassmnt'] = 1;
-
             $score = quest_answer_grade($quest, $answer, 'ALL');
-
             if ($answer->pointsmax == 0) {
                 $grade = number_format($score, 4) . ' (' . get_string('phase4submission', 'quest') . ')';
             } else {
@@ -1171,7 +1032,6 @@ if ($action == 'confirmdelete') {
             }
             $data[] = $grade;
             $sortdata['calification'] = $score;
-
             $tablesort->data[] = $data;
             $tablesort->sortdata[] = $sortdata;
         }
@@ -1184,12 +1044,9 @@ if ($action == 'confirmdelete') {
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
-
     $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
     $columns = array('title', 'phase', 'dateanswer', 'actions', 'calification');
-
     $table->width = "95%";
-
     $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
@@ -1208,61 +1065,50 @@ if ($action == 'confirmdelete') {
         $$column = "<a href=\"challenges.php?id=$cm->id&amp;sid=$sid&amp;uid=$user->id&amp;action=showanswersuser&amp;" .
                 "sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
-
     $table->head = array("$title", "$phase", "$dateanswer", get_string('actions', 'quest'), "$calification");
-
     echo html_writer::table($table);
     print('<br><p>*' . get_string('calification_provisional_msg', 'quest') . '</p>');
     $continueurl = new moodle_url('viewclasification.php', ['id' => $cm->id]);
     echo $OUTPUT->continue_button($continueurl);
 } else if ($action == 'showsubmissionsteam') {
-
     if (!$canpreview) {
         throw new \moodle_exception('nopermissions', 'error', '', "Only teachers can look at this page");
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-
     // Now prepare table with student assessments and submissions...
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
     $indice = 0;
-
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         global $OUTPUT;
         echo $OUTPUT->heading(get_string('nostudentsyet'));
         echo $OUTPUT->footer();
         exit();
     }
-
     $team = $DB->get_record("quest_teams", array("id" => required_param('tid', PARAM_INT)), '*', MUST_EXIST);
     $userstemp = array();
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
                 array("questid" => $quest->id, "userid" => $user->id))) {
-
             if ($calificationuser->teamid == $team->id) {
                 $userstemp[] = $user;
             }
         }
     }
     $users = $userstemp;
-
     $title = get_string('showsubmissions', 'quest');
     if ($canpreview) {
         $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . $team->name;
     }
-
     // Skip if student not in group.
     foreach ($users as $user) {
-
         if ($submissions = quest_get_user_challenges($quest, $user)) {
             foreach ($submissions as $submission) {
                 $data = array();
                 $sortdata = array();
-
                 if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
                          ($submission->nanswerscorrect < $quest->nmaxanswers)) {
                     $submission->phase = SUBMISSION_PHASE_ACTIVE;
@@ -1273,16 +1119,13 @@ if ($action == 'confirmdelete') {
                          " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" .
                          $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest')) . '</a>';
                 $sortdata['title'] = strtolower($submission->title);
-
                 $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?" .
                         "id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
                 $sortdata['firstname'] = strtolower($user->firstname);
                 $sortdata['lastname'] = strtolower($user->lastname);
-
                 $phase = quest_challenge_phase($submission, $quest, $course);
                 $data[] = $phase;
                 $sortdata['phase'] = $phase;
-
                 $nanswersassess = 0;
                 if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
                         array($quest->id, $submission->id))) {
@@ -1298,16 +1141,13 @@ if ($action == 'confirmdelete') {
                         array("questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id))) {
                     $image = " <img src=\"" . $CFG->wwwroot . "pix/t/clear.png\" />";
                 }
-
                 $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' .
                         $nanswerswhithoutassess . ']' . $image . '</b>';
                 $sortdata['nanswersshort'] = $submission->nanswers;
                 $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
                 $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
-
                 $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['datestart'] = $submission->datestart;
-
                 $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateend'] = $submission->dateend;
                 $currentpoints = quest_get_points($submission, $quest, '');
@@ -1327,11 +1167,8 @@ if ($action == 'confirmdelete') {
                          "data-type=\"{$quest->typecalification}\" " .
                          "style=\"background-color : White; border : Black; color : Black; " .
                          "font-size : 14pt; text-align : center;\" ></form>";
-
                 $data[] = $grade;
-
                 $indice++;
-
                 $tablesort->data[] = $data;
                 $tablesort->sortdata[] = $sortdata;
             }
@@ -1345,13 +1182,10 @@ if ($action == 'confirmdelete') {
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
-
     $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
     $columns = array('title', 'firstname', 'lastname', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess',
                     'datestart', 'dateend', 'calification');
-
     $table->width = "95%";
-
     $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
@@ -1370,97 +1204,77 @@ if ($action == 'confirmdelete') {
         $$column = "<a href=\"challenges.php?id=$id&amp;sid=$sid&amp;tid=$team->id&amp;action=showsubmissionsteam&amp;" .
                 "sort=$column&amp;dir=$columndir\">" . $string[$column] . "$columnicon</a>";
     }
-
     $table->head = array("$title", "$firstname / $lastname", "$phase",
                     "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
                     "$dateend", "$calification");
-
     echo $OUTPUT->heading(get_string('showsubmissionsteam', 'quest'));
     echo html_writer::table($table);
-
     $grafic = $OUTPUT->pix_icon('t/clear', 'OK');
     echo "<center>";
     echo get_string('legend', 'quest', $grafic);
     echo "</center>";
-
     // Javascript counter support via DOM data attributes.
     $servertime = time();
     $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
-
     $continueurl = new moodle_url('challenges.php', ['action' => 'showsubmission', 'sid' => $submission->id, 'id' => $cm->id]);
     echo $OUTPUT->continue_button($continueurl);
 } else if ($action == "showanswersteam") {
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-
     echo $OUTPUT->header();
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
         echo $OUTPUT->footer($course);
         exit();
     }
-
     $team = $DB->get_record("quest_teams", array('id' => required_param('tid', PARAM_INT)), '*', MUST_EXIST);
     $userstemp = array();
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
                 array("questid" => $quest->id, "userid" => $user->id))) {
-
             if ($calificationuser->teamid == $team->id) {
                 $userstemp[] = $user;
             }
         }
     }
     $users = $userstemp;
-
     $title = get_string('showanswers', 'quest');
     if ($canpreview) {
         $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . $team->name;
     }
     echo $OUTPUT->heading($title);
-
     // Now prepare table with student assessments and submissions.
     $tablesort = new stdClass();
     $tablesort->data = array();
     $tablesort->sortdata = array();
-
     foreach ($users as $user) {
-
         // ...skip if student not in group.
         if ($answers = quest_get_answers($quest, $user)) {
             foreach ($answers as $answer) {
                 $data = array();
                 $sortdata = array();
-
                 $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
-
                 $data[] = quest_print_answer_title($quest, $answer, $submission) .
                          " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id\">" .
                          $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest')) . '</a>' .
                          " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;aid=$answer->id\">" .
                          $OUTPUT->pix_icon('/t/delete', get_string('delete', 'quest')) . '</a>';
-
                 $sortdata['title'] = strtolower($answer->title);
-
                 if ($canpreview) {
                     $data[] = "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?" .
                             "id=$user->id&amp;course=$course->id\">" . fullname($user) . '</a>';
                     $sortdata['firstname'] = strtolower($user->firstname);
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
-
                 $data[] = quest_answer_phase($answer, $course);
                 $sortdata['phase'] = quest_answer_phase($answer, $course);
-
                 $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateanswer'] = $answer->date;
-
                 if (($answer->phase == 1) || ($answer->phase == 2)) {
                     $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id));
                 } else {
                     $assessment = null;
                 }
-
                 $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
                 $sortdata['tassmnt'] = 1;
                 if ($answer->pointsmax == 0) {
@@ -1471,13 +1285,11 @@ if ($action == 'confirmdelete') {
                 }
                 $data[] = $grade;
                 $sortdata['calification'] = quest_answer_grade($quest, $answer, 'ALL');
-
                 $tablesort->data[] = $data;
                 $tablesort->sortdata[] = $sortdata;
             }
         }
     }
-
     $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
     $dir = optional_param('dir', "ASC", PARAM_ALPHA);
     uasort($tablesort->sortdata, 'quest_sortfunction');
@@ -1486,12 +1298,9 @@ if ($action == 'confirmdelete') {
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
-
     $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
     $columns = array('title', 'firstname', 'lastname', 'phase', 'dateanswer', 'actions', 'calification');
-
     $table->width = "95%";
-
     $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
@@ -1510,7 +1319,6 @@ if ($action == 'confirmdelete') {
         $$column = "<a href=\"challenges.php?id=$cm->id&amp;sid=$sid&amp;tid=$team->id&amp;action=showanswersteam&amp;" .
                 "sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
-
     $table->head = array("$title", "$firstname / $lastname", "$phase", "$dateanswer", get_string('actions', 'quest'),
                     "$calification");
     echo html_writer::table($table);
@@ -1519,14 +1327,12 @@ if ($action == 'confirmdelete') {
         : "view.php?id=$cm->id";
     echo $OUTPUT->continue_button($continueurl);
 } else if ($action == "recalificationall" && false) { // This action is deprecated.
-
     $submission = $DB->get_record("quest_submissions", array("id" => $sid), '*', MUST_EXIST);
     quest_recalification_all($submission, $quest, $course);
     redirect("challenges.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
 } else if ($action == "confirmchangeform") {
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-
     echo $OUTPUT->header();
     echo "<br><br>";
     $assessmentsurl = new moodle_url('/mod/quest/assessments.php',

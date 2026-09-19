@@ -70,6 +70,10 @@ $url = new moodle_url('/mod/quest/view.php', array('id' => $id));
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
@@ -265,7 +269,6 @@ if ($action == 'notavailable') {
         'ismanager' => $ismanager,
         'challengegradinghtml' => '',
         'answergradinghtml' => '',
-        'introattachments' => '',
         'simplecalificationhtml' => '',
         'clasificationswitchurl' => '',
         'clasificationswitchlabel' => '',
@@ -279,9 +282,6 @@ if ($action == 'notavailable') {
     quest_print_answer_grading_link($cm, $context, $quest);
     $summarydata['answergradinghtml'] = ob_get_clean();
 
-    ob_start();
-    quest_print_attachments($context, 'introattachment', false, 'timemodified');
-    $summarydata['introattachments'] = ob_get_clean();
 
     if (($quest->allowteams) && ($quest->showclasifindividual == 1)) {
         if ($actionclasification == 'global') {
@@ -390,8 +390,27 @@ if ($action == 'notavailable') {
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
             }
-            $data[] = quest_submission_phase($submission, $quest, $course);
-            $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
+            $attentionstatus = quest_get_challenge_attention_status($submission, $cm, $context);
+            if ($attentionstatus) {
+                $attentionlabel = html_writer::tag(
+                    'i',
+                    '',
+                    ['class' => $attentionstatus['icon'], 'aria-hidden' => 'true']
+                ) . ' ' . s($attentionstatus['label']);
+                $phasehtml = html_writer::link(
+                    $attentionstatus['url'],
+                    $attentionlabel,
+                    [
+                        'class' => $attentionstatus['class'],
+                        'title' => $attentionstatus['label'],
+                    ]
+                );
+                $sortdata['phase'] = strtolower($attentionstatus['label']);
+            } else {
+                $phasehtml = quest_submission_phase($submission, $quest, $course);
+                $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
+            }
+            $data[] = $phasehtml;
 
             $nanswersassess = 0;
             if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",

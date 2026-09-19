@@ -90,6 +90,10 @@ $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_context($context);
 $PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 
 // ...display grading form (viewed by student) ..
 if ($action == 'displaygradingform') {

@@ -66,6 +66,49 @@ define(['core/notification'], function(Notification) {
     }
 
     /**
+     * Convert a Unix timestamp to the value expected by a datetime-local input.
+     *
+     * @param {number} sec Unix timestamp in seconds.
+     * @return {string} Local datetime value.
+     */
+    function timestampToDateTimeLocal(sec) {
+        var d = new Date(sec * 1000);
+        var year = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        var hour = String(d.getHours()).padStart(2, '0');
+        var minute = String(d.getMinutes()).padStart(2, '0');
+        return year + '-' + month + '-' + day + 'T' + hour + ':' + minute;
+    }
+
+    /**
+     * Convert a datetime-local value to a Unix timestamp.
+     *
+     * @param {string} value Local datetime value.
+     * @return {number} Unix timestamp in seconds.
+     */
+    function dateTimeLocalToTimestamp(value) {
+        if (!value) {
+            return 0;
+        }
+        var parts = value.split('T');
+        if (parts.length !== 2) {
+            return 0;
+        }
+        var dateParts = parts[0].split('-');
+        var timeParts = parts[1].split(':');
+        var date = new Date(
+            parseInt(dateParts[0], 10),
+            parseInt(dateParts[1], 10) - 1,
+            parseInt(dateParts[2], 10),
+            parseInt(timeParts[0], 10),
+            parseInt(timeParts[1], 10),
+            0
+        );
+        return Math.floor(date.getTime() / 1000);
+    }
+
+    /**
      * Get weekend days for the given locale.
      * Returns an array of ISO day numbers: 1 (Monday) to 7 (Sunday).
      *
@@ -414,15 +457,14 @@ define(['core/notification'], function(Notification) {
                 var rowLabel = document.createElement('div');
                 rowLabel.className =
                     'quest-left-row p-2 border-bottom border-end bg-white d-flex flex-column justify-content-center';
-                rowLabel.style.height = '54px';
                 rowLabel.setAttribute('data-cid', c.id);
                 var dur = formatDuration(c.dateend - c.datestart);
-                rowLabel.innerHTML = '<div class="fw-bold text-truncate small text-dark"' +
+                rowLabel.innerHTML = '<div class="quest-left-title fw-bold small text-dark"' +
                     ' title="' + self.escapeHtml(c.title) + '">' +
                     self.escapeHtml(c.title) + '</div>' +
-                    '<div class="d-flex justify-content-between align-items-center smaller text-muted">' +
-                    '<span class="text-truncate me-1">' + self.escapeHtml(c.author || '') + '</span>' +
-                    '<span class="badge bg-light text-secondary border quest-lbl-dur">' + dur + '</span></div>';
+                    '<div class="quest-left-meta d-flex justify-content-between align-items-center smaller text-muted">' +
+                    '<span class="quest-left-author text-truncate me-1">' + self.escapeHtml(c.author || '') + '</span>' +
+                    '<span class="badge quest-duration-badge quest-lbl-dur">' + dur + '</span></div>';
                 leftCol.appendChild(rowLabel);
             });
             board.appendChild(leftCol);
@@ -492,7 +534,6 @@ define(['core/notification'], function(Notification) {
             self.challenges.forEach(function(c) {
                 var lane = document.createElement('div');
                 lane.className = 'quest-timeline-lane position-relative border-bottom';
-                lane.style.height = '54px';
                 lane.setAttribute('data-cid', c.id);
 
                 // Shaded weekend backdrop blocks
@@ -527,6 +568,36 @@ define(['core/notification'], function(Notification) {
 
             self.board.innerHTML = '';
             self.board.appendChild(board);
+            self.syncRowHeights();
+        },
+
+        /**
+         * Match each timeline lane to the rendered height of its label content.
+         *
+         * @return {void}
+         */
+        syncRowHeights: function() {
+            var self = this;
+            var rows = self.board.querySelectorAll('.quest-left-row');
+
+            rows.forEach(function(row) {
+                var cid = row.getAttribute('data-cid');
+                var lane = self.board.querySelector('.quest-timeline-lane[data-cid="' + cid + '"]');
+
+                row.style.height = 'auto';
+                if (lane) {
+                    lane.style.height = 'auto';
+                }
+
+                var rowHeight = Math.ceil(row.getBoundingClientRect().height);
+                var laneHeight = lane ? Math.ceil(lane.getBoundingClientRect().height) : 0;
+                var height = Math.max(rowHeight, laneHeight);
+
+                row.style.height = height + 'px';
+                if (lane) {
+                    lane.style.height = height + 'px';
+                }
+            });
         },
 
         /**
@@ -561,7 +632,7 @@ define(['core/notification'], function(Notification) {
             var durStr = formatDuration(c.dateend - c.datestart);
             body.innerHTML = '<span class="quest-bar-title fw-bold text-truncate small me-2">' +
                 this.escapeHtml(c.title) + '</span>' +
-                '<span class="quest-bar-badge badge bg-light text-dark smaller">' + durStr + '</span>';
+                '<span class="quest-bar-badge badge quest-duration-badge smaller">' + durStr + '</span>';
             bar.appendChild(body);
 
             // Right resize handle
@@ -632,6 +703,14 @@ define(['core/notification'], function(Notification) {
                 var lane = bar.closest('.quest-timeline-lane');
                 var laneRect = lane.getBoundingClientRect();
 
+                self.clickCandidate = {
+                    cid: cid,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    hasMoved: false,
+                    startTime: Date.now()
+                };
+
                 bar.setPointerCapture(e.pointerId);
                 bar.classList.add('is-dragging');
 
@@ -653,6 +732,16 @@ define(['core/notification'], function(Notification) {
             });
 
             self.board.addEventListener('pointermove', function(e) {
+                if (self.clickCandidate && !self.clickCandidate.hasMoved) {
+                    var moveDistance = Math.hypot(
+                        e.clientX - self.clickCandidate.startX,
+                        e.clientY - self.clickCandidate.startY
+                    );
+                    if (moveDistance > 4) {
+                        self.clickCandidate.hasMoved = true;
+                    }
+                }
+
                 if (!self.activeDrag) {
                     return;
                 }
@@ -714,6 +803,9 @@ define(['core/notification'], function(Notification) {
                     return;
                 }
                 var act = self.activeDrag;
+                var wasSimpleClick = self.clickCandidate &&
+                    !self.clickCandidate.hasMoved &&
+                    (Date.now() - self.clickCandidate.startTime < 500);
                 try {
                     act.barElem.releasePointerCapture(e.pointerId);
                 } catch (err) {
@@ -721,7 +813,7 @@ define(['core/notification'], function(Notification) {
                 }
                 act.barElem.classList.remove('is-dragging');
 
-                // Update badge inside bar and left column
+                // Update badge inside bar and left column.
                 var durStr = formatDuration(act.challenge.dateend - act.challenge.datestart);
                 var badge = act.barElem.querySelector('.quest-bar-badge');
                 if (badge) {
@@ -733,21 +825,89 @@ define(['core/notification'], function(Notification) {
                     leftRow.textContent = durStr;
                 }
 
-                // Update table row
+                // Update table row.
                 self.updateTableRow(act.challenge);
 
                 self.hideHud();
                 self.activeDrag = null;
-                self.setDirty(true);
+                self.clickCandidate = null;
+
+                if (wasSimpleClick) {
+                    self.scrollToTableRow(act.cid);
+                }
+
+                if (act.challenge.datestart !== act.origStart || act.challenge.dateend !== act.origEnd) {
+                    self.setDirty(true);
+                }
             };
 
             self.board.addEventListener('pointerup', onPointerEnd);
-            self.board.addEventListener('pointercancel', onPointerEnd);
+            self.board.addEventListener('pointercancel', function() {
+                self.clickCandidate = null;
+                if (!self.activeDrag) {
+                    return;
+                }
+                self.activeDrag.barElem.classList.remove('is-dragging');
+                self.activeDrag = null;
+                self.hideHud();
+            });
 
-            // Auto-sequence button
+            // Auto-sequence button.
             if (self.autoSeqBtn) {
                 self.autoSeqBtn.addEventListener('click', function() {
                     self.autoSequence();
+                });
+            }
+
+            // Strategy modal interactions.
+            var strategyItems = document.querySelectorAll(
+                '#quest-autosequence-strategy-list .list-group-item'
+            );
+            strategyItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    var strategy = item.getAttribute('data-strategy');
+                    var radio = item.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                    strategyItems.forEach(function(el) {
+                        el.classList.remove('active');
+                    });
+                    item.classList.add('active');
+
+                    document.querySelectorAll('.quest-strategy-desc-content').forEach(function(panel) {
+                        panel.classList.add('d-none');
+                    });
+                    var activeDesc = document.getElementById('quest-strategy-desc-' + strategy);
+                    if (activeDesc) {
+                        activeDesc.classList.remove('d-none');
+                    }
+                });
+            });
+
+            var applyAutoSequenceBtn = document.getElementById('quest-autosequence-apply');
+            if (applyAutoSequenceBtn) {
+                applyAutoSequenceBtn.addEventListener('click', function() {
+                    var selectedRadio = document.querySelector(
+                        'input[name="quest_autosequence_strategy"]:checked'
+                    );
+                    var strategy = selectedRadio ? selectedRadio.value : 'equal';
+                    self.applyAutoSequence(strategy);
+                    self.closeAutoSequenceModal();
+                });
+            }
+
+            var cancelAutoSequenceBtn = document.getElementById('quest-autosequence-cancel');
+            if (cancelAutoSequenceBtn) {
+                cancelAutoSequenceBtn.addEventListener('click', function() {
+                    self.closeAutoSequenceModal();
+                });
+            }
+
+            var autoSequenceCloseBtn = document.querySelector('#quest-autosequence-modal .btn-close');
+            if (autoSequenceCloseBtn) {
+                autoSequenceCloseBtn.addEventListener('click', function() {
+                    self.closeAutoSequenceModal();
                 });
             }
 
@@ -764,6 +924,107 @@ define(['core/notification'], function(Notification) {
                     self.saveSchedule();
                 });
             }
+
+            // A simple click on a Gantt label jumps to and highlights its table row.
+            self.board.addEventListener('click', function(e) {
+                var leftRow = e.target.closest('.quest-left-row');
+                if (leftRow) {
+                    self.scrollToTableRow(leftRow.getAttribute('data-cid'));
+                }
+            });
+
+            // Date cells open the same datetime-local editor used by local_reschedule.
+            var scheduleTable = document.getElementById('quest-schedule-table');
+            if (scheduleTable) {
+                scheduleTable.addEventListener('click', function(e) {
+                    var dateCell = e.target.closest('.quest-col-datestart, .quest-col-dateend');
+                    if (!dateCell) {
+                        return;
+                    }
+                    e.preventDefault();
+                    var row = dateCell.closest('tr[data-cid]');
+                    if (row) {
+                        self.openDateModal(
+                            row.getAttribute('data-cid'),
+                            dateCell.classList.contains('quest-col-dateend') ? 'end' : 'start'
+                        );
+                    }
+                });
+
+                scheduleTable.addEventListener('keydown', function(e) {
+                    if (e.key !== 'Enter' && e.key !== ' ') {
+                        return;
+                    }
+                    var dateCell = e.target.closest('.quest-col-datestart, .quest-col-dateend');
+                    if (!dateCell) {
+                        return;
+                    }
+                    e.preventDefault();
+                    var row = dateCell.closest('tr[data-cid]');
+                    if (row) {
+                        self.openDateModal(
+                            row.getAttribute('data-cid'),
+                            dateCell.classList.contains('quest-col-dateend') ? 'end' : 'start'
+                        );
+                    }
+                });
+            }
+
+            var modal = document.getElementById('quest-date-modal');
+            var modalStart = document.getElementById('quest-date-modal-start');
+            var modalEnd = document.getElementById('quest-date-modal-end');
+            var modalDuration = document.getElementById('quest-date-modal-duration');
+            var modalError = document.getElementById('quest-date-modal-error');
+
+            var validateModalDates = function() {
+                var start = dateTimeLocalToTimestamp(modalStart && modalStart.value);
+                var end = dateTimeLocalToTimestamp(modalEnd && modalEnd.value);
+                var valid = start > 0 && end > start;
+                if (modalDuration && valid) {
+                    modalDuration.textContent = formatDuration(end - start);
+                }
+                if (modalError) {
+                    modalError.classList.toggle('d-none', valid);
+                }
+                if (modalEnd) {
+                    modalEnd.classList.toggle('is-invalid', !valid && end > 0);
+                }
+                return valid;
+            };
+
+            if (modalStart) {
+                modalStart.addEventListener('input', validateModalDates);
+                modalStart.addEventListener('change', validateModalDates);
+            }
+            if (modalEnd) {
+                modalEnd.addEventListener('input', validateModalDates);
+                modalEnd.addEventListener('change', validateModalDates);
+            }
+            var applyModalButton = document.getElementById('quest-date-modal-apply');
+            if (applyModalButton) {
+                applyModalButton.addEventListener('click', function() {
+                    self.applyDateModalChanges();
+                });
+            }
+            var cancelModalButton = document.getElementById('quest-date-modal-cancel');
+            if (cancelModalButton) {
+                cancelModalButton.addEventListener('click', function() {
+                    self.closeDateModal();
+                });
+            }
+            var closeModalButton = modal ? modal.querySelector('.btn-close') : null;
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', function() {
+                    self.closeDateModal();
+                });
+            }
+
+            window.addEventListener('beforeunload', function(e) {
+                if (self.isDirty) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
         },
 
         /**
@@ -811,11 +1072,188 @@ define(['core/notification'], function(Notification) {
         },
 
         /**
+         * Scroll to and highlight the corresponding challenge row.
+         *
+         * @param {number|string} cid Challenge ID.
+         */
+        scrollToTableRow: function(cid) {
+            var row = document.querySelector('#quest-schedule-table tr[data-cid="' + cid + '"]');
+            if (!row) {
+                return;
+            }
+            row.scrollIntoView({behavior: 'smooth', block: 'center'});
+            row.classList.remove('quest-row-highlight');
+            void row.offsetWidth;
+            row.classList.add('quest-row-highlight');
+            setTimeout(function() {
+                row.classList.remove('quest-row-highlight');
+            }, 2000);
+        },
+
+        /**
+         * Open the challenge date editor.
+         *
+         * @param {number|string} cid Challenge ID.
+         * @param {string} fieldToFocus Date field to focus.
+         */
+        openDateModal: function(cid, fieldToFocus) {
+            var self = this;
+            var challenge = self.challenges.find(function(item) {
+                return String(item.id) === String(cid);
+            });
+            var modal = document.getElementById('quest-date-modal');
+            if (!challenge || !modal) {
+                return;
+            }
+
+            var cidInput = document.getElementById('quest-date-modal-cid');
+            var title = document.getElementById('quest-date-modal-title');
+            var author = document.getElementById('quest-date-modal-author');
+            var duration = document.getElementById('quest-date-modal-duration');
+            var error = document.getElementById('quest-date-modal-error');
+            var start = document.getElementById('quest-date-modal-start');
+            var end = document.getElementById('quest-date-modal-end');
+
+            if (cidInput) {
+                cidInput.value = challenge.id;
+            }
+            if (title) {
+                title.textContent = challenge.title;
+            }
+            if (author) {
+                author.textContent = challenge.author || '';
+            }
+            if (duration) {
+                duration.textContent = formatDuration(challenge.dateend - challenge.datestart);
+            }
+            if (start) {
+                start.value = timestampToDateTimeLocal(challenge.datestart);
+                start.classList.remove('is-invalid');
+            }
+            if (end) {
+                end.value = timestampToDateTimeLocal(challenge.dateend);
+                end.classList.remove('is-invalid');
+            }
+            if (error) {
+                error.classList.add('d-none');
+            }
+
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var instance = typeof window.bootstrap.Modal.getOrCreateInstance === 'function' ?
+                    window.bootstrap.Modal.getOrCreateInstance(modal) :
+                    (window.bootstrap.Modal.getInstance(modal) || new window.bootstrap.Modal(modal));
+                instance.show();
+            } else if (window.jQuery && typeof window.jQuery(modal).modal === 'function') {
+                window.jQuery(modal).modal('show');
+            } else {
+                modal.classList.add('show');
+                modal.style.display = 'block';
+                modal.removeAttribute('aria-hidden');
+                modal.setAttribute('aria-modal', 'true');
+                if (!document.getElementById('quest-date-modal-backdrop')) {
+                    var backdrop = document.createElement('div');
+                    backdrop.id = 'quest-date-modal-backdrop';
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            }
+
+            setTimeout(function() {
+                var target = fieldToFocus === 'end' ? end : start;
+                if (target) {
+                    target.focus();
+                }
+            }, 250);
+        },
+
+        /**
+         * Close the challenge date editor.
+         */
+        closeDateModal: function() {
+            var modal = document.getElementById('quest-date-modal');
+            if (!modal) {
+                return;
+            }
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var instance = window.bootstrap.Modal.getInstance(modal);
+                if (instance) {
+                    instance.hide();
+                }
+            } else if (window.jQuery && typeof window.jQuery(modal).modal === 'function') {
+                window.jQuery(modal).modal('hide');
+            } else {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+                modal.removeAttribute('aria-modal');
+                var backdrop = document.getElementById('quest-date-modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
+        },
+
+        /**
+         * Apply changes made in the challenge date editor.
+         */
+        applyDateModalChanges: function() {
+            var self = this;
+            var cidInput = document.getElementById('quest-date-modal-cid');
+            var startInput = document.getElementById('quest-date-modal-start');
+            var endInput = document.getElementById('quest-date-modal-end');
+            var error = document.getElementById('quest-date-modal-error');
+            if (!cidInput || !startInput || !endInput) {
+                return;
+            }
+
+            var challenge = self.challenges.find(function(item) {
+                return String(item.id) === String(cidInput.value);
+            });
+            if (!challenge) {
+                return;
+            }
+
+            var newStart = dateTimeLocalToTimestamp(startInput.value);
+            var newEnd = dateTimeLocalToTimestamp(endInput.value);
+            if (!newStart || !newEnd || newEnd <= newStart) {
+                if (error) {
+                    error.classList.remove('d-none');
+                }
+                endInput.classList.add('is-invalid');
+                return;
+            }
+
+            challenge.datestart = newStart;
+            challenge.dateend = newEnd;
+
+            var totalSec = Math.max(3600, self.config.questEnd - self.config.questStart);
+            var startPct = Math.max(0, Math.min(100,
+                ((newStart - self.config.questStart) / totalSec) * 100));
+            var endPct = Math.max(0, Math.min(100,
+                ((newEnd - self.config.questStart) / totalSec) * 100));
+            var bar = self.board.querySelector('.quest-calendar-bar[data-cid="' + challenge.id + '"]');
+            if (bar) {
+                bar.style.left = startPct + '%';
+                bar.style.width = Math.max(0.4, endPct - startPct) + '%';
+                var badge = bar.querySelector('.quest-bar-badge');
+                if (badge) {
+                    badge.textContent = formatDuration(newEnd - newStart);
+                }
+            }
+
+            self.updateTableRow(challenge);
+            self.setDirty(true);
+            self.closeDateModal();
+            self.scrollToTableRow(challenge.id);
+        },
+
+        /**
          * Update corresponding row in the detail table.
          *
          * @param {Object} c Challenge data.
          */
         updateTableRow: function(c) {
+            var self = this;
             var row = document.getElementById('quest-row-' + c.id);
             if (!row) {
                 return;
@@ -836,45 +1274,140 @@ define(['core/notification'], function(Notification) {
         },
 
         /**
-         * Automatically sequence all challenges in chronological order without overlaps.
+         * Open the strategy chooser before auto-sequencing.
          */
         autoSequence: function() {
+            this.openAutoSequenceModal();
+        },
+
+        /**
+         * Open the auto-sequence strategy modal.
+         */
+        openAutoSequenceModal: function() {
+            var modalEl = document.getElementById('quest-autosequence-modal');
+            if (!modalEl) {
+                return;
+            }
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var modal = typeof window.bootstrap.Modal.getOrCreateInstance === 'function' ?
+                    window.bootstrap.Modal.getOrCreateInstance(modalEl) :
+                    (window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl));
+                modal.show();
+            } else if (window.jQuery && typeof window.jQuery(modalEl).modal === 'function') {
+                window.jQuery(modalEl).modal('show');
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.removeAttribute('aria-hidden');
+                modalEl.setAttribute('aria-modal', 'true');
+                if (!document.getElementById('quest-autosequence-modal-backdrop')) {
+                    var backdrop = document.createElement('div');
+                    backdrop.id = 'quest-autosequence-modal-backdrop';
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            }
+        },
+
+        /**
+         * Close the auto-sequence strategy modal.
+         */
+        closeAutoSequenceModal: function() {
+            var modalEl = document.getElementById('quest-autosequence-modal');
+            if (!modalEl) {
+                return;
+            }
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var modal = window.bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
+                }
+            } else if (window.jQuery && typeof window.jQuery(modalEl).modal === 'function') {
+                window.jQuery(modalEl).modal('hide');
+            } else {
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                modalEl.removeAttribute('aria-modal');
+                var backdrop = document.getElementById('quest-autosequence-modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
+        },
+
+        /**
+         * Auto-sequence challenges according to the selected strategy.
+         *
+         * @param {string} strategy 'equal', 'sequential', or 'proportional'
+         */
+        applyAutoSequence: function(strategy) {
             var self = this;
             var qStart = self.config.questStart;
             var qEnd = self.config.questEnd;
             var totalSec = Math.max(3600, qEnd - qStart);
             var count = self.challenges.length;
+
             if (count === 0) {
                 return;
             }
 
-            // Sort challenges by current start date
+            // Keep chronological ordering for all three strategies.
             self.challenges.sort(function(a, b) {
                 return a.datestart - b.datestart;
             });
 
-            var snapVal = parseInt(self.snapSelect.value, 10) || 86400;
-            var slotDuration = Math.floor(totalSec / count);
-            if (slotDuration >= snapVal) {
-                slotDuration = Math.floor(slotDuration / snapVal) * snapVal;
-            }
-            slotDuration = Math.max(3600, slotDuration);
+            if (strategy === 'equal') {
+                var equalDuration = Math.max(3600, Math.floor(totalSec / count));
+                var equalTime = qStart;
+                self.challenges.forEach(function(challenge, index) {
+                    challenge.datestart = equalTime;
+                    challenge.dateend = (index === count - 1) ?
+                        qEnd : Math.min(qEnd, equalTime + equalDuration);
+                    equalTime = challenge.dateend;
+                });
+            } else if (strategy === 'sequential') {
+                var sequentialTime = qStart;
+                self.challenges.forEach(function(challenge) {
+                    var duration = Math.max(3600, challenge.dateend - challenge.datestart);
+                    challenge.datestart = sequentialTime;
+                    challenge.dateend = sequentialTime + duration;
+                    sequentialTime = challenge.dateend;
+                });
+            } else {
+                var rawDurations = self.challenges.map(function(challenge) {
+                    return Math.max(3600, challenge.dateend - challenge.datestart);
+                });
+                var averageDuration = rawDurations.reduce(function(total, duration) {
+                    return total + duration;
+                }, 0) / rawDurations.length;
+                var maxAllowedDuration = Math.max(
+                    3600 * 24,
+                    Math.min(averageDuration * 3, totalSec * 0.4)
+                );
+                var cappedDurations = rawDurations.map(function(duration) {
+                    return Math.min(duration, maxAllowedDuration);
+                });
+                var totalCappedDuration = cappedDurations.reduce(function(total, duration) {
+                    return total + duration;
+                }, 0);
+                var proportionalTime = qStart;
 
-            for (var i = 0; i < count; i++) {
-                var cStart = qStart + (i * slotDuration);
-                var cEnd = (i === count - 1) ? qEnd : (cStart + slotDuration);
-                if (cEnd > qEnd) {
-                    cEnd = qEnd;
-                }
-                if (cStart >= cEnd) {
-                    cStart = Math.max(qStart, cEnd - 3600);
-                }
-                self.challenges[i].datestart = cStart;
-                self.challenges[i].dateend = cEnd;
-                self.updateTableRow(self.challenges[i]);
+                self.challenges.forEach(function(challenge, index) {
+                    var weight = totalCappedDuration > 0 ?
+                        cappedDurations[index] / totalCappedDuration : 1 / count;
+                    var duration = Math.max(3600, Math.round(weight * totalSec));
+                    challenge.datestart = proportionalTime;
+                    challenge.dateend = (index === count - 1) ?
+                        qEnd : Math.min(qEnd, proportionalTime + duration);
+                    proportionalTime = challenge.dateend;
+                });
             }
 
             self.renderTimeline();
+            self.challenges.forEach(function(challenge) {
+                self.updateTableRow(challenge);
+            });
             self.setDirty(true);
             self.showStatus('Challenges auto-sequenced successfully.');
         },
