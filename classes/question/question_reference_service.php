@@ -29,7 +29,9 @@ use core_question\local\bank\question_version_status;
  */
 class question_reference_service {
 
+    /** Component used by Moodle's question reference API. */
     public const COMPONENT = 'mod_quest';
+    /** Question reference area used for challenge links. */
     public const QUESTIONAREA = 'challenge_question';
 
     /**
@@ -176,6 +178,7 @@ class question_reference_service {
         ]);
     }
 
+    /** Tag used to mark a question awaiting approval. */
     public const TAG_APPROVAL_PENDING = 'approval_pending';
 
     /**

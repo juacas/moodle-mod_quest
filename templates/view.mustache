@@ -84,9 +84,11 @@
                         <a href="{{{addchallengeurl}}}" class="btn btn-primary shadow-sm">
                             <i class="fa fa-plus-circle me-1" aria-hidden="true"></i> {{#str}}addchallenge, quest{{/str}}
                         </a>
+                        {{#canaddqchallenge}}
                         <a href="{{{addqchallengeurl}}}" class="btn btn-outline-primary shadow-sm">
                             <i class="fa fa-question-circle me-1" aria-hidden="true"></i> {{#str}}addquestionchallenge, quest{{/str}}
                         </a>
+                        {{/canaddqchallenge}}
                         {{/canaddchallenge}}
                         <a href="{{{leaderboardurl}}}" class="btn btn-outline-primary">
                             <i class="fa fa-trophy me-1" aria-hidden="true"></i> {{#str}}clasification, quest{{/str}}

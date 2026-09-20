@@ -14,17 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+/**
+ * Display the user's Quest position and activity progress.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -41,12 +38,12 @@ global $DB, $OUTPUT, $PAGE;
 $timenow = time();
 
 list($course, $cm) = quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
 $url = new moodle_url('/mod/quest/myplace.php',
-        array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer,
-                        'diranswer' => $diranswer));
+        ['id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer,
+                        'diranswer' => $diranswer]);
 $PAGE->set_url($url);
 
 quest_check_visibility($course, $cm);
@@ -70,8 +67,8 @@ $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; // JPC group support desactivation in this version.
                                     // Allow the teacher to change groups (for this session).
-if ($groupmode and $ismanager) {
-    if ($groups = $DB->get_records_menu("groups", array("courseid" => $course->id), "name ASC", "id,name")) {
+if ($groupmode && $ismanager) {
+    if ($groups = $DB->get_records_menu("groups", ["courseid" => $course->id], "name ASC", "id,name")) {
 
         groups_print_activity_menu($cm, $CFG->wwwroot . "mod/quest/myplace.php?id=$cm->id", $return = false,
                 $hideallparticipants = false);
@@ -83,14 +80,17 @@ echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 
 $actionbuttons = [];
 
-\mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
 if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $timenow) {
-    $addqurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'addqchallenge']);
-    $actionbuttons[] = html_writer::link(
-        $addqurl,
-        '<i class="fa fa-question-circle me-1" aria-hidden="true"></i>' . get_string('addquestionchallenge', 'quest'),
-        ['class' => 'btn btn-primary shadow-sm']
-    );
+    $canaddquestionbank = $ismanager || !empty($quest->allowqbankquestions);
+    if ($canaddquestionbank) {
+        \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
+        $addqurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'addqchallenge']);
+        $actionbuttons[] = html_writer::link(
+            $addqurl,
+            '<i class="fa fa-question-circle me-1" aria-hidden="true"></i>' . get_string('addquestionchallenge', 'quest'),
+            ['class' => 'btn btn-primary shadow-sm']
+        );
+    }
 
     $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
     $actionbuttons[] = html_writer::link(
@@ -100,7 +100,12 @@ if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $tim
     );
 }
 
-$leaderboardurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'global', 'id' => $cm->id, 'sort' => 'points', 'dir' => 'DESC']);
+$leaderboardurl = new moodle_url('/mod/quest/viewclasification.php', [
+    'action' => 'global',
+    'id' => $cm->id,
+    'sort' => 'points',
+    'dir' => 'DESC',
+]);
 $actionbuttons[] = html_writer::link(
     $leaderboardurl,
     '<i class="fa fa-trophy me-1" aria-hidden="true"></i>' . get_string('viewclasificationglobal', 'quest'),
@@ -108,7 +113,12 @@ $actionbuttons[] = html_writer::link(
 );
 
 if ((!$canpreview) && ($quest->allowteams)) {
-    $teamsurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $cm->id, 'sort' => 'points', 'dir' => 'DESC']);
+    $teamsurl = new moodle_url('/mod/quest/viewclasification.php', [
+        'action' => 'teams',
+        'id' => $cm->id,
+        'sort' => 'points',
+        'dir' => 'DESC',
+    ]);
     $actionbuttons[] = html_writer::link(
         $teamsurl,
         '<i class="fa fa-users me-1" aria-hidden="true"></i>' . get_string('viewclasificationteams', 'quest'),
@@ -130,8 +140,11 @@ if (!empty($actionbuttons)) {
 }
 
 if ($ismanager) {
-    echo '<div class="card border-0 bg-light shadow-sm my-3"><div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-center gap-3 small">';
-    echo '<span class="fw-bold text-muted"><i class="fa fa-sliders me-1" aria-hidden="true"></i>' . get_string('grading', 'quest') . ':</span> ';
+    echo '<div class="card border-0 bg-light shadow-sm my-3">'
+            . '<div class="card-body py-2 px-3 d-flex flex-wrap align-items-center '
+            . 'justify-content-center gap-3 small">';
+    echo '<span class="fw-bold text-muted"><i class="fa fa-sliders me-1" aria-hidden="true"></i>'
+            . get_string('grading', 'quest') . ':</span> ';
     echo '<div>';
     quest_print_challenge_grading_link($cm, $context, $quest);
     echo '</div>';
@@ -152,19 +165,19 @@ if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) 
 
 // Now prepare table with student assessments and submissions...
 $tablesort = new stdClass();
-$tablesort->data = array();
-$tablesort->sortdata = array();
+$tablesort->data = [];
+$tablesort->sortdata = [];
 $table = new html_table();
-$table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-$columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
-                'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
+$table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
+$columns = ['title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
+                'nanswerswhithoutassess', 'datestart', 'dateend', 'calification'];
 
 $indice = 0;
 
 if ($submissions = quest_get_user_submissions($quest, $USER)) {
     foreach ($submissions as $submission) {
-        $data = array();
-        $sortdata = array();
+        $data = [];
+        $sortdata = [];
 
         if ($submission->userid == $USER->id) {
 
@@ -182,7 +195,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
-            } else if (($submission->nanswers == 0) and ($timenow < $submission->dateend) and ($submission->state < 2)) {
+            } else if (($submission->nanswers == 0) && ($timenow < $submission->dateend) && ($submission->state < 2)) {
 
                 $data[] = quest_print_submission_title($quest, $submission) .
                          " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . "<img src=\"" .
@@ -202,7 +215,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
 
             $nanswersassess = 0;
             if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
-                    array($quest->id, $submission->id))) {
+                    [$quest->id, $submission->id])) {
                 foreach ($answers as $answer) {
                     if (($answer->phase == 1) || ($answer->phase == 2)) {
                         $nanswersassess++;
@@ -212,7 +225,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
             $image = '';
             if ($answer = $DB->get_record("quest_answers",
-                    array("questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id))) {
+                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id])) {
                 $image = " <img src=\"" . $CFG->wwwroot . "/pix/t/clear.png\" />";
             }
 
@@ -248,7 +261,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $columns[] = 'grade';
             $table->align[] = 'center';
             if ($submission->evaluated != 0 && $assessment = $DB->get_record("quest_assessments_autors",
-                    array("questid" => $quest->id, "submissionid" => $submission->id))) {
+                    ["questid" => $quest->id, "submissionid" => $submission->id])) {
                 if ($submission->pointsanswercorrect > 0) {
                     $data[] = number_format($assessment->points * 100 / $submission->pointsanswercorrect, 1) . '% (' .
                               number_format($assessment->points, 4) . ')';
@@ -269,7 +282,7 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
 }
 
 uasort($tablesort->sortdata, 'quest_sortfunction');
-$table->data = array();
+$table->data = [];
 foreach ($tablesort->sortdata as $key => $row) {
     $table->data[] = $tablesort->data[$key];
 }
@@ -292,9 +305,9 @@ foreach ($columns as $column) {
     $$column = "<a href=\"myplace.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
 }
 
-$table->head = array("$title", "$phase",
+$table->head = ["$title", "$phase",
                 "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]",
-                "$datestart", "$dateend", "$calification", "Grade");
+                "$datestart", "$dateend", "$calification", "Grade"];
 
 echo '<tr><td>';
 echo html_writer::table($table);
@@ -321,15 +334,15 @@ if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) 
 }
 
 // Now prepare table with student assessments and submissions.
-$tablesort->data = array();
-$tablesort->sortdata = array();
+$tablesort->data = [];
+$tablesort->sortdata = [];
 
-$answers = $DB->get_records_select("quest_answers", "questid=? AND userid=?", array($quest->id, $USER->id));
+$answers = $DB->get_records_select("quest_answers", "questid=? AND userid=?", [$quest->id, $USER->id]);
 if ($answers) {
     foreach ($answers as $answer) {
-        $data = array();
-        $sortdata = array();
-        $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid));
+        $data = [];
+        $sortdata = [];
+        $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid]);
         if ($answer->userid == $USER->id) {
             if ($canpreview) {
                 $data[] = quest_print_answer_title($quest, $answer, $submission) .
@@ -368,7 +381,7 @@ if ($answers) {
             $sortdata['dateanswer'] = $answer->date;
 
             if (($answer->phase == 1) || ($answer->phase == 2)) {
-                $assessment = $DB->get_record("quest_assessments", array('answerid' => $answer->id));
+                $assessment = $DB->get_record("quest_assessments", ['answerid' => $answer->id]);
             } else {
                 $assessment = null;
             }
@@ -388,13 +401,13 @@ if ($answers) {
 }
 
 uasort($tablesort->sortdata, 'quest_sortfunction_answers');
-$table->data = array();
+$table->data = [];
 foreach ($tablesort->sortdata as $key => $row) {
     $table->data[] = $tablesort->data[$key];
 }
 
-$table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-$columnsanswer = array('title', 'dateanswer', 'actions', 'calification');
+$table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
+$columnsanswer = ['title', 'dateanswer', 'actions', 'calification'];
 
 $table->width = "95%";
 
@@ -417,7 +430,7 @@ foreach ($columnsanswer as $columnanswer) {
          $string[$columnanswer] . "</a>$columniconanswer";
 }
 
-$table->head = array("$title", "$dateanswer", get_string('actions', 'quest'), "$calification");
+$table->head = ["$title", "$dateanswer", get_string('actions', 'quest'), "$calification"];
 
 echo '<tr><td>';
 echo html_writer::table($table);
@@ -427,13 +440,13 @@ if (!$ismanager) {
     $title = get_string('myranking', 'quest');
     echo $OUTPUT->heading($title);
 
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
+    $tablesort->data = [];
+    $tablesort->sortdata = [];
 
-    if ($clasification = $DB->get_record("quest_calification_users", array("questid" => $quest->id, "userid" => $USER->id))) {
-        $data = array();
-        $sortdata = array();
-        $data[] = $OUTPUT->user_picture($USER, array('courseid' => $course->id));
+    if ($clasification = $DB->get_record("quest_calification_users", ["questid" => $quest->id, "userid" => $USER->id])) {
+        $data = [];
+        $sortdata = [];
+        $data[] = $OUTPUT->user_picture($USER, ['courseid' => $course->id]);
         $sortdata['picture'] = 1;
 
         $data[] = "<a name=\"userid$USER->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$USER->id&amp;course=$course->id\">" .
@@ -461,7 +474,7 @@ if (!$ismanager) {
 
         if ($quest->allowteams) {
             if ($clasificationteam = $DB->get_record("quest_calification_teams",
-                    array("teamid" => $clasification->teamid, "questid" => $quest->id))) {
+                    ["teamid" => $clasification->teamid, "questid" => $quest->id])) {
                 $data[] = $clasificationteam->points * $quest->teamporcent / 100;
                 $sortdata['pointsteam'] = $clasificationteam->points * $quest->teamporcent / 100;
 
@@ -478,21 +491,21 @@ if (!$ismanager) {
     }
 
     uasort($tablesort->sortdata, 'quest_sortfunction');
-    $table->data = array();
+    $table->data = [];
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
 
-    $table->align = array('left', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-    $table->valign = array('center', 'center', 'center', 'center', 'left', 'center', 'center',
-                            'center', 'center', 'center', 'center');
+    $table->align = ['left', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
+    $table->valign = ['center', 'center', 'center', 'center', 'left', 'center', 'center',
+                            'center', 'center', 'center', 'center'];
 
     if ($quest->allowteams) {
-        $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
-                        'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'pointsteam', 'points');
+        $columns = ['picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
+                        'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'pointsteam', 'points'];
     } else {
-        $columns = array('picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
-                        'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'points');
+        $columns = ['picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
+                        'nsubmissionsassessment', 'pointssubmission', 'pointsanswers', 'points'];
     }
 
     foreach ($columns as $column) {
@@ -514,18 +527,18 @@ if (!$ismanager) {
     }
 
     if ($quest->allowteams) {
-        $table->head = array("", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
+        $table->head = ["", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
                     get_string('nanswers', 'quest'),
                     get_string('nanswersassessment', 'quest'), get_string('nsubmissions', 'quest'),
                     get_string('nsubmissionsassessment', 'quest'), get_string('pointssubmission', 'quest'),
-                    get_string('pointsanswers', 'quest'), get_string('pointsteam', 'quest'), get_string('points', 'quest'));
+                    get_string('pointsanswers', 'quest'), get_string('pointsteam', 'quest'), get_string('points', 'quest')];
     } else {
 
-        $table->head = array("", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
+        $table->head = ["", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
                     get_string('nanswers', 'quest'),
                     get_string('nanswersassessment', 'quest'), get_string('nsubmissions', 'quest'),
                     get_string('nsubmissionsassessment', 'quest'), get_string('pointssubmission', 'quest'),
-                    get_string('pointsanswers', 'quest'), get_string('points', 'quest'));
+                    get_string('pointsanswers', 'quest'), get_string('points', 'quest')];
     }
     echo '<tr><td>';
     echo '<div valign="center">';
@@ -541,17 +554,17 @@ if ((!$ismanager) && ($quest->allowteams)) {
     $OUTPUT->heading_with_help($title, 'myrankingteam', 'quest');
 
     // Now prepare table with student assessments and submissions.
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
+    $tablesort->data = [];
+    $tablesort->sortdata = [];
     if ($clasificationuser = $DB->get_record("quest_calification_users",
-                                                array("userid" => $USER->id, "questid" => $quest->id))) {
+                                                ["userid" => $USER->id, "questid" => $quest->id])) {
         if ($calificationteam = $DB->get_record("quest_calification_teams",
-                    array("teamid" => $clasificationuser->teamid, "questid" => $quest->id))) {
+                    ["teamid" => $clasificationuser->teamid, "questid" => $quest->id])) {
 
-            if ($team = $DB->get_record("quest_teams", array("id" => $calificationteam->teamid))) {
+            if ($team = $DB->get_record("quest_teams", ["id" => $calificationteam->teamid])) {
 
-                        $data = array();
-                        $sortdata = array();
+                        $data = [];
+                        $sortdata = [];
 
                         $data[] = $team->name;
                         $sortdata['team'] = $team->name;
@@ -584,14 +597,14 @@ if ((!$ismanager) && ($quest->allowteams)) {
     }
 
     uasort($tablesort->sortdata, 'quest_sortfunction');
-    $table->data = array();
+    $table->data = [];
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
 
-    $table->align = array('left', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center');
-    $columns = array('team', 'nanswers', 'nanswersassessment', 'nsubmissions', 'nsubmissionsassessment', 'pointssubmission',
-                'pointsanswers', 'points');
+    $table->align = ['left', 'center', 'center', 'left', 'center', 'center', 'center', 'center', 'center', 'center'];
+    $columns = ['team', 'nanswers', 'nanswersassessment', 'nsubmissions', 'nsubmissionsassessment', 'pointssubmission',
+                'pointsanswers', 'points'];
 
     $table->width = "95%";
 
@@ -612,9 +625,9 @@ if ((!$ismanager) && ($quest->allowteams)) {
         $$column = "<a href=\"view.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
 
-    $table->head = array(get_string('team', 'quest'), get_string('nanswers', 'quest'), get_string('nanswersassessment', 'quest'),
+    $table->head = [get_string('team', 'quest'), get_string('nanswers', 'quest'), get_string('nanswersassessment', 'quest'),
                 get_string('nsubmissions', 'quest'), get_string('nsubmissionsassessment', 'quest'),
-                get_string('pointssubmission', 'quest'), get_string('pointsanswers', 'quest'), get_string('points', 'quest'));
+                get_string('pointssubmission', 'quest'), get_string('pointsanswers', 'quest'), get_string('points', 'quest')];
 
     echo '<tr><td>';
     echo html_writer::table($table);
@@ -637,12 +650,12 @@ echo $OUTPUT->footer();
  */
 function quest_sortfunction_answers($a, $b) {
     global $sortanswer, $diranswer;
-    $valA = $a[$sortanswer] ?? '';
-    $valB = $b[$sortanswer] ?? '';
-    if (is_numeric($valA) && is_numeric($valB)) {
-        $cmp = $valA <=> $valB;
+    $vala = $a[$sortanswer] ?? '';
+    $valb = $b[$sortanswer] ?? '';
+    if (is_numeric($vala) && is_numeric($valb)) {
+        $cmp = $vala <=> $valb;
     } else {
-        $cmp = strcasecmp((string)$valA, (string)$valB);
+        $cmp = strcasecmp((string)$vala, (string)$valb);
     }
     return (strtoupper((string)$diranswer) === 'DESC') ? -$cmp : $cmp;
 }

@@ -14,21 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+/**
+ * Display the assessment form for a Quest submission.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- *
- *          Show the page that allow to do the assess of a submission
- *
- *          **************************************************** */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -38,8 +31,8 @@ $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_ALPHA);
 global $DB;
 
-$submission = $DB->get_record('quest_submissions', array('id' => $sid), '*', MUST_EXIST);
-$quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 
 if (!$redirect) {
@@ -59,7 +52,7 @@ $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
 $url = new moodle_url('/mod/quest/assess_autors.php',
-                array('sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
+                ['sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_activity_record($quest);
@@ -69,7 +62,7 @@ $PAGE->activityheader->set_attrs([
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
-        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge')));
+        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge']));
 
 echo $OUTPUT->header();
 
@@ -86,9 +79,9 @@ echo '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' . get_string(
 echo '</a>';
 echo '</div>';
 
-$any_linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+$anylinkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
 
-if (!$any_linkedq) {
+if (!$anylinkedq) {
     echo '<div class="quest-assessment-container my-4">';
     echo '<div class="card shadow-sm border-0">';
     echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
@@ -99,64 +92,67 @@ if (!$any_linkedq) {
     echo '</div></div></div>';
 }
 
-    // ── Helper: author of a challenge pending approval ────────────────────────
+    // Helper: author of a challenge pending approval.
     $isownpending = ($submission->userid == $USER->id)
         && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING);
 
-    // ── QUESTION BANK PREVIEW (managers and own-pending authors) ─────────────
-    if (has_capability('mod/quest:editchallengeall', $context) || $isownpending) {
+    // Question bank preview for managers and authors with pending challenges.
+if (has_capability('mod/quest:editchallengeall', $context) || $isownpending) {
 
-        $linkedq = $any_linkedq;
-        if ($linkedq) {
-            $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
-            $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
+    $linkedq = $anylinkedq;
+    if ($linkedq) {
+        $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
+        $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
 
-            // Badges.
-            $badges = '';
-            if ($isautograded) {
-                $badges .= ' <span class="badge bg-success ms-1">Auto-graded</span>';
-            }
-            if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedq->id)) {
-                $badges .= ' <span class="badge bg-warning text-dark ms-1">' .
-                    '<i class="fa fa-clock-o me-1" aria-hidden="true"></i>' .
-                    get_string('approvalpending', 'quest') . '</span>';
-            }
-
-            // Edit link.
-            $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
-            $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
-            $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
-                'id' => $linkedq->id, 'cmid' => $cm->id,
-            ]);
-
-            // Preview URL (opens in popup).
-            $previewurl = \qbank_previewquestion\helper::question_preview_url(
-                $linkedq->id, null, null, null, null, $context, $cm->id
-            );
-
-            echo '<div class="card border-info mb-4" id="quest-qpreview-panel">';
-            echo '  <div class="card-header bg-info text-white d-flex align-items-center justify-content-between">';
-            echo '    <span><i class="fa fa-database me-2" aria-hidden="true"></i>';
-            echo      '<strong>' . get_string('questionbank', 'quest') . ':</strong> ';
-            echo      format_string($linkedq->name) . ' <em class="small">(' . $linkedq->qtype . ')</em>' . $badges;
-            echo '    </span>';
-            echo '    <span class="d-flex gap-2">';
-            echo '      <a href="' . $editurl->out() . '" class="btn btn-sm btn-light"><i class="fa fa-pencil me-1"></i>' . get_string('edit') . '</a>';
-            echo '      <a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-light"><i class="fa fa-external-link me-1"></i>' . get_string('viewinquestionbank', 'quest') . '</a>';
-            echo '      <a href="' . $previewurl->out() . '" class="btn btn-sm btn-outline-light"';
-            echo '         onclick="window.open(this.href,\'qpreview\',\'width=800,height=600,scrollbars=yes\');return false;">';
-            echo '        <i class="fa fa-eye me-1"></i>' . get_string('preview') . '</a>';
-            echo '    </span>';
-            echo '  </div>';
-            echo '  <div class="card-body p-0">';
-            echo '    <iframe src="' . $previewurl->out() . '" class="w-100 border-0" style="min-height:350px;" ';
-            echo '            title="' . s(get_string('preview') . ': ' . format_string($linkedq->name)) . '" loading="lazy"></iframe>';
-            echo '  </div>';
-            echo '</div>';
+        // Badges.
+        $badges = '';
+        if ($isautograded) {
+            $badges .= ' <span class="badge bg-success ms-1">Auto-graded</span>';
         }
-    }
+        if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedq->id)) {
+            $badges .= ' <span class="badge bg-warning text-dark ms-1">' .
+                '<i class="fa fa-clock-o me-1" aria-hidden="true"></i>' .
+                get_string('approvalpending', 'quest') . '</span>';
+        }
 
-$assessment = $DB->get_record("quest_assessments_autors", array("submissionid" => $submission->id));
+        // Edit link.
+        $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
+        $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
+        $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
+            'id' => $linkedq->id, 'cmid' => $cm->id,
+        ]);
+
+        // Preview URL (opens in popup).
+        $previewurl = \qbank_previewquestion\helper::question_preview_url(
+            $linkedq->id, null, null, null, null, $context, $cm->id
+        );
+
+        echo '<div class="card border-info mb-4" id="quest-qpreview-panel">';
+        echo '  <div class="card-header bg-info text-white d-flex align-items-center justify-content-between">';
+        echo '    <span><i class="fa fa-database me-2" aria-hidden="true"></i>';
+        echo      '<strong>' . get_string('questionbank', 'quest') . ':</strong> ';
+        echo      format_string($linkedq->name) . ' <em class="small">(' . $linkedq->qtype . ')</em>' . $badges;
+        echo '    </span>';
+        echo '    <span class="d-flex gap-2">';
+        echo '      <a href="' . $editurl->out() . '" class="btn btn-sm btn-light">'
+                . '<i class="fa fa-pencil me-1"></i>' . get_string('edit') . '</a>';
+        echo '      <a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-light">'
+                . '<i class="fa fa-external-link me-1"></i>'
+                . get_string('viewinquestionbank', 'quest') . '</a>';
+        echo '      <a href="' . $previewurl->out() . '" class="btn btn-sm btn-outline-light"';
+        echo '         onclick="window.open(this.href,\'qpreview\',\'width=800,height=600,scrollbars=yes\');return false;">';
+        echo '        <i class="fa fa-eye me-1"></i>' . get_string('preview') . '</a>';
+        echo '    </span>';
+        echo '  </div>';
+        echo '  <div class="card-body p-0">';
+        echo '    <iframe src="' . $previewurl->out() . '" class="w-100 border-0" style="min-height:350px;" ';
+        echo '            title="' . s(get_string('preview') . ': ' . format_string($linkedq->name)) . '" loading="lazy"></iframe>';
+        echo '  </div>';
+        echo '</div>';
+    }
+}
+
+$assessment = $DB->get_record("quest_assessments_autors", ["submissionid" => $submission->id]);
 $now = time();
 if (!$assessment) {
     // ...create one and set timecreated way in the future, this is reset when record is updated.
@@ -176,7 +172,7 @@ if (!$assessment) {
 $assessment->dateassessment = $now;
 
 // ...if it's the teacher and the quest is error banded set all the elements to Yes.
-if ($cangrade and ($quest->gradingstrategy == 2)) {
+if ($cangrade && ($quest->gradingstrategy == 2)) {
     for ($i = 0; $i < $quest->nelements; $i++) {
         $element = new stdClass();
         $element->questid = $quest->id;

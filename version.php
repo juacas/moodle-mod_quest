@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  * Module developed at the University of Valladolid
@@ -21,12 +22,12 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026091801;
+$plugin->version = 2026092001;
 $plugin->requires = 2022041900; // Moodle 4 at least.
 $plugin->component = 'mod_quest';
 $plugin->cron = 600; // Period for cron to check this module (secs).

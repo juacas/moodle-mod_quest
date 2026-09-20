@@ -89,10 +89,10 @@ class autograde_service {
         $answer->descriptiontrust = 0;
         $answer->attachment = '';
         $answer->date = time();
-        $answer->pointsmax = $submission->pointsmax; 
+        $answer->pointsmax = $submission->pointsmax;
         $answer->grade = 0;
         $answer->commentforteacher = '';
-        $answer->phase = 0; // Phase 0 = UNGRADED
+        $answer->phase = ANSWER_PHASE_UNGRADED; // Phase 0 means ungraded.
         $answer->state = 0;
         $answer->permitsubmit = 0;
         $answer->perceiveddifficulty = -1;
@@ -118,9 +118,9 @@ class autograde_service {
         stdClass $question,
         \context $context
     ): array {
-        global $DB;
+        global $CFG, $DB;
 
-        require_once($GLOBALS['CFG']->libdir . '/questionlib.php');
+        require_once($CFG->libdir . '/questionlib.php');
 
         if (!empty($submission->questionusageid)) {
             try {
@@ -131,6 +131,7 @@ class autograde_service {
                 }
             } catch (\Exception $e) {
                 // Usage missing or question changed; recreate below.
+                unset($e);
             }
         }
 
@@ -147,6 +148,7 @@ class autograde_service {
             $DB->set_field('quest_submissions', 'questionusageid', $submission->questionusageid, ['id' => $submission->id]);
         } catch (\Exception $e) {
             // In case DB upgrade hasn't run yet.
+            unset($e);
         }
 
         return [$quba, $slot];
@@ -319,7 +321,7 @@ class autograde_service {
 
         // Update the existing answer record.
         $answer = $DB->get_record('quest_answers', [
-            'questionusageid' => $quba->get_id()
+            'questionusageid' => $quba->get_id(),
         ], '*', MUST_EXIST);
 
         $tinitial = (int)($quest->tinitial * 86400);
@@ -339,7 +341,7 @@ class autograde_service {
         $answer->pointsmax = $pointsmax;
 
         if ($ismanual) {
-            $answer->phase = 0; // ANSWER_PHASE_UNGRADED = Pending evaluation
+            $answer->phase = ANSWER_PHASE_UNGRADED;
             $answer->grade = 0.0;
             $DB->update_record('quest_answers', $answer);
 
@@ -364,7 +366,8 @@ class autograde_service {
         $passed = ($grade >= 50.0);
 
         $answer->grade = $grade;
-        $answer->phase = 3; // Phase 3 = auto-evaluated / approved.
+        $answer->phase = $passed ? ANSWER_PHASE_PASSED : ANSWER_PHASE_GRADED;
+        $answer->state = ANSWER_STATE_EDITTED;
         $DB->update_record('quest_answers', $answer);
 
         // Update submission aggregations and inflection points.

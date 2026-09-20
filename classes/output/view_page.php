@@ -32,13 +32,53 @@ use mod_quest\service\scoring_calculator;
  */
 class view_page implements renderable, templatable {
 
+    /**
+     * Quest activity record.
+     *
+     * @var stdClass
+     */
     protected stdClass $quest;
+    /**
+     * Course record.
+     *
+     * @var stdClass
+     */
     protected stdClass $course;
+    /**
+     * Course module record.
+     *
+     * @var object
+     */
     protected object $cm;
+    /**
+     * Challenge records shown in cards.
+     *
+     * @var array
+     */
     protected array $challenges;
+    /**
+     * Whether the current user can add a challenge.
+     *
+     * @var bool
+     */
     protected bool $canaddchallenge;
+    /**
+     * Summary data prepared by the page controller.
+     *
+     * @var array
+     */
     protected array $summarydata;
+    /**
+     * Rendered detail table HTML.
+     *
+     * @var string
+     */
     protected string $detailtablehtml;
+    /**
+     * Rendered table legend HTML.
+     *
+     * @var string
+     */
     protected string $legendhtml;
 
     /**
@@ -112,17 +152,19 @@ class view_page implements renderable, templatable {
             if ($phase === scoring_calculator::PHASE_INFLATION) {
                 $phaseclass = 'quest-phase-badge';
                 $phasename = get_string('phase_inflation', 'quest');
-                $cardstyle = 'background-color: #fffbf0; border: 1px solid #ffeeba; border-top: 4px solid #ffc107; border-radius: 8px;';
-            } elseif ($phase === scoring_calculator::PHASE_DEFLATION) {
+                $cardstyle = 'background-color: #fffbf0; border: 1px solid #ffeeba; '
+                    . 'border-top: 4px solid #ffc107; border-radius: 8px;';
+            } else if ($phase === scoring_calculator::PHASE_DEFLATION) {
                 $phaseclass = 'quest-phase-badge';
                 $phasename = get_string('phase_deflation', 'quest');
-                $cardstyle = 'background-color: #f9f5ff; border: 1px solid #e2d9f3; border-top: 4px solid #6f42c1; border-radius: 8px;';
-            } elseif ($phase === scoring_calculator::PHASE_ENDED) {
+                $cardstyle = 'background-color: #f9f5ff; border: 1px solid #e2d9f3; '
+                    . 'border-top: 4px solid #6f42c1; border-radius: 8px;';
+            } else if ($phase === scoring_calculator::PHASE_ENDED) {
                 $phaseclass = 'quest-phase-badge quest-phase-badge-closed';
                 $phasename = get_string('closed', 'quest');
-                $cardstyle = 'background-color: #f8f9fa; border: 1px solid #e9ecef; border-top: 4px solid #6c757d; border-radius: 8px;';
+                $cardstyle = 'background-color: #f8f9fa; border: 1px solid #e9ecef; '
+                    . 'border-top: 4px solid #6c757d; border-radius: 8px;';
             }
-
 
             $attentionstatuses = \quest_get_challenge_attention_status($c, $this->cm, $context);
 
@@ -184,6 +226,8 @@ class view_page implements renderable, templatable {
             'dateendstr' => userdate($this->quest->dateend, get_string('strftimedatetime', 'langconfig')),
             'allowteams' => !empty($this->quest->allowteams),
             'canaddchallenge' => $this->canaddchallenge,
+            'canaddqchallenge' => $this->canaddchallenge &&
+                (!empty($this->quest->allowqbankquestions) || !empty($this->summarydata['ismanager'])),
             'addchallengeurl' => (new moodle_url('/mod/quest/challenges.php', [
                 'id' => $this->cm->id,
                 'action' => 'submitchallenge',
@@ -243,40 +287,40 @@ class view_page implements renderable, templatable {
         // Square viewBox for 1:1 rendering.
         $width = 240;
         $height = 240;
-        $padLeft = 10;
-        $padRight = 10;
-        $padTop = 18;   // Space for phase labels.
-        $padBottom = 18; // Space for X-axis dates.
-        $plotWidth = $width - $padLeft - $padRight;
-        $plotHeight = $height - $padTop - $padBottom;
+        $padleft = 10;
+        $padright = 10;
+        $padtop = 18;   // Space for phase labels.
+        $padbottom = 18; // Space for X-axis dates.
+        $plotwidth = $width - $padleft - $padright;
+        $plotheight = $height - $padtop - $padbottom;
 
         $ymax = max($pmax * 1.12, $pinit * 1.15, 10);
         $ymin = 0;
 
-        $getx = function($t) use ($datestart, $dateend, $padLeft, $plotWidth) {
+        $getx = function($t) use ($datestart, $dateend, $padleft, $plotwidth) {
             $clamped = max($datestart, min($dateend, $t));
-            return round($padLeft + (($clamped - $datestart) / ($dateend - $datestart)) * $plotWidth, 1);
+            return round($padleft + (($clamped - $datestart) / ($dateend - $datestart)) * $plotwidth, 1);
         };
 
-        $gety = function($p) use ($ymin, $ymax, $padTop, $plotHeight) {
+        $gety = function($p) use ($ymin, $ymax, $padtop, $plotheight) {
             $clamped = max($ymin, min($ymax, $p));
-            return round($padTop + $plotHeight - (($clamped - $ymin) / ($ymax - $ymin)) * $plotHeight, 1);
+            return round($padtop + $plotheight - (($clamped - $ymin) / ($ymax - $ymin)) * $plotheight, 1);
         };
 
-        $statEnd = min($dateend, $datestart + $tinitial);
-        $statX = $getx($statEnd);
-        $hasCorrect = !empty($dateanswercorrect) && $dateanswercorrect > $datestart && $dateanswercorrect < $dateend;
-        $inflEnd = $hasCorrect ? $dateanswercorrect : $dateend;
-        $inflX = $getx($inflEnd);
-        $endX = $getx($dateend);
-        $startX = $getx($datestart);
+        $statend = min($dateend, $datestart + $tinitial);
+        $statx = $getx($statend);
+        $hascorrect = !empty($dateanswercorrect) && $dateanswercorrect > $datestart && $dateanswercorrect < $dateend;
+        $inflend = $hascorrect ? $dateanswercorrect : $dateend;
+        $inflx = $getx($inflend);
+        $endx = $getx($dateend);
+        $startx = $getx($datestart);
 
-        $statY = $gety($pinit);
+        $staty = $gety($pinit);
 
-        $inflScore = scoring_calculator::calculate_points(
-            $inflEnd, $datestart, $dateend, $tinitial, $dateanswercorrect, $pinit, $pmax, $pmin
+        $inflscore = scoring_calculator::calculate_points(
+            $inflend, $datestart, $dateend, $tinitial, $dateanswercorrect, $pinit, $pmax, $pmin
         );
-        $inflEndY = $gety($inflScore);
+        $inflendy = $gety($inflscore);
 
         // SVG: width/height="100%" so CSS container controls the size. No fixed height.
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"'
@@ -285,69 +329,69 @@ class view_page implements renderable, templatable {
              . ' style="display:block; border-radius: 6px; background: rgba(0,0,0,0.02);">';
 
         // Phase background zones.
-        $svg .= '<rect x="' . $startX . '" y="' . $padTop . '" width="' . max(0, $statX - $startX)
-              . '" height="' . $plotHeight . '" fill="rgba(13, 110, 253, 0.08)" />';
-        $svg .= '<rect x="' . $statX . '" y="' . $padTop . '" width="' . max(0, $inflX - $statX)
-              . '" height="' . $plotHeight . '" fill="rgba(245, 158, 11, 0.09)" />';
-        if ($hasCorrect) {
-            $svg .= '<rect x="' . $inflX . '" y="' . $padTop . '" width="' . max(0, $endX - $inflX)
-                  . '" height="' . $plotHeight . '" fill="rgba(139, 92, 246, 0.09)" />';
+        $svg .= '<rect x="' . $startx . '" y="' . $padtop . '" width="' . max(0, $statx - $startx)
+              . '" height="' . $plotheight . '" fill="rgba(13, 110, 253, 0.08)" />';
+        $svg .= '<rect x="' . $statx . '" y="' . $padtop . '" width="' . max(0, $inflx - $statx)
+              . '" height="' . $plotheight . '" fill="rgba(245, 158, 11, 0.09)" />';
+        if ($hascorrect) {
+            $svg .= '<rect x="' . $inflx . '" y="' . $padtop . '" width="' . max(0, $endx - $inflx)
+                  . '" height="' . $plotheight . '" fill="rgba(139, 92, 246, 0.09)" />';
         }
 
         // Phase divider lines.
-        $svg .= '<line x1="' . $statX . '" y1="' . $padTop . '" x2="' . $statX . '" y2="' . ($padTop + $plotHeight)
+        $svg .= '<line x1="' . $statx . '" y1="' . $padtop . '" x2="' . $statx . '" y2="' . ($padtop + $plotheight)
               . '" stroke="rgba(13,110,253,0.25)" stroke-dasharray="2,2" />';
-        if ($hasCorrect) {
-            $svg .= '<line x1="' . $inflX . '" y1="' . $padTop . '" x2="' . $inflX . '" y2="' . ($padTop + $plotHeight)
+        if ($hascorrect) {
+            $svg .= '<line x1="' . $inflx . '" y1="' . $padtop . '" x2="' . $inflx . '" y2="' . ($padtop + $plotheight)
                   . '" stroke="rgba(139,92,246,0.25)" stroke-dasharray="2,2" />';
         }
 
         // Tramo 1: Estacionario (blue solid).
-        $svg .= '<line x1="' . $startX . '" y1="' . $statY . '" x2="' . $statX . '" y2="' . $statY
+        $svg .= '<line x1="' . $startx . '" y1="' . $staty . '" x2="' . $statx . '" y2="' . $staty
               . '" stroke="#0d6efd" stroke-width="3" stroke-linecap="round" />';
 
         // Tramo 2: Inflacionario (amber solid).
-        $svg .= '<line x1="' . $statX . '" y1="' . $statY . '" x2="' . $inflX . '" y2="' . $inflEndY
+        $svg .= '<line x1="' . $statx . '" y1="' . $staty . '" x2="' . $inflx . '" y2="' . $inflendy
               . '" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />';
 
         // Tramo 3: Deflacionario real (purple solid, if correct answer).
-        if ($hasCorrect) {
-            $deflEndY = $gety($pmin);
-            $svg .= '<line x1="' . $inflX . '" y1="' . $inflEndY . '" x2="' . $endX . '" y2="' . $deflEndY
+        if ($hascorrect) {
+            $deflendy = $gety($pmin);
+            $svg .= '<line x1="' . $inflx . '" y1="' . $inflendy . '" x2="' . $endx . '" y2="' . $deflendy
                   . '" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" />';
         }
 
         // Hypothetical dotted deflation projection (always shown).
-        $projInflEnd = $hasCorrect ? $dateanswercorrect : $inflEnd;
-        $projInflX   = $getx($projInflEnd);
-        $projInflScore = scoring_calculator::calculate_points(
-            $projInflEnd, $datestart, $dateend, $tinitial, null, $pinit, $pmax, $pmin
+        $projinflend = $hascorrect ? $dateanswercorrect : $inflend;
+        $projinflx   = $getx($projinflend);
+        $projinflscore = scoring_calculator::calculate_points(
+            $projinflend, $datestart, $dateend, $tinitial, null, $pinit, $pmax, $pmin
         );
-        $projInflY = $gety($projInflScore);
-        $projEndY  = $gety($pmin);
-        $projOpacity = $hasCorrect ? '0.35' : '0.6';
-        $projWidth   = $hasCorrect ? '1.5' : '2';
-        $svg .= '<line x1="' . $projInflX . '" y1="' . $projInflY . '" x2="' . $endX . '" y2="' . $projEndY
-              . '" stroke="#8b5cf6" stroke-width="' . $projWidth . '" stroke-dasharray="4,3"'
-              . ' opacity="' . $projOpacity . '" />';
+        $projinfly = $gety($projinflscore);
+        $projendy  = $gety($pmin);
+        $projopacity = $hascorrect ? '0.35' : '0.6';
+        $projwidth   = $hascorrect ? '1.5' : '2';
+        $svg .= '<line x1="' . $projinflx . '" y1="' . $projinfly . '" x2="' . $endx . '" y2="' . $projendy
+              . '" stroke="#8b5cf6" stroke-width="' . $projwidth . '" stroke-dasharray="4,3"'
+              . ' opacity="' . $projopacity . '" />';
 
         // Transition dots.
-        $svg .= '<circle cx="' . $statX . '" cy="' . $statY . '" r="3.5" fill="#0d6efd" stroke="#fff" stroke-width="1.5" />';
-        if ($hasCorrect) {
-            $svg .= '<circle cx="' . $inflX . '" cy="' . $inflEndY . '" r="4" fill="#f59e0b" stroke="#fff" stroke-width="1.5" />';
+        $svg .= '<circle cx="' . $statx . '" cy="' . $staty . '" r="3.5" fill="#0d6efd" stroke="#fff" stroke-width="1.5" />';
+        if ($hascorrect) {
+            $svg .= '<circle cx="' . $inflx . '" cy="' . $inflendy . '" r="4" fill="#f59e0b" stroke="#fff" stroke-width="1.5" />';
         }
 
-        // "Now" vertical marker.
+        // Current-time vertical marker.
         if ($timenow >= $datestart && $timenow <= $dateend) {
-            $nowX = $getx($timenow);
-            $nowScore = scoring_calculator::calculate_points(
+            $nowx = $getx($timenow);
+            $nowscore = scoring_calculator::calculate_points(
                 $timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $pinit, $pmax, $pmin
             );
-            $nowY = $gety($nowScore);
+            $nowy = $gety($nowscore);
 
-            $svg .= '<line x1="' . $nowX . '" y1="' . $padTop . '" x2="' . $nowX . '" y2="' . ($padTop + $plotHeight)
+            $svg .= '<line x1="' . $nowx . '" y1="' . $padtop . '" x2="' . $nowx . '" y2="' . ($padtop + $plotheight)
                   . '" stroke="#198754" stroke-width="1.5" stroke-dasharray="3,2" />';
-            $svg .= '<circle cx="' . $nowX . '" cy="' . $nowY . '" r="4" fill="#198754" stroke="#fff" stroke-width="1.5" />';
+            $svg .= '<circle cx="' . $nowx . '" cy="' . $nowy . '" r="4" fill="#198754" stroke="#fff" stroke-width="1.5" />';
         }
 
         $svg .= '</svg>';

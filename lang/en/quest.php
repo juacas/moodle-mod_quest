@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** QUESTOURnament activity for Moodle lang file
  *
  * Module developed at the University of Valladolid
@@ -21,7 +22,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 $string['absent'] = 'Absent';
@@ -818,6 +819,9 @@ $string['exportedtoquestionbank'] = 'Challenge successfully exported to question
 $string['viewinquestionbank'] = 'View in Question Bank';
 $string['autoexportqbank'] = 'Automatically export open challenges to question bank';
 $string['autoexportqbank_help'] = 'When enabled, challenges approved by a teacher will be automatically added as essay questions in the activity question bank.';
+$string['allowqbankquestions'] = 'Allow students to add question bank challenges';
+$string['allowqbankquestions_help'] = 'When enabled, students can add challenges based on questions from the question bank. When disabled, students can only add open essay challenges.';
+$string['questionbankdisabled'] = 'Students are not allowed to add question bank challenges in this Quest.';
 $string['autograde_passed'] = 'Correct! Your answer was automatically graded and awarded {$a} points.';
 $string['autograde_failed'] = 'Incorrect answer. You may try again if attempts remain.';
 $string['autograde_manual_pending'] = 'Your answer has been submitted and is pending evaluation.';

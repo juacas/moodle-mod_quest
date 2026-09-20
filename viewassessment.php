@@ -14,17 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+/**
+ * Display a Quest assessment.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -35,10 +32,10 @@ $asid = required_param('asid', PARAM_INT); // Assessment ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 
-$assessment = $DB->get_record("quest_assessments", array("id" => $asid), '*', MUST_EXIST);
-$answer = $DB->get_record('quest_answers', array('id' => $assessment->answerid), '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid), '*', MUST_EXIST);
-$quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
+$assessment = $DB->get_record("quest_assessments", ["id" => $asid], '*', MUST_EXIST);
+$answer = $DB->get_record('quest_answers', ['id' => $assessment->answerid], '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 $course = get_course($quest->course);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
 $sid = $submission->id;
@@ -50,10 +47,10 @@ $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 
 $url = new moodle_url('/mod/quest/viewassessment.php',
-        array('asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
+        ['asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
 $PAGE->set_url($url);
 $PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
-        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge')));
+        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -98,7 +95,9 @@ if ($answer->userid == $USER->id) {
     quest_print_editor("teachercomment", "id_teachercomment", $answer->commentforteacher, $context, 5);
     echo '</div>';
     echo '<div class="text-end">';
-    echo '<button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane me-1" aria-hidden="true"></i>' . get_string("save", "quest") . '</button>';
+    echo '<button type="submit" class="btn btn-primary">'
+            . '<i class="fa fa-paper-plane me-1" aria-hidden="true"></i>'
+            . get_string("save", "quest") . '</button>';
     echo '</div>';
     echo '</form>';
     echo '</div></div></div>';
@@ -117,9 +116,9 @@ if ($ismanager) {
     }
 }
 
-$answer = $DB->get_record('quest_answers', array('id' => $assessment->answerid), '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid), '*', MUST_EXIST);
-$quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
+$answer = $DB->get_record('quest_answers', ['id' => $assessment->answerid], '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
 $title = get_string('answername', 'quest', $answer);
 

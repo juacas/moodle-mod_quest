@@ -22,7 +22,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  */
@@ -163,6 +163,9 @@ class mod_quest_mod_form extends moodleform_mod {
             ['0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')]
         );
         $mform->addElement('header', 'questionbanksection', get_string('questionbank', 'quest'));
+        $mform->addElement('selectyesno', 'allowqbankquestions', get_string('allowqbankquestions', 'quest'));
+        $mform->addHelpButton('allowqbankquestions', 'allowqbankquestions', 'quest');
+        $mform->setDefault('allowqbankquestions', 1);
         $mform->addElement('selectyesno', 'autoexportqbank', get_string('autoexportqbank', 'quest'));
         $mform->addHelpButton('autoexportqbank', 'autoexportqbank', 'quest');
         $mform->setDefault('autoexportqbank', 0);
@@ -235,7 +238,6 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('hidden', 'gradepass', 50);
         $mform->setType('gradepass', PARAM_INT);
 
-
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -281,6 +283,9 @@ class mod_quest_mod_form extends moodleform_mod {
     public function data_preprocessing(&$defaultvalues) {
         global $DB;
 
+        // Never send the stored password hash back to the browser.
+        unset($defaultvalues['password']);
+
         $ctx = null;
         if ($this->current && $this->current->coursemodule) {
             $cm = get_coursemodule_from_instance('quest', $this->current->id, 0, false, MUST_EXIST);
@@ -298,28 +303,4 @@ class mod_quest_mod_form extends moodleform_mod {
         file_prepare_draft_area($draftitemid, $ctx->id, 'mod_quest', 'introattachment', 0, ['subdirs' => 0]);
         $defaultvalues['introattachments'] = $draftitemid;
     }
-    /**
-     * Add any custom completion rules to the form.
-     *
-     * @return array Contains the names of the added form elements
-     */
-    // public function add_completion_rules() {
-    // $mform =& $this->_form;
-
-    // $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quest'));
-    // $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
-    // $mform->addHelpButton('completionpass', 'completionpass', 'quest');
-    // Enable this completion rule by default.
-    // $mform->setDefault('completionpass', 0);
-    // return array('completionpass');
-    // }
-    /**
-     * Determines if completion is enabled for this module.
-     *
-     * @param array $data
-     * @return bool
-     */
-    // public function completion_rule_enabled($data) {
-    // return !empty($data['completionpass']);
-    // }
 }

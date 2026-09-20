@@ -22,7 +22,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 
@@ -1101,6 +1101,9 @@ $string['closebeforeopen'] = 'La fecha de cierre del QUESTOURnament debe ser pos
 $string['completionpass'] = 'Requerir calificación de aprobado';
 $string['completionpassdesc'] = 'El estudiante debe obtener una calificación de aprobado para completar esta actividad.';
 $string['completionpass_help'] = 'Si se activa, la actividad se considera completada cuando el estudiante obtiene una calificación de aprobado o superior.';
+$string['allowqbankquestions'] = 'Permitir a los estudiantes añadir desafíos del banco de preguntas';
+$string['allowqbankquestions_help'] = 'Si se activa, los estudiantes pueden añadir desafíos basados en preguntas del banco. Si se desactiva, solo pueden añadir desafíos abiertos de tipo ensayo.';
+$string['questionbankdisabled'] = 'Los estudiantes no pueden añadir desafíos del banco de preguntas en este Quest.';
 
 $string['questionpreviewattachments'] = 'Esta pregunta permite hasta {$a->count} adjunto(s). La subida está desactivada en esta vista previa.';
 $string['questionpreviewattachmentsrequired'] = 'Esta pregunta requiere al menos {$a->required} adjunto(s) y permite hasta {$a->allowed} adjunto(s). La subida está desactivada en esta vista previa.';

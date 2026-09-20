@@ -159,12 +159,12 @@ final class scoring_calculator_test extends advanced_testcase {
         $min = 5.0;
 
         // Ended with a correct answer within duration -> reaches min points.
-        $ptsWithAnswer = scoring_calculator::calculate_points(5500, $start, $end, $tinit, 3000, $initial, $max, $min);
-        $this->assertEquals(5.0, $ptsWithAnswer);
+        $ptswithanswer = scoring_calculator::calculate_points(5500, $start, $end, $tinit, 3000, $initial, $max, $min);
+        $this->assertEquals(5.0, $ptswithanswer);
 
         // Ended without any correct answer -> reaches max points.
-        $ptsWithoutAnswer = scoring_calculator::calculate_points(5500, $start, $end, $tinit, null, $initial, $max, $min);
-        $this->assertEquals(100.0, $ptsWithoutAnswer);
+        $ptswithoutanswer = scoring_calculator::calculate_points(5500, $start, $end, $tinit, null, $initial, $max, $min);
+        $this->assertEquals(100.0, $ptswithoutanswer);
 
         $phase = scoring_calculator::get_phase(5500, $start, $end, $tinit, null);
         $this->assertEquals(scoring_calculator::PHASE_ENDED, $phase);

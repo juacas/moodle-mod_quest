@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_quest\service\tournament_manager;
 use mod_quest\service\leaderboard_service;
 
@@ -43,7 +41,8 @@ function updateallteams($questid) {
     // Clean orphan records.
     if (!empty($idteams)) {
         [$insql, $inparams] = $DB->get_in_or_equal($idteams, SQL_PARAMS_NAMED, 'param', false);
-        $DB->delete_records_select('quest_calification_teams', "questid = :qid AND teamid $insql", array_merge(['qid' => $questid], $inparams));
+        $params = array_merge(['qid' => $questid], $inparams);
+        $DB->delete_records_select('quest_calification_teams', "questid = :qid AND teamid $insql", $params);
     } else {
         $DB->delete_records('quest_calification_teams', ['questid' => $questid]);
     }
@@ -71,7 +70,15 @@ function updateallusers($questid) {
  */
 function quest_calculate_pointsanswercorrect_and_date($submission) {
     global $DB;
-    $query = $DB->get_records_select('quest_answers', 'submissionid = ? AND grade >= 50', [$submission->id], 'date ASC', 'id, date, pointsmax', 0, 1);
+    $query = $DB->get_records_select(
+        'quest_answers',
+        'submissionid = ? AND grade >= 50',
+        [$submission->id],
+        'date ASC',
+        'id, date, pointsmax',
+        0,
+        1
+    );
     if (!empty($query)) {
         $first = reset($query);
         $submission->dateanswercorrect = $first->date;
@@ -165,4 +172,3 @@ function quest_count_challenge_answers_correct($cid) {
 function quest_count_submission_answers_correct($sid) {
     return quest_count_challenge_answers_correct($sid);
 }
-

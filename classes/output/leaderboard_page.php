@@ -32,12 +32,47 @@ use user_picture;
  */
 class leaderboard_page implements renderable, templatable {
 
+    /**
+     * Quest activity record.
+     *
+     * @var stdClass
+     */
     protected stdClass $quest;
+    /**
+     * Course record.
+     *
+     * @var stdClass
+     */
     protected stdClass $course;
+    /**
+     * Course module record.
+     *
+     * @var object
+     */
     protected object $cm;
+    /**
+     * Ranking rows.
+     *
+     * @var array
+     */
     protected array $standings;
+    /**
+     * Whether the rows represent teams.
+     *
+     * @var bool
+     */
     protected bool $isteams;
+    /**
+     * Current sort field.
+     *
+     * @var string
+     */
     protected string $sort;
+    /**
+     * Current sort direction.
+     *
+     * @var string
+     */
     protected string $dir;
 
     /**
@@ -178,8 +213,14 @@ class leaderboard_page implements renderable, templatable {
             'allowteams' => !empty($this->quest->allowteams),
             'showclasifindividual' => !empty($this->quest->showclasifindividual),
             'backurl' => (new moodle_url('/mod/quest/view.php', ['id' => $this->cm->id]))->out(false),
-            'teamsurl' => (new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $this->cm->id]))->out(false),
-            'globalurl' => (new moodle_url('/mod/quest/viewclasification.php', ['action' => 'global', 'id' => $this->cm->id]))->out(false),
+            'teamsurl' => (new moodle_url('/mod/quest/viewclasification.php', [
+                'action' => 'teams',
+                'id' => $this->cm->id,
+            ]))->out(false),
+            'globalurl' => (new moodle_url('/mod/quest/viewclasification.php', [
+                'action' => 'global',
+                'id' => $this->cm->id,
+            ]))->out(false),
             'hasstandings' => !empty($standingsdata),
             'standings' => $standingsdata,
             'help_rank' => $gethelp('rank'),

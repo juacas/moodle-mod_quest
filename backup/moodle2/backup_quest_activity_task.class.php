@@ -29,17 +29,25 @@ require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_settingslib
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 class backup_quest_activity_task extends backup_activity_task {
 
-    /** Define (add) particular settings this activity can have */
+    /**
+     * Define particular settings for this activity.
+     *
+     * @return void
+     */
     protected function define_my_settings() {
         // No particular settings for this activity.
     }
 
-    /** Define (add) particular steps this activity can have */
+    /**
+     * Define the backup steps for this activity.
+     *
+     * @return void
+     */
     protected function define_my_steps() {
         // Quest only has one structure step.
         $this->add_step(new backup_quest_activity_structure_step('quest_structure', 'quest.xml'));
@@ -51,7 +59,7 @@ class backup_quest_activity_task extends backup_activity_task {
      * @param unknown $content
      * @return mixed
      */
-    static public function encode_content_links($content) {
+    public static function encode_content_links($content) {
         global $CFG;
 
         $base = preg_quote($CFG->wwwroot, "/");

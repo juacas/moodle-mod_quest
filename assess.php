@@ -13,21 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/** Questournament activity for Moodle
+
+/**
+ * Display the assessment form for a Quest answer.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- *
- *          Show the page that allow to do the assess of a answer
- *
- *          **************************************** */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -38,9 +32,9 @@ $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 require_sesskey();
 global $DB, $OUTPUT, $PAGE;
 
-$answer = $DB->get_record('quest_answers', array('id' => $aid), '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', array('id' => $answer->submissionid), '*', MUST_EXIST);
-$quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
+$answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
@@ -56,19 +50,19 @@ $strassess = get_string("assess", "quest");
 $strsubmission = "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\">$submission->title</a>";
 
 $url = new moodle_url('/mod/quest/assess.php',
-        array('aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
-                        'sesskey' => sesskey()));
+        ['aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
+                        'sesskey' => sesskey()]);
 $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
-        new moodle_url('challenges.php', array('id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge')));
+        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge']));
 $PAGE->navbar->add(get_string('answername', 'quest', $answer));
 echo $OUTPUT->header();
 
 // ...there can be an assessment record , if there isn't...
-if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id, "questid" => $quest->id))) {
+if (!$assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id, "questid" => $quest->id])) {
 
     $now = time();
     // ...create one and set timecreated way in the future, this is reset when record is updated.
@@ -91,11 +85,11 @@ if (!$assessment = $DB->get_record("quest_assessments", array("answerid" => $ans
         throw new \moodle_exception('inserterror', 'quest', '', "quest_assessments");
     }
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
-    if ($cangrade and ($quest->gradingstrategy == 2)) {
-        if ($DB->get_field("quest_submissions", "numelements", array("id" => $submission->id)) == 0) {
-            $num = $DB->get_field("quest", "nelements", array("id" => $quest->id));
+    if ($cangrade && ($quest->gradingstrategy == 2)) {
+        if ($DB->get_field("quest_submissions", "numelements", ["id" => $submission->id]) == 0) {
+            $num = $DB->get_field("quest", "nelements", ["id" => $quest->id]);
         } else {
-            $num = $DB->get_field("quest_submissions", "numelements", array("id" => $submission->id));
+            $num = $DB->get_field("quest_submissions", "numelements", ["id" => $submission->id]);
         }
         for ($i = 0; $i < $num; $i++) {
             $element = new stdClass();
@@ -164,7 +158,12 @@ if ($cangrade) {
     $nextanswer = null;
 }
 if ($nextanswer !== null ) {
-    $returnto = new moodle_url('assess.php', ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $nextanswer->id, 'sesskey' => sesskey() ]);
+    $returnto = new moodle_url('assess.php', [
+        'id' => $cm->id,
+        'sid' => $submission->id,
+        'aid' => $nextanswer->id,
+        'sesskey' => sesskey(),
+    ]);
 } else {
     $returnto = new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge' ]);
 }

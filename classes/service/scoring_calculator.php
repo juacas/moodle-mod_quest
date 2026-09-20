@@ -27,10 +27,15 @@ namespace mod_quest\service;
  */
 class scoring_calculator {
 
+    /** Challenge has not started yet. */
     public const PHASE_PENDING = 'pending';
+    /** Challenge is in its stationary phase. */
     public const PHASE_STATIONARY = 'stationary';
+    /** Challenge is gaining value. */
     public const PHASE_INFLATION = 'inflation';
+    /** Challenge is losing value after a correct answer. */
     public const PHASE_DEFLATION = 'deflation';
+    /** Challenge has ended. */
     public const PHASE_ENDED = 'ended';
 
     /**
@@ -58,7 +63,7 @@ class scoring_calculator {
     ): float {
         if (empty($dateanswercorrect) || $dateanswercorrect <= 0) {
             $dateanswercorrect = PHP_INT_MAX;
-        } elseif ($dateanswercorrect < $datestart) {
+        } else if ($dateanswercorrect < $datestart) {
             $dateanswercorrect = $datestart;
         }
 

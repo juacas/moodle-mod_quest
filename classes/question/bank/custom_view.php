@@ -2,8 +2,17 @@
 // This file is part of Questournament for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the Free Software
-// Foundation, either version 3 of the License, or (at your option) any later version.
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace mod_quest\question\bank;
 
@@ -14,6 +23,8 @@ namespace mod_quest\question\bank;
  * category and pagination controls behave like the standard question bank.
  *
  * @package mod_quest
+ * @copyright 2026 onwards EDUVALab, University of Valladolid
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class custom_view extends \core_question\local\bank\view {
     /** @var int Default number of questions shown per page. */
@@ -36,22 +47,38 @@ class custom_view extends \core_question\local\bank\view {
         parent::__construct($contexts, $pageurl, $course, $cm, $params, $extraparams);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Initialise the column manager.
+     *
+     * @return void
+     */
     protected function init_column_manager(): void {
         $this->columnmanager = new \core_question\local\bank\column_manager_base();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Disable question-level actions in this picker.
+     *
+     * @return void
+     */
     protected function init_question_actions(): void {
         $this->questionactions = [];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Disable bulk actions in this picker.
+     *
+     * @return void
+     */
     protected function init_bulk_actions(): void {
         $this->bulkactions = [];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return the columns displayed by the picker.
+     *
+     * @return array Question-bank columns.
+     */
     protected function get_question_bank_plugins(): array {
         $columns = [];
         foreach ([checkbox_column::class, 'qbank_viewquestiontype\\question_type_column',
@@ -63,22 +90,40 @@ class custom_view extends \core_question\local\bank\view {
         return $columns;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return the heading column class.
+     *
+     * @return string Heading column class.
+     */
     protected function heading_column(): string {
         return name_column::class;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return the default sorting configuration.
+     *
+     * @return array Sort configuration.
+     */
     protected function default_sort(): array {
         return ['mod_quest__question\\bank\\name_column' => SORT_ASC];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return plugin controls for the question bank.
+     *
+     * @param \context $context Question-bank context.
+     * @param int $categoryid Category ID.
+     * @return string Controls HTML.
+     */
     protected function get_plugin_controls(\context $context, int $categoryid): string {
         return '';
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Render the question bank header.
+     *
+     * @return void
+     */
     protected function display_question_bank_header(): void {
         if (!empty($this->extraparams['requirebankswitch']) && \mod_quest\question\bank_provider::has_bank_helper()) {
             $bankname = format_string($this->cm->name ?? '');
@@ -88,13 +133,19 @@ class custom_view extends \core_question\local\bank\view {
                 'data-action' => 'switch-question-bank',
                 'type' => 'button',
                 'class' => 'btn btn-secondary ms-auto',
-                'id' => 'switch-question-bank'
+                'id' => 'switch-question-bank',
             ]);
             echo \html_writer::end_div();
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Do not render the standard new-question form.
+     *
+     * @param object $category Question category.
+     * @param bool $canadd Whether the user can add a question.
+     * @return void
+     */
     protected function create_new_question_form($category, $canadd): void {
     }
 
@@ -176,7 +227,12 @@ class custom_view extends \core_question\local\bank\view {
         ]);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Render the bottom controls for selecting a question.
+     *
+     * @param \context $catcontext Category context.
+     * @return void
+     */
     protected function display_bottom_controls(\context $catcontext): void {
         echo \html_writer::tag('button', get_string('useexistingquestion', 'quest'), [
             'type' => 'submit',

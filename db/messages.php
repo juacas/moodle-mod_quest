@@ -22,15 +22,15 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
-$messageproviders = array(
+$messageproviders = [
                 // Notify teacher that a student has submitted a challenge attempt or something that requires attention.
-                'challenge_update' => array(),
+                'challenge_update' => [],
                 // Confirm a student's quiz attempt.
-                'evaluation_update' => array(),
+                'evaluation_update' => [],
                 // Notify student that a challenge has started.
-                'challenge_start' => array (),
-);
+                'challenge_start' => [],
+];

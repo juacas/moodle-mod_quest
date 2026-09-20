@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-defined('MOODLE_INTERNAL') || die();
+
 /** Backup Questournament module
  *
  * Structure step to restore one quest activity
@@ -24,7 +24,7 @@ defined('MOODLE_INTERNAL') || die();
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 class restore_quest_activity_structure_step extends restore_questions_activity_structure_step {
@@ -34,7 +34,7 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
      * @see restore_structure_step::define_structure()
      */
     protected function define_structure() {
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('quest', '/activity/quest');
@@ -149,7 +149,7 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
             $data->maileduser = 0;
         }
         if ($data->initialpoints == null) {
-            $data->initialpoints = 0; // TODO JPC circunvents a bug with legacy backup.
+            $data->initialpoints = 0; // Keep legacy backups with no initial points valid.
         }
         $newitemid = $DB->insert_record('quest_submissions', $data);
         $this->set_mapping('quest_challenge', $oldid, $newitemid, true);

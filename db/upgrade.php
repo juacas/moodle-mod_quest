@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  *
@@ -39,7 +40,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
@@ -48,7 +49,6 @@ global $CFG;
 require_once($CFG->libdir . '/ddllib.php');
 /**
  *
- * @global moodle_database $DB
  * @param number $oldversion
  * @return boolean
  */
@@ -141,6 +141,45 @@ function xmldb_quest_upgrade($oldversion = 0) {
         }
 
         upgrade_mod_savepoint(true, 2026091801, 'quest');
+    }
+
+    if ($oldversion < 2026092000) {
+        // Password hashes need more space than the legacy MD5 value.
+        $questtable = new xmldb_table('quest');
+        $passwordfield = new xmldb_field(
+            'password',
+            XMLDB_TYPE_CHAR,
+            '255',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            null
+        );
+        if ($dbman->field_exists($questtable, $passwordfield)) {
+            $dbman->change_field_precision($questtable, $passwordfield);
+        }
+
+        upgrade_mod_savepoint(true, 2026092000, 'quest');
+    }
+
+    if ($oldversion < 2026092001) {
+        // Allow each Quest to control student use of question bank challenges.
+        $questtable = new xmldb_table('quest');
+        $field = new xmldb_field(
+            'allowqbankquestions',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            1,
+            'completionpass'
+        );
+        if (!$dbman->field_exists($questtable, $field)) {
+            $dbman->add_field($questtable, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026092001, 'quest');
     }
 
     return true;

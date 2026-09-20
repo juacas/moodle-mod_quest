@@ -13,23 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/** Questournament activity for Moodle
+
+/**
+ * Display and save assessment forms for Quest answers.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- * ACTIONS:
- * - displaygradingform
- * - editelements
- * - insertelements
- * - updateassessment
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -59,7 +51,7 @@ if (!is_array($questeweights)) {
     $questeweights = quest_get_default_weights();
 }
 list($course, $cm) = quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 
 $context = context_module::instance($cm->id);
 $isteacher = has_capability('mod/quest:manage', $context);
@@ -69,7 +61,7 @@ $strquest = get_string("modulename", "quest");
 $strassessments = get_string("assessments", "quest");
 
 require_login($course->id, false, $cm);
-$url = new moodle_url('/mod/quest/assessments.php', array('action' => $action, 'id' => $cm->id, 'sesskey' => sesskey()));
+$url = new moodle_url('/mod/quest/assessments.php', ['action' => $action, 'id' => $cm->id, 'sesskey' => sesskey()]);
 if ($sid != '') {
     $url->param('sid', $sid);
 }
@@ -105,7 +97,7 @@ if ($action == 'displaygradingform') {
             'id' => $cm->id,
             'viewgeneral' => 1,
             'action' => 'editelements',
-            'sesskey' => sesskey()
+            'sesskey' => sesskey(),
         ]);
         echo html_writer::div(
             html_writer::link(
@@ -121,13 +113,13 @@ if ($action == 'displaygradingform') {
     // ...called with no assessment..
     echo '<p>';
     if ($viewgeneral == 1) {
-        echo $OUTPUT->continue_button(new moodle_url("view.php", array('id' => $id)));
+        echo $OUTPUT->continue_button(new moodle_url("view.php", ['id' => $id]));
     } else {
         if ($sid == '') {
-            echo $OUTPUT->continue_button(new moodle_url("view.php", array('id' => $id)));
+            echo $OUTPUT->continue_button(new moodle_url("view.php", ['id' => $id]));
         } else {
             echo $OUTPUT->continue_button(
-                    new moodle_url("challenges.php", array('id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge')));
+                    new moodle_url("challenges.php", ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']));
         }
     }
     echo $OUTPUT->footer();
@@ -135,12 +127,12 @@ if ($action == 'displaygradingform') {
 } else if ($action == 'editelements') {
     // ... edit assessment elements (for teachers)..
     require_sesskey();
-    $authorid = isset($sid) ? $DB->get_field('quest_submissions', 'userid', array('id' => $sid)) : null;
+    $authorid = isset($sid) ? $DB->get_field('quest_submissions', 'userid', ['id' => $sid]) : null;
     if (!$isteacher && $authorid != $USER->id) {
         throw new \moodle_exception('nopermissions', 'error', '', "Only teachers or author can look at this page");
     }
     // If the elements have not been defined for the questournament $newform=0..
-    if ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) == 0) {
+    if ($DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]) == 0) {
         $newform = 0;
     } else {
         $newform = 1;
@@ -158,26 +150,26 @@ if ($action == 'displaygradingform') {
     // Get existing elements, if none set up appropriate default ones..
     $elementstemplate = [];
     if ($sid) {
-        $elementstemplate = $DB->get_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid),
+        $elementstemplate = $DB->get_records("quest_elements", ["questid" => $quest->id, "submissionsid" => $sid],
                 "elementno ASC");
     }
     if (count($elementstemplate) == 0) {
         // Template elements.
-        $elementstemplate = $DB->get_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0),
+        $elementstemplate = $DB->get_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0],
                 "elementno ASC");
     }
     // Reindex the array.
     $elements = array_values($elementstemplate);
 
     $num = count($elements);
-    if ($num == 0 && $DB->count_records('quest_elements', array('submissionsid' => $sid, 'questid' => $quest->id)) == 0) {
+    if ($num == 0 && $DB->count_records('quest_elements', ['submissionsid' => $sid, 'questid' => $quest->id]) == 0) {
         $num = $quest->nelements;
     }
     if (($newform == 1) && ($changeform == 1)) {
         $num = $numelemswhenchange;
     }
     if ($sid) {
-        $submissionnumelements = $DB->get_field("quest_submissions", "numelements", array("id" => $sid));
+        $submissionnumelements = $DB->get_field("quest_submissions", "numelements", ["id" => $sid]);
         if (($submissionnumelements != 0) && ($changeform == 0) && ($newform == 1)) {
             $num = $submissionnumelements;
         }
@@ -222,7 +214,9 @@ if ($action == 'displaygradingform') {
     echo '<div class="card shadow-sm border-0 bg-light p-3 mb-4">';
     echo '<div class="d-flex flex-wrap justify-content-between align-items-center gap-2">';
     echo '<div class="text-muted">';
-    echo '<i class="fa fa-list-ol me-1" aria-hidden="true"></i>' . get_string('elements', 'quest') . ': <strong class="badge bg-primary fs-7 ms-1">' . $num . '</strong>';
+    echo '<i class="fa fa-list-ol me-1" aria-hidden="true"></i>'
+            . get_string('elements', 'quest')
+            . ': <strong class="badge bg-primary fs-7 ms-1">' . $num . '</strong>';
     echo '</div>';
     echo '<div class="d-flex gap-2">';
 
@@ -236,7 +230,8 @@ if ($action == 'displaygradingform') {
     echo '<input type="hidden" name="num_elems_when_change" value="' . $numincr . '" />';
     echo '<input type="hidden" name="action" value="editelements" />';
     echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
-    echo '<button type="submit" class="btn btn-outline-success btn-sm"><i class="fa fa-plus me-1" aria-hidden="true"></i>' . $stringadd . '</button>';
+    echo '<button type="submit" class="btn btn-outline-success btn-sm">'
+            . '<i class="fa fa-plus me-1" aria-hidden="true"></i>' . $stringadd . '</button>';
     echo '</form>';
 
     if ($num > 1) {
@@ -250,7 +245,8 @@ if ($action == 'displaygradingform') {
         echo '<input type="hidden" name="num_elems_when_change" value="' . $numdecr . '" />';
         echo '<input type="hidden" name="action" value="editelements" />';
         echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
-        echo '<button type="submit" class="btn btn-outline-danger btn-sm"><i class="fa fa-minus me-1" aria-hidden="true"></i>' . $stringremove . '</button>';
+        echo '<button type="submit" class="btn btn-outline-danger btn-sm">'
+                . '<i class="fa fa-minus me-1" aria-hidden="true"></i>' . $stringremove . '</button>';
         echo '</form>';
     }
     echo '</div></div></div>';
@@ -308,37 +304,39 @@ if ($action == 'displaygradingform') {
     }
 
     if ($newform == 1) {
-        $DB->set_field("quest_submissions", "numelements", $num, array("id" => $sid));
+        $DB->set_field("quest_submissions", "numelements", $num, ["id" => $sid]);
     } else if ($newform == 0) {
-        $var = $DB->get_field("course_modules", "instance", array("id" => $id));
-        $DB->set_field("quest", "nelements", $num, array("id" => $var));
+        $var = $DB->get_field("course_modules", "instance", ["id" => $id]);
+        $DB->set_field("quest", "nelements", $num, ["id" => $var]);
     }
 
     // Sticky action bar.
     echo '<div class="quest-action-bar-sticky d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">';
     echo '<div class="d-flex gap-2">';
-    echo '<button type="submit" class="btn btn-primary px-4"><i class="fa fa-floppy-o me-1" aria-hidden="true"></i>' . $stringsavechanges . '</button>';
-    echo '<button type="submit" name="cancel" value="1" class="btn btn-outline-secondary px-3"><i class="fa fa-times me-1" aria-hidden="true"></i>' . $stringcancel . '</button>';
+    echo '<button type="submit" class="btn btn-primary px-4">'
+            . '<i class="fa fa-floppy-o me-1" aria-hidden="true"></i>' . $stringsavechanges . '</button>';
+    echo '<button type="submit" name="cancel" value="1" class="btn btn-outline-secondary px-3">'
+            . '<i class="fa fa-times me-1" aria-hidden="true"></i>' . $stringcancel . '</button>';
     echo '</div>';
     echo '</div>';
 
     echo '</form>';
-    echo '</div>'; // .quest-assessment-container
+    echo '</div>'; // Quest assessment container.
     echo $OUTPUT->footer();
 
 } else if ($action == 'insertelements') {
     if (!optional_param('cancel', null, PARAM_ALPHA)) {
         // ... insert/update assignment elements (for teachers)..
         require_sesskey();
-        $authorid = $DB->get_field('quest_submissions', 'userid', array('id' => $sid));
+        $authorid = $DB->get_field('quest_submissions', 'userid', ['id' => $sid]);
         if (!$isteacher && $authorid != $USER->id) {
             throw new \moodle_exception('nopermissions', 'error', '', "Only teachers or author can look at this page");
         }
         // ...let's not fool around here, dump the junk!.
         if ($newform == 0) {
-            $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0));
+            $DB->delete_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]);
         } else {
-            $DB->delete_records("quest_elements", array("questid" => $quest->id, "submissionsid" => $sid));
+            $DB->delete_records("quest_elements", ["questid" => $quest->id, "submissionsid" => $sid]);
         }
         $descriptions = required_param_array('description', PARAM_RAW);
         $weights = optional_param_array('weight', null, PARAM_INT);
@@ -375,7 +373,7 @@ if ($action == 'displaygradingform') {
                         if ($newform == 1) {
                             $element->submissionsid = $sid;
                         } else if (($newform == 0) || (($DB->count_records("quest_elements",
-                                array("questid" => $quest->id, "submissionsid" => 0)) == 0))) {
+                                ["questid" => $quest->id, "submissionsid" => 0]) == 0))) {
                             $element->submissionsid = 0;
                         }
                         $element->elementno = $key;
@@ -419,9 +417,9 @@ if ($action == 'displaygradingform') {
     $aid = required_param('aid', PARAM_INT);
     $sid = optional_param('sid', 0, PARAM_INT);
     require_sesskey();
-    $answer = $DB->get_record("quest_answers", array("id" => $aid), '*', MUST_EXIST);
-    $assessment = $DB->get_record("quest_assessments", array("answerid" => $answer->id), '*', MUST_EXIST);
-    $submission = $DB->get_record("quest_submissions", array("id" => $answer->submissionid), '*', MUST_EXIST);
+    $answer = $DB->get_record("quest_answers", ["id" => $aid], '*', MUST_EXIST);
+    $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     // Check access.
     if (!$isteacher && $USER->id != $submission->userid) {
         throw new \moodle_exception('nopermissionassessment', 'quest');
@@ -440,7 +438,13 @@ if ($action == 'displaygradingform') {
             // END profesor valida....
         } else { // Si no es profesor la fase siempre será phase=0. La nota queda pendiente....
             if ($assessment->phase != ASSESSMENT_PHASE_APPROVAL_PENDING) {
-                throw new \moodle_exception('unknownactionerror', 'quest', '', 'Bad PHASE of assessment', "Error grave: no puede actualizar una evaluacion ya validada por el profesor.");
+                throw new \moodle_exception(
+                    'unknownactionerror',
+                    'quest',
+                    '',
+                    'Bad PHASE of assessment',
+                    'Error grave: no puede actualizar una evaluacion ya validada por el profesor.'
+                );
             }
         }
     } else { // Este QUEST no requiere validación....
@@ -530,7 +534,7 @@ if ($action == 'displaygradingform') {
     // ...update submission.
     // ...get first answer correct.
     // ...update pointsanswercorrect..
-    if ($query = $DB->get_record_select("quest_answers", "submissionid=? and grade>=50", array($submission->id), "date,pointsmax",
+    if ($query = $DB->get_record_select("quest_answers", "submissionid=? and grade>=50", [$submission->id], "date,pointsmax",
             IGNORE_MULTIPLE)) {
         $submission->dateanswercorrect = $query->date;
         $submission->pointsanswercorrect = number_format($query->pointsmax, 4);
@@ -603,21 +607,6 @@ if ($action == 'displaygradingform') {
     } else {
         if ($user = get_complete_user_data('id', $answer->userid)) {
             quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
-        }
-        if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            global $OUTPUT;
-            echo $OUTPUT->heading("nostudentsyet");
-            echo $OUTPUT->footer();
-            exit();
-        }
-        // JPC 2013-11-28 disable excesive notifications..
-        if (false) {
-            foreach ($users as $user) {
-                if (has_capability('mod/quest:manage', $context, $user->id)) {
-                    quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment',
-                            $quest, $submission, $answer);
-                }
-            }
         }
     }
     // Log the event.

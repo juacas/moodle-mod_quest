@@ -20,7 +20,9 @@
  * @deprecated Since Moodle 5.0+, use challenges.php instead.
  * @package    mod_quest
  * @copyright  (c) 2014, INTUITEL Consortium
- * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(__DIR__ . '/../../config.php');
+require_login();
 require_once(__DIR__ . '/challenges.php');

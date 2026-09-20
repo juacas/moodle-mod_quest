@@ -1,30 +1,72 @@
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace mod_quest\question\bank;
 
-/** Action column for the Quest question picker. */
+/**
+ * Action column for the Quest question picker.
+ *
+ * @package    mod_quest
+ * @copyright 2026 onwards EDUVALab, University of Valladolid
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class action_column extends \core_question\local\bank\column_base {
-    /** {@inheritDoc} */
+    /**
+     * Return the internal column name.
+     *
+     * @return string Column name.
+     */
     public function get_name(): string {
         return 'actions';
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return the translated column title.
+     *
+     * @return string Column title.
+     */
     public function get_title(): string {
         return get_string('actions');
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return the fields required by the column.
+     *
+     * @return array Required fields.
+     */
     public function get_required_fields(): array {
         return ['q.id', 'q.qtype'];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Return the CSS classes used by the column.
+     *
+     * @return array CSS classes.
+     */
     public function get_extra_classes(): array {
         return ['text-nowrap', 'text-right', 'text-end'];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Render the available question actions.
+     *
+     * @param object $question Question row.
+     * @param string $rowclasses Row CSS classes.
+     * @return void
+     */
     protected function display_content($question, $rowclasses): void {
         global $OUTPUT;
 

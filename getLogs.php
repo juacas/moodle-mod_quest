@@ -13,18 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/** Questournament activity for Moodle
+
+/**
+ * Export Quest activity events.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- * Export of activity events
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -33,7 +30,7 @@ global $CFG, $DB, $PAGE, $OUTPUT;
 
 $id = required_param('id', PARAM_INTEGER);
 list($course, $cm) = quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
@@ -54,15 +51,15 @@ $sqlquery = null;
 switch ($queryid) {
     case 'ip':
         $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
-                                        array($context->id), "timecreated", "id,ip,timecreated");
+                                        [$context->id], "timecreated", "id,ip,timecreated");
         break;
     case 'logs':
         $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
-                                        array($context->id), "timecreated");
+                                        [$context->id], "timecreated");
         break;
     case 'activity':
-        list($insql, $inparams) = $DB->get_in_or_equal(array($cm->id));
-        $allparams = array_merge(array($cm->module), $inparams);
+        list($insql, $inparams) = $DB->get_in_or_equal([$cm->id]);
+        $allparams = array_merge([$cm->module], $inparams);
         $sqlquery = <<<SQL
 SELECT {log}.id as id_log, {course_modules}.id AS id_QUEST_URL,
                 {course_modules}.course AS id_course,
@@ -104,7 +101,7 @@ if ($query) {
     $strquests = get_string("modulenameplural", "quest");
     $strquest = get_string("modulename", "quest");
 
-    $url = new moodle_url('/mod/quest/getLogs.php', array('id' => $id));
+    $url = new moodle_url('/mod/quest/getLogs.php', ['id' => $id]);
     $PAGE->set_url($url);
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);

@@ -14,17 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+/**
+ * Display the main Quest activity page.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -51,7 +48,7 @@ $timenow = time();
 
 list($course, $cm) = quest_get_course_and_cm($id);
 
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
 $context = context_module::instance($cm->id);
@@ -66,7 +63,7 @@ if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
-$url = new moodle_url('/mod/quest/view.php', array('id' => $id));
+$url = new moodle_url('/mod/quest/view.php', ['id' => $id]);
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
@@ -92,20 +89,20 @@ if (has_capability('mod/quest:manage', $context)) {
 
     if (empty($action)) { // No action specified, either go straight to elements page else the admin
                           // page has the assignment any elements.
-        $elementsforthissubmission = $DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0));
+        $elementsforthissubmission = $DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]);
 
         if (isset($sid)) {
-            $submissions = $DB->get_record("quest_submissions", array('id' => $sid));
+            $submissions = $DB->get_record("quest_submissions", ['id' => $sid]);
             $numelementsexpectedinsubmission = $submissions == false ? 0 : $submissions->numelements;
         } else {
             $numelementsexpectedinsubmission = 0;
         }
 
         if ($quest->gradingstrategy == 0 ||
-                 ($DB->count_records("quest_elements", array("questid" => $quest->id, "submissionsid" => 0)) >= $quest->nelements)
+                 ($DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]) >= $quest->nelements)
                  ||
                  (($elementsforthissubmission >= $numelementsexpectedinsubmission) && ($elementsforthissubmission != 0))) {
-            $numelements = $DB->count_records("quest_elementsautor", array("questid" => $quest->id));
+            $numelements = $DB->count_records("quest_elementsautor", ["questid" => $quest->id]);
 
             if ($quest->gradingstrategyautor == 0 || $numelements >= $quest->nelementsautor) {
                 $action = "teachersview";
@@ -136,7 +133,7 @@ if (has_capability('mod/quest:manage', $context)) {
         }
     }
 
-    if ($calificationuser = $DB->get_record("quest_calification_users", array("userid" => $USER->id, "questid" => $quest->id))) {
+    if ($calificationuser = $DB->get_record("quest_calification_users", ["userid" => $USER->id, "questid" => $quest->id])) {
         if ($quest->allowteams == 1) {
             if (empty($calificationuser->teamid)) {
                 if (empty($teamname) || trim($teamname) == '') { // JPC: 20-11-2008: prevent
@@ -163,13 +160,13 @@ if (has_capability('mod/quest:manage', $context)) {
                 } else {
                     // Team assignation or creation.
                     if ($team = $DB->get_record("quest_teams",
-                            array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {
+                            ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup])) {
                         if ($quest->ncomponents > $team->ncomponents) {
                             $team->ncomponents++;
-                            $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, array("id" => $team->id));
+                            $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, ["id" => $team->id]);
                             $calificationuser->teamid = $team->id;
                             $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                    array("id" => $calificationuser->id));
+                                    ["id" => $calificationuser->id]);
                         } else {
                             echo $OUTPUT->header();
                             echo ('<center><b>The Team is complete</b></center>');
@@ -193,7 +190,7 @@ if (has_capability('mod/quest:manage', $context)) {
                         $calificationteam->id = $DB->insert_record("quest_calification_teams", $calificationteam);
                         $calificationuser->teamid = $team->id;
                         $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                array("id" => $calificationuser->id));
+                                ["id" => $calificationuser->id]);
                     }
                 } // ...end team assignation.
             }
@@ -234,13 +231,13 @@ if (has_capability('mod/quest:manage', $context)) {
                 exit();
             } else if (null !== optional_param('team', null, PARAM_INT)) {
                 if ($team = $DB->get_record("quest_teams",
-                        array("name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup))) {
+                        ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup])) {
                     if ($quest->ncomponents > $team->ncomponents) {
                         $team->ncomponents++;
-                        $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, array("id" => $team->id));
+                        $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, ["id" => $team->id]);
                         $calificationuser->teamid = $team->id;
                         $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                array("id" => $calificationuser->id));
+                                ["id" => $calificationuser->id]);
                     } else {
                         echo $OUTPUT->header();
                         echo ('<center><b>The Team is complete</b></center>');
@@ -305,8 +302,8 @@ if ($action == 'notavailable') {
 
     // 2. Prepare detail table with student assessments and submissions.
     $tablesort = new stdClass();
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
+    $tablesort->data = [];
+    $tablesort->sortdata = [];
     $indice = 0;
     $initialpoints = [];
     $nanswerscorrect = [];
@@ -326,7 +323,7 @@ if ($action == 'notavailable') {
             if ($submission->userid == 0) { // Anonymous user.
                 $user = false;
             } else { // Guest user.
-                $user = $DB->get_record('user', array('id' => $submission->userid));
+                $user = $DB->get_record('user', ['id' => $submission->userid]);
             }
             // Skip if student not in group.
             if (!has_capability('mod/quest:manage', $context)) {
@@ -337,8 +334,8 @@ if ($action == 'notavailable') {
                 }
             }
 
-            $data = array();
-            $sortdata = array();
+            $data = [];
+            $sortdata = [];
 
             if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
                      ($submission->nanswerscorrect < $quest->nmaxanswers) && $submission->phase != SUBMISSION_PHASE_ACTIVE) {
@@ -353,18 +350,18 @@ if ($action == 'notavailable') {
                 continue;
             }
             // Skip challenge for student if the challenge is not started...
-            if (!has_capability('mod/quest:manage', $context) && // manage permission
-                $submission->datestart > $timenow && // Challenge in StartPending
-                $submission->userid != $USER->id) { // USER is not the author
-                continue; // Omit it...
+            if (!has_capability('mod/quest:manage', $context) && // Manage permission.
+                $submission->datestart > $timenow && // Challenge is pending start.
+                $submission->userid != $USER->id) { // User is not the author.
+                continue; // Omit it.
             }
             $mineicon = $submission->userid == $USER->id && !$canviewauthors ? $OUTPUT->user_picture($USER) : '';
             $titletext = $mineicon . quest_print_submission_title($quest, $submission);
 
             // Show or not the edit controls.
-            if (((has_capability('mod/quest:editchallengeall', $context) or ($submission->userid == $USER->id)) and
-                    ($submission->nanswers == 0) and ($timenow < $submission->dateend) and
-                     ($submission->state != SUBMISSION_STATE_APROVED)) or ($ismanager)) {
+            if (((has_capability('mod/quest:editchallengeall', $context) || ($submission->userid == $USER->id)) &&
+                    ($submission->nanswers == 0) && ($timenow < $submission->dateend) &&
+                     ($submission->state != SUBMISSION_STATE_APROVED)) || ($ismanager)) {
                 $editicon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
                 $titletext .= "<a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . $editicon .
@@ -426,7 +423,7 @@ if ($action == 'notavailable') {
 
             $nanswersassess = 0;
             if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
-                    array($quest->id, $submission->id))) {
+                    [$quest->id, $submission->id])) {
                 foreach ($answers as $answer) {
                     if (($answer->phase == 1) || ($answer->phase == 2)) {
                         $nanswersassess++;
@@ -436,7 +433,7 @@ if ($action == 'notavailable') {
             $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
             $image = '';
             if ($answer = $DB->get_record("quest_answers",
-                    array("questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id))) {
+                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id])) {
                 $image = $OUTPUT->pix_icon('t/check', 'ok');
             }
 
@@ -522,16 +519,16 @@ if ($action == 'notavailable') {
     uasort($tablesort->sortdata, 'quest_sortfunction');
 
     $table = new html_table();
-    $table->data = array();
+    $table->data = [];
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
     if ($canviewauthors) {
-        $columns = array('title', 'firstname', 'lastname', 'phase', 'nanswersshort', 'nanswerscorrectshort',
-                        'nanswerswhithoutassess', 'datestart', 'dateend', 'calification');
+        $columns = ['title', 'firstname', 'lastname', 'phase', 'nanswersshort', 'nanswerscorrectshort',
+                        'nanswerswhithoutassess', 'datestart', 'dateend', 'calification'];
     } else { // Removed personal info column.
-        $columns = array('title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess',
-                        'datestart', 'dateend', 'calification');
+        $columns = ['title', 'phase', 'nanswersshort', 'nanswerscorrectshort', 'nanswerswhithoutassess',
+                        'datestart', 'dateend', 'calification'];
     }
     // Define a new variable for each column with heading texts.
     $string = [];
@@ -549,19 +546,21 @@ if ($action == 'notavailable') {
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $$column = "<a href=\"view.php?id=$id&amp;sort=$column&amp;dir=$columndir&amp;view=list\">" . $string[$column] . "</a>$columnicon";
+        $$column = '<a href="view.php?id=' . $id . '&amp;sort=' . $column
+                . '&amp;dir=' . $columndir . '&amp;view=list">'
+                . $string[$column] . '</a>' . $columnicon;
     }
 
     if ($canviewauthors) {
-        $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-        $table->head = array("$title", "$firstname / $lastname", "$phase",
+        $table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
+        $table->head = ["$title", "$firstname / $lastname", "$phase",
                         "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
-                        "$dateend", "$calification");
-        $table->headspan = array(1, 2, 1, 1, 1, 1, 1);
+                        "$dateend", "$calification"];
+        $table->headspan = [1, 2, 1, 1, 1, 1, 1];
     } else { // ...hide personal column.
-        $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
-        $table->head = array("$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
-                        "$dateend", "$calification");
+        $table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
+        $table->head = ["$title", "$phase", "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]", "$datestart",
+                        "$dateend", "$calification"];
     }
     $table->attributes['class'] = 'table table-hover table-striped align-middle mb-0';
     $table->id = 'quest-challenges-detail-table';
@@ -571,7 +570,9 @@ if ($action == 'notavailable') {
     $legendhtml = !empty($table->data) ? get_string('legend', 'quest', $grafic) : '';
 
     // 3. Get challenges for cards.
-    \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
+    if ($ismanager || !empty($quest->allowqbankquestions)) {
+        \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
+    }
     $challenges = \mod_quest\service\tournament_manager::get_challenges($quest->id, $USER->id);
     $canaddchallenge = has_capability('mod/quest:addchallenge', $context) && ($quest->dateend > $timenow);
 

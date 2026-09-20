@@ -13,9 +13,14 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/** For debugging:
- * SET XDEBUG_CONFIG=netbeans-xdebug=xdebug
- * php.exe admin\tool\task\cli\schedule_task.php --execute=\mod_msocial\task\notify_task */
+
+/**
+ * Send scheduled Quest notifications.
+ *
+ * @package    mod_quest
+ * @copyright 2026 onwards EDUVALab, University of Valladolid
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace mod_quest\task;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
@@ -24,19 +29,28 @@ global $CFG;
 require_once($CFG->dirroot . '/mod/quest/lib.php');
 require_once($CFG->dirroot . '/mod/quest/locallib.php');
 
+/**
+ * Scheduled task that sends Quest digests and challenge notifications.
+ */
 class notify_task extends \core\task\scheduled_task {
 
+    /**
+     * Return the task name shown in Moodle administration.
+     *
+     * @return string Task name.
+     */
     public function get_name() {
         // Shown in admin screens.
         return "QUESTournament notify tasks.";
     }
 
+    /**
+     * Execute the notification task.
+     *
+     * @return void
+     */
     public function execute() {
-        global $COURSE;
-        global $CFG, $USER, $SITE, $DB;
-        /* @var $DB \moodle_database */
-        global $DB;
-        $courseid = $COURSE->id;
+        global $CFG, $USER, $DB;
         mtrace("\n============================");
         mtrace(" QUESTournament notify tasks.");
         mtrace("==============================");
@@ -60,13 +74,13 @@ class notify_task extends \core\task\scheduled_task {
             $sitetimezone = $CFG->timezone;
             $digesttime = usergetmidnight($timenow, $sitetimezone);
             $questdigestmailtimelast = get_config('quest', 'questdigestmailtimelast');
-            if ($questdigestmailtimelast < $digesttime and $timenow > $digesttime) {
+            if ($questdigestmailtimelast < $digesttime && $timenow > $digesttime) {
                 set_config('questdigestmailtimelast', $timenow, 'quest');
                 mtrace('Sending QUEST digests: ' . userdate($timenow, '', $sitetimezone));
 
                 foreach ($quests as $quest) {
 
-                    if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
+                    if (!$course = $DB->get_record("course", ["id" => $quest->course])) {
                         mtrace("Course is misconfigured");
                         continue;
                     }
@@ -108,7 +122,7 @@ class notify_task extends \core\task\scheduled_task {
                             $posthtml .= get_string('resume24hours', 'quest', $quest);
                             $posthtml .= "<br>-------------------------------------------------------------<br>";
 
-                            if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
+                            if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
 
                                 // Imprimir cabecera del m�dulo QUEST en mensaje.
                                 foreach ($submissions as $submission) {
@@ -119,14 +133,14 @@ class notify_task extends \core\task\scheduled_task {
                                         $user = get_complete_user_data('id', $submission->userid);
 
                                         $cleanquestname = str_replace('"', "'", strip_tags($quest->name));
-                                        $userfrom->customheaders = array( // Headers to make emails
+                                        $userfrom->customheaders = [ // Headers to make emails
                                                                           // easier to track.
                                         'Precedence: Bulk',
                                         'List-Id: "' . $cleanquestname . '" <moodlequest' . $quest->id . '@' .
                                          $hostname . '>',
                                         'List-Help: ' . $CFG->wwwroot . '/mod/quest/view.php?f=' . $quest->id,
                                         'X-Course-Id: ' . $course->id,
-                                        'X-Course-Name: ' . strip_tags($course->fullname));
+                                        'X-Course-Name: ' . strip_tags($course->fullname)];
                                         if (!empty($course->lang)) {
                                             $CFG->courselang = $course->lang;
                                         } else {
@@ -166,12 +180,12 @@ class notify_task extends \core\task\scheduled_task {
                     } // ...foreach user.
 
                     // Mark submissions as mailed...
-                    if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
+                    if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
                         // Imprimir cabecera del m�dulo QUEST en mensaje.
                         foreach ($submissions as $submission) {
                             if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
                                 $submission->mailed = 1;
-                                $DB->set_field("quest_submissions", "mailed", $submission->mailed, array("id" => $submission->id));
+                                $DB->set_field("quest_submissions", "mailed", $submission->mailed, ["id" => $submission->id]);
                             }
                         }
                     }
@@ -192,7 +206,7 @@ class notify_task extends \core\task\scheduled_task {
              */
             mtrace("Searching recent events to notify to all users...");
             foreach ($quests as $quest) {
-                if (!$course = $DB->get_record("course", array("id" => $quest->course))) {
+                if (!$course = $DB->get_record("course", ["id" => $quest->course])) {
                     mtrace("Course for Quest no: $quest->id is misconfigured");
                     continue;
                 }
@@ -213,7 +227,7 @@ class notify_task extends \core\task\scheduled_task {
                 $userscount = 0;
                 $userfrom = class_exists('core_user') ? \core_user::get_noreply_user() : quest_get_teacher($course->id);
                 // For each quest group messages to avoid avalanches.
-                if ($submissions = $DB->get_records("quest_submissions", array("questid" => $quest->id))) {
+                if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
                     mtrace("Processing " . count($submissions) . " challenges for quest: $quest->id.");
                     $submissionsmailed = [];
                     $usermessages = []; // Users and their messages to send.
@@ -250,13 +264,15 @@ class notify_task extends \core\task\scheduled_task {
                         }
                         $template = reset($usermsglist);
                         $template->messagehtml = $messagehtml;
-                        mtrace("Sending message (" . count($usermsglist) . " challenges: " . implode(',', array_keys($submissions)) .") to user " .
-                                $template->userto->username . " in name of " . $template->userfrom->username . "\n");
+                        mtrace("Sending message (" . count($usermsglist) . " challenges: "
+                                . implode(',', array_keys($submissions)) . ") to user "
+                                . $template->userto->username . " in name of "
+                                . $template->userfrom->username . "\n");
                         quest_send_message_data($template);
                     }
                     // Mark challenges as mailed.
                     foreach ($submissionsmailed as $submission) {
-                        $DB->set_field("quest_submissions", "maileduser", 1, array('id' => $submission->id));
+                        $DB->set_field("quest_submissions", "maileduser", 1, ['id' => $submission->id]);
                         // Update Calendar Events.
                         quest_update_challenge_calendar($cm, $quest, $submission);
                     }

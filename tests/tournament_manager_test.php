@@ -48,26 +48,26 @@ final class tournament_manager_test extends advanced_testcase {
         $submission->dateend = $timenow + 3600;
 
         // Author cannot answer own challenge.
-        [$allowedAuthor, $reasonAuthor] = tournament_manager::can_submit_answer($quest, $submission, 100);
-        $this->assertFalse($allowedAuthor);
+        [$allowedauthor, $reasonauthor] = tournament_manager::can_submit_answer($quest, $submission, 100);
+        $this->assertFalse($allowedauthor);
 
         // Another student can answer active challenge.
-        [$allowedStudent, $reasonStudent] = tournament_manager::can_submit_answer($quest, $submission, 200);
-        $this->assertTrue($allowedStudent);
+        [$allowedstudent, $reasonstudent] = tournament_manager::can_submit_answer($quest, $submission, 200);
+        $this->assertTrue($allowedstudent);
 
         // Challenge not yet started.
-        $futureSubmission = clone $submission;
-        $futureSubmission->datestart = $timenow + 1000;
-        $futureSubmission->dateend = $timenow + 5000;
-        [$allowedFuture, ] = tournament_manager::can_submit_answer($quest, $futureSubmission, 200);
-        $this->assertFalse($allowedFuture);
+        $futuresubmission = clone $submission;
+        $futuresubmission->datestart = $timenow + 1000;
+        $futuresubmission->dateend = $timenow + 5000;
+        [$allowedfuture, ] = tournament_manager::can_submit_answer($quest, $futuresubmission, 200);
+        $this->assertFalse($allowedfuture);
 
         // Challenge closed.
-        $closedSubmission = clone $submission;
-        $closedSubmission->datestart = $timenow - 5000;
-        $closedSubmission->dateend = $timenow - 1000;
-        [$allowedClosed, ] = tournament_manager::can_submit_answer($quest, $closedSubmission, 200);
-        $this->assertFalse($allowedClosed);
+        $closedsubmission = clone $submission;
+        $closedsubmission->datestart = $timenow - 5000;
+        $closedsubmission->dateend = $timenow - 1000;
+        [$allowedclosed, ] = tournament_manager::can_submit_answer($quest, $closedsubmission, 200);
+        $this->assertFalse($allowedclosed);
     }
 
     /**

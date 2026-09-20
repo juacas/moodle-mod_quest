@@ -121,9 +121,9 @@ class open_question_exporter {
 
             $qtype = question_bank::get_qtype('essay');
 
-        // Prepare draft area so embedded files and images in challenge description are preserved.
-        $draftid = 0;
-        $descriptiontext = file_prepare_draft_area(
+            // Prepare draft area so embedded files and images in challenge description are preserved.
+            $draftid = 0;
+            $descriptiontext = file_prepare_draft_area(
             $draftid,
             $context->id,
             'mod_quest',
@@ -131,130 +131,130 @@ class open_question_exporter {
             (int)$submission->id,
             ['subdirs' => true],
             $submission->description
-        );
+            );
 
-        // Also copy any challenge attachment files into draft area and link them if present.
-        $fs = get_file_storage();
-        $attachments = $fs->get_area_files(
+            // Also copy any challenge attachment files into draft area and link them if present.
+            $fs = get_file_storage();
+            $attachments = $fs->get_area_files(
             $context->id,
             'mod_quest',
             'attachment',
             (int)$submission->id,
             'filename',
             false
-        );
-        if (!empty($attachments)) {
-            $usercontext = context_user::instance($USER->id);
-            $attachmenthtml = '<div class="quest_challenge_attachments mt-2"><p><strong>' .
+            );
+            if (!empty($attachments)) {
+                $usercontext = context_user::instance($USER->id);
+                $attachmenthtml = '<div class="quest_challenge_attachments mt-2"><p><strong>' .
                 get_string('attachment', 'quest') . ':</strong></p><ul>';
-            foreach ($attachments as $attfile) {
-                $filerecord = [
+                foreach ($attachments as $attfile) {
+                    $filerecord = [
                     'contextid' => $usercontext->id,
                     'component' => 'user',
                     'filearea' => 'draft',
                     'itemid' => $draftid,
                     'filepath' => '/',
                     'filename' => $attfile->get_filename(),
-                ];
-                if (!$fs->file_exists(
+                    ];
+                    if (!$fs->file_exists(
                     $filerecord['contextid'],
                     $filerecord['component'],
                     $filerecord['filearea'],
                     $filerecord['itemid'],
                     $filerecord['filepath'],
                     $filerecord['filename']
-                )) {
-                    $fs->create_file_from_storedfile($filerecord, $attfile);
-                }
-                $attachmenthtml .= '<li><a href="@@PLUGINFILE@@/' . rawurlencode($attfile->get_filename()) . '">' .
+                    )) {
+                        $fs->create_file_from_storedfile($filerecord, $attfile);
+                    }
+                    $attachmenthtml .= '<li><a href="@@PLUGINFILE@@/' . rawurlencode($attfile->get_filename()) . '">' .
                     s($attfile->get_filename()) . '</a></li>';
+                }
+                $attachmenthtml .= '</ul></div>';
+                $descriptiontext .= $attachmenthtml;
             }
-            $attachmenthtml .= '</ul></div>';
-            $descriptiontext .= $attachmenthtml;
-        }
 
-        $name = clean_param($submission->title, PARAM_TEXT);
-        if (trim($name) === '') {
-            $name = shorten_text(strip_tags($submission->description), 50);
+            $name = clean_param($submission->title, PARAM_TEXT);
             if (trim($name) === '') {
-                $name = get_string('submission', 'quest') . ' ' . $submission->id;
+                $name = shorten_text(strip_tags($submission->description), 50);
+                if (trim($name) === '') {
+                    $name = get_string('submission', 'quest') . ' ' . $submission->id;
+                }
             }
-        }
 
-        $formdata = new stdClass();
-        $formdata->category = "{$category->id},{$context->id}";
-        $formdata->contextid = $context->id;
-        $formdata->qtype = 'essay';
-        $formdata->name = $name;
-        $formdata->questiontext = [
+            $formdata = new stdClass();
+            $formdata->category = "{$category->id},{$context->id}";
+            $formdata->contextid = $context->id;
+            $formdata->qtype = 'essay';
+            $formdata->name = $name;
+            $formdata->questiontext = [
             'text' => $descriptiontext,
             'format' => $submission->descriptionformat ?: FORMAT_HTML,
             'itemid' => $draftid,
-        ];
-        $formdata->generalfeedback = [
+            ];
+            $formdata->generalfeedback = [
             'text' => '',
             'format' => FORMAT_HTML,
-        ];
-        $formdata->defaultmark = (float)$submission->pointsmax;
-        $formdata->penalty = 0.0;
-        $formdata->idnumber = 'quest_' . $submission->id;
-        $formdata->status = question_version_status::QUESTION_STATUS_READY;
+            ];
+            $formdata->defaultmark = (float)$submission->pointsmax;
+            $formdata->penalty = 0.0;
+            $formdata->idnumber = 'quest_' . $submission->id;
+            $formdata->status = question_version_status::QUESTION_STATUS_READY;
 
-        // Essay specific options.
-        $formdata->responseformat = 'editor';
-        $formdata->responserequired = 1;
-        $formdata->responsefieldlines = 15;
-        $formdata->minwordlimit = '';
-        $formdata->maxwordlimit = '';
-        $formdata->attachments = !empty($quest->nattachments) ? (int)$quest->nattachments : 0;
-        $formdata->attachmentsrequired = 0;
-        $formdata->maxbytes = 0;
-        $formdata->filetypeslist = '';
+            // Essay specific options.
+            $formdata->responseformat = 'editor';
+            $formdata->responserequired = 1;
+            $formdata->responsefieldlines = 15;
+            $formdata->minwordlimit = '';
+            $formdata->maxwordlimit = '';
+            $formdata->attachments = !empty($quest->nattachments) ? (int)$quest->nattachments : 0;
+            $formdata->attachmentsrequired = 0;
+            $formdata->maxbytes = 0;
+            $formdata->filetypeslist = '';
 
-        $graderinfo = '';
-        if (!empty($submission->commentteacherpupil)) {
-            $graderinfo = $submission->commentteacherpupil;
-        } else if (!empty($submission->commentteacherauthor)) {
-            $graderinfo = $submission->commentteacherauthor;
-        }
+            $graderinfo = '';
+            if (!empty($submission->commentteacherpupil)) {
+                $graderinfo = $submission->commentteacherpupil;
+            } else if (!empty($submission->commentteacherauthor)) {
+                $graderinfo = $submission->commentteacherauthor;
+            }
 
-        $formdata->graderinfo = [
+            $formdata->graderinfo = [
             'text' => $graderinfo,
             'format' => FORMAT_HTML,
-        ];
-        $formdata->responsetemplate = [
+            ];
+            $formdata->responsetemplate = [
             'text' => '',
             'format' => FORMAT_HTML,
-        ];
+            ];
 
-        // Explicitly set qtype on the question base object to avoid PHP 8.2+ dynamic property notices in save_question.
-        $question = new stdClass();
-        $question->qtype = 'essay';
+            // Explicitly set qtype on the question base object to avoid PHP 8.2+ dynamic property notices in save_question.
+            $question = new stdClass();
+            $question->qtype = 'essay';
 
-        $savedquestion = $qtype->save_question($question, $formdata);
+            $savedquestion = $qtype->save_question($question, $formdata);
 
-        // Fetch question_bank_entry ID for question reference.
-        $entryid = $DB->get_field_sql(
+            // Fetch question_bank_entry ID for question reference.
+            $entryid = $DB->get_field_sql(
             "SELECT qv.questionbankentryid
                FROM {question_versions} qv
               WHERE qv.questionid = :qid",
             ['qid' => $savedquestion->id]
-        );
+            );
 
-        if ($entryid) {
-            question_reference_service::set_challenge_question(
+            if ($entryid) {
+                question_reference_service::set_challenge_question(
                 $context->id,
                 (int)$submission->id,
                 (int)$entryid,
                 null // Follow the latest version after future edits.
-            );
-        }
+                );
+            }
 
-        if (isset($submission->state) && (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING) {
-            question_reference_service::tag_approval_pending((int)$savedquestion->id, $context);
-        }
+            if (isset($submission->state) && (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING) {
+                question_reference_service::tag_approval_pending((int)$savedquestion->id, $context);
+            }
 
-        return $savedquestion;
+            return $savedquestion;
         } finally {
             if ($resetuser) {
                 \core\cron::setup_user();

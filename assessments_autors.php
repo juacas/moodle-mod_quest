@@ -14,22 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+/**
+ * Display and save author assessment forms for Quest submissions.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *          ACTIONS:
- *          - displaygradingform
- *          - editelements
- *          - insertelements
- *          - updateassessment
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -46,8 +38,8 @@ if (!is_array($questeweights)) {
 }
 // Get some useful stuff...
 list($course, $cm) = quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
-$url = new moodle_url('/mod/quest/assessments_autors.php', array('action' => $action, 'id' => $id));
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
+$url = new moodle_url('/mod/quest/assessments_autors.php', ['action' => $action, 'id' => $id]);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
@@ -73,7 +65,7 @@ if ($action == 'displaygradingform') {
         $editurl = new moodle_url('/mod/quest/assessments_autors.php', [
             'id' => $cm->id,
             'action' => 'editelements',
-            'sesskey' => sesskey()
+            'sesskey' => sesskey(),
         ]);
         echo html_writer::div(
             html_writer::link(
@@ -97,7 +89,7 @@ if ($action == 'displaygradingform') {
     // Set up heading, form and table.
     echo $OUTPUT->header();
 
-    $count = $DB->count_records("quest_items_assesments_autor", array("questid" => $quest->id));
+    $count = $DB->count_records("quest_items_assesments_autor", ["questid" => $quest->id]);
     if ($count) {
         echo $OUTPUT->notification(get_string("warningonamendingelements", "quest"));
     }
@@ -113,7 +105,7 @@ if ($action == 'displaygradingform') {
     echo '<input type="hidden" name="sesskey" value="' . sesskey() . '" />';
 
     $elements = [];
-    if ($elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC")) {
+    if ($elementsraw = $DB->get_records("quest_elementsautor", ["questid" => $quest->id], "elementno ASC")) {
         foreach ($elementsraw as $element) {
             $elements[] = $element; // ...to renumber index 0,1,2...
         }
@@ -171,13 +163,15 @@ if ($action == 'displaygradingform') {
     // Sticky action bar.
     echo '<div class="quest-action-bar-sticky d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">';
     echo '<div class="d-flex gap-2">';
-    echo '<button type="submit" class="btn btn-primary px-4"><i class="fa fa-floppy-o me-1" aria-hidden="true"></i>' . get_string('savechanges') . '</button>';
-    echo '<button type="submit" name="cancel" value="1" class="btn btn-outline-secondary px-3"><i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</button>';
+    echo '<button type="submit" class="btn btn-primary px-4">'
+            . '<i class="fa fa-floppy-o me-1" aria-hidden="true"></i>' . get_string('savechanges') . '</button>';
+    echo '<button type="submit" name="cancel" value="1" class="btn btn-outline-secondary px-3">'
+            . '<i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</button>';
     echo '</div>';
     echo '</div>';
 
     echo '</form>';
-    echo '</div>'; // .quest-assessment-container
+    echo '</div>'; // Quest assessment container.
     echo $OUTPUT->footer();
 
 } else if ($action == 'insertelements') {
@@ -193,7 +187,7 @@ if ($action == 'displaygradingform') {
     $weights = optional_param_array('weight', null, PARAM_INT);
     $scales = optional_param_array('scale', null, PARAM_INT);
     // Let's not fool around here, dump the junk!
-    $DB->delete_records("quest_elementsautor", array("questid" => $quest->id));
+    $DB->delete_records("quest_elementsautor", ["questid" => $quest->id]);
     // Determine wich type of grading.
     switch ($quest->gradingstrategyautor) {
         case 0: // ...no grading insert all the elements that contain something.
@@ -246,10 +240,10 @@ if ($action == 'displaygradingform') {
     $message = '';
 
     $aid = required_param('aid', PARAM_INT);
-    $assessment = $DB->get_record("quest_assessments_autors", array("id" => $aid), '*', MUST_EXIST);
-    $submission = $DB->get_record("quest_submissions", array("id" => $assessment->submissionid), '*', MUST_EXIST);
+    $assessment = $DB->get_record("quest_assessments_autors", ["id" => $aid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $assessment->submissionid], '*', MUST_EXIST);
     // First get the assignment elements for maxscores and weights...
-    $elementsraw = $DB->get_records("quest_elementsautor", array("questid" => $quest->id), "elementno ASC");
+    $elementsraw = $DB->get_records("quest_elementsautor", ["questid" => $quest->id], "elementno ASC");
 
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
@@ -267,7 +261,7 @@ if ($action == 'displaygradingform') {
         $message .= "Grading manually! $points * $percent = $grade";
     } else { // Form grading
              // don't fiddle about, delete all the old and add the new!
-        $DB->delete_records("quest_items_assesments_autor", array("assessmentautorid" => $assessment->id));
+        $DB->delete_records("quest_items_assesments_autor", ["assessmentautorid" => $assessment->id]);
         $numelements = count($elementsraw);
         // Determine what kind of grading we have.
         switch ($quest->gradingstrategyautor) {
@@ -279,7 +273,7 @@ if ($action == 'displaygradingform') {
                     $element->assessmentautorid = $assessment->id;
                     $element->elementno = $i;
                     $feedb = optional_param_array("feedback", null, PARAM_TEXT);
-                    $element->answer = $feedb == null ? '':$feedb[$i];
+                    $element->answer = $feedb == null ? '' : $feedb[$i];
                     $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                         throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
@@ -297,15 +291,10 @@ if ($action == 'displaygradingform') {
                     $element->assessmentautorid = $assessment->id;
                     $element->elementno = $key;
                     $feedb = optional_param_array("feedback", null, PARAM_TEXT);
-                    $element->answer = $feedb == null ? '':$feedb[$key];
+                    $element->answer = $feedb == null ? '' : $feedb[$key];
                     $element->calification = $thegrade;
                     $element->commentteacher = optional_param('generalcomment', null, PARAM_TEXT);
-                                                                      // TODO: EVP CHECK THIS... DATA BASE
-                                                                      // CONTAINS THIS FIELD BUT I
-                                                                      // do not find it in the form and
-                                                                      // I have included this to
-                                                                      // avoid errors. I think this
-                                                                      // field is no longer used.
+                                                                      // Keep the legacy field populated for compatibility.
                     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
                         throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
                     }

@@ -38,6 +38,7 @@ use moodle_exception;
  */
 class bank_provider {
 
+    /** Capabilities accepted when selecting a question bank. */
     public const CAPS = ['moodle/question:useall', 'moodle/question:usemine'];
 
     /**
@@ -258,7 +259,7 @@ class bank_provider {
 
         question_require_capability_on($question, 'use');
 
-        // question_version_status exists in both Moodle 4.x and 5.x.
+        // The question_version_status class exists in both Moodle 4.x and 5.x.
         if ($question->parent || $question->status !== question_version_status::QUESTION_STATUS_READY) {
             throw new moodle_exception('questionnotusable', 'quest');
         }

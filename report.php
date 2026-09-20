@@ -15,15 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Module developed at the University of Valladolid.
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
- * @package quest
+ * Export a detailed report for a Quest activity.
+ *
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// This page prints a long report of this QUEST.
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -33,7 +31,7 @@ $cmid = required_param('id', PARAM_INT); // Course Module ID.
 global $DB, $PAGE, $OUTPUT;
 $timenow = time();
 list($course, $cm) = get_course_and_cm_from_cmid($cmid, "quest");
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 // Print the page header and check login.
 require_login($course->id, false, $cm);
 
@@ -44,7 +42,7 @@ if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $
     throw new \moodle_exception('modulehiddenerror', 'quest', "view.php?id=$cmid");
 }
 
-$url = new moodle_url('/mod/quest/report.php', array('id' => $cmid));
+$url = new moodle_url('/mod/quest/report.php', ['id' => $cmid]);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title(format_string($quest->name));

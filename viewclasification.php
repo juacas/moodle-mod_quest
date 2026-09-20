@@ -13,17 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/** Questournament activity for Moodle
+
+/**
+ * Display Quest classification tables.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -45,7 +43,7 @@ $timenow = time();
 $numberprecission = 2;
 global $DB, $PAGE, $OUTPUT;
 list($course, $cm) = quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
@@ -53,7 +51,7 @@ quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 
-$thispageurl = new moodle_url('/mod/quest/viewclasification.php', array('id' => $id));
+$thispageurl = new moodle_url('/mod/quest/viewclasification.php', ['id' => $id]);
 if ($a !== '') {
     $thispageurl->param('a', $a);
 }
@@ -101,7 +99,15 @@ if ($quest->allowteams && !$quest->showclasifindividual) {
 if ($action == 'global') {
     $standings = \mod_quest\service\leaderboard_service::get_individual_standings($quest->id, $sort, $dir);
     $renderer = $PAGE->get_renderer('mod_quest');
-    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page($quest, $course, $cm, $standings, false, $sort, $dir));
+    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page(
+        $quest,
+        $course,
+        $cm,
+        $standings,
+        false,
+        $sort,
+        $dir
+    ));
 
     if ($quest->allowteams) {
         $teamsurl = new moodle_url('/mod/quest/viewclasification.php', ['action' => 'teams', 'id' => $cm->id]);
@@ -111,7 +117,15 @@ if ($action == 'global') {
 } else if ($action == 'teams') {
     $standings = \mod_quest\service\leaderboard_service::get_team_standings($quest->id, $sort, $dir);
     $renderer = $PAGE->get_renderer('mod_quest');
-    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page($quest, $course, $cm, $standings, true, $sort, $dir));
+    echo $renderer->render_leaderboard_page(new \mod_quest\output\leaderboard_page(
+        $quest,
+        $course,
+        $cm,
+        $standings,
+        true,
+        $sort,
+        $dir
+    ));
 } else if ($action == 'export') {
     require_capability('mod/quest:viewreports', $context);
     // Get all the students.

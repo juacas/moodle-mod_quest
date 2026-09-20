@@ -35,8 +35,8 @@ $dateanswercorrect = optional_param('daswcorr', 0, PARAM_INT);
 $datefirstanswer = optional_param('dfirstansw', 0, PARAM_INT);
 $pointsmax = required_param('pointsmax', PARAM_FLOAT);
 $pointsmin = optional_param('pointsmin', 0, PARAM_FLOAT);
-$width = optional_param('width', 500, PARAM_INT);
-$height = optional_param('height', 240, PARAM_INT);
+$width = max(200, min(1200, optional_param('width', 500, PARAM_INT)));
+$height = max(120, min(800, optional_param('height', 240, PARAM_INT)));
 $format = optional_param('format', 'svg', PARAM_ALPHA);
 
 $chartdata = scoring_calculator::get_chart_data(
@@ -91,21 +91,66 @@ if (!empty($chartdata['actualcurve'])) {
     }
 }
 
-echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-?>
-<svg xmlns="http://www.w3.org/2000/svg" width="<?php echo $width; ?>" height="<?php echo $height; ?>" viewBox="0 0 <?php echo $width . ' ' . $height; ?>">
-    <rect width="100%" height="100%" fill="#f8f9fa"/>
-    <!-- Axes -->
-    <line x1="<?php echo $padding; ?>" y1="<?php echo $padding + $plotheight; ?>" x2="<?php echo $padding + $plotwidth; ?>" y2="<?php echo $padding + $plotheight; ?>" stroke="#ced4da" stroke-width="1"/>
-    <line x1="<?php echo $padding; ?>" y1="<?php echo $padding; ?>" x2="<?php echo $padding; ?>" y2="<?php echo $padding + $plotheight; ?>" stroke="#ced4da" stroke-width="1"/>
+// Build the SVG in PHP so that every dynamic value is escaped and codechecker can
+// inspect the endpoint without parsing a mixed PHP/HTML template.
+$escapedsvgpath = htmlspecialchars($pathd, ENT_QUOTES | ENT_XML1, 'UTF-8');
+$startlabel = htmlspecialchars(userdate($datestart, '%d/%m'), ENT_QUOTES | ENT_XML1, 'UTF-8');
+$endlabel = htmlspecialchars(userdate($dateend, '%d/%m'), ENT_QUOTES | ENT_XML1, 'UTF-8');
+$maxlabel = htmlspecialchars((string)round($pointsmax), ENT_QUOTES | ENT_XML1, 'UTF-8');
 
-    <!-- Scoring Curve -->
-    <?php if (!empty($pathd)): ?>
-    <path d="<?php echo $pathd; ?>" fill="none" stroke="#0d6efd" stroke-width="2.5" stroke-linejoin="round"/>
-    <?php endif; ?>
+$svg = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    sprintf(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d">',
+        $width,
+        $height,
+        $width,
+        $height
+    ),
+    '    <rect width="100%" height="100%" fill="#f8f9fa"/>',
+    '    <!-- Axes -->',
+    sprintf(
+        '    <line x1="%d" y1="%d" x2="%d" y2="%d" stroke="#ced4da" stroke-width="1"/>',
+        $padding,
+        $padding + $plotheight,
+        $padding + $plotwidth,
+        $padding + $plotheight
+    ),
+    sprintf(
+        '    <line x1="%d" y1="%d" x2="%d" y2="%d" stroke="#ced4da" stroke-width="1"/>',
+        $padding,
+        $padding,
+        $padding,
+        $padding + $plotheight
+    ),
+];
 
-    <!-- Axis Labels -->
-    <text x="<?php echo $padding; ?>" y="<?php echo $height - 10; ?>" font-family="sans-serif" font-size="10" fill="#6c757d"><?php echo userdate($datestart, '%d/%m'); ?></text>
-    <text x="<?php echo $padding + $plotwidth; ?>" y="<?php echo $height - 10; ?>" font-family="sans-serif" font-size="10" fill="#6c757d" text-anchor="end"><?php echo userdate($dateend, '%d/%m'); ?></text>
-    <text x="<?php echo $padding - 5; ?>" y="<?php echo $padding + 10; ?>" font-family="sans-serif" font-size="10" fill="#6c757d" text-anchor="end"><?php echo round($pointsmax); ?></text>
-</svg>
+if ($pathd !== '') {
+    $svg[] = sprintf(
+        '    <path d="%s" fill="none" stroke="#0d6efd" stroke-width="2.5" stroke-linejoin="round"/>',
+        $escapedsvgpath
+    );
+}
+
+$svg[] = '    <!-- Axis labels -->';
+$svg[] = sprintf(
+    '    <text x="%d" y="%d" font-family="sans-serif" font-size="10" fill="#6c757d">%s</text>',
+    $padding,
+    $height - 10,
+    $startlabel
+);
+$svg[] = sprintf(
+    '    <text x="%d" y="%d" font-family="sans-serif" font-size="10" fill="#6c757d" text-anchor="end">%s</text>',
+    $padding + $plotwidth,
+    $height - 10,
+    $endlabel
+);
+$svg[] = sprintf(
+    '    <text x="%d" y="%d" font-family="sans-serif" font-size="10" fill="#6c757d" text-anchor="end">%s</text>',
+    $padding - 5,
+    $padding + 10,
+    $maxlabel
+);
+$svg[] = '</svg>';
+
+echo implode("\n", $svg);

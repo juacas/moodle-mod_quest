@@ -25,7 +25,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest*/
 defined('MOODLE_INTERNAL') || die();
@@ -69,6 +69,8 @@ $questeweightsrecalif = [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75,
                 7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
 
 /**
+ * Build a select menu using the legacy Quest form conventions.
+ *
  * Returns the default quest scales array.
  * Use as a safe fallback when the global $questscales is not populated.
  *
@@ -157,6 +159,8 @@ define('SUBMISSION_PHASE_CLOSED', 0);
  */
 
 /**
+ * Build a select menu using the legacy Quest form conventions.
+ *
  * @param array $options
  * @param string $name
  * @param string $selected
@@ -327,11 +331,17 @@ function quest_print_submission_title($quest, $submission) {
     return quest_print_challenge_title($quest, $submission);
 }
 /**
- * Form for a Challenge
+ * Form for creating or editing a Quest challenge.
+ *
  * @author juacas
  *
  */
 class quest_print_upload_form extends moodleform {
+    /**
+     * Define the challenge form fields.
+     *
+     * @return void
+     */
     public function definition() {
         $mform = & $this->_form;
         $submission = $this->_customdata['submission'];
@@ -380,8 +390,6 @@ class quest_print_upload_form extends moodleform {
 
             $mform->addHelpButton('datestart', 'challengestart', 'quest');
         } else {
-            // ...$mform->addElement('html', '<div class="fitemtitle"> '.$stringchallengestart.' :.
-            // ...'.$date.' </div>');.
             $mform->addElement('html', get_string("challengestart", "quest") . ': ' . userdate($challengestart));
             $mform->addElement('hidden', 'datestart', $challengestart);
         }
@@ -396,8 +404,6 @@ class quest_print_upload_form extends moodleform {
             $mform->setDefault('dateend', $challengeend);
             $mform->addHelpButton('dateend', 'challengeend', 'quest');
         } else {
-            // ...$mform->addElement('html', '<div class="fitemtitle"> '.$stringchallengestart.' :.
-            // ...'.$date.' </div>');.
             $mform->addElement('html', '</br>' . get_string("challengeend", "quest") . ': ' . userdate($challengeend));
             $mform->addElement('hidden', 'dateend', $challengeend);
         }
@@ -513,8 +519,10 @@ class quest_print_upload_form extends moodleform {
             $errors['datestart'] = get_string('invaliddates', 'quest', $a);
         }
         if ($data['pointsmax'] > $quest->maxcalification) {
-            $errors['pointsmax'] = get_string('checkthat', 'quest') . ': ' . get_string('pointsmin', 'quest') .  ' (' . $data['pointsmin'] . ')' .
-                    ' < ' . get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')' . ' < ' . $quest->maxcalification;
+            $errors['pointsmax'] = get_string('checkthat', 'quest') . ': '
+                    . get_string('pointsmin', 'quest') . ' (' . $data['pointsmin'] . ')'
+                    . ' < ' . get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')'
+                    . ' < ' . $quest->maxcalification;
         }
         if ($data['pointsmin'] < $quest->mincalification) {
             $errors['pointsmin'] = get_string('checkthat', 'quest') . ': ' .
@@ -544,12 +552,6 @@ class quest_print_upload_form extends moodleform {
 
 /** Receive and store a new challenge for the quest
  *
- * @global stdClass $USER
- * @global stdClass $DB
- * @global stdClass $CFG
- * @global type $OUTPUT
- * @global type $COURSE
- * @global type $PAGE
  * @param stdClass $quest
  * @param stdClass $newsubmission
  * @param boolean $ismanager
@@ -667,7 +669,12 @@ function quest_upload_challenge(
         // Get next url: assess_autor or approve.
         $redirecturl = quest_next_submission_url($newsubmission, $cm);
     }
-    redirect($redirecturl, get_string("submitted", "quest") . " " . get_string("ok"), null, \core\output\notification::NOTIFY_SUCCESS);
+    redirect(
+        $redirecturl,
+        get_string("submitted", "quest") . " " . get_string("ok"),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 /**
  *
@@ -1024,6 +1031,22 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
 }
 
 /**
+ * Validate that an answer and its challenge belong to the current Quest.
+ *
+ * @param stdClass $answer Answer record.
+ * @param int $questid Quest instance ID.
+ * @return void
+ */
+function quest_require_answer_ownership($answer, int $questid): void {
+    global $DB;
+
+    $submissionquestid = $DB->get_field('quest_submissions', 'questid', ['id' => $answer->submissionid]);
+    if ((int)($answer->questid ?? 0) !== $questid || (int)$submissionquestid !== $questid) {
+        throw new \moodle_exception('answer_not_found', 'quest');
+    }
+}
+
+/**
  * Get an actionable status for a challenge that needs staff attention.
  *
  * @param \stdClass $challenge Challenge submission.
@@ -1065,10 +1088,16 @@ function quest_get_challenge_attention_status($challenge, $cm, $context): array 
 }
 
 /**
- * Form for anwers.
+ * Form for creating or editing an answer.
+ *
  * @author juacas
  */
 class quest_print_answer_form extends moodleform {
+    /**
+     * Define the answer form fields.
+     *
+     * @return void
+     */
     public function definition() {
         $mform = & $this->_form;
         $currententry = $this->_customdata['current'];
@@ -1131,10 +1160,8 @@ class quest_print_answer_form extends moodleform {
 }
 
 /**
- * @global stdClass $DB
- * @global type $COURSE
- * @global type $OUTPUT
- * @global stdClass $USER
+ * Save a Quest answer and its attachments.
+ *
  * @param \stdClass $quest
  * @param \stdClass $answer
  * @param bool $ismanager
@@ -1151,7 +1178,11 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     if (empty($answer->id)) {
         $modif = false;
         if (!$validate = quest_validate_user_answer($quest, $submission)) {
-            throw new \moodle_exception('answerexisty', 'quest', "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge");
+            throw new \moodle_exception(
+                'answerexisty',
+                'quest',
+                "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge"
+            );
         }
         $answer->questid = $quest->id;
         $answer->userid = $USER->id;
@@ -1217,7 +1248,6 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     }
     $DB->update_record('quest_answers', $answer);
 
-    // TODO: en este punto no hay cambio de calificaciÃ³n.
     // Update scores and statistics.
     // Update current User scores.
     require_once('scores_lib.php');
@@ -1228,28 +1258,6 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     if ($quest->allowteams) {
         quest_update_team_scores($quest->id, quest_get_user_team($quest->id, $answer->userid));
     }
-    if (!$users = quest_get_course_members($COURSE->id, "u.lastname, u.firstname")) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer($course);
-        exit();
-    }
-    // JPC 2013-11-28 disable excesive notifications.
-    if (false) {
-        foreach ($users as $user) {
-            if ($ismanager) {
-                quest_send_message(
-                    $user,
-                    "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer",
-                    'answeradd',
-                    $quest,
-                    $submission,
-                    $answer,
-                    $USER
-                );
-            }
-        }
-    }
-    // JPC disabled block.
     $user = get_complete_user_data('id', $submission->userid);
     if ($user) {
         quest_send_message(
@@ -1808,9 +1816,8 @@ function quest_answer_phase($answer, $course, $style = '') {
 }
 
 /**
- * @global type $CFG
- * @global stdClass $USER
- * @global type $OUTPUT
+ * Render an answer with its content, feedback, and attachments.
+ *
  * @param \stdClass $quest
  * @param \stdClass $answer
  */
@@ -1826,14 +1833,21 @@ function quest_print_answer($quest, $answer) {
     if (!empty($answer->questionusageid)) {
         require_once($CFG->libdir . '/questionlib.php');
         $quba = question_engine::load_questions_usage_by_activity($answer->questionusageid);
-        
+
         echo '<div class="card border-0 shadow-sm mb-4">';
         echo '  <div class="card-body p-4">';
         echo \mod_quest\service\autograde_service::render_question($quba, 1, true);
         echo '  </div>';
         echo '</div>';
     } else {
-        $description = file_rewrite_pluginfile_urls($description, 'pluginfile.php', $context->id, 'mod_quest', 'answer', $answer->id);
+        $description = file_rewrite_pluginfile_urls(
+            $description,
+            'pluginfile.php',
+            $context->id,
+            'mod_quest',
+            'answer',
+            $answer->id
+        );
 
         $options = new stdClass();
         $options->para = false;
@@ -1866,6 +1880,8 @@ function quest_print_answer($quest, $answer) {
 }
 
 /**
+ * Render an assessment form and its grading elements.
+ *
  * Helper to render a rich Moodle editor for comments/feedback outside moodleform.
  *
  * @param string $name Form input name.
@@ -1892,11 +1908,15 @@ function quest_print_editor($name, $id, $text, $context, $rows = 4) {
     $editor->use_editor($id, $options);
 
     echo '<div class="quest-editor-wrap mb-2">';
-    echo '<textarea id="' . s($id) . '" name="' . s($name) . '" rows="' . $rows . '" cols="75" class="form-control" style="width: 100%;">' . s($text) . '</textarea>';
+    echo '<textarea id="' . s($id) . '" name="' . s($name) . '" rows="' . $rows
+            . '" cols="75" class="form-control" style="width: 100%;">'
+            . s($text) . '</textarea>';
     echo '</div>';
 }
 
 /**
+ * Render an assessment form and its grading elements.
+ *
  * @param stdClass $quest record
  * @param int $sid submissionid
  * @param stdClass|bool $assessment
@@ -1977,7 +1997,8 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
         }
         echo '</h5>';
         if (!empty($assessment->dateassessment)) {
-            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>' . userdate($assessment->dateassessment) . '</small>';
+            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>'
+                    . userdate($assessment->dateassessment) . '</small>';
         }
     } else {
         echo get_string('specimenassessmentform', 'quest') . '</h5>';
@@ -1985,9 +2006,13 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     echo '</div>';
     echo '<div>';
     if ($allowchanges) {
-        echo '<span class="badge bg-primary fs-7 px-3 py-2"><i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('editing', 'quest') . '</span>';
+        echo '<span class="badge bg-primary fs-7 px-3 py-2">'
+                . '<i class="fa fa-pencil me-1" aria-hidden="true"></i>'
+                . get_string('editing', 'quest') . '</span>';
     } else {
-        echo '<span class="badge bg-secondary fs-7 px-3 py-2"><i class="fa fa-eye me-1" aria-hidden="true"></i>' . get_string('view') . '</span>';
+        echo '<span class="badge bg-secondary fs-7 px-3 py-2">'
+                . '<i class="fa fa-eye me-1" aria-hidden="true"></i>'
+                . get_string('view') . '</span>';
     }
     echo '</div>';
     echo '</div></div>';
@@ -2058,7 +2083,8 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
             echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
             echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
             echo '<span class="fw-bold text-dark">';
-            echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>' . get_string('element', 'quest') . " $iplus1";
+            echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>'
+                    . get_string('element', 'quest') . " $iplus1";
             echo '</span>';
             if ($quest->gradingstrategy == 1) {
                 echo '<span class="badge bg-secondary">' . get_string('weight', 'quest') . ": $weightstr</span>";
@@ -2091,25 +2117,34 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
                             $checked = (isset($grades[$i]->calification) && $j == $grades[$i]->calification) ||
                                        (!isset($grades[$i]->calification) && $j == 0);
                             $checkedattr = $checked ? 'checked="checked"' : '';
-                            echo "<label class=\"quest-scale-option\"><input type=\"radio\" name=\"grade[$i]\" value=\"$j\" $checkedattr /> <span class=\"badge bg-white text-dark border\">$j</span></label>";
+                            echo '<label class="quest-scale-option"><input type="radio" name="grade[' . $i . ']" '
+                                    . 'value="' . $j . '" ' . $checkedattr . ' /> '
+                                    . '<span class="badge bg-white text-dark border">' . $j . '</span></label>';
                         }
                         if (!empty($scale->end)) {
                             echo '<span class="fw-bold text-muted ms-2 small">' . s($scale->end) . '</span>';
                         }
                         echo '</div>';
-                    } else { // selection
+                    } else { // Selection.
                         unset($numbers);
                         for ($j = 0; $j <= $scale->size; $j++) {
                             $numbers[$j] = $j;
                         }
                         $selected = isset($grades[$i]->calification) ? $grades[$i]->calification : '';
-                        echo html_writer::select($numbers, "grade[$i]", $selected, false, ['class' => 'form-select w-auto d-inline-block']);
+                        echo html_writer::select(
+                            $numbers,
+                            "grade[$i]",
+                            $selected,
+                            false,
+                            ['class' => 'form-select w-auto d-inline-block']
+                        );
                     }
                 } else {
                     // Review mode: prominent badge.
                     $selectedval = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
                     echo '<div class="d-flex align-items-center gap-2">';
-                    echo '<span class="badge bg-primary fs-6 py-2 px-3"><i class="fa fa-check me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ": $selectedval</span>";
+                    echo '<span class="badge bg-primary fs-6 py-2 px-3"><i class="fa fa-check me-1" '
+                            . 'aria-hidden="true"></i>' . get_string('grade', 'quest') . ": $selectedval</span>";
                     if (!empty($scale->start) || !empty($scale->end)) {
                         echo '<span class="text-muted small">(' . s($scale->start) . ' &rarr; ' . s($scale->end) . ')</span>';
                     }
@@ -2124,7 +2159,13 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
             echo '<i class="fa fa-comment-o text-info me-1" aria-hidden="true"></i>' . get_string('feedback') . ':';
             echo '</label>';
             if ($allowchanges) {
-                quest_print_editor("feedback[$i]", "id_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
+                quest_print_editor(
+                    "feedback[$i]",
+                    "id_feedback_$i",
+                    isset($grades[$i]->answer) ? $grades[$i]->answer : '',
+                    $context,
+                    3
+                );
             } else {
                 if (!empty($grades[$i]->answer)) {
                     echo '<div class="quest-review-feedback-box">' . format_text($grades[$i]->answer) . '</div>';
@@ -2132,9 +2173,9 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
                     echo '<p class="text-muted fst-italic mb-0">' . get_string('nofeedback', 'quest') . '</p>';
                 }
             }
-            echo '</div>'; // end criterion-feedback
-            echo '</div>'; // end card-body
-            echo '</div>'; // end card
+            echo '</div>'; // End criterion feedback.
+            echo '</div>'; // End card body.
+            echo '</div>'; // End card.
         }
     }
 
@@ -2173,25 +2214,34 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     if (isset($assessment->state)) {
         echo '<div class="card quest-global-score-card mb-4 shadow-sm">';
         echo '<div class="card-body p-4 text-center">';
-        echo '<h5 class="card-title fw-bold text-success mb-3"><i class="fa fa-trophy me-2" aria-hidden="true"></i>' . get_string('assessmentglobal', 'quest') . '</h5>';
+        echo '<h5 class="card-title fw-bold text-success mb-3">'
+                . '<i class="fa fa-trophy me-2" aria-hidden="true"></i>'
+                . get_string('assessmentglobal', 'quest') . '</h5>';
         echo '<div class="d-flex flex-wrap justify-content-center align-items-center gap-4">';
         if ($assessment->state == 2) {
             if (!empty($assessment->pointsautor)) {
                 $perct = $assessment->pointsmax == 0 ? 0 : $assessment->pointsautor / $assessment->pointsmax;
                 echo '<div class="text-center">';
                 echo '<span class="text-muted small d-block mb-1">' . get_string('gradeautor', 'quest') . '</span>';
-                echo '<span class="badge bg-secondary fs-6 py-2 px-3">' . number_format($perct * 100, 1) . '% (' . number_format($assessment->pointsautor, 4) . ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
+                echo '<span class="badge bg-secondary fs-6 py-2 px-3">' . number_format($perct * 100, 1)
+                        . '% (' . number_format($assessment->pointsautor, 4) . ' ' . get_string('of', 'quest')
+                        . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
                 echo '</div>';
             }
             echo '<div class="text-center">';
             echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
-            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($answer->grade, 1) . '% (' . number_format($assessment->pointsteacher, 4) . ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($answer->grade, 1)
+                    . '% (' . number_format($assessment->pointsteacher, 4) . ' ' . get_string('of', 'quest')
+                    . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
             echo '</div>';
         } else if ($assessment->state == 1) {
             echo '<div class="text-center">';
             echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
-            $oftext = ($answer->pointsmax == 0) ? get_string('phase4submission', 'quest') : get_string('of', 'quest') . ' (' . number_format($answer->pointsmax, 4) . ')';
-            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->pointsautor, 4) . ' ' . $oftext . '</span>';
+            $oftext = ($answer->pointsmax == 0)
+                ? get_string('phase4submission', 'quest')
+                : get_string('of', 'quest') . ' (' . number_format($answer->pointsmax, 4) . ')';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">'
+                    . number_format($assessment->pointsautor, 4) . ' ' . $oftext . '</span>';
             echo '</div>';
         }
         echo '</div></div></div>';
@@ -2216,19 +2266,28 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     if ($assessment && $allowchanges) {
         echo '<div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top gap-2">';
         if (!empty($returnto)) {
-            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary"><i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</a>';
+            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary">'
+                    . '<i class="fa fa-times me-1" aria-hidden="true"></i>'
+                    . get_string('cancel') . '</a>';
         } else {
             echo '<div></div>';
         }
-        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
+        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" '
+                . 'aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
         echo '</div>';
     }
 
     echo '</form>';
-    echo '</div>'; // end quest-assessment-container
+    echo '</div>'; // End Quest assessment container.
 }
 
-/** Print general comment box with modern styles */
+/**
+ * Print the general comment box for an assessment.
+ *
+ * @param stdClass $course Course record.
+ * @param bool $allowchanges Whether editing is allowed.
+ * @param stdClass|false $assessment Assessment record.
+ */
 function quest_print_general_comment_box($course, $allowchanges, $assessment) {
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
@@ -2258,7 +2317,9 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
     }
 }
 
-/** Calculate a percentual grade for an answer. */
+/**
+ * Calculate a percentage grade for an answer.
+ *
 function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
     // Ensure $questeweights is always an array, even if global was not populated.
@@ -2337,7 +2398,8 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
                 }
                 $elem  = $elements[$key];
                 $maxscore = isset($elem->maxscore) ? (float)$elem->maxscore : 0;
-                $weight = (isset($elem->weight) && is_array($questeweights) && isset($questeweights[$elem->weight])) ? (float)$questeweights[$elem->weight] : 0.0;
+                $weight = (isset($elem->weight) && is_array($questeweights)
+                    && isset($questeweights[$elem->weight])) ? (float)$questeweights[$elem->weight] : 0.0;
                 if ($weight > 0) {
                     $totalweight += $weight;
                 }
@@ -2523,7 +2585,8 @@ function quest_print_assessment_autor(
         }
         echo '</h5>';
         if (!empty($assessment->dateassessment)) {
-            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>' . userdate($assessment->dateassessment) . '</small>';
+            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>'
+                    . userdate($assessment->dateassessment) . '</small>';
         }
     } else {
         echo get_string('specimenassessmentform', 'quest') . '</h5>';
@@ -2531,9 +2594,13 @@ function quest_print_assessment_autor(
     echo '</div>';
     echo '<div>';
     if ($allowchanges) {
-        echo '<span class="badge bg-primary fs-7 px-3 py-2"><i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('editing', 'quest') . '</span>';
+        echo '<span class="badge bg-primary fs-7 px-3 py-2">'
+                . '<i class="fa fa-pencil me-1" aria-hidden="true"></i>'
+                . get_string('editing', 'quest') . '</span>';
     } else {
-        echo '<span class="badge bg-secondary fs-7 px-3 py-2"><i class="fa fa-eye me-1" aria-hidden="true"></i>' . get_string('view') . '</span>';
+        echo '<span class="badge bg-secondary fs-7 px-3 py-2">'
+                . '<i class="fa fa-eye me-1" aria-hidden="true"></i>'
+                . get_string('view') . '</span>';
     }
     echo '</div>';
     echo '</div></div>';
@@ -2577,7 +2644,8 @@ function quest_print_assessment_autor(
         echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
         echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
         echo '<span class="fw-bold text-dark">';
-        echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>' . get_string('element', 'quest') . " $iplus1";
+        echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>'
+                . get_string('element', 'quest') . " $iplus1";
         echo '</span>';
         if ($quest->gradingstrategyautor == 1) {
             echo '<span class="badge bg-secondary">' . get_string('weight', 'quest') . ": $weightstr</span>";
@@ -2610,25 +2678,35 @@ function quest_print_assessment_autor(
                         $checked = (isset($grades[$i]->calification) && $j == $grades[$i]->calification) ||
                                    (!isset($grades[$i]->calification) && $j == 0);
                         $checkedattr = $checked ? 'checked="checked"' : '';
-                        echo "<label class=\"quest-scale-option\"><input type=\"radio\" name=\"grade[$i]\" value=\"$j\" $checkedattr /> <span class=\"badge bg-white text-dark border\">$j</span></label>";
+                        echo '<label class="quest-scale-option"><input type="radio" name="grade[' . $i . ']" '
+                                . 'value="' . $j . '" ' . $checkedattr . ' /> '
+                                . '<span class="badge bg-white text-dark border">' . $j . '</span></label>';
                     }
                     if (!empty($scale->end)) {
                         echo '<span class="fw-bold text-muted ms-2 small">' . s($scale->end) . '</span>';
                     }
                     echo '</div>';
-                } else { // selection
+                } else { // Selection.
                     unset($numbers);
                     for ($j = $scale->size; $j >= 0; $j--) {
                         $numbers[$j] = $j;
                     }
                     $selected = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
-                    echo html_writer::select($numbers, "grade[$i]", $selected, false, ['class' => 'form-select w-auto d-inline-block']);
+                    echo html_writer::select(
+                        $numbers,
+                        "grade[$i]",
+                        $selected,
+                        false,
+                        ['class' => 'form-select w-auto d-inline-block']
+                    );
                 }
             } else {
                 // Review mode: badge display.
                 $selectedval = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
                 echo '<div class="d-flex align-items-center gap-2">';
-                echo '<span class="badge bg-primary fs-6 py-2 px-3"><i class="fa fa-check me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ": $selectedval</span>";
+                echo '<span class="badge bg-primary fs-6 py-2 px-3">'
+                        . '<i class="fa fa-check me-1" aria-hidden="true"></i>'
+                        . get_string('grade', 'quest') . ": $selectedval</span>";
                 if (!empty($scale->start) || !empty($scale->end)) {
                     echo '<span class="text-muted small">(' . s($scale->start) . ' &rarr; ' . s($scale->end) . ')</span>';
                 }
@@ -2644,7 +2722,13 @@ function quest_print_assessment_autor(
         echo ' ' . $OUTPUT->help_icon('feedback', 'quest') . ':';
         echo '</label>';
         if ($allowchanges) {
-            quest_print_editor("feedback[$i]", "id_autor_feedback_$i", isset($grades[$i]->answer) ? $grades[$i]->answer : '', $context, 3);
+            quest_print_editor(
+                "feedback[$i]",
+                "id_autor_feedback_$i",
+                isset($grades[$i]->answer) ? $grades[$i]->answer : '',
+                $context,
+                3
+            );
         } else {
             if (!empty($grades[$i]->answer)) {
                 echo '<div class="quest-review-feedback-box">' . format_text($grades[$i]->answer) . '</div>';
@@ -2652,9 +2736,9 @@ function quest_print_assessment_autor(
                 echo '<p class="text-muted fst-italic mb-0">' . get_string('nofeedback', 'quest') . '</p>';
             }
         }
-        echo '</div>'; // end criterion-feedback
-        echo '</div>'; // end card-body
-        echo '</div>'; // end card
+        echo '</div>'; // End criterion feedback.
+        echo '</div>'; // End card body.
+        echo '</div>'; // End card.
     }
 
     // General comment section.
@@ -2693,12 +2777,16 @@ function quest_print_assessment_autor(
     if (isset($assessment->state)) {
         echo '<div class="card quest-global-score-card mb-4 shadow-sm">';
         echo '<div class="card-body p-4 text-center">';
-        echo '<h5 class="card-title fw-bold text-success mb-3"><i class="fa fa-trophy me-2" aria-hidden="true"></i>' . get_string('assessmentglobal', 'quest') . '</h5>';
+        echo '<h5 class="card-title fw-bold text-success mb-3">'
+                . '<i class="fa fa-trophy me-2" aria-hidden="true"></i>'
+                . get_string('assessmentglobal', 'quest') . '</h5>';
         echo '<div class="d-flex flex-wrap justify-content-center align-items-center gap-4">';
         if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
             echo '<div class="text-center">';
             echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
-            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->points, 4) . ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format($submission->initialpoints, 2) . '</span>';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->points, 4)
+                    . ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest')
+                    . ' ' . number_format($submission->initialpoints, 2) . '</span>';
             echo '</div>';
         }
         echo '</div></div></div>';
@@ -2723,32 +2811,44 @@ function quest_print_assessment_autor(
     if ($assessment && $allowchanges) {
         echo '<div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top gap-2">';
         if (!empty($returnto)) {
-            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary"><i class="fa fa-times me-1" aria-hidden="true"></i>' . get_string('cancel') . '</a>';
+            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary">'
+                    . '<i class="fa fa-times me-1" aria-hidden="true"></i>'
+                    . get_string('cancel') . '</a>';
         } else {
             echo '<div></div>';
         }
-        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
+        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" '
+                . 'aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
         echo '</div>';
     }
     echo '</form>';
-    echo '</div>'; // end quest-assessment-container
+    echo '</div>'; // End Quest assessment container.
 }
 
-/** Sort callback
- * @param array $a
- * @param array $b
- * @return integer */
+/**
+ * Sort assessment rows by their qualification.
+ *
+ * @param array $a First row.
+ * @param array $b Second row.
+ * @return int Comparison result.
+ */
 function quest_sortfunction_calification($a, $b) {
-    $valA = $a['calification'] ?? 0;
-    $valB = $b['calification'] ?? 0;
+    $vala = $a['calification'] ?? 0;
+    $valb = $b['calification'] ?? 0;
 
-    if (is_numeric($valA) && is_numeric($valB)) {
-        return $valB <=> $valA;
+    if (is_numeric($vala) && is_numeric($valb)) {
+        return $valb <=> $vala;
     }
-    return strcasecmp((string)$valB, (string)$valA);
+    return strcasecmp((string)$valb, (string)$vala);
 }
 
-/** Insert scoring graph */
+/**
+ * Render the scoring graph for a submission.
+ *
+ * @param stdClass $quest Quest record.
+ * @param stdClass $submission Submission record.
+ * @return void
+ */
 function quest_print_score_graph($quest, $submission) {
     global $DB, $OUTPUT;
     $datefirstanswer = $DB->get_field("quest_answers", "min(date)", ["submissionid" => $submission->id]);
@@ -2973,6 +3073,8 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 }
 
 /**
+ * Sort rows according to the selected column and direction.
+ *
  * @param array $a
  * @param array $b
  * @return int
@@ -2980,26 +3082,24 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 function quest_sortfunction($a, $b) {
     global $sort, $dir;
 
-    $valA = $a[$sort] ?? '';
-    $valB = $b[$sort] ?? '';
+    $vala = $a[$sort] ?? '';
+    $valb = $b[$sort] ?? '';
 
-    if (is_numeric($valA) && is_numeric($valB)) {
-        $cmp = $valA <=> $valB;
+    if (is_numeric($vala) && is_numeric($valb)) {
+        $cmp = $vala <=> $valb;
     } else {
-        $cmp = strcasecmp((string)$valA, (string)$valB);
+        $cmp = strcasecmp((string)$vala, (string)$valb);
     }
 
     return (strtoupper((string)$dir) === 'DESC') ? -$cmp : $cmp;
 }
 
 /**
- * @global stdClass $USER
- * @global stdClass $DB
- * @global type $OUTPUT
  * @param \stdClass $course
  * @param \stdClass $submission
  * @param \stdClass $quest
  * @param \stdClass $cm
+ */
 /**
  * Actions available for a challenge.
  *
@@ -3114,8 +3214,8 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
 }
 
 /**
- * @global stdClass $USER
- * @global stdClass $DB
+ * Check whether a user may submit another answer.
+ *
  * @param stdClass $quest
  * @param stdClass $submission
  * @return boolean */
@@ -3296,7 +3396,9 @@ function quest_update_calification_user($calificationuser) {
     $DB->update_record('quest_calification_users', $calificationuser);
 }
 
-/** get the team for the user and quest
+/**
+ * Get the team assigned to a user in a Quest.
+ *
  * @param questid id of the quest
  * @param userid id of the user being queried for
  * @return false if failure or null data, mixed with the id otherway */
@@ -3306,7 +3408,9 @@ function quest_get_user_team($questid, $userid) {
     return $query;
 }
 
-/** get the members of a team
+/**
+ * Get the members of a Quest team.
+ *
  * @param int $questid
  * @param int $teamid
  * @return array of userids: */
@@ -3340,7 +3444,9 @@ function quest_calculate_user_score($questid, $userid) {
     }
 }
 
-/** calculate user challenge points from records in database
+/**
+ * Calculate challenge points for a user from database records.
+ *
  * @param integer $questid id
  * @param integer|array $userid id o array de ids
  * @return number */
@@ -3355,8 +3461,12 @@ function quest_calculate_user_challenges_score($questid, $userid) {
             $submissions[] = $s->id;
         }
         [$insql2, $inparams2] = $DB->get_in_or_equal($submissions);
-        if ($query = $DB->get_record_select("quest_assessments_autors", "submissionid $insql2", $inparams2, "sum(points) as points")) { // ...evp.
-                                                                                                                                        // ...funcione.
+        if ($query = $DB->get_record_select(
+            "quest_assessments_autors",
+            "submissionid $insql2",
+            $inparams2,
+            "sum(points) as points"
+        )) {
             if ($query->points) {
                 $points = $query->points;
             }
@@ -3377,6 +3487,8 @@ function quest_calculate_user_submissions_score($questid, $userid) {
 }
 
 /**
+ * Count assessed challenges for a user.
+ *
  * @param integer $questid
  * @param int|array $userid array de identificadores */
 function quest_count_user_challenges_assesed($questid, $userid) {
@@ -3417,6 +3529,8 @@ function quest_count_user_submissions_assesed($questid, $userid) {
 }
 
 /**
+ * Count challenges attempted by a user.
+ *
  * @param integer $questid
  * @param int|array $userid array de identificadores */
 function quest_count_user_challenges($questid, $userid) {
@@ -3442,7 +3556,10 @@ function quest_count_user_submissions($questid, $userid) {
 }
 
 /**
- * @param $userid array de identificadores */
+ * Count answers submitted by a user.
+ *
+ * @param int|array $userid User ID or IDs.
+ */
 function quest_count_user_answers($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
@@ -3455,7 +3572,10 @@ function quest_count_user_answers($questid, $userid) {
 }
 
 /**
- * @param $userid array de identificadores */
+ * Count assessed answers submitted by a user.
+ *
+ * @param int|array $userid User ID or IDs.
+ */
 function quest_count_user_answers_assesed($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
@@ -3468,7 +3588,12 @@ function quest_count_user_answers_assesed($questid, $userid) {
     }
 }
 
-/** Count challenge's assessments */
+/**
+ * Count assessments belonging to a challenge.
+ *
+ * @param int $cid Challenge ID.
+ * @return int Assessment count.
+ */
 function quest_count_challenge_assessments($cid) {
     global $DB;
     $answersids = $DB->get_records('quest_answers', ["submissionid" => $cid], '', "id");
@@ -3495,7 +3620,9 @@ function quest_count_submission_assessments($sid) {
     return quest_count_challenge_assessments($sid);
 }
 
-/** Recalculate scores, stats and report to the gradebook for an user and his team
+/**
+ * Recalculate scores, statistics and gradebook data for a user and team.
+ *
  * @param \stdClass $quest record
  * @param int $userid specified user */
 function quest_grade_updated($quest, $userid) {
@@ -3520,7 +3647,9 @@ function quest_grade_updated($quest, $userid) {
     quest_update_grades($quest, 0);
 }
 
-/** Updates $calificationuser registry
+/**
+ * Update a user's qualification registry.
+ *
  * counting totals and pointanswers and points from the records in the database */
 function quest_update_user_scores($quest, $userid) {
     global $DB;
@@ -3545,6 +3674,8 @@ function quest_update_user_scores($quest, $userid) {
 }
 
 /**
+ * Update a team's qualification registry.
+ *
  * @param stdClass|int $questid
  * @param int $teamid Updates pointanswers and points from the records in the database
  *        $calificationteam->nanswers = $nanswers;
@@ -3601,6 +3732,15 @@ function quest_update_team_scores($quest, $teamid) {
 
     $DB->set_field("quest_teams", "ncomponents", count($members), ["questid" => $questid, "id" => $teamid]);
 }
+/**
+ * Render the legacy banded qualification form.
+ *
+ * @param stdClass $quest Quest record.
+ * @param int $num Number of elements.
+ * @param array $elements Qualification elements.
+ * @param array $questeweights Weight options.
+ * @return void
+ */
 function quest_print_error_banded_form($quest, $num, $elements, $questeweights) {
     for ($i = 0; $i < $num; $i++) {
         $iplus1 = $i + 1;
@@ -3867,21 +4007,6 @@ function quest_recalification($answer, $quest, $assessment, $course) {
         if ($user = get_complete_user_data('id', $answer->userid)) {
             quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
         }
-        if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            global $OUTPUT;
-            echo $OUTPUT->heading(get_string('nostudentsyet'));
-            echo $OUTPUT->footer();
-            exit();
-        }
-        // JPC 2013-11-28 disable excesive notifications.
-        if (false) {
-            foreach ($users as $user) {
-                if (!has_capability('mod/quest:manage', $context, $user->id)) {
-                    continue;
-                }
-                quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
-            }
-        }
     }
 
     $cm = get_coursemodule_from_instance('quest', $quest->id);
@@ -3965,14 +4090,21 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
         }
     }
 
+    /**
+     * Sort team classification rows.
+     *
+     * @param array $a First row.
+     * @param array $b Second row.
+     * @return int Comparison result.
+     */
     function quest_sortfunction_team($a, $b) {
         global $sortteam, $dirteam;
-        $valA = $a[$sortteam] ?? '';
-        $valB = $b[$sortteam] ?? '';
-        if (is_numeric($valA) && is_numeric($valB)) {
-            $cmp = $valA <=> $valB;
+        $vala = $a[$sortteam] ?? '';
+        $valb = $b[$sortteam] ?? '';
+        if (is_numeric($vala) && is_numeric($valb)) {
+            $cmp = $vala <=> $valb;
         } else {
-            $cmp = strcasecmp((string)$valA, (string)$valB);
+            $cmp = strcasecmp((string)$vala, (string)$valb);
         }
         return (strtoupper((string)$dirteam) === 'DESC') ? -$cmp : $cmp;
     }
@@ -4057,7 +4189,7 @@ function quest_check_visibility($course, $cm) {
  * @param string $userpassword
  */
 function quest_require_password($quest, $course, $userpassword) {
-    global $USER, $OUTPUT;
+    global $DB, $USER, $OUTPUT;
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
     $context = context_module::instance($cm->id);
 
@@ -4066,9 +4198,20 @@ function quest_require_password($quest, $course, $userpassword) {
     if (($quest->usepassword) && (!$ismanager)) {
         $correctpass = false;
         if (!empty($userpassword)) {
-            if ($quest->password == md5(trim($userpassword))) {
+            $password = trim($userpassword);
+            $storedpassword = (string)$quest->password;
+            $correctpass = password_verify($password, $storedpassword);
+
+            // Upgrade legacy MD5 values after a successful login.
+            if (!$correctpass && preg_match('/^[a-f0-9]{32}$/i', $storedpassword)) {
+                $correctpass = hash_equals($storedpassword, md5($password));
+                if ($correctpass) {
+                    $DB->set_field('quest', 'password', quest_hash_password($password), ['id' => $quest->id]);
+                }
+            }
+
+            if ($correctpass) {
                 $USER->questloggedin[$quest->id] = true;
-                $correctpass = true;
             }
         } else if ($USER->questloggedin[$quest->id]) {
             $correctpass = true;
@@ -4319,8 +4462,6 @@ function quest_get_course_and_cm_from_quest($quest) {
 /**
  * @deprecated
  *
- * @global type $CFG
- * @global type $OUTPUT
  * @param \stdClass $course
  * @param bool $viewfullnames
  * @param integer $timestart
@@ -4451,6 +4592,12 @@ function quest_send_message($user, $file, $msgtype, $quest, $object, $field2 = '
     return quest_send_message_data($data);
 }
 
+/**
+ * Send a composed Quest message.
+ *
+ * @param stdClass $data Message data.
+ * @return mixed Message send result.
+ */
 function quest_send_message_data($data) {
     // Actually send the message.
     global $CFG;
@@ -4598,7 +4745,9 @@ function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
     return $outputhtml;
 }
 
-/** TODO reuse grade calculation with quest_get_maxpoints
+/**
+ * Return the highest group score in a Quest.
+ *
  * @param int $groupid
  * @param \stdClass $quest
  * @return number */
@@ -4640,7 +4789,9 @@ function quest_get_maxpoints_group($groupid, $quest) {
     return $maxpoints;
 }
 
-/** get max score achieved by participants
+/**
+ * Return the highest score achieved by Quest participants.
+ *
  * @param quest record $quest
  * @return number */
 function quest_get_maxpoints($quest) {
@@ -4914,9 +5065,6 @@ function quest_fullname($userid, $courseid) {
 }
 /** Get challenges submitted from timestart in a course
  *
- * @global type $CFG
- * @global type $USER
- * @global type $DB
  * @param \stdClass $course
  * @param integer $timestart
  * @return boolean */
@@ -4939,9 +5087,8 @@ function quest_get_submitsubmission_logs($course, $timestart) {
 }
 
 /**
- * @global type $CFG
- * @global type $USER
- * @global type $DB
+ * Return recent submissions made by the current user.
+ *
  * @param \stdClass $course
  * @param integer $timestart
  * @return boolean */

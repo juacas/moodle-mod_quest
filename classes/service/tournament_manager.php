@@ -29,8 +29,11 @@ use context_module;
 class tournament_manager {
 
     /** Challenge phases / states. */
+    /** Challenge is waiting for approval. */
     public const STATE_PENDING_APPROVAL = 0;
+    /** Challenge is available for answers. */
     public const STATE_ACTIVE = 1;
+    /** Challenge is no longer active. */
     public const STATE_CLOSED = 2;
 
     /**
@@ -239,9 +242,7 @@ class tournament_manager {
 
         $dateformat = get_string('strftimedatetimeshort', 'langconfig');
 
-        // =========================================================================
-        // Phase 1: Atomic Pre-validation & Dependency Safeguards.
-        // =========================================================================
+        // Phase 1: Atomic pre-validation and dependency safeguards.
         foreach ($schedules as $item) {
             $id = isset($item['id']) ? (int)$item['id'] : 0;
             $datestart = isset($item['datestart']) ? (int)$item['datestart'] : 0;
@@ -355,9 +356,7 @@ class tournament_manager {
             ];
         }
 
-        // =========================================================================
-        // Phase 2: Tournament Boundary Expansion / Synchronization.
-        // =========================================================================
+        // Phase 2: Tournament boundary expansion and synchronization.
         $questneedsupdate = false;
         $newqueststart = $queststart;
         $newquestend = $questend;
@@ -373,9 +372,7 @@ class tournament_manager {
             }
         }
 
-        // =========================================================================
-        // Phase 3: Delegated Transaction & Synchronized Event Updates.
-        // =========================================================================
+        // Phase 3: Delegated transaction and synchronized event updates.
         $updated = 0;
         $persisted = [];
         $transaction = $DB->start_delegated_transaction();

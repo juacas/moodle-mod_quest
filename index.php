@@ -14,17 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** This page lists all the instances of QUEST in a particular course
+/**
+ * List Quest activities in a course.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -44,7 +41,7 @@ $strquest = get_string("modulename", "quest");
 $strinfo = get_string("phase", "quest");
 $strdeadline = get_string("deadline", "quest");
 // Print the header.
-$url = new moodle_url('/mod/quest/index.php', array('id' => $id));
+$url = new moodle_url('/mod/quest/index.php', ['id' => $id]);
 $PAGE->set_url($url);
 $PAGE->navbar->add($strquests, "index.php?id=$course->id");
 $PAGE->set_title($strquests);
@@ -66,14 +63,14 @@ $strtopic = get_string("topic");
 
 $table = new html_table();
 if ($course->format == "weeks") {
-    $table->head = array($strweek, $strname, $strinfo, $strdeadline);
-    $table->align = array("CENTER", "LEFT", "LEFT", "LEFT");
+    $table->head = [$strweek, $strname, $strinfo, $strdeadline];
+    $table->align = ["CENTER", "LEFT", "LEFT", "LEFT"];
 } else if ($course->format == "topics") {
-    $table->head = array($strtopic, $strname, $strinfo, $strdeadline);
-    $table->align = array("CENTER", "LEFT", "LEFT", "LEFT");
+    $table->head = [$strtopic, $strname, $strinfo, $strdeadline];
+    $table->align = ["CENTER", "LEFT", "LEFT", "LEFT"];
 } else {
-    $table->head = array($strname, $strinfo, $strdeadline);
-    $table->align = array("LEFT", "LEFT", "LEFT");
+    $table->head = [$strname, $strinfo, $strdeadline];
+    $table->align = ["LEFT", "LEFT", "LEFT"];
 }
 
 foreach ($quests as $quest) {
@@ -89,10 +86,10 @@ foreach ($quests as $quest) {
         $link = "<a href=\"view.php?id=$quest->coursemodule\">" . format_string($quest->name, true) . "</a>";
     }
 
-    if ($course->format == "weeks" or $course->format == "topics") {
-        $table->data[] = array($quest->section, $link, $info, $due);
+    if ($course->format == "weeks" || $course->format == "topics") {
+        $table->data[] = [$quest->section, $link, $info, $due];
     } else {
-        $table->data[] = array($link, $info, $due);
+        $table->data[] = [$link, $info, $due];
     }
 }
 
