@@ -28,8 +28,8 @@ use mod_quest\service\autograde_service;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\question\question_reference_service
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\question\question_reference_service::class)]
 final class question_bank_test extends advanced_testcase {
 
     /**

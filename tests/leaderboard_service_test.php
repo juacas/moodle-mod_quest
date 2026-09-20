@@ -26,8 +26,8 @@ use mod_quest\service\leaderboard_service;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\service\leaderboard_service
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\leaderboard_service::class)]
 final class leaderboard_service_test extends advanced_testcase {
 
     /**

@@ -26,8 +26,8 @@ use mod_quest\service\scoring_calculator;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\service\scoring_calculator
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\scoring_calculator::class)]
 final class scoring_calculator_test extends advanced_testcase {
 
     /**

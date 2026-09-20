@@ -27,8 +27,8 @@ use mod_quest\service\tournament_manager;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\service\tournament_manager
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\tournament_manager::class)]
 final class tournament_manager_test extends advanced_testcase {
 
     /**

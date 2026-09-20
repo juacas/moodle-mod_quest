@@ -525,33 +525,37 @@
 
 
 /* Accessible challenge status and phase badges. */
-.quest-phase-badge {
-    background-color: #dcfce7;
-    border: 1px solid #86efac;
-    color: #14532d;
+.badge.quest-phase-badge {
+    --bs-badge-color: #fff;
+    background-color: #15803d;
+    border: 1px solid #166534;
+    color: #fff;
     font-weight: 700;
 }
 
-.quest-phase-badge-closed,
+.badge.quest-phase-badge-closed,
 .badge.bg-secondary,
 .badge.bg-secondary.text-white {
-    --bs-secondary-rgb: 229, 231, 235;
-    --bs-white-rgb: 31, 41, 55;
-    background-color: #e5e7eb;
-    border: 1px solid #9ca3af;
-    color: #1f2937;
+    --bs-badge-color: #fff;
+    --bs-secondary-rgb: 75, 85, 99;
+    --bs-white-rgb: 255, 255, 255;
+    background-color: #4b5563;
+    border: 1px solid #374151;
+    color: #fff;
 }
 
-.quest-attention-badge-approval {
-    background-color: #fef3c7;
-    border: 1px solid #f59e0b;
-    color: #713f12;
+.badge.quest-attention-badge-approval {
+    --bs-badge-color: #fff;
+    background-color: #b45309;
+    border: 1px solid #92400e;
+    color: #fff;
 }
 
-.quest-attention-badge-unevaluated {
-    background-color: #fee2e2;
-    border: 1px solid #f87171;
-    color: #7f1d1d;
+.badge.quest-attention-badge-unevaluated {
+    --bs-badge-color: #fff;
+    background-color: #b91c1c;
+    border: 1px solid #991b1b;
+    color: #fff;
 }
 
 .quest-challenge-status-badges {
