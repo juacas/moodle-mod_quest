@@ -423,15 +423,30 @@ function quest_question_pluginfile($course, $context, $component,
     }
 
     $fs = get_file_storage();
-    $relativepath = implode('/', $args);
-    $filecontext = $owningcontext ?: $context;
-    $fullpath = "/{$filecontext->id}/{$component}/{$filearea}/{$relativepath}";
+    $fullpath = quest_question_file_path($context, $component, $filearea, $args);
     $file = $fs->get_file_by_hash(sha1($fullpath));
     if (!$file || $file->is_directory()) {
         send_file_not_found();
     }
 
     send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
+ * Build the storage path for a file owned by a question attempt.
+ *
+ * Question files live in the question category context, not in the module
+ * context that owns the question usage. The context received by the callback
+ * is the one encoded in the question pluginfile URL.
+ *
+ * @param context $context Question file context.
+ * @param string $component File component.
+ * @param string $filearea File area.
+ * @param string[] $args Remaining pluginfile path components.
+ * @return string File storage path.
+ */
+function quest_question_file_path(context $context, string $component, string $filearea, array $args): string {
+    return "/{$context->id}/{$component}/{$filearea}/" . implode('/', $args);
 }
 
 /**

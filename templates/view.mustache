@@ -372,8 +372,12 @@ require(['mod_quest/counter'], function(counter) {
         setView(savedMode);
     } else {
         var urlParams = new URLSearchParams(window.location.search);
-        var hasSort = urlParams.has('sort') || urlParams.has('dir') || urlParams.get('view') === 'list';
-        setView(hasSort ? 'list' : 'cards');
+        var requestedMode = urlParams.get('view');
+        if (requestedMode === 'cards' || requestedMode === 'list') {
+            setView(requestedMode);
+        } else {
+            setView('list');
+        }
     }
 })();
 {{/js}}

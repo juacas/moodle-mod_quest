@@ -16,6 +16,7 @@ QUESTOURnament (`mod_quest`) is an advanced educational gamification activity mo
 2. [Key Features](#2-key-features)
 3. [User Manual & Operations](#3-user-manual--operations)
    - [Challenge Lifecycle & States](#challenge-lifecycle--states)
+   - [Answer Lifecycle & States](#answer-lifecycle--states)
    - [Dynamic Scoring Model (Stationary, Inflationary, Deflationary)](#dynamic-scoring-model-stationary-inflationary-deflationary)
    - [Authoring and Peer Assessment Workflow](#authoring-and-peer-assessment-workflow)
    - [Interactive Challenge Scheduler (GANTT Timeline)](#interactive-challenge-scheduler-gantt-timeline)
@@ -76,15 +77,105 @@ In contemporary higher education and professional training, passive learning mod
 
 ### Challenge Lifecycle & States
 
-A challenge within a tournament transitions across five defined states:
+Challenge status is derived from several fields in `quest_submissions`, rather
+than from one single state column:
 
-| State | Icon / Badge | Description |
+| Field / condition | Meaning |
+| :--- | :--- |
+| `state = 1` | The challenge is awaiting teacher approval. It is normally created by a student. |
+| `state = 2` | The challenge has been approved and can follow its schedule. |
+| `evaluated = 0` | The author assessment of the challenge has not been completed. |
+| `evaluated = 1` | The author assessment has been recorded. For teachers and authors this adds the corresponding “assessed” phase label. |
+| `datestart > now` | Start pending. |
+| `datestart <= now < dateend` and `nanswerscorrect < nmaxanswers` | In process: answers can be submitted. |
+| `now >= dateend` or `nanswerscorrect >= nmaxanswers` | Closed: new answers are no longer accepted, but assessment and review can continue. |
+
+The user-facing phase is the combination of these values. In particular,
+“Approval pending”, “Start pending”, “Challenge in process”, and “Challenge
+closed” may each have an assessed variant when `evaluated = 1`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> ApprovalPending: Student creates challenge
+    [*] --> StartPending: Teacher creates challenge
+
+    state "Approval pending\nstate=1, evaluated=0" as ApprovalPending
+    state "Approval pending\nstate=1, evaluated=1" as ApprovalPendingAssessed
+    state "Start pending\nstate=2, before datestart" as StartPending
+    state "Start pending (assessed)\nstate=2, evaluated=1" as StartPendingAssessed
+    state "Challenge in process\ninside dates, answers allowed" as InProcess
+    state "Challenge in process (assessed)\ninside dates, evaluated=1" as InProcessAssessed
+    state "Challenge closed\nend date or answer limit reached" as Closed
+    state "Challenge closed (assessed)\nreview remains available" as ClosedAssessed
+
+    ApprovalPending --> ApprovalPendingAssessed: Author assessment recorded
+    ApprovalPending --> StartPending: Teacher approves
+    ApprovalPending --> InProcess: Teacher approves after datestart
+    ApprovalPendingAssessed --> StartPendingAssessed: Teacher approves
+    ApprovalPendingAssessed --> InProcessAssessed: Teacher approves after datestart
+    ApprovalPending --> ApprovalPending: Edit and save
+    ApprovalPendingAssessed --> ApprovalPendingAssessed: Edit and save
+
+    StartPending --> InProcess: datestart reached
+    StartPendingAssessed --> InProcessAssessed: datestart reached
+    InProcess --> Closed: dateend reached or nmaxanswers reached
+    InProcessAssessed --> ClosedAssessed: dateend reached or nmaxanswers reached
+    Closed --> ClosedAssessed: Author assessment recorded
+```
+
+The `Closed` states are scheduling states, not deletion states. A closed
+challenge and its answers remain available according to the activity's
+visibility and author-anonymity settings.
+
+### Answer Lifecycle & States
+
+Answers use two related concepts:
+
+| Field | Values | Meaning |
 | :--- | :--- | :--- |
-| **Approval Pending** | `badge-warning` | Proposed by a student; awaiting instructor review and approval before becoming visible. |
-| **Start Pending** | `badge-info` | Approved by the instructor, but the scheduled start date has not yet been reached. |
-| **Active / In Progress** | `badge-success` | Currently open for solutions. Scoring dynamically evolves according to the scoring model. |
-| **Assessment Phase** | `badge-primary` | Submissions are closed; peer and teacher assessments of submitted answers are in progress. |
-| **Closed** | `badge-secondary` | Challenge completed. Final scores are locked, and solutions/feedback are available for review. |
+| `phase` | `0` — Not assessed | The answer has not received a final assessment. This is the initial phase for essays and other manually graded answers. |
+| `phase` | `1` — Assessed | The answer has been evaluated but did not reach the passing threshold. An automatically graded incorrect answer is still assessed and therefore uses phase `1`. |
+| `phase` | `2` — Passed / correct | The answer reached the passing threshold. An automatically graded correct answer is stored directly in phase `2`. |
+| `state` | `0`, `1`, `2` | Editing metadata: unedited, edited, or modified after an assessment. It does not replace `phase`. |
+| `permitsubmit` | `0` / `1` | Whether the author or teacher has allowed another submission. This is an additional flag and does not change the answer phase. |
+
+The two answer paths differ only in who performs the first evaluation:
+
+- **Essay or other manually graded question**: submit → phase `0` → author or
+  teacher assesses → phase `1` (not passed) or phase `2` (passed).
+- **Automatically graded question**: submit → Question Engine evaluates → phase
+  `1` when incorrect or phase `2` when correct. A failed automatic answer is
+  therefore evaluated, even though it is not correct.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Answering: Student opens answer form
+    Answering --> NotAssessed: Essay submitted
+    Answering --> AutoEvaluating: Question Bank answer submitted
+    AutoEvaluating --> Assessed: Automatic result is incorrect\nphase=1
+    AutoEvaluating --> Passed: Automatic result is correct\nphase=2
+
+    state "Not assessed\nphase=0" as NotAssessed
+    state "Assessed, not passed\nphase=1" as Assessed
+    state "Passed / correct\nphase=2" as Passed
+    state "Allow to send again\npermitsubmit=1\nphase remains 1 or 2" as ResubmissionAllowed
+    state "New attempt" as NewAttempt
+
+    NotAssessed --> Assessed: Manual assessment below threshold
+    NotAssessed --> Passed: Manual assessment reaches threshold
+    Assessed --> Passed: Reassessment reaches threshold
+    Passed --> Assessed: Reassessment below threshold
+
+    Assessed --> ResubmissionAllowed: Author or teacher allows resubmission
+    Passed --> ResubmissionAllowed: Author or teacher allows resubmission
+    ResubmissionAllowed --> NewAttempt: Student selects Answer again
+    NewAttempt --> NotAssessed: Essay is submitted
+    NewAttempt --> AutoEvaluating: Question Bank answer is submitted
+```
+
+Allowing a resubmission does not delete the old answer or its Question Engine
+usage. The new attempt is created when the student answers again, so the old
+record remains available in the history.
 
 ---
 
@@ -92,17 +183,11 @@ A challenge within a tournament transitions across five defined states:
 
 QUESTOURnament employs a three-phase mathematical scoring curve that automatically balances challenge difficulty and rewards early problem-solving:
 
-```
-Points
-  ^
-  |        /|                          
-Max ----- / | \                        Inflationary: Points rise while unanswered
-  |      /  |   \                      Deflationary: Decays after 1st correct answer
-Min ---+----+-----+------> Time
-     Start  Inflection  End
-    |------|----------|
-    Stationary / Inflationary / Deflationary
-```
+![QUESTOURnament scoring phases](pix/scoring.png)
+
+The diagram above shows the stationary, inflationary, and deflationary scoring
+phases. The inflection point is `dateanswercorrect`, the time at which the
+first correct answer is registered for the challenge.
 
 1. **Stationary Phase**:
    - Lasts for a configured duration from the challenge start date.

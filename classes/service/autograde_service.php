@@ -62,7 +62,9 @@ class autograde_service {
         ", [$submission->id, $userid], IGNORE_MULTIPLE);
 
         if ($lastanswer && !empty($lastanswer->questionusageid)) {
-            if ($lastanswer->phase == 0) { // Unfinished!
+            // A permitted resubmission starts a new attempt. The previous
+            // usage is deliberately kept so it remains part of the history.
+            if ($lastanswer->phase == 0 && $lastanswer->permitsubmit != ANSWER_PERMITSUBMIT_EDITABLE) {
                 $quba = question_engine::load_questions_usage_by_activity($lastanswer->questionusageid);
                 return [$quba, 1];
             }

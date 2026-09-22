@@ -126,6 +126,64 @@ final class lib_test extends advanced_testcase {
     }
 
     /**
+     * A permitted resubmission is visible alongside the answer phase.
+     */
+    public function test_answer_phase_shows_resubmission_badge(): void {
+        $this->resetAfterTest(true);
+
+        $html = quest_answer_phase((object)[
+            'id' => 1,
+            'phase' => ANSWER_PHASE_GRADED,
+            'state' => ANSWER_STATE_EDITTED,
+            'permitsubmit' => ANSWER_PERMITSUBMIT_EDITABLE,
+        ], (object)[]);
+
+        $this->assertStringContainsString('quest-answer-resubmission-badge', $html);
+        $this->assertStringContainsString('Allow to send again', $html);
+    }
+
+    /**
+     * The respondent gets a direct action to start the next attempt.
+     */
+    public function test_answer_actions_show_answer_again_for_permitted_submission(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', [
+            'course' => $course->id,
+        ]);
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $this->setUser($student);
+
+        $submissionid = $DB->insert_record('quest_submissions', (object)[
+            'questid' => $quest->id,
+            'userid' => $student->id,
+            'title' => 'Challenge',
+            'description' => 'Description',
+        ]);
+        $answer = (object)[
+            'id' => 1,
+            'questid' => $quest->id,
+            'submissionid' => $submissionid,
+            'userid' => $student->id,
+            'phase' => ANSWER_PHASE_GRADED,
+            'permitsubmit' => ANSWER_PERMITSUBMIT_EDITABLE,
+        ];
+
+        $html = quest_print_actions_answers(
+            get_coursemodule_from_instance('quest', $quest->id, $course->id, null, MUST_EXIST),
+            $answer,
+            (object)['id' => $submissionid, 'userid' => $student->id],
+            $course,
+            null
+        );
+
+        $this->assertStringContainsString('Answer again', $html);
+        $this->assertStringContainsString('action=answer', html_entity_decode($html));
+    }
+
+    /**
      * Stored Quest files are rendered with a safe pluginfile URL and filename.
      */
     public function test_attachment_renderer_lists_stored_files(): void {
@@ -148,6 +206,28 @@ final class lib_test extends advanced_testcase {
         $this->assertStringContainsString('intro-notes.txt', $html);
         $this->assertStringContainsString('/pluginfile.php/', $html);
         $this->assertStringContainsString('mod_quest/introattachment/0', $html);
+    }
+
+    /**
+     * Question preview files use the question context rather than Quest's
+     * module context, so images from an older question version remain visible.
+     */
+    public function test_question_file_path_uses_question_context(): void {
+        $this->resetAfterTest(true);
+        $context = \context_system::instance();
+        $fs = get_file_storage();
+        $fs->create_file_from_string([
+            'contextid' => $context->id,
+            'component' => 'question',
+            'filearea' => 'questiontext',
+            'itemid' => 3093,
+            'filepath' => '/',
+            'filename' => 'thumbnail_IDES.jpg',
+        ], 'image contents');
+
+        $path = quest_question_file_path($context, 'question', 'questiontext', [3093, 'thumbnail_IDES.jpg']);
+        $this->assertNotFalse($fs->get_file_by_hash(sha1($path)));
+        $this->assertStringStartsWith('/' . $context->id . '/question/questiontext/', $path);
     }
 
     /**

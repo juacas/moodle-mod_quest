@@ -1696,6 +1696,26 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
         );
     }
 
+    // The respondent can start a new attempt after the author or teacher has
+    // explicitly allowed another submission. The previous attempt remains
+    // available in the answer history.
+    if ((int)$answer->userid === (int)$USER->id
+            && (int)$answer->permitsubmit === ANSWER_PERMITSUBMIT_EDITABLE) {
+        $answeragainurl = new moodle_url('/mod/quest/answer.php', [
+            'sid' => $submission->id,
+            'uid' => $answer->userid,
+            'action' => 'answer',
+            'sesskey' => sesskey(),
+        ]);
+        $buttons[] = quest_answer_action_button(
+            $answeragainurl,
+            get_string('answeragain', 'quest'),
+            'reply',
+            'btn btn-sm btn-primary',
+            'sid_' . $answer->id
+        );
+    }
+
     return $buttons
         ? html_writer::div(implode(' ', $buttons), 'quest-answer-actions d-flex flex-wrap gap-1')
         : '';
@@ -1809,10 +1829,19 @@ function quest_answer_phase($answer, $course, $style = '') {
         $badgeclass = 'bg-danger text-white';
     }
 
-    return html_writer::span(
+    $html = html_writer::span(
         $string,
         'badge ' . $badgeclass . ' quest-answer-phase-badge'
     );
+
+    if ((int)($answer->permitsubmit ?? ANSWER_PERMITSUBMIT_NO_EDITABLE) === ANSWER_PERMITSUBMIT_EDITABLE) {
+        $html .= ' ' . html_writer::span(
+            get_string('allowresubmission', 'quest'),
+            'badge bg-warning text-dark quest-answer-resubmission-badge'
+        );
+    }
+
+    return $html;
 }
 
 /**

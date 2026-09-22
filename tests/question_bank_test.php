@@ -111,4 +111,98 @@ final class question_bank_test extends advanced_testcase {
         $this->assertStringContainsString('disabled="disabled"', $html);
         $this->assertStringContainsString('aria-disabled="true"', $html);
     }
+
+    /**
+     * Allowing a resubmission creates a new attempt and keeps the old one.
+     */
+    public function test_resubmission_starts_new_attempt_without_deleting_history(): void {
+        global $DB, $USER;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $context = \context_system::instance();
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $questiongenerator->create_question_category();
+        $question = $questiongenerator->create_question('shortanswer', null, [
+            'category' => $category->id,
+            'name' => 'Resubmission question',
+        ]);
+        $entryid = $DB->get_field('question_versions', 'questionbankentryid', [
+            'questionid' => $question->id,
+        ]);
+
+        $quest = (object)[
+            'id' => 1,
+            'tinitial' => 0,
+            'maxcalification' => 100,
+            'mincalification' => 0,
+        ];
+        $submission = (object)[
+            'id' => $DB->insert_record('quest_submissions', (object)[
+                'questid' => $quest->id,
+                'userid' => $USER->id,
+                'title' => 'Resubmission challenge',
+                'description' => 'Challenge description',
+                'timecreated' => time(),
+                'datestart' => time() - HOURSECS,
+                'dateend' => time() + DAYSECS,
+                'pointsmax' => 100,
+                'pointsmin' => 0,
+                'initialpoints' => 10,
+                'phase' => SUBMISSION_PHASE_ACTIVE,
+                'state' => SUBMISSION_STATE_APROVED,
+                'evaluated' => 1,
+            ]),
+            'pointsmax' => 100,
+            'pointsmin' => 0,
+            'initialpoints' => 10,
+            'datestart' => time() - HOURSECS,
+            'dateend' => time() + DAYSECS,
+        ];
+        question_reference_service::set_challenge_question(
+            $context->id,
+            $submission->id,
+            (int)$entryid,
+            null
+        );
+
+        $oldquba = \question_engine::make_questions_usage_by_activity('mod_quest', $context);
+        $oldquba->set_preferred_behaviour('deferredfeedback');
+        $oldslot = $oldquba->add_question(\question_bank::load_question($question->id), 100);
+        $oldquba->start_question($oldslot, 1);
+        \question_engine::save_questions_usage_by_activity($oldquba);
+        $oldusageid = $oldquba->get_id();
+
+        $DB->insert_record('quest_answers', (object)[
+            'questid' => $quest->id,
+            'submissionid' => $submission->id,
+            'userid' => $USER->id,
+            'title' => 'Previous attempt',
+            'description' => 'Previous response',
+            'descriptionformat' => FORMAT_HTML,
+            'descriptiontrust' => 0,
+            'attachment' => '',
+            'date' => time(),
+            'pointsmax' => 100,
+            'grade' => 50,
+            'commentforteacher' => '',
+            'phase' => ANSWER_PHASE_GRADED,
+            'state' => ANSWER_STATE_EDITTED,
+            'permitsubmit' => ANSWER_PERMITSUBMIT_EDITABLE,
+            'perceiveddifficulty' => -1,
+            'questionusageid' => $oldusageid,
+        ]);
+
+        [$newquba, $newslot] = autograde_service::get_or_create_attempt(
+            $quest,
+            $submission,
+            $USER->id,
+            $context
+        );
+
+        $this->assertNotSame((int)$oldusageid, (int)$newquba->get_id());
+        $this->assertTrue($DB->record_exists('question_usages', ['id' => $oldusageid]));
+        $this->assertSame(1, $newslot);
+        $this->assertSame(2, $DB->count_records('quest_answers', ['submissionid' => $submission->id]));
+    }
 }

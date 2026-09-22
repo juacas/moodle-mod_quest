@@ -1,0 +1,69 @@
+name: Publish project site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    paths:
+      - 'website/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Validate static site
+        run: |
+          test -f website/index.html
+          test -f website/es/index.html
+          test -f website/site.css
+          test -f website/site.js
+          test -f website/assets/images/module-view.png
+          test -f website/assets/images/module-question-bank.png
+          test -f website/assets/images/module-question-response.png
+          test -f website/assets/images/module-schedule.png
+          test -f website/assets/images/scoring.png
+          grep -q '<title>' website/index.html
+
+      - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+        with:
+          # Pages must normally be enabled once in Settings > Pages. If the
+          # repository has a PAT with administration/pages write permissions,
+          # setting PAGES_TOKEN also lets this action enable it automatically.
+          enablement: ${{ secrets.PAGES_TOKEN != '' }}
+          token: ${{ secrets.PAGES_TOKEN || github.token }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: website
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

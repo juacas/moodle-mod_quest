@@ -314,6 +314,8 @@ $string['oldteam'] = 'Current team';
 
 $string['passwordprotectedquest'] = "Password Protected QUESTOURnament";
 $string['permitsubmit'] = 'Allow re-submition';
+$string['allowresubmission'] = 'Allow to send again';
+$string['answeragain'] = 'Answer again';
 
 $string['perceiveddifficultyLevelQuestion'] = 'How difficult has this challenge been to you?';
 $string['perceiveddifficultyLevel'] = 'Difficulty';
