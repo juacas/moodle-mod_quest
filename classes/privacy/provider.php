@@ -360,7 +360,59 @@ class provider implements
                 $writer->export_data($subcontext, $data);
             }
 
-            // 4. Export overall qualifications in the contest.
+            // Teacher assessments use teacherid for attribution rather than userid.
+            $teacherassessments = $DB->get_records('quest_assessments', [
+                'questid' => $quest->id,
+                'teacherid' => $user->id,
+            ]);
+            foreach ($teacherassessments as $assessment) {
+                $subcontext = [get_string('assessments', 'mod_quest'), 'teacher', $assessment->id];
+                $writer->export_data($subcontext, (object)[
+                    'answerid' => $assessment->answerid,
+                    'pointsteacher' => $assessment->pointsteacher,
+                    'dateassessment' => transform::datetime($assessment->dateassessment),
+                    'commentsforteacher' => $assessment->commentsforteacher,
+                    'commentsteacher' => $assessment->commentsteacher,
+                ]);
+                $items = $DB->get_records('quest_elements_assessments', [
+                    'assessmentid' => $assessment->id,
+                    'userid' => $user->id,
+                ]);
+                foreach ($items as $item) {
+                    $writer->export_data(array_merge($subcontext, ['criteria', $item->id]), (object)[
+                        'answer' => $item->answer,
+                        'commentteacher' => $item->commentteacher,
+                        'calification' => $item->calification,
+                    ]);
+                }
+            }
+
+            // 5. Export evaluations of challenges authored by this user.
+            $authorevaluations = $DB->get_records('quest_assessments_autors', [
+                'questid' => $quest->id,
+                'userid' => $user->id,
+            ]);
+            foreach ($authorevaluations as $evaluation) {
+                $subcontext = [get_string('assessments', 'mod_quest'), 'author', $evaluation->id];
+                $writer->export_data($subcontext, (object)[
+                    'points' => $evaluation->points,
+                    'dateassessment' => transform::datetime($evaluation->dateassessment),
+                    'commentsforteacher' => $evaluation->commentsforteacher,
+                    'commentsteacher' => $evaluation->commentsteacher,
+                ]);
+                $items = $DB->get_records('quest_items_assesments_autor', [
+                    'assessmentautorid' => $evaluation->id,
+                ]);
+                foreach ($items as $item) {
+                    $writer->export_data(array_merge($subcontext, ['criteria', $item->id]), (object)[
+                        'answer' => $item->answer,
+                        'commentteacher' => $item->commentteacher,
+                        'calification' => $item->calification,
+                    ]);
+                }
+            }
+
+            // 6. Export overall qualifications in the contest.
             $calif = $DB->get_record('quest_calification_users', [
                 'questid' => $quest->id,
                 'userid' => $user->id,
@@ -496,6 +548,17 @@ class provider implements
             'questid' => $questid,
             'userid' => $userid,
         ]);
+        // Remove attribution and teacher-authored comments, but preserve the learner's grade.
+        $teacherassessments = $DB->get_records('quest_assessments', [
+            'questid' => $questid,
+            'teacherid' => $userid,
+        ]);
+        foreach ($teacherassessments as $assessment) {
+            $assessment->teacherid = 0;
+            $assessment->commentsforteacher = '';
+            $assessment->commentsteacher = '';
+            $DB->update_record('quest_assessments', $assessment);
+        }
         $DB->delete_records('quest_assessments_autors', [
             'questid' => $questid,
             'userid' => $userid,
@@ -515,7 +578,11 @@ class provider implements
                 \question_engine::delete_questions_usage_by_activity($ans->questionusageid);
             }
 
-            $DB->delete_records('quest_assessments', ['answerid' => $ans->id]);
+            $answerassessments = $DB->get_records('quest_assessments', ['answerid' => $ans->id]);
+            foreach ($answerassessments as $assessment) {
+                $DB->delete_records('quest_elements_assessments', ['assessmentid' => $assessment->id]);
+                $DB->delete_records('quest_assessments', ['id' => $assessment->id]);
+            }
             $DB->delete_records('quest_answers', ['id' => $ans->id]);
         }
 
@@ -532,18 +599,35 @@ class provider implements
             // Check if others have submitted answers to this challenge.
             $hasanswers = $DB->record_exists('quest_answers', ['submissionid' => $sub->id]);
 
+            // Remove evaluations of the challenge being deleted/anonymized, including criteria.
+            $authorevaluations = $DB->get_records('quest_assessments_autors', ['submissionid' => $sub->id]);
+            foreach ($authorevaluations as $evaluation) {
+                $DB->delete_records('quest_items_assesments_autor', ['assessmentautorid' => $evaluation->id]);
+                $DB->delete_records('quest_assessments_autors', ['id' => $evaluation->id]);
+            }
+
             if ($hasanswers) {
                 // Anonymize challenge content to preserve attempt history and grades for other participants.
+                if (!empty($sub->questionusageid)) {
+                    \question_engine::delete_questions_usage_by_activity($sub->questionusageid);
+                }
                 $DB->update_record('quest_submissions', (object) [
                     'id' => $sub->id,
+                    'userid' => 0,
                     'title' => get_string('privacy:request:deleted:title', 'mod_quest'),
                     'description' => get_string('privacy:request:deleted:content', 'mod_quest'),
+                    'questionusageid' => 0,
+                    'initialpoints' => 0,
+                    'points' => 0,
+                    'pointsanswercorrect' => 0,
                     'commentteacherpupil' => null,
                     'commentteacherauthor' => null,
                 ]);
             } else {
                 // If nobody answered it, remove completely.
-                $DB->delete_records('quest_assessments_autors', ['submissionid' => $sub->id]);
+                if (!empty($sub->questionusageid)) {
+                    \question_engine::delete_questions_usage_by_activity($sub->questionusageid);
+                }
                 $DB->delete_records('quest_submissions', ['id' => $sub->id]);
             }
         }

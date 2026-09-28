@@ -59,7 +59,7 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
 }
 
 $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
@@ -566,7 +566,7 @@ if ((!$ismanager) && ($quest->allowteams)) {
                         $data = [];
                         $sortdata = [];
 
-                        $data[] = $team->name;
+                        $data[] = s($team->name);
                         $sortdata['team'] = $team->name;
 
                         $data[] = $calificationteam->nanswers;

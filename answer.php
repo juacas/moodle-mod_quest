@@ -35,15 +35,16 @@ $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 $aid = optional_param('aid', null, PARAM_INT); // Answer ID..
 if ($aid) {
     $answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
-}
-
-if (!empty($answer)) {
-    $sid = $answer->submissionid;
+    $submission = $DB->get_record('quest_submissions', [
+        'id' => $answer->submissionid,
+        'questid' => $answer->questid,
+    ], '*', MUST_EXIST);
+    quest_require_answer_ownership($answer, (int)$submission->questid);
+    $sid = $submission->id;
 } else {
-    $sid = required_param('sid', PARAM_INT); // Submission ID..
+    $sid = required_param('sid', PARAM_INT); // Submission ID.
+    $submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
 }
-
-$submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 
@@ -71,6 +72,12 @@ $submissionurl = "challenges.php?id=$cm->id&amp;sid=$submission->id&amp;action=s
 
 // Now check whether we need to display a frameset..
 if ($action == "answer") {
+    if (!quest_user_can_answer_submission($quest, $submission, $context)) {
+        throw new \moodle_exception('nopermissions', 'error', '', 'answer this challenge');
+    }
+if (!quest_user_passed_password($quest, $context)) {
+        quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+    }
     // Check if challenge is linked to a Question Bank question.
     $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
     if ($linkedquestion) {
@@ -160,7 +167,7 @@ if ($action == "answer") {
     }
 } else if ($action == "showanswer") {
     if (($quest->usepassword) && (!$ismanager)) {
-        quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
+        quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
     }
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", ["id" => $aid]);

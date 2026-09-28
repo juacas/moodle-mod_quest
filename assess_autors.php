@@ -29,7 +29,7 @@ require_once("locallib.php");
 $sid = required_param('sid', PARAM_INT); // Submission ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_ALPHA);
-global $DB;
+global $DB, $USER;
 
 $submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
@@ -43,9 +43,15 @@ require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
 $canapprove = has_capability('mod/quest:approvechallenge', $context);
+if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+    throw new \moodle_exception('nopermissions', 'error', '', 'assess this challenge');
+}
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");

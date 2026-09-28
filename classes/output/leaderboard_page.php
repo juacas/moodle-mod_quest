@@ -160,7 +160,6 @@ class leaderboard_page implements renderable, templatable {
                     'iscurrentuser' => (($s->userid ?? 0) == $USER->id),
                     'userpicture' => $pic,
                     'fullname' => fullname($userobj),
-                    'email' => $s->email ?? '',
                     'teamname' => !empty($s->teamname) ? $s->teamname : '-',
                     'nanswers' => (int)($s->nanswers ?? 0),
                     'pointssubmission' => round((float)($s->pointssubmission ?? 0), 1),

@@ -47,6 +47,39 @@ class restore_quest_activity_task extends restore_activity_task {
     }
 
     /**
+     * Relink attempts when Moodle keeps an existing question from an external bank.
+     *
+     * During a same-site activity restore, the temporary question copy can be removed
+     * after the activity step. Its attempts must then use the original question ID.
+     */
+    public function after_restore() {
+        global $DB;
+
+        if (!$this->is_samesite() || !$this->get_setting_value('userinfo')) {
+            return;
+        }
+
+        $sql = "SELECT qa.id, bi.itemid AS originalquestionid
+                  FROM {quest_answers} a
+                  JOIN {question_attempts} qa ON qa.questionusageid = a.questionusageid
+                  JOIN {backup_ids_temp} bi ON bi.newitemid = qa.questionid
+                  LEFT JOIN {question} q ON q.id = qa.questionid
+                 WHERE a.questid = :questid
+                   AND bi.backupid = :restoreid
+                   AND bi.itemname = 'question_created'
+                   AND q.id IS NULL";
+        $attempts = $DB->get_records_sql($sql, [
+            'questid' => $this->get_activityid(),
+            'restoreid' => $this->get_restoreid(),
+        ]);
+        foreach ($attempts as $attempt) {
+            if ($DB->record_exists('question', ['id' => $attempt->originalquestionid])) {
+                $DB->set_field('question_attempts', 'questionid', $attempt->originalquestionid, ['id' => $attempt->id]);
+            }
+        }
+    }
+
+    /**
      * Define the activity contents processed by the link decoder.
      *
      * @return array Restore content rules.

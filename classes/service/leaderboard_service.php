@@ -257,7 +257,8 @@ class leaderboard_service {
             default => "qcu.points DESC, qcu.nanswers DESC, qcu.id ASC",
         };
 
-        $userfields = \core_user\fields::for_userpic()->with_name()->including('email');
+        // Contact details are private profile data; standings need only display identity fields.
+        $userfields = \core_user\fields::for_userpic()->with_name();
         $userselects = $userfields->get_sql('u', false, '', '', false)->selects;
 
         $sql = "SELECT qcu.*, {$userselects}, t.name AS teamname

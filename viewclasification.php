@@ -76,7 +76,7 @@ if ($action != 'export') {
 }
 
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
 }
 
 /*
@@ -84,6 +84,8 @@ if (($quest->usepassword) && (!$ismanager)) {
  * Only to solve bugs.
  */
 if ($debugrecalculate == 'yes') {
+    require_capability('mod/quest:manage', $context);
+    require_sesskey();
     require_once("scores_lib.php");
     print("<p>Recalculating...</p>");
     updateallusers($quest->id);

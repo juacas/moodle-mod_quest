@@ -32,15 +32,21 @@ $redirect = optional_param('redirect', '', PARAM_URL);
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 
-global $DB, $PAGE, $OUTPUT;
+global $DB, $PAGE, $OUTPUT, $USER;
 
 $assessment = $DB->get_record("quest_assessments_autors", ["id" => $aid], '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', ['id' => $assessment->submissionid], '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', [
+    'id' => $assessment->submissionid,
+    'questid' => $assessment->questid,
+], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 
 $url = new moodle_url('/mod/quest/viewassessmentautor.php',
         ['aid' => $aid, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'dir' => $dir, 'sort' => $sort]);
@@ -59,6 +65,14 @@ echo $OUTPUT->header();
 quest_check_visibility($course, $cm);
 
 $ismanager = has_capability('mod/quest:manage', $context);
+$cangrade = has_capability('mod/quest:grade', $context);
+$canviewotherauthors = has_capability('mod/quest:viewotherattemptsowners', $context);
+$isclosed = (int)$submission->dateend <= time() ||
+    (int)$submission->nanswerscorrect >= (int)$quest->nmaxanswers;
+if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id &&
+        !($quest->permitviewautors && $isclosed && $canviewotherauthors)) {
+    throw new \moodle_exception('nopermissions', 'error', '', 'view this assessment');
+}
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
@@ -66,7 +80,13 @@ $strassess = get_string("viewassessmentautor", "quest");
 $newcalification = optional_param('newcalification', null, PARAM_FLOAT);
 if (isset($newcalification)) {
 
-    if (($ismanager) && ($assessment->state != 0)) {
+    require_sesskey();
+    if (!is_finite($newcalification) || $newcalification < 0 ||
+            $newcalification > (float)$submission->initialpoints) {
+        throw new \moodle_exception('invaliddata', 'error');
+    }
+
+    if (($ismanager || $cangrade) && ($assessment->state != 0)) {
 
         if ($calificationuser = $DB->get_record("quest_calification_users", [
             "userid" => $submission->userid,

@@ -1047,6 +1047,141 @@ function quest_require_answer_ownership($answer, int $questid): void {
 }
 
 /**
+ * Require a submission to belong to the current Quest activity.
+ *
+ * @param \stdClass $submission Challenge/submission record.
+ * @param int $questid Quest instance ID.
+ * @throws \moodle_exception If the record belongs to another activity.
+ */
+function quest_require_submission_ownership(\stdClass $submission, int $questid): void {
+    if ((int)$submission->questid !== $questid) {
+        throw new \moodle_exception('notpermissionsubmission', 'quest');
+    }
+}
+
+/**
+ * Check whether the current user may view a challenge's content and files.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Challenge/submission record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_view_submission(\stdClass $quest, \stdClass $submission,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$submission->questid !== (int)$quest->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:manage', $context, $userid) ||
+            has_capability('mod/quest:preview', $context, $userid) ||
+            has_capability('mod/quest:grade', $context, $userid) ||
+            has_capability('mod/quest:approvechallenge', $context, $userid) ||
+            (int)$submission->userid === $userid) {
+        return true;
+    }
+    return (int)$submission->state === SUBMISSION_STATE_APROVED &&
+        (int)$submission->datestart <= time();
+}
+
+/**
+ * Check whether the current user may view an answer and its files.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Parent challenge.
+ * @param \stdClass $answer Answer record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_view_answer(\stdClass $quest, \stdClass $submission, \stdClass $answer,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$answer->questid !== (int)$quest->id ||
+            (int)$submission->questid !== (int)$quest->id ||
+            (int)$answer->submissionid !== (int)$submission->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:manage', $context, $userid) ||
+            has_capability('mod/quest:preview', $context, $userid) ||
+            has_capability('mod/quest:grade', $context, $userid) ||
+            has_capability('mod/quest:approvechallenge', $context, $userid) ||
+            (int)$answer->userid === $userid || (int)$submission->userid === $userid) {
+        return true;
+    }
+    return (int)$submission->dateend <= time() ||
+        (int)$submission->nanswerscorrect >= (int)$quest->nmaxanswers;
+}
+
+/**
+ * Check whether the current user has passed this activity's optional password gate.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_passed_password(\stdClass $quest, \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    return empty($quest->usepassword) || has_capability('mod/quest:manage', $context, $userid) ||
+        (!empty($USER->questloggedin) && !empty($USER->questloggedin[$quest->id]));
+}
+
+/**
+ * Check whether a user may submit an answer to a challenge in its current state.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Challenge record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_answer_submission(\stdClass $quest, \stdClass $submission,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$submission->questid !== (int)$quest->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:manage', $context, $userid)) {
+        return true;
+    }
+    return has_capability('mod/quest:attempt', $context, $userid) &&
+        (int)$submission->userid !== $userid &&
+        (int)$submission->state === SUBMISSION_STATE_APROVED &&
+        (int)$submission->datestart <= time() && (int)$submission->dateend > time() &&
+        (int)$submission->nanswerscorrect < (int)$quest->nmaxanswers;
+}
+
+/**
+ * Check whether the current user may delete a challenge in this activity.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Challenge record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_delete_submission(\stdClass $quest, \stdClass $submission,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$submission->questid !== (int)$quest->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:deletechallengeall', $context, $userid)) {
+        return true;
+    }
+    return has_capability('mod/quest:deletechallengemine', $context, $userid) &&
+        (int)$submission->userid === $userid && time() < (int)$quest->dateend &&
+        (int)$submission->nanswers === 0 && time() < (int)$submission->dateend;
+}
+
+/**
  * Get an actionable status for a challenge that needs staff attention.
  *
  * @param \stdClass $challenge Challenge submission.
@@ -1172,11 +1307,18 @@ class quest_print_answer_form extends moodleform {
 function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context) {
     global $DB, $COURSE, $OUTPUT, $USER;
 
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     $timenow = time();
     // ...variable $modif to check if the answer is new of is being modified.
     if (empty($answer->id)) {
         $modif = false;
+        $submissionid = (int)($answer->sid ?? $answer->submissionid ?? 0);
+        $submission = $DB->get_record('quest_submissions', [
+            'id' => $submissionid,
+            'questid' => $quest->id,
+        ], '*', MUST_EXIST);
+        if (!quest_user_can_answer_submission($quest, $submission, $context)) {
+            throw new \moodle_exception('nopermissiontoanswer', 'quest');
+        }
         if (!$validate = quest_validate_user_answer($quest, $submission)) {
             throw new \moodle_exception(
                 'answerexisty',
@@ -1186,17 +1328,30 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
         }
         $answer->questid = $quest->id;
         $answer->userid = $USER->id;
-        $answer->submissionid = $answer->sid;
+        $answer->submissionid = $submission->id;
     } else {
         $modif = true;
-        $answer->id = $DB->get_field('quest_answers', 'id', ['id' => $answer->id], MUST_EXIST);
-        if (!($ismanager || (($USER->id == $answer->userid) && ($timenow < $quest->dateend)))) {
+        $storedanswer = $DB->get_record('quest_answers', [
+            'id' => $answer->id,
+            'questid' => $quest->id,
+        ], '*', MUST_EXIST);
+        quest_require_answer_ownership($storedanswer, (int)$quest->id);
+        $submission = $DB->get_record('quest_submissions', [
+            'id' => $storedanswer->submissionid,
+            'questid' => $quest->id,
+        ], '*', MUST_EXIST);
+        if (!($ismanager || ((int)$USER->id === (int)$storedanswer->userid &&
+                (int)$submission->dateend > $timenow))) {
             throw new \moodle_exception(
                 'answernoauthorizedupdate',
                 'quest',
                 "challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id"
             );
         }
+        $answer->id = $storedanswer->id;
+        $answer->questid = $quest->id;
+        $answer->userid = $storedanswer->userid;
+        $answer->submissionid = $storedanswer->submissionid;
     }
     $answer->date = $timenow;
     $answer->description = ''; // ...updated later.
@@ -1293,6 +1448,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     $timenow = time();
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $cangrade = has_capability('mod/quest:grade', $context);
 
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -1966,6 +2122,7 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $cangrade = has_capability('mod/quest:grade', $context);
 
     if ($assessment) {
         $answer = $DB->get_record("quest_answers", ["id" => $assessment->answerid], '*', MUST_EXIST);
@@ -2034,7 +2191,7 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
     }
     echo '</div>';
     echo '<div>';
-    if ($allowchanges) {
+    if ($allowchanges && ($ismanager || $cangrade)) {
         echo '<span class="badge bg-primary fs-7 px-3 py-2">'
                 . '<i class="fa fa-pencil me-1" aria-hidden="true"></i>'
                 . get_string('editing', 'quest') . '</span>';
@@ -2276,8 +2433,8 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
         echo '</div></div></div>';
     }
 
-    // Manual qualification override.
-    if ($allowchanges) {
+    // Manual qualification override is restricted to users who can grade.
+    if ($allowchanges && ($ismanager || $cangrade)) {
         echo '<div class="card mb-4 border-warning shadow-sm">';
         echo '<div class="card-header bg-warning text-dark fw-bold py-2 px-3">';
         echo '<i class="fa fa-sliders me-2" aria-hidden="true"></i>' . get_string('changemanualcalification', 'quest');
@@ -2375,6 +2532,17 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
         }
     } else {
         $elements = [];
+    }
+    if ($quest->gradingstrategy == 1) {
+        foreach ($grades as $key => $thegrade) {
+            if (!isset($elements[$key]) || !is_finite((float)$thegrade)) {
+                throw new \moodle_exception('invaliddata', 'error');
+            }
+            $maxscore = (float)$elements[$key]->maxscore;
+            if ($maxscore <= 0 || $thegrade < 0 || $thegrade > $maxscore) {
+                throw new \moodle_exception('invaliddata', 'error');
+            }
+        }
     }
     $num = count($elements);
     $percent = 0;
@@ -2554,6 +2722,7 @@ function quest_print_assessment_autor(
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $cangrade = has_capability('mod/quest:grade', $context);
 
     if ($assessment) {
         $submission = $DB->get_record("quest_submissions", ["id" => $assessment->submissionid], '*', MUST_EXIST);
@@ -2595,6 +2764,7 @@ function quest_print_assessment_autor(
     echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
     echo '<input type="hidden" name="aid" value="' . $assessment->id . '" />';
     echo '<input type="hidden" name="action" value="updateassessment" />';
+    echo '<input type="hidden" name="sesskey" value="' . sesskey() . '" />';
     echo '<input type="hidden" name="returnto" value="' . s($returnto) . '" />';
     echo '<input type="hidden" name="elementno" value="' . $numelements . '" />';
     echo '<input type="hidden" name="stockcommentid" value="" />';
@@ -2822,7 +2992,7 @@ function quest_print_assessment_autor(
     }
 
     // Manual qualification override (for teachers when $allowchanges).
-    if ($allowchanges == true) {
+    if ($allowchanges == true && ($ismanager || $cangrade)) {
         echo '<div class="card mb-4 border-warning shadow-sm">';
         echo '<div class="card-header bg-warning text-dark fw-bold py-2 px-3">';
         echo '<i class="fa fa-sliders me-2" aria-hidden="true"></i>' . get_string('changemanualcalification', 'quest');
@@ -3061,7 +3231,7 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 
                 foreach ($teams as $team) {
                     if ($calificationteams[$i]->teamid == $team->id) {
-                        $data[] = $team->name;
+                        $data[] = s($team->name);
                         $sortdata['team'] = strtolower($team->name);
                     }
                 }
@@ -4105,7 +4275,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
                 $sortdata['firstname'] = strtolower($user->firstname);
                 $sortdata['lastname'] = strtolower($user->lastname);
 
-                $data[] = $team->name;
+                $data[] = s($team->name);
                 $sortdata['teamname'] = strtolower($team->name);
 
                 $data[] = $team->ncomponents;
@@ -4242,7 +4412,7 @@ function quest_require_password($quest, $course, $userpassword) {
             if ($correctpass) {
                 $USER->questloggedin[$quest->id] = true;
             }
-        } else if ($USER->questloggedin[$quest->id]) {
+        } else if (!empty($USER->questloggedin) && !empty($USER->questloggedin[$quest->id])) {
             $correctpass = true;
         }
 

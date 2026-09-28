@@ -26,15 +26,21 @@ require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
 
-global $DB, $OUTPUT, $PAGE;
+global $DB, $OUTPUT, $PAGE, $USER;
 
 $asid = required_param('asid', PARAM_INT); // Assessment ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 
 $assessment = $DB->get_record("quest_assessments", ["id" => $asid], '*', MUST_EXIST);
-$answer = $DB->get_record('quest_answers', ['id' => $assessment->answerid], '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
+$answer = $DB->get_record('quest_answers', [
+    'id' => $assessment->answerid,
+    'questid' => $assessment->questid,
+], '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', [
+    'id' => $answer->submissionid,
+    'questid' => $assessment->questid,
+], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 $course = get_course($quest->course);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
@@ -44,7 +50,11 @@ require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 $ismanager = has_capability('mod/quest:manage', $context);
+$cangrade = has_capability('mod/quest:grade', $context);
 
 $url = new moodle_url('/mod/quest/viewassessment.php',
         ['asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
@@ -55,7 +65,7 @@ $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-if (!$ismanager && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
+if (!$ismanager && !$cangrade && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'error', '', "Unauthorized access!");
 }
 $strquests = get_string("modulenameplural", "quest");

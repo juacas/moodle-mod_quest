@@ -29,7 +29,7 @@ require_once("scores_lib.php");
 
 $id = required_param('id', PARAM_INT); // Course Module ID.
 $action = required_param('action', PARAM_ALPHA);
-global $DB, $OUTPUT, $PAGE, $questscales, $questeweights;
+global $DB, $OUTPUT, $PAGE, $USER, $questscales, $questeweights;
 if (!is_array($questscales)) {
     $questscales = quest_get_default_scales();
 }
@@ -44,6 +44,9 @@ $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
 require_login($course->id, false, $cm);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_context($context);
@@ -237,11 +240,21 @@ if ($action == 'displaygradingform') {
     redirect("view.php?id=$cm->id", get_string("savedok", "quest"));
 } else if ($action == 'updateassessment') {
     // Update assessment (by teacher or student).
+    require_sesskey();
     $message = '';
 
     $aid = required_param('aid', PARAM_INT);
     $assessment = $DB->get_record("quest_assessments_autors", ["id" => $aid], '*', MUST_EXIST);
-    $submission = $DB->get_record("quest_submissions", ["id" => $assessment->submissionid], '*', MUST_EXIST);
+    if ((int)$assessment->questid !== (int)$quest->id) {
+        throw new \moodle_exception('notpermissionsubmission', 'quest');
+    }
+    $submission = $DB->get_record("quest_submissions", [
+        "id" => $assessment->submissionid,
+        "questid" => $quest->id,
+    ], '*', MUST_EXIST);
+    if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+        throw new \moodle_exception('nopermissions', 'error', '', 'update this assessment');
+    }
     // First get the assignment elements for maxscores and weights...
     $elementsraw = $DB->get_records("quest_elementsautor", ["questid" => $quest->id], "elementno ASC");
 
@@ -255,7 +268,13 @@ if ($action == 'displaygradingform') {
     $timenow = time();
     $manualgrade = optional_param('manualcalification', null, PARAM_ALPHANUM);
     $points = $submission->initialpoints;
-    if ($manualgrade != null) {
+    if ($manualgrade !== null && $manualgrade !== '') {
+        if (!$ismanager && !$cangrade) {
+            throw new \moodle_exception('nopermissions', 'error', '', 'override this assessment grade');
+        }
+        if (!ctype_digit((string)$manualgrade) || (int)$manualgrade > 100) {
+            throw new \moodle_exception('invaliddata', 'error');
+        }
         $percent = ((int) $manualgrade) / 100;
         $grade = $points * $percent;
         $message .= "Grading manually! $points * $percent = $grade";
@@ -284,6 +303,15 @@ if ($action == 'displaygradingform') {
             case 1: // Accumulative grading.
                     // Insert all the elements that contain something.
                 $grades = optional_param_array('grade', [], PARAM_FLOAT);
+                foreach ($grades as $key => $thegrade) {
+                    if (!isset($elements[$key]) || !is_finite((float)$thegrade)) {
+                        throw new \moodle_exception('invaliddata', 'error');
+                    }
+                    $maxscore = (float)$elements[$key]->maxscore;
+                    if ($maxscore <= 0 || $thegrade < 0 || $thegrade > $maxscore) {
+                        throw new \moodle_exception('invaliddata', 'error');
+                    }
+                }
                 foreach ($grades as $key => $thegrade) {
                     $element = new stdClass();
                     $element->questid = $quest->id;

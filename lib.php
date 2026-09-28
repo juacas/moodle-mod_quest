@@ -300,11 +300,17 @@ function quest_delete_instance($id) {
 function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $CFG, $DB;
 
+    require_once(__DIR__ . '/locallib.php');
+
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
     }
     require_course_login($course, true, $cm);
     if (!has_capability('mod/quest:view', $context)) {
+        return false;
+    }
+    $quest = $DB->get_record('quest', ['id' => $cm->instance], '*', MUST_EXIST);
+    if (!quest_user_passed_password($quest, $context)) {
         return false;
     }
     $filename = array_pop($args);
@@ -317,22 +323,33 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
         $entryid = 0;
     } else {
         if ($filearea === 'attachment' || $filearea === 'submission') {
-            if (!$entry = $DB->get_record('quest_submissions', ['id' => $entryid])) {
+            if (!$entry = $DB->get_record('quest_submissions', [
+                'id' => $entryid,
+                'questid' => $quest->id,
+            ])) {
+                return false;
+            }
+            if (!quest_user_can_view_submission($quest, $entry, $context)) {
                 return false;
             }
         } else if ($filearea === 'answer_attachment' || $filearea === 'answer') {
-            if (!$entry = $DB->get_record('quest_answers', ['id' => $entryid])) {
+            if (!$entry = $DB->get_record('quest_answers', [
+                'id' => $entryid,
+                'questid' => $quest->id,
+            ])) {
+                return false;
+            }
+            $submission = $DB->get_record('quest_submissions', [
+                'id' => $entry->submissionid,
+                'questid' => $quest->id,
+            ]);
+            if (!$submission || !quest_user_can_view_answer($quest, $submission, $entry, $context)) {
                 return false;
             }
         } else {
             return false; // Unknown filearea.
         }
 
-        // File IDs are global. Do not allow an ID from a different Quest activity
-        // to be used with the current module context.
-        if ((int) $entry->questid !== (int) $cm->instance) {
-            return false;
-        }
     }
 
     $filepath = '/';
@@ -389,8 +406,9 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
  */
 function quest_question_pluginfile($course, $context, $component,
         $filearea, $qubaid, $slot, $args, $forcedownload, array $options = []) {
-    global $CFG;
+    global $CFG, $DB;
 
+    require_once(__DIR__ . '/locallib.php');
     require_once($CFG->libdir . '/questionlib.php');
 
     try {
@@ -400,23 +418,65 @@ function quest_question_pluginfile($course, $context, $component,
     }
 
     $owningcontext = $quba->get_owning_context();
+    $answer = null;
+    $canviewfeedback = false;
     if ($owningcontext && $owningcontext->contextlevel == CONTEXT_MODULE) {
         list($modcontext, $course, $cm) = get_context_info_array($owningcontext->id);
-        require_course_login($course, true, $cm);
-        if (!has_capability('mod/quest:view', $owningcontext)) {
+        if (!$cm || $cm->modname !== 'quest') {
             send_file_not_found();
         }
+        require_course_login($course, true, $cm);
+        if (!has_capability('mod/quest:view', $modcontext)) {
+            send_file_not_found();
+        }
+        $quest = $DB->get_record('quest', ['id' => $cm->instance]);
+        if (!$quest || !quest_user_passed_password($quest, $modcontext)) {
+            send_file_not_found();
+        }
+
+        // Only serve question files from usages attached to an in-scope challenge
+        // or answer, and apply the same visibility policy as their parent record.
+        $answer = $DB->get_record('quest_answers', ['questionusageid' => $qubaid, 'questid' => $quest->id]);
+        if ($answer) {
+            $submission = $DB->get_record('quest_submissions', [
+                'id' => $answer->submissionid,
+                'questid' => $quest->id,
+            ]);
+            if (!$submission || !quest_user_can_view_answer($quest, $submission, $answer, $modcontext)) {
+                send_file_not_found();
+            }
+            $canviewfeedback =
+                has_capability('mod/quest:manage', $modcontext) ||
+                has_capability('mod/quest:grade', $modcontext) ||
+                (int)$submission->dateend <= time() ||
+                in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true);
+        } else {
+            $submission = $DB->get_record('quest_submissions', ['questionusageid' => $qubaid, 'questid' => $quest->id]);
+            if (!$submission || !quest_user_can_view_submission($quest, $submission, $modcontext)) {
+                send_file_not_found();
+            }
+            $canviewfeedback = has_capability('mod/quest:manage', $modcontext) ||
+                has_capability('mod/quest:grade', $modcontext);
+        }
     } else {
-        require_login();
+        send_file_not_found();
     }
 
     $displayoptions = new question_display_options();
-    $displayoptions->feedback = question_display_options::VISIBLE;
-    $displayoptions->numpartscorrect = question_display_options::VISIBLE;
-    $displayoptions->generalfeedback = question_display_options::VISIBLE;
-    $displayoptions->rightanswer = question_display_options::VISIBLE;
-    $displayoptions->manualcomment = question_display_options::VISIBLE;
-    $displayoptions->history = question_display_options::VISIBLE;
+    $displayoptions->feedback = question_display_options::HIDDEN;
+    $displayoptions->numpartscorrect = question_display_options::HIDDEN;
+    $displayoptions->generalfeedback = question_display_options::HIDDEN;
+    $displayoptions->rightanswer = question_display_options::HIDDEN;
+    $displayoptions->manualcomment = question_display_options::HIDDEN;
+    $displayoptions->history = question_display_options::HIDDEN;
+    if ($canviewfeedback) {
+        $displayoptions->feedback = question_display_options::VISIBLE;
+        $displayoptions->numpartscorrect = question_display_options::VISIBLE;
+        $displayoptions->generalfeedback = question_display_options::VISIBLE;
+        $displayoptions->rightanswer = question_display_options::VISIBLE;
+        $displayoptions->manualcomment = question_display_options::VISIBLE;
+        $displayoptions->history = question_display_options::VISIBLE;
+    }
 
     if (!$quba->check_file_access($slot, $displayoptions, $component, $filearea, $args, $forcedownload)) {
         send_file_not_found();

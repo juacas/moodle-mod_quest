@@ -79,9 +79,18 @@ $groupmode = groups_get_activity_group($cm); // Groups are being used?
 $currentgroup = groups_get_activity_group($cm);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
-$teamname = optional_param('team', null, PARAM_RAW);
+$teamname = optional_param('team', null, PARAM_TEXT);
+if (isset($teamname)) {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        throw new \moodle_exception('invalidrequest', 'error');
+    }
+    require_sesskey();
+    if (core_text::strlen(trim($teamname)) > 255) {
+        throw new \moodle_exception('invalidparameter');
+    }
+}
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW));
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
 }
 
 // Teachers must complete grading elements and students must enroll in a team if enabled.
@@ -143,6 +152,7 @@ if (has_capability('mod/quest:manage', $context)) {
                     echo $OUTPUT->box_start("center");
                     echo "<form name=\"teams\" method=\"post\" action=\"view.php\">\n";
                     echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />\n";
+                    echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" />\n";
                     echo "<table cellpadding=\"7px\">";
                     echo "<tr align=\"center\"><td>" . get_string("teamforquest", "quest", format_string($quest->name)) .
                         "</td></tr>";
@@ -210,6 +220,7 @@ if (has_capability('mod/quest:manage', $context)) {
                 echo $OUTPUT->box_start("center");
                 echo "<form name=\"teams\" method=\"post\" action=\"view.php\">\n";
                 echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />\n";
+                echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" />\n";
                 echo "<table cellpadding=\"7px\">";
                 if (isset($teamname)) {
                     echo "<tr align=\"center\" style='color:#DF041E;'><td>" . get_string("wrongteam", "quest") . "</td></tr>";
@@ -229,7 +240,7 @@ if (has_capability('mod/quest:manage', $context)) {
                 quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam);
                 echo $OUTPUT->footer();
                 exit();
-            } else if (null !== optional_param('team', null, PARAM_INT)) {
+            } else if (isset($teamname) && trim($teamname) !== '') {
                 if ($team = $DB->get_record("quest_teams",
                         ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup])) {
                     if ($quest->ncomponents > $team->ncomponents) {

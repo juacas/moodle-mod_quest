@@ -79,14 +79,8 @@ if ($sid === null) {
 if ($sid === null) {
     $sid = optional_param('amp;sid', null, PARAM_INT);
 }
-if ($sid !== null && $action === 'showsubmission') {
-    $submissionquestid = $DB->get_field('quest_submissions', 'questid', ['id' => (int)$sid]);
-    if ((int)$submissionquestid === (int)$quest->id) {
-        // Editing a question creates a new version in the same question bank entry.
-        // Make existing Quest references resolve that latest version as well.
-        \mod_quest\question\question_reference_service::use_latest_version_for_challenge((int)$sid);
-    }
-}
+// Rendering a challenge must be read-only. Question-reference normalization is
+// performed by the explicit editing/approval workflows, not by a GET request.
 $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
 $dir = optional_param('dir', 'DESC', PARAM_ALPHA);
 $url = new moodle_url('/mod/quest/challenges.php',
@@ -98,7 +92,7 @@ $PAGE->activityheader->set_attrs([
     'description' => quest_get_activity_header_description($quest, $cm, $context),
 ]);
 if (($quest->usepassword) && (!$ismanager)) {
-    quest_require_password($quest, $course, required_param('userpassword', PARAM_RAW_TRIMMED));
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
 }
 if (empty($action) || $action === 'listallsubmissions') {
     redirect(new moodle_url('/mod/quest/view.php', ['id' => $cm->id]));
@@ -109,7 +103,10 @@ if ($action == 'confirmdelete') {
     if ($sid === null) {
         throw new \moodle_exception('missingparam', '', '', 'sid');
     }
-    $submission = $DB->get_record("quest_submissions", ["id" => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
+    if (!quest_user_can_delete_submission($quest, $submission, $context)) {
+        throw new \moodle_exception('notauthorizedtodeletesubmission', 'quest');
+    }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(\format_string($submission->title));
@@ -123,17 +120,14 @@ if ($action == 'confirmdelete') {
         throw new \moodle_exception('missingparam', '', '', 'sid');
     }
     require_sesskey();
-    $submission = $DB->get_record("quest_submissions", ["id" => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
     $PAGE->navbar->add(\format_string($submission->title));
     echo $OUTPUT->header();
     // ...check if the user has enough capability to delete the submission and only up to the
     // deadline.
-    if (!((has_capability('mod/quest:deletechallengeall', $context) ||
-            (has_capability('mod/quest:deletechallengemine', $context) &&
-             ($USER->id == $submission->userid)) && ($timenow < $quest->dateend) && ($submission->nanswers == 0) &&
-             ($timenow < $submission->dateend)))) {
+    if (!quest_user_can_delete_submission($quest, $submission, $context)) {
         throw new \moodle_exception("notauthorizedtodeletesubmission", 'quest');
     }
     if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $submission->id])) {
@@ -431,7 +425,7 @@ if ($action == 'confirmdelete') {
     if ($sid === null) {
         throw new \moodle_exception('missingparam', '', '', 'sid');
     }
-    $submission = $DB->get_record("quest_submissions", ["id" => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     $titlesubmission = $submission->title;
     $PAGE->navbar->add(\format_string($submission->title));
     if (($submission->userid != $USER->id) && (!$caneditchallenges)) {
@@ -507,7 +501,7 @@ if ($action == 'confirmdelete') {
 } else if ($action === 'exporttoqbank') {
     require_sesskey();
     require_capability('mod/quest:manage', $context);
-    $submission = $DB->get_record("quest_submissions", ['id' => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ['id' => $sid, 'questid' => $quest->id], '*', MUST_EXIST);
     $question = \mod_quest\question\open_question_exporter::export_challenge($quest, $submission, $context);
     $catparam = !empty($question->category) ? "{$question->category},{$context->id}" : '';
     $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
@@ -528,7 +522,7 @@ if ($action == 'confirmdelete') {
     if ($sid === null) {
         throw new \moodle_exception('missingparam', '', '', 'sid');
     }
-    $submission = $DB->get_record("quest_submissions", ["id" => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     if ((!($canpreview)) && ($submission->userid != $USER->id && ($submission->datestart > time() || $submission->state == 1))) {
         throw new \moodle_exception('notpermissionsubmission', 'quest');
     }
@@ -562,6 +556,8 @@ if ($action == 'confirmdelete') {
     $debugrecalculate = optional_param('recalculate', 'no', PARAM_ALPHA);
     $recalculatelink = '';
     if ($debugrecalculate === 'yes') {
+        require_capability('mod/quest:manage', $context);
+        require_sesskey();
         require_once("scores_lib.php");
         print("<p>Fixing submission stats...</p>");
         $submission = quest_update_submission_counts($submission->id);
@@ -629,7 +625,8 @@ if ($action == 'confirmdelete') {
     // Recalc (manager, debug).
     if ($ismanager) {
         $recalcurl = new moodle_url('/mod/quest/challenges.php',
-            ['id' => $cm->id, 'action' => 'showsubmission', 'sid' => $submission->id, 'recalculate' => 'yes']);
+            ['id' => $cm->id, 'action' => 'showsubmission', 'sid' => $submission->id,
+                'recalculate' => 'yes', 'sesskey' => sesskey()]);
         $actionbarbtns .= '<a href="' . $recalcurl->out() . '" class="btn btn-sm btn-outline-secondary" title="Recalc stats">' .
             '<i class="fa fa-refresh me-1" aria-hidden="true"></i>Recalc</a> ';
     }
@@ -762,7 +759,7 @@ if ($action == 'confirmdelete') {
     \mod_quest\event\challenge_viewed::create_from_parts($USER, $submission, $cm)->trigger();
     echo $OUTPUT->continue_button("view.php?id=$cm->id");
 } else if ($action == 'approve') {
-    $submission = $DB->get_record("quest_submissions", ["id" => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     $authorid = $submission->userid;
     $PAGE->navbar->add(\format_string($submission->title));
     if (!$canapprove) {
@@ -955,6 +952,10 @@ if ($action == 'confirmdelete') {
     echo $OUTPUT->continue_button($continueurl);
 } else if ($action == "showanswersuser") {
     $uid = required_param('uid', PARAM_INT);
+    if (!$canpreview && !has_capability('mod/quest:viewotherattemptsowners', $context) &&
+            (int)$uid !== (int)$USER->id) {
+        throw new \moodle_exception('nopermissions', 'error', '', 'view another participant answers');
+    }
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
         echo $OUTPUT->heading(get_string("nostudentsyet"));
         echo $OUTPUT->footer();
@@ -1088,7 +1089,7 @@ if ($action == 'confirmdelete') {
     $users = $userstemp;
     $title = get_string('showsubmissions', 'quest');
     if ($canpreview) {
-        $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . $team->name;
+        $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . s($team->name);
     }
     // Skip if student not in group.
     foreach ($users as $user) {
@@ -1214,7 +1215,18 @@ if ($action == 'confirmdelete') {
         echo $OUTPUT->footer($course);
         exit();
     }
-    $team = $DB->get_record("quest_teams", ['id' => required_param('tid', PARAM_INT)], '*', MUST_EXIST);
+    $team = $DB->get_record("quest_teams", [
+        'id' => required_param('tid', PARAM_INT),
+        'questid' => $quest->id,
+    ], '*', MUST_EXIST);
+    $ownteamid = $DB->get_field('quest_calification_users', 'teamid', [
+        'questid' => $quest->id,
+        'userid' => $USER->id,
+    ]);
+    if (!$canpreview && !has_capability('mod/quest:viewotherattemptsowners', $context) &&
+            (int)$ownteamid !== (int)$team->id) {
+        throw new \moodle_exception('nopermissions', 'error', '', 'view another team answers');
+    }
     $userstemp = [];
     foreach ($users as $user) {
         if ($calificationuser = $DB->get_record("quest_calification_users",
@@ -1227,7 +1239,7 @@ if ($action == 'confirmdelete') {
     $users = $userstemp;
     $title = get_string('showanswers', 'quest');
     if ($canpreview) {
-        $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . $team->name;
+        $title .= ' ' . get_string('of', 'quest') . ' ' . get_string('team', 'quest') . ': ' . s($team->name);
     }
     echo $OUTPUT->heading($title);
     // Now prepare table with student assessments and submissions.
@@ -1310,12 +1322,12 @@ if ($action == 'confirmdelete') {
     $table->head = ["$title", "$firstname / $lastname", "$phase", "$dateanswer", get_string('actions', 'quest'),
                     "$calification"];
     echo html_writer::table($table);
-    $continueurl = (!empty($sid) && $subm = $DB->get_record('quest_submissions', ['id' => $sid]))
+    $continueurl = (!empty($sid) && $subm = $DB->get_record('quest_submissions', ['id' => $sid, 'questid' => $quest->id]))
         ? "challenges.php?action=showsubmission&sid=$subm->id&id=$cm->id"
         : "view.php?id=$cm->id";
     echo $OUTPUT->continue_button($continueurl);
 } else if ($action == "recalificationall" && false) { // This action is deprecated.
-    $submission = $DB->get_record("quest_submissions", ["id" => $sid], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     quest_recalification_all($submission, $quest, $course);
     redirect("challenges.php?id=$id&amp;sid=$sid&amp;action=showsubmission");
 } else if ($action == "confirmchangeform") {

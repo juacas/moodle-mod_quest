@@ -41,6 +41,9 @@ require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 
 // Print the page header.
 
@@ -73,6 +76,10 @@ if ($ismanager) {
             $teams = optional_param_array('team', null, PARAM_ALPHANUMEXT);
             $userids = optional_param_array('userid', [], PARAM_INT);
             if (isset($teams)) {
+                if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+                    throw new \moodle_exception('invalidrequest', 'error');
+                }
+                require_sesskey();
                 foreach ($teams as $i => $teamfield) {
 
                     $teamfield = trim($teamfield);
@@ -102,7 +109,7 @@ if ($ismanager) {
                                             ["id" => $calificationuser->id]);
                                     quest_update_team_scores($quest->id, $team->id);
                                 } else {
-                                    echo ("<center><b>The Team \"$team->name\" is complete</b></center>");
+                                    echo ("<center><b>The Team \"" . s($team->name) . "\" is complete</b></center>");
                                     echo $OUTPUT->continue_button("view.php?id=$cm->id");
                                     exit();
                                 }
@@ -164,6 +171,7 @@ if ($ismanager) {
     $i = 0;
 
     echo "<form enctype=\"multipart/form-data\" name=\"team\" method=\"POST\" action=\"team.php?id=$id\">";
+    echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
     foreach ($users as $user) {
         // ...skip if student not in group.
         if ($ismanager) {
@@ -189,12 +197,12 @@ if ($ismanager) {
 
         if (empty($calificationuser)) {
             $team = new stdClass();
-            $team->name = "<font color=\"#ff0000\"><i>Not participant</i></font>";
-            $team->ncomponents = "<font color=\"#ff0000\"><i>Undefined</i></font>";
+            $team->name = get_string('notavailable');
+            $team->ncomponents = get_string('notavailable');
         } else if (empty($team)) {
             $team = new stdClass();
-            $team->name = "<font color=\"#ff0000\"><i>Undefined</i></font>";
-            $team->ncomponents = "<font color=\"#ff0000\"><i>Undefined</i></font>";
+            $team->name = get_string('notavailable');
+            $team->ncomponents = get_string('notavailable');
         }
 
         $data = [];
@@ -206,10 +214,10 @@ if ($ismanager) {
         $sortdata['firstname'] = strtolower($user->firstname);
         $sortdata['lastname'] = strtolower($user->lastname);
 
-        $data[] = $team->name;
+        $data[] = s($team->name);
         $sortdata['teamname'] = strtolower($team->name);
 
-        $data[] = $team->ncomponents;
+        $data[] = s($team->ncomponents);
         $sortdata['ncomponents'] = $team->ncomponents;
         if (empty($calificationuser)) {
             $data[] = "";

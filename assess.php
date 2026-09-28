@@ -30,7 +30,7 @@ $aid = required_param('aid', PARAM_INT); // Answer ID..
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 require_sesskey();
-global $DB, $OUTPUT, $PAGE;
+global $DB, $OUTPUT, $PAGE, $USER;
 
 $answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
 $submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
@@ -40,8 +40,14 @@ require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
+if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+    throw new \moodle_exception('nopermissions', 'error', '', 'assess this answer');
+}
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");

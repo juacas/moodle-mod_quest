@@ -49,8 +49,12 @@ class backup_quest_activity_task extends backup_activity_task {
      * @return void
      */
     protected function define_my_steps() {
-        // Quest only has one structure step.
+        // Annotate the question bank entries used by challenges and answer attempts.
         $this->add_step(new backup_quest_activity_structure_step('quest_structure', 'quest.xml'));
+
+        // Include the referenced questions, even when their bank is outside this activity.
+        $this->add_step(new backup_calculate_question_categories('activity_question_categories'));
+        $this->add_step(new backup_delete_temp_questions('clean_temp_questions'));
     }
 
     /**

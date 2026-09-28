@@ -147,6 +147,7 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
                     ['questid' => backup::VAR_ACTIVITYID, 'submissionid' => backup::VAR_PARENTID]);
             $answer->set_source_table('quest_answers',
                     ['questid' => backup::VAR_ACTIVITYID, 'submissionid' => backup::VAR_PARENTID]);
+            $this->add_question_usages($answer, 'questionusageid');
             $assessment->set_source_table('quest_assessments',
                     ['questid' => backup::VAR_ACTIVITYID, 'answerid' => backup::VAR_PARENTID]);
             $elementassessment->set_source_table('quest_elements_assessments',

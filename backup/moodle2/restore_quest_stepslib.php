@@ -47,7 +47,9 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
                 '/activity/quest/challenges/challenge/particular_elements/particular_element');
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('quest_answer', '/activity/quest/challenges/challenge/answers/answer');
+            $answerpath = new restore_path_element('quest_answer', '/activity/quest/challenges/challenge/answers/answer');
+            $paths[] = $answerpath;
+            $this->add_question_usages($answerpath, $paths);
             $paths[] = new restore_path_element('quest_assessment',
                     '/activity/quest/challenges/challenge/answers/answer/assessments/assessment');
             $paths[] = new restore_path_element('quest_assessment_autor',
@@ -154,6 +156,32 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
         $newitemid = $DB->insert_record('quest_submissions', $data);
         $this->set_mapping('quest_challenge', $oldid, $newitemid, true);
     }
+
+    /**
+     * Restore a challenge's question bank link using the new challenge and bank entry IDs.
+     *
+     * @param array $data Question reference from the backup.
+     */
+    public function process_question_reference($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $entryid = $this->get_mappingid('question_bank_entry', $data->questionbankentryid);
+        if (!$entryid && $this->task->is_samesite() &&
+                $DB->record_exists('question_bank_entries', ['id' => $data->questionbankentryid])) {
+            // Older Quest backups omitted the bank data but can still use it on the original site.
+            $entryid = $data->questionbankentryid;
+        }
+        if (!$entryid) {
+            throw new restore_step_exception('missing_question_bank_entry_mapping', $data->questionbankentryid);
+        }
+
+        unset($data->id);
+        $data->usingcontextid = $this->task->get_contextid();
+        $data->itemid = $this->get_new_parentid('quest_challenge');
+        $data->questionbankentryid = $entryid;
+        $DB->insert_record('question_references', $data);
+    }
     /**
      * Process data for this level of the backup.
      * @param \stdClass $data
@@ -196,9 +224,8 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
         $data->submissionid = $this->get_new_parentid('quest_challenge');
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->date = $this->apply_date_offset($data->date);
-        if (!isset($data->questionusageid)) {
-            $data->questionusageid = 0;
-        }
+        // A usage ID from the source site is invalid until its usage is restored below.
+        $data->questionusageid = 0;
 
         $newitemid = $DB->insert_record('quest_answers', $data);
 
@@ -277,7 +304,10 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
      * @param int $newusageid
      */
     protected function inform_new_usage_id($newusageid) {
-        // Not used directly in this activity module.
+        global $DB;
+
+        $DB->set_field('quest_answers', 'questionusageid', $newusageid,
+                ['id' => $this->get_new_parentid('quest_answer')]);
     }
 
     /**

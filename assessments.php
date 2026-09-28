@@ -54,13 +54,16 @@ list($course, $cm) = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 
 $context = context_module::instance($cm->id);
-$isteacher = has_capability('mod/quest:manage', $context);
+$isteacher = has_capability('mod/quest:manage', $context) || has_capability('mod/quest:grade', $context);
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassessments = get_string("assessments", "quest");
 
 require_login($course->id, false, $cm);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 $url = new moodle_url('/mod/quest/assessments.php', ['action' => $action, 'id' => $cm->id, 'sesskey' => sesskey()]);
 if ($sid != '') {
     $url->param('sid', $sid);
@@ -417,9 +420,15 @@ if ($action == 'displaygradingform') {
     $aid = required_param('aid', PARAM_INT);
     $sid = optional_param('sid', 0, PARAM_INT);
     require_sesskey();
-    $answer = $DB->get_record("quest_answers", ["id" => $aid], '*', MUST_EXIST);
-    $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id], '*', MUST_EXIST);
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+    $answer = $DB->get_record("quest_answers", ["id" => $aid, "questid" => $quest->id], '*', MUST_EXIST);
+    $assessment = $DB->get_record("quest_assessments", [
+        "answerid" => $answer->id,
+        "questid" => $quest->id,
+    ], '*', MUST_EXIST);
+    $submission = $DB->get_record("quest_submissions", [
+        "id" => $answer->submissionid,
+        "questid" => $quest->id,
+    ], '*', MUST_EXIST);
     // Check access.
     if (!$isteacher && $USER->id != $submission->userid) {
         throw new \moodle_exception('nopermissionassessment', 'quest');
@@ -461,7 +470,10 @@ if ($action == 'displaygradingform') {
     // ...and calculate grade as a percentage..
     // Manual grading....
     $manualgrade = optional_param('manualcalification', null, PARAM_ALPHANUM);
-    if ($manualgrade != null) {
+    if ($manualgrade !== null && $manualgrade !== '') {
+        if (!$isteacher || !ctype_digit((string)$manualgrade) || (int)$manualgrade > 100) {
+            throw new \moodle_exception('invaliddata', 'error');
+        }
         // Grading manually!.
         $percent = ((int) $manualgrade) / 100;
     } else {
