@@ -445,24 +445,21 @@ function quest_question_pluginfile($course, $context, $component,
             if (!$submission || !quest_user_can_view_answer($quest, $submission, $answer, $modcontext)) {
                 send_file_not_found();
             }
-            $canviewfeedback =
-                has_capability('mod/quest:manage', $modcontext) ||
-                has_capability('mod/quest:grade', $modcontext) ||
-                (int)$submission->dateend <= time() ||
-                in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true);
+            $canviewfeedback = (int)$submission->dateend <= time();
         } else {
             $submission = $DB->get_record('quest_submissions', ['questionusageid' => $qubaid, 'questid' => $quest->id]);
             if (!$submission || !quest_user_can_view_submission($quest, $submission, $modcontext)) {
                 send_file_not_found();
             }
-            $canviewfeedback = has_capability('mod/quest:manage', $modcontext) ||
-                has_capability('mod/quest:grade', $modcontext);
+            $canviewfeedback = (int)$submission->dateend <= time();
         }
     } else {
         send_file_not_found();
     }
 
     $displayoptions = new question_display_options();
+    $displayoptions->correctness = question_display_options::HIDDEN;
+    $displayoptions->marks = question_display_options::HIDDEN;
     $displayoptions->feedback = question_display_options::HIDDEN;
     $displayoptions->numpartscorrect = question_display_options::HIDDEN;
     $displayoptions->generalfeedback = question_display_options::HIDDEN;

@@ -350,6 +350,8 @@ class quest_print_upload_form extends moodleform {
         $definitionoptions = $this->_customdata['definitionoptions'];
         $attachmentoptions = $this->_customdata['attachmentoptions'];
         $action = $this->_customdata['action'];
+        $questionbankcontent = in_array($action, ['approve', 'modif'], true) &&
+            !empty($this->_customdata['linkedquestion']);
 
         $context = context_module::instance($cm->id);
         $ismanager = has_capability('mod/quest:manage', $context);
@@ -364,19 +366,21 @@ class quest_print_upload_form extends moodleform {
                                                      // ...definido. hay que ver si es necesario.
         $mform->setType('nosubmit', PARAM_BOOL);
 
-        $mform->addElement('text', 'title', get_string("title", "quest"), 'size="60" maxlength="100"');
-        $mform->setType('title', PARAM_TEXT);
-        $mform->addRule('title', null, 'required', null, 'client');
+        if (!$questionbankcontent) {
+            $mform->addElement('text', 'title', get_string("title", "quest"), 'size="60" maxlength="100"');
+            $mform->setType('title', PARAM_TEXT);
+            $mform->addRule('title', null, 'required', null, 'client');
 
-        $mform->addElement(
-            'editor',
-            'description_editor',
-            get_string("introductiontothechallenge", "quest"),
-            null,
-            $definitionoptions
-        );
-        $mform->setType('description_editor', PARAM_RAW);
-        $mform->addRule('description_editor', null, 'required', null, 'client');
+            $mform->addElement(
+                'editor',
+                'description_editor',
+                get_string("introductiontothechallenge", "quest"),
+                null,
+                $definitionoptions
+            );
+            $mform->setType('description_editor', PARAM_RAW);
+            $mform->addRule('description_editor', null, 'required', null, 'client');
+        }
 
         if (time() < $quest->datestart) {
             $challengestart = $quest->datestart;
@@ -493,9 +497,10 @@ class quest_print_upload_form extends moodleform {
             $this->add_action_buttons();
         }
         // In the form the id hidden element is used to hold the cmid of the quest.
-        $submission->sid = $submission->id;
-        $submission->id = $cm->id;
-        $this->set_data($submission);
+        $formdata = clone $submission;
+        $formdata->sid = $submission->id;
+        $formdata->id = $cm->id;
+        $this->set_data($formdata);
     }
     /**
      *
@@ -560,7 +565,9 @@ class quest_print_upload_form extends moodleform {
  * @param array $attachmentoptions
  * @param \stdClass $context
  * @param string $action
- * @param int $authorid author of the $newsubmission will override $newsubmission->userid */
+ * @param int $authorid author of the $newsubmission will override $newsubmission->userid
+ * @param bool $preservequestioncontent Keep stored title and description for a linked question approval.
+ */
 function quest_upload_challenge(
     stdClass $quest,
     stdClass $newsubmission,
@@ -570,7 +577,8 @@ function quest_upload_challenge(
     $attachmentoptions,
     $context,
     $action,
-    $authorid
+    $authorid,
+    bool $preservequestioncontent = false
 ) {
     global $USER, $DB, $CFG, $OUTPUT, $COURSE, $PAGE;
 
@@ -580,9 +588,13 @@ function quest_upload_challenge(
     $newsubmission->userid = $authorid;
     $newsubmission->id = $newsubmission->sid; // ...id is overused in the form but must be named id.
                                               // ...for the database..
-    $newsubmission->description = ''; // ...updated later.
-    $newsubmission->descriptionformat = FORMAT_HTML; // ...updated later.
-    $newsubmission->descriptiontrust = 0; // ...updated later.
+    if ($preservequestioncontent) {
+        $newsubmission = quest_preserve_linked_challenge_content($newsubmission, (int)$quest->id);
+    } else {
+        $newsubmission->description = ''; // ...updated later.
+        $newsubmission->descriptionformat = FORMAT_HTML; // ...updated later.
+        $newsubmission->descriptiontrust = 0; // ...updated later.
+    }
     $newsubmission->timecreated = time();
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
     if ($ismanager) {
@@ -622,15 +634,17 @@ function quest_upload_challenge(
     }
 
     // ...management of files: save embedded images and attachments..
-    $newsubmission = file_postupdate_standard_editor(
-        $newsubmission,
-        'description',
-        $definitionoptions,
-        $context,
-        'mod_quest',
-        'submission',
-        $newsubmission->id
-    );
+    if (!$preservequestioncontent) {
+        $newsubmission = file_postupdate_standard_editor(
+            $newsubmission,
+            'description',
+            $definitionoptions,
+            $context,
+            'mod_quest',
+            'submission',
+            $newsubmission->id
+        );
+    }
     $newsubmission = file_postupdate_standard_filemanager(
         $newsubmission,
         'attachment',
@@ -675,6 +689,27 @@ function quest_upload_challenge(
         null,
         \core\output\notification::NOTIFY_SUCCESS
     );
+}
+
+/**
+ * Restore text fields omitted from the approval form for a linked question.
+ *
+ * @param \stdClass $submission Submitted challenge data.
+ * @param int $questid Quest instance ID.
+ * @return \stdClass Submitted data with the stored text fields restored.
+ */
+function quest_preserve_linked_challenge_content(\stdClass $submission, int $questid): \stdClass {
+    global $DB;
+
+    $stored = $DB->get_record('quest_submissions', [
+        'id' => $submission->id,
+        'questid' => $questid,
+    ], 'id, title, description, descriptionformat, descriptiontrust', MUST_EXIST);
+    $submission->title = $stored->title;
+    $submission->description = $stored->description;
+    $submission->descriptionformat = $stored->descriptionformat;
+    $submission->descriptiontrust = $stored->descriptiontrust;
+    return $submission;
 }
 /**
  *
@@ -725,7 +760,7 @@ function quest_get_difficulty_levels() {
  * @param \stdClass $challenge
  */
 function quest_print_challenge($quest, $challenge) {
-    global $USER, $OUTPUT;
+    global $OUTPUT;
 
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
     $description = $challenge->description;
@@ -746,18 +781,6 @@ function quest_print_challenge($quest, $challenge) {
     $options->overflowdiv = true;
     $description = format_text($description, $challenge->descriptionformat, $options);
     echo $OUTPUT->box($description);
-    $canpreview = has_capability('mod/quest:preview', $context);
-
-    if (!empty($challenge->comentteacherautor)) {
-        if (($challenge->userid == $USER->id) || ($canpreview)) {
-            echo $OUTPUT->heading(get_string('commentsforauthor', 'quest'));
-            echo $OUTPUT->box(format_text($challenge->comentteacherautor), 'center');
-        }
-    }
-    if (!empty($challenge->comentteacherpupil)) {
-        echo $OUTPUT->heading_with_help(get_string('commentsforstudent', 'quest'), 'commentsforstudent', 'quest');
-        echo $OUTPUT->box(format_text($challenge->comentteacherpupil), 'center');
-    }
 
     if ($quest->nattachments) {
         if ($challenge->attachment) {
@@ -765,6 +788,53 @@ function quest_print_challenge($quest, $challenge) {
         }
     }
     return;
+}
+
+/**
+ * Render the audience-specific challenge comment beneath the author score.
+ *
+ * @param \stdClass $challenge Challenge record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid Viewer ID, or current user when omitted.
+ * @return string Comment panel or an empty string.
+ */
+function quest_challenge_comment_html($challenge, \context_module $context, ?int $userid = null): string {
+    global $DB, $USER;
+
+    $userid = $userid ?? (int)$USER->id;
+    $isstaff = has_capability('mod/quest:preview', $context, $userid);
+    $isauthor = (int)$challenge->userid === $userid;
+    $comments = [];
+
+    if ($isauthor || $isstaff) {
+        if (!empty($challenge->commentteacherauthor)) {
+            $comments[] = [get_string('commentsforauthor', 'quest'), $challenge->commentteacherauthor];
+        }
+        if (!empty($challenge->id) && !empty($challenge->questid)) {
+            $assessment = $DB->get_record('quest_assessments_autors', [
+                'questid' => $challenge->questid,
+                'submissionid' => $challenge->id,
+            ], 'id, commentsteacher');
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                $comments[] = [get_string('commentsteacher', 'quest'), $assessment->commentsteacher];
+            }
+        }
+    }
+
+    if ((!$isauthor || $isstaff) && !empty($challenge->commentteacherpupil)) {
+        $comments[] = [get_string('commentsforstudent', 'quest'), $challenge->commentteacherpupil];
+    }
+
+    $icon = html_writer::tag('i', '', ['class' => 'fa fa-info-circle me-2', 'aria-hidden' => 'true']);
+    $html = '';
+    foreach ($comments as [$title, $comment]) {
+        $html .= html_writer::div(
+            html_writer::tag('strong', $icon . $title) . html_writer::div(format_text($comment), 'mt-2'),
+            'alert alert-info quest-challenge-comment mt-3',
+            ['role' => 'note']
+        );
+    }
+    return $html;
 }
 
 /**
@@ -1220,6 +1290,23 @@ function quest_get_challenge_attention_status($challenge, $cm, $context): array 
     }
 
     return $statuses;
+}
+
+/**
+ * Keep a pending-approval phase badge from repeating the actionable notice.
+ *
+ * @param \stdClass $challenge Challenge record.
+ * @param array $attentionstatuses Actionable status data.
+ * @param string $phaselabel Text of the phase badge.
+ * @return bool Whether the phase badge adds new information.
+ */
+function quest_should_show_challenge_phase_badge($challenge, array $attentionstatuses, string $phaselabel): bool {
+    $labels = array_column($attentionstatuses, 'label');
+    if (in_array($phaselabel, $labels, true)) {
+        return false;
+    }
+    return !((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING &&
+        in_array(get_string('approvalpending', 'quest'), $labels, true));
 }
 
 /**
@@ -2008,7 +2095,7 @@ function quest_answer_phase($answer, $course, $style = '') {
  */
 function quest_print_answer($quest, $answer) {
     // ...prints the answer with optional attachments.
-    global $CFG, $USER, $OUTPUT;
+    global $CFG, $DB, $USER, $OUTPUT;
 
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
 
@@ -2017,11 +2104,28 @@ function quest_print_answer($quest, $answer) {
 
     if (!empty($answer->questionusageid)) {
         require_once($CFG->libdir . '/questionlib.php');
+        $submission = $DB->get_record('quest_submissions', [
+            'id' => $answer->submissionid,
+            'questid' => $quest->id,
+        ], 'id, dateend', MUST_EXIST);
         $quba = question_engine::load_questions_usage_by_activity($answer->questionusageid);
+        $showcorrectanswer = (int)$submission->dateend <= time();
 
         echo '<div class="card border-0 shadow-sm mb-4">';
         echo '  <div class="card-body p-4">';
-        echo \mod_quest\service\autograde_service::render_question($quba, 1, true);
+        echo \mod_quest\service\autograde_service::render_question($quba, 1, true, $showcorrectanswer);
+        $question = $quba->get_question(1);
+        if (!$question->qtype->is_manual_graded() &&
+                in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)) {
+            $iscorrect = (int)$answer->phase === ANSWER_PHASE_PASSED;
+            $resultlabel = $iscorrect ? get_string('correct', 'quest') : get_string('incorrect', 'quest');
+            $badgeclass = $iscorrect ? 'bg-success text-white' : 'bg-danger text-white';
+            echo html_writer::div(
+                html_writer::span($resultlabel, 'badge ' . $badgeclass) . ' ' .
+                html_writer::span(get_string('grade', 'quest') . ': ' . format_float((float)$answer->grade, 2) . '%'),
+                'quest-autograde-result mt-3'
+            );
+        }
         echo '  </div>';
         echo '</div>';
     } else {
@@ -2506,6 +2610,12 @@ function quest_print_general_comment_box($course, $allowchanges, $assessment) {
 /**
  * Calculate a percentage grade for an answer.
  *
+ * @param \stdClass $quest Quest activity.
+ * @param \stdClass $answer Answer being assessed.
+ * @param array $grades Criterion grades.
+ * @param array $feedbacks Criterion feedback.
+ * @return float Fractional grade.
+ */
 function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
     // Ensure $questeweights is always an array, even if global was not populated.
@@ -3453,6 +3563,53 @@ function quest_update_grade_for_answer($answeractual, $submission, $quest, $cour
     }
 }
 
+/**
+ * Remove a manual assessment and restore the result kept by the question engine.
+ *
+ * @param \stdClass $quest Quest activity.
+ * @param \stdClass $answer Answer with a finished automatic attempt.
+ * @param \stdClass $assessment Manual assessment to remove.
+ * @return float Restored grade percentage.
+ */
+function quest_restore_automatic_assessment($quest, $answer, $assessment): float {
+    global $DB;
+
+    if ((int)$answer->questid !== (int)$quest->id || (int)$assessment->questid !== (int)$quest->id ||
+            (int)$assessment->answerid !== (int)$answer->id ||
+            (int)$assessment->state === ASSESSMENT_STATE_UNDONE) {
+        throw new \moodle_exception('autograde_restorenotavailable', 'quest');
+    }
+    $grade = \mod_quest\service\autograde_service::get_automatic_grade($answer);
+    if ($grade === null) {
+        throw new \moodle_exception('autograde_restorenotavailable', 'quest');
+    }
+
+    $submission = $DB->get_record('quest_submissions', [
+        'id' => $answer->submissionid,
+        'questid' => $quest->id,
+    ], '*', MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $quest->course], '*', MUST_EXIST);
+    $transaction = $DB->start_delegated_transaction();
+
+    $DB->delete_records('quest_elements_assessments', ['assessmentid' => $assessment->id]);
+    $DB->delete_records('quest_assessments', ['id' => $assessment->id, 'answerid' => $answer->id]);
+    $answer->grade = $grade;
+    $answer->phase = $grade >= 50.0 ? ANSWER_PHASE_PASSED : ANSWER_PHASE_GRADED;
+    $answer->state = ANSWER_STATE_EDITTED;
+    $DB->update_record('quest_answers', $answer);
+
+    $submission = \mod_quest\service\tournament_manager::update_submission_counts((int)$submission->id);
+    quest_update_grade_for_answer($answer, $submission, $quest, $course);
+    \mod_quest\service\tournament_manager::update_submission_counts((int)$submission->id);
+    quest_grade_updated($quest, (int)$answer->userid);
+    if ((int)$submission->userid !== (int)$answer->userid) {
+        \mod_quest\service\leaderboard_service::update_user_scores($quest, (int)$submission->userid);
+    }
+
+    $transaction->allow_commit();
+    return $grade;
+}
+
 /** Update a challenge details in the database.
  * Truncate numeric values to workaround database truncation errors
  * @param \stdClass $challenge */
@@ -3619,19 +3776,22 @@ function quest_get_team_members($questid, $teamid) {
     return $query;
 }
 
-/** calculate user answer points from records in database
- * do not sum assessments in phase 0 or 1 (approval pending)
+/** Calculate user answer points from approved assessments or automatic grades.
+ *
+ * Empty assessment placeholders do not replace the question-engine result.
  * @param integer $questid integer id
  * @param integer $userid integer id o array de id
  * @return number */
 function quest_calculate_user_score($questid, $userid) {
-    global $CFG, $DB;
+    global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
-    $params = array_merge([$questid], $inparams);
-    $sql = "select sum(ans.grade*ans.pointsmax/100) points from {quest_answers} ans, " .
-            "{quest_assessments} assess WHERE " .
-             "ans.questid=? AND ans.userid $insql AND ans.id=assess.answerid AND assess.phase=" .
-             ASSESSMENT_PHASE_APPROVED;
+    $params = array_merge([$questid], $inparams, [ASSESSMENT_PHASE_APPROVED, ASSESSMENT_STATE_UNDONE]);
+    $sql = "SELECT SUM(ans.grade * ans.pointsmax / 100) AS points
+              FROM {quest_answers} ans
+         LEFT JOIN {quest_assessments} assess ON assess.answerid = ans.id
+             WHERE ans.questid = ? AND ans.userid $insql
+               AND (assess.phase = ? OR (ans.questionusageid > 0 AND ans.phase > 0
+                    AND (assess.id IS NULL OR assess.state = ?)))";
     if ($query = $DB->get_record_sql($sql, $params)) {
         if (isset($query->points)) {
             return $query->points;

@@ -827,6 +827,10 @@ $string['questionbankdisabled'] = 'Students are not allowed to add question bank
 $string['autograde_passed'] = 'Correct! Your answer was automatically graded and awarded {$a} points.';
 $string['autograde_failed'] = 'Incorrect answer. You may try again if attempts remain.';
 $string['autograde_manual_pending'] = 'Your answer has been submitted and is pending evaluation.';
+$string['autograde_restorebutton'] = 'Remove manual assessment and restore automatic grade ({$a}%)';
+$string['autograde_restoreconfirm'] = 'Remove the manual assessment, including its comments and criterion grades, and restore the automatic grade?';
+$string['autograde_restored'] = 'The manual assessment was removed and the automatic grade was restored.';
+$string['autograde_restorenotavailable'] = 'An automatic grade is not available for this assessed answer.';
 $string['cannotanswerownchallenge'] = 'You cannot submit an answer to your own challenge.';
 $string['challengenotstarted'] = 'This challenge has not started yet.';
 $string['challengeclosed'] = 'This challenge is now closed for answers.';
@@ -861,8 +865,8 @@ $string['notsubmittedanswers'] = 'No answers submitted';
 
 // Canonical challenge terminology strings (aliasing legacy submission strings).
 $string['challenge'] = 'Challenge';
-$string['addchallenge'] = 'Add challenge';
-$string['addquestionchallenge'] = 'Add challenge with question';
+$string['addchallenge'] = 'New plain challenge';
+$string['addquestionchallenge'] = 'New challenge';
 $string['approvalpending'] = 'Approval pending';
 $string['challenge_not_evaluated'] = 'Not evaluated';
 $string['challengeadded'] = 'Challenge created successfully';

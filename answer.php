@@ -75,7 +75,7 @@ if ($action == "answer") {
     if (!quest_user_can_answer_submission($quest, $submission, $context)) {
         throw new \moodle_exception('nopermissions', 'error', '', 'answer this challenge');
     }
-if (!quest_user_passed_password($quest, $context)) {
+    if (!quest_user_passed_password($quest, $context)) {
         quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
     }
     // Check if challenge is linked to a Question Bank question.
@@ -201,6 +201,20 @@ if (!quest_user_passed_password($quest, $context)) {
 
     echo $OUTPUT->heading(get_string('answercontent', 'quest'));
     quest_print_answer($quest, $answer);
+
+    // The teacher's assessment comment is separate from question-bank feedback.
+    if (!empty($answer->questionusageid) && ($ismanager || (int)$answer->userid === (int)$USER->id)) {
+        $assessment = $DB->get_record('quest_assessments', [
+            'answerid' => $answer->id,
+            'questid' => $quest->id,
+            'state' => ASSESSMENT_STATE_BY_TEACHER,
+        ], 'id, commentsteacher');
+        if ($assessment && !empty($assessment->commentsteacher) &&
+                $assessment->commentsteacher !== ($answer->commentsteacher ?? '')) {
+            echo $OUTPUT->heading(get_string('commentsteacher', 'quest'));
+            echo $OUTPUT->box(format_text($assessment->commentsteacher), 'center');
+        }
+    }
 
     $timenow = time();
 

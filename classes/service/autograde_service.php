@@ -32,6 +32,28 @@ use mod_quest\question\question_reference_service;
 class autograde_service {
 
     /**
+     * Return the grade recorded by the question engine for an automatically graded answer.
+     *
+     * @param stdClass $answer Quest answer.
+     * @return float|null Grade percentage, or null when automatic grading is unavailable.
+     */
+    public static function get_automatic_grade(stdClass $answer): ?float {
+        global $CFG;
+
+        if (empty($answer->questionusageid)) {
+            return null;
+        }
+        require_once($CFG->libdir . '/questionlib.php');
+        $quba = question_engine::load_questions_usage_by_activity((int)$answer->questionusageid);
+        $question = $quba->get_question(1);
+        if ($question->qtype->is_manual_graded() || $quba->get_question_state(1) == \question_state::$needsgrading) {
+            return null;
+        }
+        $fraction = $quba->get_question_fraction(1);
+        return $fraction === null ? null : round($fraction * 100, 2);
+    }
+
+    /**
      * Start or load an existing question attempt for a user on a challenge.
      *
      * @param stdClass $quest
@@ -162,9 +184,15 @@ class autograde_service {
      * @param \question_usage_by_activity $quba
      * @param int $slot
      * @param bool $readonly Whether question inputs should be disabled (e.g. after finish).
+     * @param bool $showcorrectanswer Whether the challenge has ended and review feedback may be shown.
      * @return string HTML output
      */
-    public static function render_question(\question_usage_by_activity $quba, int $slot = 1, bool $readonly = false): string {
+    public static function render_question(
+        \question_usage_by_activity $quba,
+        int $slot = 1,
+        bool $readonly = false,
+        bool $showcorrectanswer = false
+    ): string {
         // Guarantee that the usage is saved so question text URLs have valid numeric usage IDs.
         if (!is_numeric($quba->get_id())) {
             \question_engine::save_questions_usage_by_activity($quba);
@@ -173,10 +201,21 @@ class autograde_service {
         $options = new question_display_options();
         $options->readonly = $readonly;
         $options->flags = question_display_options::HIDDEN;
-        $options->marks = question_display_options::MARK_AND_MAX;
-        $options->feedback = question_display_options::VISIBLE;
-        $options->generalfeedback = $readonly ? question_display_options::VISIBLE : question_display_options::HIDDEN;
-        $options->correctness = question_display_options::VISIBLE;
+        $options->marks = $readonly ? question_display_options::HIDDEN : question_display_options::MARK_AND_MAX;
+        $options->feedback = question_display_options::HIDDEN;
+        $options->numpartscorrect = question_display_options::HIDDEN;
+        $options->generalfeedback = question_display_options::HIDDEN;
+        $options->rightanswer = question_display_options::HIDDEN;
+        $options->manualcomment = question_display_options::HIDDEN;
+        $options->correctness = question_display_options::HIDDEN;
+        if ($readonly && $showcorrectanswer) {
+            $options->marks = question_display_options::MARK_AND_MAX;
+            $options->feedback = question_display_options::VISIBLE;
+            $options->numpartscorrect = question_display_options::VISIBLE;
+            $options->generalfeedback = question_display_options::VISIBLE;
+            $options->rightanswer = question_display_options::VISIBLE;
+            $options->correctness = question_display_options::VISIBLE;
+        }
 
         return $quba->render_question($slot, $options, (string) $slot);
     }

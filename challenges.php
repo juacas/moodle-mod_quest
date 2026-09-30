@@ -440,8 +440,11 @@ if ($action == 'confirmdelete') {
     $descriptionoptions = ['trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
                     'context' => $context];
     $attachmentoptions = ['subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes];
-    $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context, 'mod_quest', 'submission',
-            $submission->id);
+    $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+    if (!$linkedquestion) {
+        $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context,
+            'mod_quest', 'submission', $submission->id);
+    }
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $submission->id);
     $draftitemid = file_get_submitted_draft_itemid('introattachments');
@@ -449,13 +452,14 @@ if ($action == 'confirmdelete') {
     $submission->attachment = $draftitemid;
     $mform = new quest_print_upload_form(null,
             ['submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
-                            'attachmentoptions' => $attachmentoptions, 'action' => $action]);
+                            'attachmentoptions' => $attachmentoptions, 'action' => $action,
+                            'linkedquestion' => $linkedquestion]);
     if ($mform->is_cancelled()) {
         redirect("view.php?id=$cm->id");
     } else if ($modifsubmission = $mform->get_data()) {
         $authorid = $submission->userid;
         quest_upload_challenge($quest, $modifsubmission, $caneditchallenges, $cm, $descriptionoptions,
-                $attachmentoptions, $context, $action, $authorid);
+                $attachmentoptions, $context, $action, $authorid, (bool)$linkedquestion);
     } else {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
@@ -467,20 +471,19 @@ if ($action == 'confirmdelete') {
         $isownpendingmodif = ($submission->userid == $USER->id)
             && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING);
         if (has_capability('mod/quest:editchallengeall', $context) || $isownpendingmodif) {
-            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
-            if ($linkedq) {
-                $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
+            if ($linkedquestion) {
+                $qtypeobj = question_bank::get_qtype($linkedquestion->qtype, false);
                 $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
                 $badgetext = $isautograded ? ' <span class="badge bg-success ms-2">Auto-graded</span>' : '';
-                if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedq->id)) {
+                if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedquestion->id)) {
                     $badgetext .= ' <span class="badge bg-warning text-dark ms-1">' .
                         '<i class="fa fa-clock-o me-1" aria-hidden="true"></i>' .
                         get_string('approvalpending', 'quest') . '</span>';
                 }
-                $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
+                $catparam = !empty($linkedquestion->category) ? "{$linkedquestion->category},{$context->id}" : '';
                 $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
                 $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
-                    'id' => $linkedq->id, 'cmid' => $cm->id,
+                    'id' => $linkedquestion->id, 'cmid' => $cm->id,
                 ]);
                 $viewlink = '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-primary ms-2 py-0 px-2">' .
                     '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' .
@@ -491,11 +494,19 @@ if ($action == 'confirmdelete') {
                      '<i class="fa fa-database fa-2x me-3"></i><div>' .
                      '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
                      '<a href="' . $qbankurl->out() . '" class="alert-link font-weight-bold">' .
-                     format_string($linkedq->name) . '</a> (' . $linkedq->qtype . ')' .
+                     format_string($linkedquestion->name) . '</a> (' . $linkedquestion->qtype . ')' .
                      $badgetext . $viewlink . $editlink . '</div></div>';
             }
         }
         // End question bank notification.
+        if ($linkedquestion) {
+            [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
+                $quest, $submission, $linkedquestion, $context
+            );
+            echo '<div class="card border-0 mb-4" id="quest-qpreview-panel"><div class="card-body p-4 bg-white rounded shadow-sm">';
+            echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
+            echo '</div></div>';
+        }
         $mform->display();
     }
 } else if ($action === 'exporttoqbank') {
@@ -699,8 +710,7 @@ if ($action == 'confirmdelete') {
         );
     }
     $challengephaselabel = quest_challenge_phase($submission, $quest, $course);
-    $attentionlabels = array_column($attentionstatuses, 'label');
-    if (!in_array($challengephaselabel, $attentionlabels, true)) {
+    if (quest_should_show_challenge_phase_badge($submission, $attentionstatuses, $challengephaselabel)) {
         $challengebadges[] = html_writer::span(
             $challengephaselabel,
             'badge quest-phase-badge quest-challenge-phase-badge'
@@ -711,6 +721,7 @@ if ($action == 'confirmdelete') {
     echo '<div class="row g-4 align-items-start mb-4">';
     echo '<div class="col-lg-8 col-md-7">';
     quest_print_submission_info($quest, $submission);
+    echo quest_challenge_comment_html($submission, $context);
     echo '</div>';
     echo '<div class="col-lg-4 col-md-5 d-flex justify-content-end">';
     // Score evolution graph (1:1, floated right).
@@ -765,37 +776,48 @@ if ($action == 'confirmdelete') {
     if (!$canapprove) {
         throw new \moodle_exception('nopermissions', 'error', '', "Approve challenge: Not enought permissions to take this action");
     }
+    $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
     $descriptionoptions = ['trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
                     'context' => $context];
     $attachmentoptions = ['subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes];
-    $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context, 'mod_quest', 'submission',
-            $submission->id);
+    if (!$linkedquestion) {
+        $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context,
+            'mod_quest', 'submission', $submission->id);
+    }
     $submission = file_prepare_standard_filemanager($submission, 'attachment', $attachmentoptions, $context, 'mod_quest',
             'attachment', $submission->id);
     $mform = new quest_print_upload_form(null,
             ['submission' => $submission, 'quest' => $quest,
                             'cm' => $cm, 'definitionoptions' => $descriptionoptions,
-                            'attachmentoptions' => $attachmentoptions, 'action' => $action]);
+                            'attachmentoptions' => $attachmentoptions, 'action' => $action,
+                            'linkedquestion' => $linkedquestion]);
     if ($mform->is_cancelled()) {
         redirect("challenges.php?id=$cm->id&amp;action=showsubmission&amp;sid=$sid");
     } else if ($submission = $mform->get_data()) {
+        if ((int)$submission->sid !== (int)$sid) {
+            throw new \moodle_exception('invaliddata', 'error');
+        }
         if (isset($submission->submitbuttonapprove)) {
             quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions,
-                                    $attachmentoptions, $context, 'approve', $authorid);
-            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
-            if ($linkedq) {
-                \mod_quest\question\question_reference_service::mark_as_approved((int)$linkedq->id, $context);
-            }
+                                    $attachmentoptions, $context, 'approve', $authorid, (bool)$linkedquestion);
         } else { // ...save but not approve.
             $action = 'modif';
             quest_upload_challenge($quest, $submission, $canapprove, $cm, $descriptionoptions,
-                    $attachmentoptions, $context, 'modif', $authorid);
+                    $attachmentoptions, $context, 'modif', $authorid, (bool)$linkedquestion);
         }
     } else {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading_with_help(get_string("approvesubmission", "quest"), "approvesubmission", "quest");
+        if ($linkedquestion) {
+            [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
+                $quest, $submission, $linkedquestion, $context
+            );
+            echo '<div class="card border-0 mb-4" id="quest-qpreview-panel"><div class="card-body p-4 bg-white rounded shadow-sm">';
+            echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
+            echo '</div></div>';
+        }
         $mform->display();
     }
 } else if ($action == 'showsubmissionsuser') {

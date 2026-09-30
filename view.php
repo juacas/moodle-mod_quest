@@ -419,7 +419,7 @@ if ($action == 'notavailable') {
                 $statuslabels[] = $attentionstatus['label'];
             }
             $phaselabel = quest_submission_phase($submission, $quest, $course);
-            if (!in_array($phaselabel, $statuslabels, true)) {
+            if (quest_should_show_challenge_phase_badge($submission, $attentionstatuses, $phaselabel)) {
                 $phaseparts[] = html_writer::span(
                     $phaselabel,
                     'badge quest-phase-badge quest-challenge-phase-badge'

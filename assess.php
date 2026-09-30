@@ -27,6 +27,7 @@ require_once("lib.php");
 require_once("locallib.php");
 
 $aid = required_param('aid', PARAM_INT); // Answer ID..
+$action = optional_param('action', 'evaluate', PARAM_ALPHA);
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 require_sesskey();
@@ -47,6 +48,22 @@ $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
 if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
     throw new \moodle_exception('nopermissions', 'error', '', 'assess this answer');
+}
+if ($action === 'restoreautograde') {
+    if (!data_submitted() || (!$ismanager && !$cangrade)) {
+        throw new \moodle_exception('nopermissions', 'error', '', 'restore automatic grading');
+    }
+    $manualassessment = $DB->get_record('quest_assessments', [
+        'answerid' => $answer->id,
+        'questid' => $quest->id,
+    ], '*', MUST_EXIST);
+    quest_restore_automatic_assessment($quest, $answer, $manualassessment);
+    redirect(new moodle_url('/mod/quest/answer.php', [
+        'id' => $cm->id,
+        'sid' => $submission->id,
+        'aid' => $answer->id,
+        'action' => 'showanswer',
+    ]), get_string('autograde_restored', 'quest'));
 }
 
 $strquests = get_string("modulenameplural", "quest");
@@ -156,6 +173,29 @@ echo '</div>';
 echo '<div class="card-body p-4">';
 quest_print_answer($quest, $answer);
 echo '</div></div></div>';
+if (($ismanager || $cangrade) && (int)$assessment->state !== ASSESSMENT_STATE_UNDONE) {
+    $automaticgrade = \mod_quest\service\autograde_service::get_automatic_grade($answer);
+    if ($automaticgrade !== null) {
+        $confirmation = json_encode(get_string('autograde_restoreconfirm', 'quest'),
+            JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
+        echo html_writer::start_tag('form', [
+            'method' => 'post',
+            'action' => new moodle_url('/mod/quest/assess.php'),
+            'class' => 'mb-4',
+            'onsubmit' => 'return confirm(' . $confirmation . ');',
+        ]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'id', 'value' => $cm->id]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sid', 'value' => $submission->id]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'aid', 'value' => $answer->id]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'restoreautograde']);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
+        echo html_writer::tag('button',
+            get_string('autograde_restorebutton', 'quest', format_float($automaticgrade, 2)),
+            ['type' => 'submit', 'class' => 'btn btn-outline-warning']
+        );
+        echo html_writer::end_tag('form');
+    }
+}
 // If user has general assess privileges get next answer to evaluate.
 if ($cangrade) {
     $nextanswer = quest_next_unassesed_answer($answer);
