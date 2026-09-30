@@ -182,5 +182,45 @@ function xmldb_quest_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2026092001, 'quest');
     }
 
+    if ($oldversion < 2026093000) {
+        $table = new xmldb_table('quest_challenge_questions');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('questid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+        $table->add_field('submissionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+        $table->add_field('slotnumber', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, 1);
+        $table->add_field('maxmark', XMLDB_TYPE_NUMBER, '10, 5', null, XMLDB_NOTNULL, null, 1);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('questid_fk', XMLDB_KEY_FOREIGN, ['questid'], 'quest', ['id']);
+        $table->add_key('submissionid_fk', XMLDB_KEY_FOREIGN, ['submissionid'], 'quest_submissions', ['id']);
+        $table->add_index('submission_slot', XMLDB_INDEX_UNIQUE, ['submissionid', 'slotnumber']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Convert existing one-question challenge references into slot one.
+        $references = $DB->get_records('question_references', [
+            'component' => 'mod_quest',
+            'questionarea' => 'challenge_question',
+        ]);
+        foreach ($references as $reference) {
+            $submission = $DB->get_record('quest_submissions', ['id' => $reference->itemid], 'id, questid');
+            if (!$submission) {
+                continue;
+            }
+            $slot = (object)[
+                'questid' => $submission->questid,
+                'submissionid' => $submission->id,
+                'slotnumber' => 1,
+                'maxmark' => 1,
+            ];
+            $slot->id = $DB->insert_record('quest_challenge_questions', $slot);
+            $reference->questionarea = 'challenge_question_slot';
+            $reference->itemid = $slot->id;
+            $DB->update_record('question_references', $reference);
+        }
+
+        upgrade_mod_savepoint(true, 2026093000, 'quest');
+    }
+
     return true;
 }

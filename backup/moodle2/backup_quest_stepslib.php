@@ -67,8 +67,10 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
                                 'dateend', 'nanswers',
                                 'nanswerscorrect', 'state', 'datestart', 'pointsmax', 'pointsmin', 'dateanswercorrect',
                                 'initialpoints',
-                                'pointsanswercorrect', 'mailed', 'maileduser', 'predictedduration', 'preceiveddifficulty',
+                                'pointsanswercorrect', 'mailed', 'maileduser', 'predictedduration', 'perceiveddifficulty',
                                 'evaluated']);
+        $challengequestions = new backup_nested_element('challenge_questions');
+        $challengequestion = new backup_nested_element('challenge_question', ['id'], ['slotnumber', 'maxmark']);
 
         $answers = new backup_nested_element('answers');
         $answer = new backup_nested_element('answer', ['id'],
@@ -77,6 +79,18 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
                                 'pointsmax', 'grade', 'commentforteacher', 'phase', 'state',
                                 'permitsubmit', 'perceiveddifficulty', 'questionusageid']);
         $this->add_question_references($challenge, 'mod_quest', 'challenge_question');
+        // Moodle's helper always names the child "question_reference". A second
+        // child with that name below a challenge slot collides in the backup tree.
+        $slotreference = new backup_nested_element('slot_question_reference', ['id'],
+            ['usingcontextid', 'component', 'questionarea', 'questionbankentryid', 'version']);
+        $challengequestion->add_child($slotreference);
+        $slotreference->set_source_table('question_references', [
+            'usingcontextid' => backup::VAR_CONTEXTID,
+            'component' => backup_helper::is_sqlparam('mod_quest'),
+            'questionarea' => backup_helper::is_sqlparam('challenge_question_slot'),
+            'itemid' => backup::VAR_PARENTID,
+        ]);
+        $slotreference->annotate_ids('question_bank_entry', 'questionbankentryid');
         $assessments = new backup_nested_element('assessments');
         $assessment = new backup_nested_element('assessment', ['id'],
                 ['questid', 'userid', 'teacherid', 'pointsautor', 'pointsteacher', 'dateassessment', 'pointsmax',
@@ -113,6 +127,8 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
 
         $quest->add_child($challenges);
         $challenges->add_child($challenge);
+        $challenge->add_child($challengequestions);
+        $challengequestions->add_child($challengequestion);
         $challenge->add_child($assessmentsautor);
         $challenge->add_child($answers);
         $challenge->add_child($particularelements);
@@ -141,6 +157,7 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
         $elementautor->set_source_table('quest_elementsautor', ['questid' => backup::VAR_PARENTID]);
 
         $challenge->set_source_table('quest_submissions', ['questid' => backup::VAR_PARENTID]);
+        $challengequestion->set_source_table('quest_challenge_questions', ['submissionid' => backup::VAR_PARENTID]);
         if ($userinfo) { // Include challenge data when user information is selected.
 
             $assessmentautor->set_source_table('quest_assessments_autors',

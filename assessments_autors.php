@@ -55,6 +55,11 @@ $PAGE->set_activity_record($quest);
 $PAGE->activityheader->set_attrs([
     'description' => quest_get_activity_header_description($quest, $cm, $context),
 ]);
+if ($action === 'displaygradingform') {
+    quest_add_breadcrumbs($cm, null, null, get_string('specimenassessmentformsubmission', 'quest'));
+} else if ($action === 'editelements') {
+    quest_add_breadcrumbs($cm, null, null, get_string('editingassessmentelementsofautors', 'quest'));
+}
 
 quest_check_visibility($course, $cm);
 $strquests = get_string("modulenameplural", "quest");

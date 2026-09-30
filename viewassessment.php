@@ -59,15 +59,14 @@ $cangrade = has_capability('mod/quest:grade', $context);
 $url = new moodle_url('/mod/quest/viewassessment.php',
         ['asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
 $PAGE->set_url($url);
-$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
-        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']));
+if (!$ismanager && !$cangrade && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
+    throw new \moodle_exception('nopermissions', 'error', '', "Unauthorized access!");
+}
+quest_add_breadcrumbs($cm, $submission, $answer, get_string('seeassessment', 'quest'));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-if (!$ismanager && !$cangrade && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
-    throw new \moodle_exception('nopermissions', 'error', '', "Unauthorized access!");
-}
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("viewassessment", "quest");

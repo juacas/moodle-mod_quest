@@ -102,7 +102,7 @@ $url = new moodle_url('/mod/quest/schedule.php', ['id' => $cm->id]);
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name) . ': ' . get_string('reorderchallengestitle', 'quest'));
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add(get_string('reorderchallengestitle', 'quest'));
+quest_add_breadcrumbs($cm, null, null, get_string('reorderchallengestitle', 'quest'));
 
 // Retrieve all challenges in this tournament with full user name fields.
 $namefields = \core_user\fields::for_name()->get_sql('u')->selects;

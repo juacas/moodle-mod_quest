@@ -146,11 +146,14 @@ The two answer paths differ only in who performs the first evaluation:
 - **Automatically graded question**: submit → Question Engine evaluates → phase
   `1` when incorrect or phase `2` when correct. A failed automatic answer is
   therefore evaluated, even though it is not correct.
+- **Mixed question challenge**: submit → phase `0` while the manual questions
+  await the challenge rubric → phase `1` or `2` after the rubric grade is
+  combined with the automatic question marks.
 
 ```mermaid
 stateDiagram-v2
     [*] --> Answering: Student opens answer form
-    Answering --> NotAssessed: Essay submitted
+    Answering --> NotAssessed: Essay or mixed challenge submitted
     Answering --> AutoEvaluating: Question Bank answer submitted
     AutoEvaluating --> Assessed: Automatic result is incorrect\nphase=1
     AutoEvaluating --> Passed: Automatic result is correct\nphase=2
@@ -240,12 +243,17 @@ Located at `schedule.php?id={cmid}`, the scheduler provides instructors with vis
 
 QUESTOURnament integrates seamlessly with the Moodle Question Bank (`core_question` and `mod_qbank`):
 
-1. **Question Import**:
-   - When creating or editing a challenge, teachers can launch the Question Bank modal to select pre-existing questions.
+1. **Question composition**:
+   - A challenge can contain an ordered collection of automatic and manually graded questions. The composer lets its author choose questions, set their order, and give each one an independent maximum mark.
+   - The attempt is a single Moodle Question Engine usage with one slot per question. An entirely automatic challenge is graded on submission.
+   - If any question requires manual grading, the answer remains pending until the challenge rubric is assessed. Automatic questions contribute their earned marks; the rubric percentage is applied to the sum of the manual questions' maximum marks. The final percentage is the sum of these marks divided by the total maximum marks. For example, a correct automatic question worth 2 marks and a manual question worth 3 marks with a 50% rubric grade produce `(2 + 0.5 × 3) / 5 = 70%`.
+   - Existing challenges with one Question Bank reference are upgraded to a single slot; old one-slot attempts remain readable.
 2. **Automated Evaluation**:
    - Multiple Choice, True/False, and Short Answer questions are automatically evaluated upon student submission, immediately triggering the deflationary phase if correct.
 3. **Export to Activity Question Bank**:
    - High-quality student-authored challenges can be exported directly into the course Question Bank for reuse in future quizzes or assessments.
+4. **Backup and restore**:
+   - Challenge slots, question references, marks, order, and student attempt usages are included in Moodle backups.
 
 ---
 

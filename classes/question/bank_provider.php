@@ -243,16 +243,18 @@ class bank_provider {
      * Validate and ensure a question can be used in Quest.
      *
      * @param int $questionid
+     * @param context_module|null $localcontext Current Quest activity context, whose private questions are allowed.
      * @return stdClass
      * @throws moodle_exception
      */
-    public static function require_question(int $questionid): stdClass {
+    public static function require_question(int $questionid, ?context_module $localcontext = null): stdClass {
         global $CFG;
         require_once($CFG->libdir . '/questionlib.php');
 
         $question = self::get_question($questionid);
         $context = \context::instance_by_id($question->contextid);
-        if ($context->contextlevel === CONTEXT_MODULE) {
+        $islocalquestquestion = $localcontext && $context->id === $localcontext->id;
+        if ($context->contextlevel === CONTEXT_MODULE && !$islocalquestquestion) {
             // On Moodle 4.x, require_bank() uses a safe fallback (qbank-only check).
             self::require_bank($context->instanceid);
         }

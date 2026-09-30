@@ -43,6 +43,15 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
         $challenge = new restore_path_element('quest_challenge', '/activity/quest/challenges/challenge');
         $paths[] = $challenge;
         $this->add_question_references($challenge, $paths);
+        $challengequestion = new restore_path_element(
+            'quest_challenge_question',
+            '/activity/quest/challenges/challenge/challenge_questions/challenge_question'
+        );
+        $paths[] = $challengequestion;
+        $paths[] = new restore_path_element(
+            'quest_slot_question_reference',
+            $challengequestion->get_path() . '/slot_question_reference'
+        );
         $paths[] = new restore_path_element('quest_particular_element',
                 '/activity/quest/challenges/challenge/particular_elements/particular_element');
 
@@ -158,6 +167,23 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
     }
 
     /**
+     * Restore an ordered question slot belonging to a challenge.
+     *
+     * @param stdClass|array $data
+     */
+    protected function process_quest_challenge_question($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->submissionid = $this->get_new_parentid('quest_challenge');
+        unset($data->id);
+        $newid = $DB->insert_record('quest_challenge_questions', $data);
+        $this->set_mapping('quest_challenge_question', $oldid, $newid, true);
+    }
+
+    /**
      * Restore a challenge's question bank link using the new challenge and bank entry IDs.
      *
      * @param array $data Question reference from the backup.
@@ -178,10 +204,34 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
 
         unset($data->id);
         $data->usingcontextid = $this->task->get_contextid();
-        $data->itemid = $this->get_new_parentid('quest_challenge');
+        if ($data->questionarea === 'challenge_question_slot') {
+            $data->itemid = $this->get_new_parentid('quest_challenge_question');
+        } else {
+            // Convert references from backups made before challenge question slots.
+            $challengeid = $this->get_new_parentid('quest_challenge');
+            $challenge = $DB->get_record('quest_submissions', ['id' => $challengeid], 'questid, pointsmax', MUST_EXIST);
+            $slot = (object)[
+                'questid' => $challenge->questid,
+                'submissionid' => $challengeid,
+                'slotnumber' => 1,
+                'maxmark' => max(0.01, (float)$challenge->pointsmax),
+            ];
+            $data->itemid = $DB->insert_record('quest_challenge_questions', $slot);
+            $data->questionarea = 'challenge_question_slot';
+        }
         $data->questionbankentryid = $entryid;
         $DB->insert_record('question_references', $data);
     }
+
+    /**
+     * Restore a question reference attached to a composed challenge slot.
+     *
+     * @param array $data Backup reference data.
+     */
+    public function process_quest_slot_question_reference($data) {
+        $this->process_question_reference($data);
+    }
+
     /**
      * Process data for this level of the backup.
      * @param \stdClass $data

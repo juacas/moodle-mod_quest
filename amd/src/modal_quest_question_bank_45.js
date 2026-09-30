@@ -47,6 +47,9 @@ export default class ModalQuestQuestionBank45 extends Modal {
                 },
                 large: true,
                 courseId,
+                returnAction: trigger.dataset.returnAction || 'addqchallenge',
+                challengeId: Number(trigger.dataset.challengeid) || null,
+                currentQuestionIds: (trigger.dataset.questionids || '').split(',').filter(Boolean).map(Number),
             });
         });
     }
@@ -86,13 +89,27 @@ export default class ModalQuestQuestionBank45 extends Modal {
     /**
      * Redirect to use the question.
      *
-     * @param {Number} questionid The ID of the question to use.
+     * @param {Number|Number[]} questionids The question IDs to add to the challenge.
      */
-    useQuestion(questionid) {
+    useQuestion(questionids) {
         const url = new URL(window.location.href);
         url.searchParams.set('id', this.questCmId);
-        url.searchParams.set('action', 'processexistingqchallenge');
-        url.searchParams.set('questionid', questionid);
+        url.searchParams.set('action', this.returnAction);
+        if (this.challengeId) {
+            url.searchParams.set('sid', this.challengeId);
+        }
+        const currentIds = Array.from(url.searchParams.entries())
+            .filter(([name]) => /^questionids(?:\[\d*\])?$/.test(name))
+            .map(([, id]) => Number(id));
+        Array.from(url.searchParams.keys()).filter(name => /^questionids(?:\[\d*\])?$/.test(name))
+            .forEach(name => url.searchParams.delete(name));
+        const ids = [...new Set([
+            ...this.currentQuestionIds,
+            ...currentIds,
+            ...(Array.isArray(questionids) ? questionids : [questionids]),
+        ])];
+        ids.forEach(id => url.searchParams.append('questionids[]', id));
+        url.searchParams.delete('lastchanged');
         url.searchParams.set('sesskey', M.cfg.sesskey);
         window.location.assign(url.toString());
     }
@@ -109,7 +126,7 @@ export default class ModalQuestQuestionBank45 extends Modal {
             const ids = Array.from(formElement.querySelectorAll("input[type='checkbox']:checked"))
                 .filter(input => /^q\d+$/.test(input.name)).map(input => Number(input.name.slice(1)));
             if (ids.length) {
-                this.useQuestion(ids[0]);
+                this.useQuestion(ids);
             }
         });
 
@@ -117,7 +134,7 @@ export default class ModalQuestQuestionBank45 extends Modal {
             e.preventDefault();
             const questionId = e.currentTarget.dataset.questionid;
             if (questionId) {
-                this.useQuestion(Number(questionId));
+                this.useQuestion([Number(questionId)]);
             }
         });
 
@@ -138,7 +155,7 @@ export default class ModalQuestQuestionBank45 extends Modal {
                     }
                 }
                 if (qid) {
-                    this.useQuestion(Number(qid));
+                    this.useQuestion([Number(qid)]);
                 }
                 return;
             }

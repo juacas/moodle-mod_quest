@@ -35,7 +35,7 @@ final class challenge_approval_display_test extends advanced_testcase {
     }
 
     /**
-     * A linked question replaces duplicate text fields in approval and modification forms.
+     * Linked-question forms preserve the bank render and allow editing the challenge title.
      */
     public function test_linked_question_forms_omit_open_question_inputs(): void {
         global $DB, $PAGE, $USER;
@@ -97,14 +97,20 @@ final class challenge_approval_display_test extends advanced_testcase {
             'attachmentoptions' => $attachmentoptions,
             'action' => 'modif',
             'linkedquestion' => $linkedquestion,
+            'composerquestions' => array_map(static function($slot) {
+                $slot->question->maxmark = (float)$slot->maxmark;
+                return $slot->question;
+            }, \mod_quest\question\question_reference_service::get_challenge_questions($submissionid)),
         ]);
         $this->assertEquals($submissionid, $modifsubmission->id);
         ob_start();
         $modifform->display();
         $modifhtml = ob_get_clean();
-        $this->assertStringNotContainsString('name="title"', $modifhtml);
+        $this->assertStringContainsString('name="title"', $modifhtml);
         $this->assertStringNotContainsString('name="description_editor[text]"', $modifhtml);
         $this->assertStringContainsString('name="datestart', $modifhtml);
+        $this->assertStringContainsString('quest-question-composer-preview', $modifhtml);
+        $this->assertStringContainsString('quest-question-composer-bank', $modifhtml);
 
         [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
             $quest, $submission, $linkedquestion, $context

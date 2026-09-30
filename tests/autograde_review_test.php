@@ -56,6 +56,10 @@ final class autograde_review_test extends advanced_testcase {
         $this->assertStringNotContainsString('The oddest number is One.', $during);
         $this->assertStringNotContainsString('One is the oddest.', $during);
 
+        $teacherreview = autograde_service::render_question($quba, $slot, true, false, true);
+        $this->assertStringContainsString('One is the oddest.', $teacherreview);
+        $this->assertStringNotContainsString('The oddest number is One.', $teacherreview);
+
         $after = autograde_service::render_question($quba, $slot, true, true);
         $this->assertStringContainsString('The oddest number is One.', $after);
     }

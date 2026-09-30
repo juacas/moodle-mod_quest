@@ -45,12 +45,86 @@ class autograde_service {
         }
         require_once($CFG->libdir . '/questionlib.php');
         $quba = question_engine::load_questions_usage_by_activity((int)$answer->questionusageid);
-        $question = $quba->get_question(1);
-        if ($question->qtype->is_manual_graded() || $quba->get_question_state(1) == \question_state::$needsgrading) {
-            return null;
+        $weighted = 0.0;
+        $totalmark = 0.0;
+        foreach ($quba->get_slots() as $slot) {
+            $question = $quba->get_question($slot);
+            if ($question->qtype->is_manual_graded() || $quba->get_question_state($slot) == \question_state::$needsgrading) {
+                return null;
+            }
+            $fraction = $quba->get_question_fraction($slot);
+            if ($fraction === null) {
+                return null;
+            }
+            $maxmark = $quba->get_question_max_mark($slot);
+            $weighted += $fraction * $maxmark;
+            $totalmark += $maxmark;
         }
-        $fraction = $quba->get_question_fraction(1);
-        return $fraction === null ? null : round($fraction * 100, 2);
+        return $totalmark > 0 ? round(($weighted / $totalmark) * 100, 2) : null;
+    }
+
+    /**
+     * Whether every question in a challenge can be graded by the question engine.
+     *
+     * @param int $challengeid Challenge ID.
+     * @return bool
+     */
+    public static function is_fully_automatic_challenge(int $challengeid): bool {
+        global $CFG;
+
+        $questions = question_reference_service::get_challenge_questions($challengeid);
+        if (!$questions) {
+            return false;
+        }
+        require_once($CFG->libdir . '/questionlib.php');
+        foreach ($questions as $item) {
+            $qtype = \question_bank::get_qtype($item->question->qtype, false);
+            if (!$qtype || $qtype->is_manual_graded()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Combine the question engine marks with the challenge rubric grade.
+     *
+     * The rubric scores the combined weight of manually graded questions. An
+     * assessment of an entirely automatic attempt remains a manual override.
+     *
+     * @param stdClass $answer Answer with a saved question attempt, if applicable.
+     * @param float $rubricfraction Rubric grade between zero and one.
+     * @return float Combined grade as a fraction.
+     */
+    public static function combine_with_rubric_grade(stdClass $answer, float $rubricfraction): float {
+        global $CFG;
+
+        if (empty($answer->questionusageid)) {
+            return $rubricfraction;
+        }
+        require_once($CFG->libdir . '/questionlib.php');
+        $quba = question_engine::load_questions_usage_by_activity((int)$answer->questionusageid);
+        $automaticpoints = 0.0;
+        $manualmax = 0.0;
+        $totalmax = 0.0;
+        foreach ($quba->get_slots() as $slot) {
+            $maxmark = (float)$quba->get_question_max_mark($slot);
+            if ($maxmark <= 0) {
+                continue;
+            }
+            $totalmax += $maxmark;
+            $question = $quba->get_question($slot);
+            if ($question->qtype->is_manual_graded() || $quba->get_question_state($slot) == \question_state::$needsgrading) {
+                $manualmax += $maxmark;
+            } else {
+                $automaticpoints += (float)($quba->get_question_fraction($slot) ?? 0) * $maxmark;
+            }
+        }
+
+        if ($manualmax <= 0 || $totalmax <= 0) {
+            return $rubricfraction;
+        }
+        return ($automaticpoints + $manualmax * $rubricfraction) / $totalmax;
     }
 
     /**
@@ -60,7 +134,7 @@ class autograde_service {
      * @param stdClass $submission
      * @param int $userid
      * @param context $context
-     * @return array [question_usage_by_activity $quba, int $slot]
+     * @return array [question_usage_by_activity $quba, int[] $slots]
      */
     public static function get_or_create_attempt(
         stdClass $quest,
@@ -71,8 +145,8 @@ class autograde_service {
         global $CFG, $DB;
         require_once($CFG->libdir . '/questionlib.php');
 
-        $question = question_reference_service::get_question_for_challenge((int)$submission->id);
-        if (!$question) {
+        $questions = question_reference_service::get_challenge_questions((int)$submission->id);
+        if (!$questions) {
             throw new \moodle_exception('errornotquestionbankchallenge', 'quest');
         }
 
@@ -88,7 +162,17 @@ class autograde_service {
             // usage is deliberately kept so it remains part of the history.
             if ($lastanswer->phase == 0 && $lastanswer->permitsubmit != ANSWER_PERMITSUBMIT_EDITABLE) {
                 $quba = question_engine::load_questions_usage_by_activity($lastanswer->questionusageid);
-                return [$quba, 1];
+                $unfinished = false;
+                foreach ($quba->get_slots() as $slot) {
+                    if (!$quba->get_question_state($slot)->is_finished()) {
+                        $unfinished = true;
+                        break;
+                    }
+                }
+                if (!$unfinished) {
+                    throw new \moodle_exception('answerexisty', 'quest');
+                }
+                return [$quba, $quba->get_slots()];
             }
         }
 
@@ -96,8 +180,11 @@ class autograde_service {
         $quba = question_engine::make_questions_usage_by_activity('mod_quest', $context);
         $quba->set_preferred_behaviour('deferredfeedback');
 
-        $loadedquestion = \question_bank::load_question($question->id);
-        $slot = $quba->add_question($loadedquestion, $submission->pointsmax);
+        $slots = [];
+        foreach ($questions as $questiondata) {
+            $loadedquestion = \question_bank::load_question((int)$questiondata->question->id);
+            $slots[] = $quba->add_question($loadedquestion, (float)$questiondata->maxmark);
+        }
         $quba->start_all_questions();
 
         question_engine::save_questions_usage_by_activity($quba);
@@ -124,7 +211,7 @@ class autograde_service {
 
         $answer->id = $DB->insert_record('quest_answers', $answer);
 
-        return [$quba, $slot];
+        return [$quba, $slots];
     }
 
     /**
@@ -132,14 +219,14 @@ class autograde_service {
      *
      * @param stdClass $quest
      * @param stdClass $submission
-     * @param stdClass $question
+     * @param stdClass|array $question Question record or ordered slot collection.
      * @param \context $context
-     * @return array [\question_usage_by_activity $quba, int $slot]
+     * @return array [\question_usage_by_activity $quba, int[] $slots]
      */
     public static function get_or_create_challenge_preview_usage(
         stdClass $quest,
         stdClass $submission,
-        stdClass $question,
+        stdClass|array $question,
         \context $context
     ): array {
         global $CFG, $DB;
@@ -149,9 +236,20 @@ class autograde_service {
         if (!empty($submission->questionusageid)) {
             try {
                 $quba = \question_engine::load_questions_usage_by_activity((int)$submission->questionusageid);
-                $usedq = $quba->get_question(1, false);
-                if ($usedq && (int)$usedq->id === (int)$question->id) {
-                    return [$quba, 1];
+                $questionlist = is_array($question) ? $question :
+                    [(object)['question' => $question, 'maxmark' => $submission->pointsmax]];
+                $usedslots = $quba->get_slots();
+                $matches = count($usedslots) === count($questionlist);
+                foreach (array_values($questionlist) as $index => $questiondata) {
+                    $expected = $questiondata->question ?? $questiondata;
+                    $used = $matches ? $quba->get_question($usedslots[$index], false) : false;
+                    if (!$used || (int)$used->id !== (int)$expected->id) {
+                        $matches = false;
+                        break;
+                    }
+                }
+                if ($matches) {
+                    return [$quba, $usedslots];
                 }
             } catch (\Exception $e) {
                 // Usage missing or question changed; recreate below.
@@ -161,8 +259,15 @@ class autograde_service {
 
         $quba = \question_engine::make_questions_usage_by_activity('mod_quest', $context);
         $quba->set_preferred_behaviour('deferredfeedback');
-        $loadedquestion = \question_bank::load_question((int)$question->id);
-        $slot = $quba->add_question($loadedquestion, $submission->pointsmax);
+        $questionlist = is_array($question) ? $question :
+            [(object)['question' => $question, 'maxmark' => $submission->pointsmax]];
+        $slots = [];
+        foreach ($questionlist as $questiondata) {
+            $questionrecord = $questiondata->question ?? $questiondata;
+            $mark = isset($questiondata->maxmark) ? (float)$questiondata->maxmark : (float)$submission->pointsmax;
+            $loadedquestion = \question_bank::load_question((int)$questionrecord->id);
+            $slots[] = $quba->add_question($loadedquestion, $mark);
+        }
         $quba->start_all_questions();
 
         \question_engine::save_questions_usage_by_activity($quba);
@@ -175,7 +280,7 @@ class autograde_service {
             unset($e);
         }
 
-        return [$quba, $slot];
+        return [$quba, $slots];
     }
 
     /**
@@ -185,13 +290,15 @@ class autograde_service {
      * @param int $slot
      * @param bool $readonly Whether question inputs should be disabled (e.g. after finish).
      * @param bool $showcorrectanswer Whether the challenge has ended and review feedback may be shown.
+     * @param bool $showresults Whether marks and response feedback should be shown before the challenge ends.
      * @return string HTML output
      */
     public static function render_question(
         \question_usage_by_activity $quba,
         int $slot = 1,
         bool $readonly = false,
-        bool $showcorrectanswer = false
+        bool $showcorrectanswer = false,
+        bool $showresults = false
     ): string {
         // Guarantee that the usage is saved so question text URLs have valid numeric usage IDs.
         if (!is_numeric($quba->get_id())) {
@@ -208,16 +315,44 @@ class autograde_service {
         $options->rightanswer = question_display_options::HIDDEN;
         $options->manualcomment = question_display_options::HIDDEN;
         $options->correctness = question_display_options::HIDDEN;
-        if ($readonly && $showcorrectanswer) {
+        if ($readonly && ($showcorrectanswer || $showresults)) {
             $options->marks = question_display_options::MARK_AND_MAX;
             $options->feedback = question_display_options::VISIBLE;
             $options->numpartscorrect = question_display_options::VISIBLE;
+            $options->correctness = question_display_options::VISIBLE;
+        }
+        if ($readonly && $showcorrectanswer) {
             $options->generalfeedback = question_display_options::VISIBLE;
             $options->rightanswer = question_display_options::VISIBLE;
-            $options->correctness = question_display_options::VISIBLE;
         }
 
         return $quba->render_question($slot, $options, (string) $slot);
+    }
+
+    /**
+     * Render every question in a usage, preserving the question-bank slot order.
+     *
+     * @param \question_usage_by_activity $quba
+     * @param bool $readonly
+     * @param bool $showcorrectanswer
+     * @param bool $showresults
+     * @return string
+     */
+    public static function render_questions(
+        \question_usage_by_activity $quba,
+        bool $readonly = false,
+        bool $showcorrectanswer = false,
+        bool $showresults = false
+    ): string {
+        $html = '';
+        foreach ($quba->get_slots() as $index => $slot) {
+            $html .= \html_writer::div(
+                self::render_question($quba, $slot, $readonly, $showcorrectanswer, $showresults),
+                'quest-question-slot mb-4',
+                ['data-slot' => $index + 1]
+            );
+        }
+        return $html;
     }
 
     /**
@@ -264,6 +399,105 @@ class autograde_service {
             $notice . self::disable_preview_controls($questionhtml),
             'quest-question-preview',
             ['role' => 'group']
+        );
+    }
+
+    /**
+     * Render all questions in a challenge preview with disabled controls.
+     *
+     * @param \question_usage_by_activity $quba
+     * @param \context|null $context
+     * @param int $cmid
+     * @param bool $showactions Whether question preview actions should be rendered.
+     * @param bool $showeditquestion Whether to include the question-bank edit action.
+     * @return string
+     */
+    public static function render_questions_preview(
+        \question_usage_by_activity $quba,
+        ?\context $context = null,
+        int $cmid = 0,
+        bool $showactions = false,
+        bool $showeditquestion = true
+    ): string {
+        global $OUTPUT, $USER;
+
+        $html = '';
+        foreach ($quba->get_slots() as $index => $slot) {
+            $question = $quba->get_question($slot);
+            $actions = '';
+            if ($showactions && $context && $cmid) {
+                $previewurl = \qbank_previewquestion\helper::question_preview_url(
+                    (int)$question->id, null, null, null, null, $context, $cmid
+                );
+                $actions .= \html_writer::link(
+                    $previewurl,
+                    $OUTPUT->pix_icon('i/preview', get_string('preview')) . ' ' . get_string('preview'),
+                    ['class' => 'btn btn-sm btn-outline-primary', 'target' => '_blank', 'title' => get_string('preview')]
+                );
+                $metadata = \mod_quest\question\bank_provider::get_question((int)$question->id);
+                $questioncontext = \context::instance_by_id($metadata->contextid);
+                $canedit = has_capability('moodle/question:editall', $questioncontext) ||
+                    ((int)$metadata->createdby === (int)$USER->id &&
+                        has_capability('moodle/question:editmine', $questioncontext));
+                if ($showeditquestion && $canedit) {
+                    $editurl = new \moodle_url('/question/bank/editquestion/question.php', [
+                        'id' => $question->id,
+                        'cmid' => $cmid,
+                    ]);
+                    $actions .= \html_writer::link(
+                        $editurl,
+                        $OUTPUT->pix_icon('t/edit', get_string('edit')) . ' ' . get_string('editquestion', 'quest'),
+                        ['class' => 'btn btn-sm btn-outline-secondary', 'target' => '_blank', 'title' => get_string('editquestion', 'quest')]
+                    );
+                }
+            }
+            $qtypename = $question->qtype->local_name();
+            $title = \html_writer::div(
+                \html_writer::tag('strong', format_string($question->name)) .
+                \html_writer::tag('span', $qtypename, ['class' => 'badge bg-light text-dark ms-2']),
+                'quest-question-preview-title d-flex align-items-center flex-wrap gap-2'
+            );
+            $header = \html_writer::div(
+                $title . \html_writer::div($actions, 'quest-question-preview-actions d-flex gap-2'),
+                'd-flex align-items-center gap-3 mb-2'
+            );
+            $html .= \html_writer::div(
+                $header . self::render_question_preview($quba, $slot),
+                'quest-question-preview-item mb-4',
+                ['data-slot' => $index + 1]
+            );
+        }
+        return $html;
+    }
+
+    /**
+     * Render the same question panel wherever a challenge is displayed.
+     *
+     * @param stdClass $quest Quest activity.
+     * @param stdClass $submission Challenge record.
+     * @param \context $context Quest module context.
+     * @param int $cmid Course module ID.
+     * @param bool $showactions Whether question preview links are visible.
+     * @return string Question panel, or an empty string for a plain challenge.
+     */
+    public static function render_challenge_questions_preview(
+        stdClass $quest,
+        stdClass $submission,
+        \context $context,
+        int $cmid,
+        bool $showactions = false
+    ): string {
+        $questions = question_reference_service::get_challenge_questions((int)$submission->id);
+        if (!$questions) {
+            return '';
+        }
+
+        [$quba] = self::get_or_create_challenge_preview_usage($quest, $submission, $questions, $context);
+        $preview = self::render_questions_preview($quba, $context, $cmid, $showactions, false);
+        return \html_writer::div(
+            \html_writer::div($preview, 'card-body p-4 bg-white rounded shadow-sm'),
+            'card border-0 mb-4',
+            ['id' => 'quest-qpreview-panel']
         );
     }
 
@@ -339,7 +573,7 @@ class autograde_service {
      * @param stdClass $submission
      * @param int $userid
      * @param \question_usage_by_activity $quba
-     * @param int $slot
+     * @param int|array|null $slot Legacy slot argument; all slots are evaluated.
      * @return array [bool $passed, float $points, float $fraction, string $message]
      */
     public static function process_submission(
@@ -347,7 +581,7 @@ class autograde_service {
         stdClass $submission,
         int $userid,
         \question_usage_by_activity $quba,
-        int $slot = 1
+        $slot = null
     ): array {
         global $DB;
 
@@ -356,9 +590,21 @@ class autograde_service {
         $quba->finish_all_questions($timenow);
         question_engine::save_questions_usage_by_activity($quba);
 
-        $question = $quba->get_question($slot);
-        $state = $quba->get_question_state($slot);
-        $ismanual = $question->qtype->is_manual_graded() || ($state == \question_state::$needsgrading);
+        $weightedfraction = 0.0;
+        $totalmark = 0.0;
+        $ismanual = false;
+        foreach ($quba->get_slots() as $questionslot) {
+            $question = $quba->get_question($questionslot);
+            $state = $quba->get_question_state($questionslot);
+            if ($question->qtype->is_manual_graded() || ($state == \question_state::$needsgrading)) {
+                $ismanual = true;
+                continue;
+            }
+            $fraction = $quba->get_question_fraction($questionslot);
+            $maxmark = (float)$quba->get_question_max_mark($questionslot);
+            $weightedfraction += (float)($fraction ?? 0) * $maxmark;
+            $totalmark += $maxmark;
+        }
 
         // Update the existing answer record.
         $answer = $DB->get_record('quest_answers', [
@@ -384,6 +630,7 @@ class autograde_service {
         if ($ismanual) {
             $answer->phase = ANSWER_PHASE_UNGRADED;
             $answer->grade = 0.0;
+            $answer->state = ANSWER_STATE_EDITTED;
             $DB->update_record('quest_answers', $answer);
 
             tournament_manager::update_submission_counts($submission->id);
@@ -398,10 +645,7 @@ class autograde_service {
             ];
         }
 
-        $fraction = $quba->get_question_fraction($slot);
-        if ($fraction === null) {
-            $fraction = 0.0;
-        }
+        $fraction = $totalmark > 0 ? $weightedfraction / $totalmark : 0.0;
 
         $grade = round($fraction * 100, 2);
         $passed = ($grade >= 50.0);

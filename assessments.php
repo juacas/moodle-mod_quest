@@ -92,8 +92,31 @@ $PAGE->activityheader->set_attrs([
 
 // ...display grading form (viewed by student) ..
 if ($action == 'displaygradingform') {
+    $rubricchallenge = null;
+    if ($viewgeneral === 0 && !empty($sid)) {
+        $rubricchallenge = $DB->get_record('quest_submissions', [
+            'id' => $sid,
+            'questid' => $quest->id,
+        ], 'id, questid, userid, title, state, datestart', MUST_EXIST);
+    }
+    $visiblechallenge = $rubricchallenge && quest_user_can_view_submission($quest, $rubricchallenge, $context)
+        ? $rubricchallenge : null;
+    quest_add_breadcrumbs($cm, $visiblechallenge, null, get_string('specimenassessmentformanswer', 'quest'));
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string("specimenassessmentformanswer", "quest"), 'specimenanswer', "quest");
+
+    if ($visiblechallenge) {
+        $challengeurl = new moodle_url('/mod/quest/challenges.php', [
+            'id' => $cm->id,
+            'cid' => $rubricchallenge->id,
+            'action' => 'showchallenge',
+        ]);
+        echo html_writer::div(
+            get_string('challenge', 'quest') . ': ' .
+            html_writer::link($challengeurl, format_string($rubricchallenge->title)),
+            'alert alert-info quest-rubric-challenge mb-3'
+        );
+    }
 
     if ($isteacher) {
         $editurl = new moodle_url('/mod/quest/assessments.php', [
@@ -105,7 +128,7 @@ if ($action == 'displaygradingform') {
         echo html_writer::div(
             html_writer::link(
                 $editurl,
-                '<i class="fa fa-sliders me-1" aria-hidden="true"></i> ' . get_string('amendassessmentelements', 'quest'),
+                '<i class="fa fa-sliders me-1" aria-hidden="true"></i> ' . get_string('changerubricforanswers', 'quest'),
                 ['class' => 'btn btn-outline-primary']
             ),
             'text-end mb-3'
@@ -482,6 +505,7 @@ if ($action == 'displaygradingform') {
         $percent = quest_get_answer_grade($quest, $answer, optional_param_array('grade', [], PARAM_FLOAT),
                                                             optional_param_array('feedback', [], PARAM_TEXT));
     }
+    $percent = \mod_quest\service\autograde_service::combine_with_rubric_grade($answer, $percent);
     $points = quest_get_points($submission, $quest, $answer);
     $grade = $points * $percent;
     /*

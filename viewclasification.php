@@ -69,9 +69,9 @@ $classificationtitle = ($action === 'teams') ? get_string('teams', 'quest') : ge
 
 $PAGE->set_url($thispageurl);
 $PAGE->set_title(format_string($quest->name));
-$PAGE->navbar->add(get_string('globalranking', 'quest'));
 $PAGE->set_heading($course->fullname);
 if ($action != 'export') {
+    quest_add_breadcrumbs($cm, null, null, get_string('globalranking', 'quest'));
     echo $OUTPUT->header();
 }
 

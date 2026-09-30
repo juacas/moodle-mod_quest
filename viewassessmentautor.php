@@ -56,12 +56,6 @@ $PAGE->set_activity_record($quest);
 $PAGE->activityheader->set_attrs([
     'description' => quest_get_activity_header_description($quest, $cm, $context),
 ]);
-$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
-        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge']));
-$PAGE->set_title(format_string($quest->name));
-$PAGE->set_heading($course->fullname);
-echo $OUTPUT->header();
-
 quest_check_visibility($course, $cm);
 
 $ismanager = has_capability('mod/quest:manage', $context);
@@ -73,6 +67,11 @@ if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id &&
         !($quest->permitviewautors && $isclosed && $canviewotherauthors)) {
     throw new \moodle_exception('nopermissions', 'error', '', 'view this assessment');
 }
+
+quest_add_breadcrumbs($cm, $submission, null, get_string('seeassessmentautor', 'quest'));
+$PAGE->set_title(format_string($quest->name));
+$PAGE->set_heading($course->fullname);
+echo $OUTPUT->header();
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");

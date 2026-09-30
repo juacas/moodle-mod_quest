@@ -330,6 +330,62 @@ function quest_print_challenge_title($quest, $challenge) {
 function quest_print_submission_title($quest, $submission) {
     return quest_print_challenge_title($quest, $submission);
 }
+
+/**
+ * Build the Quest > challenge > answer breadcrumb for activity subpages.
+ *
+ * @param object $cm Quest course module.
+ * @param stdClass|null $challenge Current challenge, if any.
+ * @param stdClass|null $answer Current answer, if any.
+ * @param string|null $page Label for a form or assessment below the current item.
+ * @return void
+ */
+function quest_add_breadcrumbs(object $cm, ?stdClass $challenge = null,
+        ?stdClass $answer = null, ?string $page = null): void {
+    global $PAGE;
+
+    if ($answer && !$challenge) {
+        throw new coding_exception('An answer breadcrumb requires its challenge.');
+    }
+    $questurl = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
+    // Keep Moodle's activity node in the trail, linking to the Quest overview.
+    navigation_node::override_active_url($questurl);
+    $PAGE->navigation->initialise();
+    $activitynode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
+    if ($activitynode && !$activitynode->mainnavonly) {
+        $activitynode->action = $questurl;
+    } else {
+        $PAGE->navbar->add(get_string('modulename', 'quest') . ': ' .
+            format_string($cm->name ?? get_string('modulename', 'quest')), $questurl);
+    }
+
+    if ($challenge) {
+        $challengeurl = new moodle_url('/mod/quest/challenges.php', [
+            'id' => $cm->id,
+            'cid' => $challenge->id,
+            'action' => 'showchallenge',
+        ]);
+        $PAGE->navbar->add(
+            get_string('challenge', 'quest') . ': ' . format_string($challenge->title),
+            $answer || $page !== null ? $challengeurl : null
+        );
+    }
+    if ($answer) {
+        $answerurl = new moodle_url('/mod/quest/answer.php', [
+            'id' => $cm->id,
+            'sid' => $challenge->id,
+            'aid' => $answer->id,
+            'action' => 'showanswer',
+        ]);
+        $PAGE->navbar->add(
+            get_string('answer', 'quest') . ': ' . format_string($answer->title),
+            $page !== null ? $answerurl : null
+        );
+    }
+    if ($page !== null) {
+        $PAGE->navbar->add($page);
+    }
+}
 /**
  * Form for creating or editing a Quest challenge.
  *
@@ -350,6 +406,7 @@ class quest_print_upload_form extends moodleform {
         $definitionoptions = $this->_customdata['definitionoptions'];
         $attachmentoptions = $this->_customdata['attachmentoptions'];
         $action = $this->_customdata['action'];
+        $composerquestions = $this->_customdata['composerquestions'] ?? [];
         $questionbankcontent = in_array($action, ['approve', 'modif'], true) &&
             !empty($this->_customdata['linkedquestion']);
 
@@ -366,11 +423,22 @@ class quest_print_upload_form extends moodleform {
                                                      // ...definido. hay que ver si es necesario.
         $mform->setType('nosubmit', PARAM_BOOL);
 
-        if (!$questionbankcontent) {
+        if ($composerquestions) {
+            $mform->addElement('html', $this->render_question_composer(
+                $composerquestions,
+                $cm,
+                $action,
+                (int)$submission->id
+            ));
+        }
+
+        if (!$questionbankcontent || $action === 'modif') {
             $mform->addElement('text', 'title', get_string("title", "quest"), 'size="60" maxlength="100"');
             $mform->setType('title', PARAM_TEXT);
             $mform->addRule('title', null, 'required', null, 'client');
+        }
 
+        if (!$questionbankcontent) {
             $mform->addElement(
                 'editor',
                 'description_editor',
@@ -494,13 +562,161 @@ class quest_print_upload_form extends moodleform {
             $buttonarray[] = & $mform->createElement('cancel');
             $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
         } else {
-            $this->add_action_buttons();
+            if ($action === 'modif' && $composerquestions) {
+                $submitlabel = get_string('savechallenge', 'quest');
+            } else if ($composerquestions) {
+                $submitlabel = get_string('createchallenge', 'quest');
+            } else {
+                $submitlabel = get_string('savechanges');
+            }
+            $this->add_action_buttons(true, $submitlabel);
         }
         // In the form the id hidden element is used to hold the cmid of the quest.
         $formdata = clone $submission;
         $formdata->sid = $submission->id;
         $formdata->id = $cm->id;
         $this->set_data($formdata);
+    }
+
+    /**
+     * Render the sortable question list included in the challenge creation form.
+     *
+     * @param stdClass[] $questions Selected ready questions.
+     * @param object $cm Activity course module.
+     * @return string
+     */
+    private function render_question_composer(array $questions, object $cm, string $action, int $submissionid): string {
+        global $CFG, $DB, $OUTPUT, $USER;
+
+        require_once($CFG->libdir . '/questionlib.php');
+        $context = \context_module::instance($cm->id);
+        $questions = array_map(static function($question) {
+            $metadata = \mod_quest\question\bank_provider::get_question((int)$question->id);
+            $metadata->maxmark = (float)($question->maxmark ?? 1);
+            return $metadata;
+        }, $questions);
+        // Composer previews are not challenge attempts. Core's preview file handler
+        // can serve their question files before the challenge has been saved.
+        $usage = \question_engine::make_questions_usage_by_activity('core_question_preview', $context);
+        $usage->set_preferred_behaviour('deferredfeedback');
+        $previewslots = [];
+        foreach (array_values($questions) as $question) {
+            $loadedquestion = \question_bank::load_question((int)$question->id);
+            $previewslots[] = $usage->add_question($loadedquestion, (float)($question->maxmark ?? 1));
+        }
+        $usage->start_all_questions();
+        \question_engine::save_questions_usage_by_activity($usage);
+
+        $returnparams = [
+            'id' => $cm->id,
+            'action' => $action === 'modif' ? 'modif' : 'addqchallenge',
+        ];
+        if ($action === 'modif') {
+            $returnparams['sid'] = $submissionid;
+        }
+        $returnparams['questionids'] = array_map(static fn($question) => (int)$question->id, $questions);
+        $returnurl = (new moodle_url('/mod/quest/challenges.php', $returnparams))->out_as_local_url(false);
+
+        $html = html_writer::tag('h4', get_string('page') . ' 1', ['class' => 'h5 mb-2']);
+        $html .= html_writer::start_tag('ul', [
+            'class' => 'list-group mb-3 quest-question-composer-slots',
+            'id' => 'quest-question-composer-slots',
+            'data-region' => 'question-composer-slots',
+        ]);
+        foreach (array_values($questions) as $index => $question) {
+            $html .= html_writer::start_tag('li', [
+                'class' => 'list-group-item quest-question-composer-slot',
+                'data-region' => 'question-composer-slot',
+                'data-questionid' => $question->id,
+            ]);
+            $html .= html_writer::empty_tag('input', [
+                'type' => 'hidden',
+                'name' => 'question_order[]',
+                'value' => $question->id,
+            ]);
+            $html .= html_writer::start_div('quest-question-composer-row');
+            $html .= html_writer::link('#', $OUTPUT->pix_icon('i/dragdrop', get_string('move')), [
+                'class' => 'quest-question-composer-drag',
+                'data-drag-type' => 'move',
+                'aria-label' => get_string('movequestionnumber', 'quiz', $index + 1),
+            ]);
+            $html .= html_writer::tag('span', (string)($index + 1), [
+                'class' => 'quest-question-composer-number',
+                'data-region' => 'question-number',
+            ]);
+            $html .= html_writer::start_div('quest-question-composer-name');
+            $html .= html_writer::tag('span', format_string($question->name), [
+                'class' => 'fw-bold',
+                'data-region' => 'question-name',
+            ]);
+            $qtypename = \question_bank::get_qtype($question->qtype)->local_name();
+            $html .= html_writer::tag('span', $qtypename, ['class' => 'badge bg-light text-dark ms-2']);
+            $categoryname = $DB->get_field('question_categories', 'name', ['id' => $question->categoryid]);
+            if ($categoryname) {
+                $html .= html_writer::tag('span', format_string($categoryname), [
+                    'class' => 'badge bg-primary ms-2 quest-question-composer-bank',
+                ]);
+            }
+            $html .= html_writer::end_div();
+
+            $questioncontext = \context::instance_by_id($question->contextid);
+            $canedit = has_capability('moodle/question:editall', $questioncontext) ||
+                ((int)$question->createdby === (int)$USER->id &&
+                    has_capability('moodle/question:editmine', $questioncontext));
+            if ($canedit) {
+                $editurl = new moodle_url('/question/bank/editquestion/question.php', [
+                    'id' => $question->id,
+                    'cmid' => $cm->id,
+                    'returnurl' => $returnurl,
+                ]);
+                $html .= html_writer::link($editurl, $OUTPUT->pix_icon('t/edit', get_string('edit')), [
+                    'class' => 'btn btn-outline-secondary quest-question-composer-action',
+                    'target' => '_blank',
+                ]);
+            }
+            $html .= html_writer::tag('select', html_writer::tag('option', get_string('alwayslatest', 'quiz')), [
+                'class' => 'form-select quest-question-composer-version',
+                'aria-label' => get_string('question_version', 'question'),
+                'disabled' => 'disabled',
+            ]);
+            $previewurl = \qbank_previewquestion\helper::question_preview_url(
+                $question->id, null, null, null, null, $context, $cm->id
+            );
+            $html .= html_writer::link($previewurl, $OUTPUT->pix_icon('i/preview', get_string('preview')), [
+                'class' => 'btn btn-outline-primary quest-question-composer-action',
+                'target' => '_blank',
+            ]);
+            $html .= html_writer::tag('button', $OUTPUT->pix_icon('t/delete', get_string('remove')), [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary quest-question-composer-action',
+                'data-action' => 'remove-question',
+                'aria-label' => get_string('remove'),
+            ]);
+            $html .= html_writer::start_div('quest-question-composer-mark');
+            $html .= html_writer::empty_tag('input', [
+                'type' => 'number',
+                'min' => 0.01,
+                'step' => 'any',
+                'required' => 'required',
+                'name' => 'question_mark[' . $question->id . ']',
+                'value' => $question->maxmark ?? 1,
+                'class' => 'form-control',
+                'aria-label' => get_string('questionmark', 'quest'),
+            ]);
+            $html .= html_writer::end_div();
+            $html .= html_writer::end_div();
+            $html .= html_writer::div(
+                \mod_quest\service\autograde_service::render_question_preview($usage, $previewslots[$index]),
+                'quest-question-composer-preview'
+            );
+            $html .= html_writer::end_tag('li');
+        }
+        $html .= html_writer::end_tag('ul');
+        $html .= html_writer::div(get_string('noquestionsselected', 'quest'), 'alert alert-warning d-none', [
+            'data-region' => 'question-composer-empty',
+        ]);
+
+        return $html;
     }
     /**
      *
@@ -555,7 +771,85 @@ class quest_print_upload_form extends moodleform {
     }
 }
 
-/** Receive and store a new challenge for the quest
+/** Read and validate the ordered question composition submitted by the form.
+ *
+ * @param array $existingquestions Already-linked challenge questions.
+ * @param array|null $submittedquestionorder Ordered question IDs from the composer.
+ * @param array|null $submittedquestionmarks Maximum marks indexed by question ID.
+ * @param context_module|null $localcontext Context of the Quest activity being edited.
+ * @return array Ordered question-bank references and their maximum marks.
+ */
+function quest_get_submitted_question_composition(
+    array $existingquestions = [],
+    ?array $submittedquestionorder = null,
+    ?array $submittedquestionmarks = null,
+    ?context_module $localcontext = null
+): array {
+    global $CFG;
+
+    $questionorder = $submittedquestionorder ?? optional_param_array('question_order', [], PARAM_INT);
+    $questionmarks = $submittedquestionmarks ?? optional_param_array('question_mark', [], PARAM_FLOAT);
+    if (!$questionorder) {
+        throw new \moodle_exception('noquestionsselected', 'quest');
+    }
+    require_once($CFG->libdir . '/questionlib.php');
+    if (count(array_unique($questionorder)) !== count($questionorder)) {
+        throw new \moodle_exception('invalidquestioncomposition', 'quest');
+    }
+    $existingbyquestionid = [];
+    foreach ($existingquestions as $existingquestion) {
+        if (!empty($existingquestion->question->id) && !empty($existingquestion->reference)) {
+            $existingbyquestionid[(int)$existingquestion->question->id] = $existingquestion;
+        }
+    }
+
+    $items = [];
+    foreach ($questionorder as $questionid) {
+        $questionid = (int)$questionid;
+        if (isset($existingbyquestionid[$questionid])) {
+            // Keep legacy references as-is. Older challenges can point to a question
+            // stored in the activity context, which is renderable but is not a
+            // shareable question bank in Moodle 5.x.
+            $reference = $existingbyquestionid[$questionid]->reference;
+            $entryid = (int)$reference->questionbankentryid;
+            $version = $reference->version;
+        } else {
+            $question = \mod_quest\question\bank_provider::require_question($questionid, $localcontext);
+            $entryid = (int)$question->questionbankentryid;
+            $version = null;
+        }
+        $maxmark = (float)($questionmarks[$questionid] ?? 0);
+        if (!is_finite($maxmark) || $maxmark <= 0) {
+            throw new \moodle_exception('invalidquestioncomposition', 'quest');
+        }
+        $items[] = [
+            'questionbankentryid' => $entryid,
+            'maxmark' => $maxmark,
+            'version' => $version,
+        ];
+    }
+
+    // Date/title edits must not migrate or rewrite an unchanged legacy composition.
+    if (count($items) === count($existingquestions)) {
+        $unchanged = true;
+        foreach (array_values($existingquestions) as $index => $existingquestion) {
+            if ((int)$items[$index]['questionbankentryid'] !==
+                    (int)$existingquestion->reference->questionbankentryid ||
+                    (float)$items[$index]['maxmark'] !== (float)$existingquestion->maxmark ||
+                    $items[$index]['version'] !== $existingquestion->reference->version) {
+                $unchanged = false;
+                break;
+            }
+        }
+        if ($unchanged) {
+            return [];
+        }
+    }
+
+    return $items;
+}
+
+/** Receive and store a challenge for the quest.
  *
  * @param stdClass $quest
  * @param stdClass $newsubmission
@@ -565,8 +859,9 @@ class quest_print_upload_form extends moodleform {
  * @param array $attachmentoptions
  * @param \stdClass $context
  * @param string $action
- * @param int $authorid author of the $newsubmission will override $newsubmission->userid
+ * @param int $authorid Author of the submission; overrides $newsubmission->userid.
  * @param bool $preservequestioncontent Keep stored title and description for a linked question approval.
+ * @param array $questionitems Question-bank slots for a composed challenge.
  */
 function quest_upload_challenge(
     stdClass $quest,
@@ -578,7 +873,8 @@ function quest_upload_challenge(
     $context,
     $action,
     $authorid,
-    bool $preservequestioncontent = false
+    bool $preservequestioncontent = false,
+    array $questionitems = []
 ) {
     global $USER, $DB, $CFG, $OUTPUT, $COURSE, $PAGE;
 
@@ -591,9 +887,11 @@ function quest_upload_challenge(
     if ($preservequestioncontent) {
         $newsubmission = quest_preserve_linked_challenge_content($newsubmission, (int)$quest->id);
     } else {
-        $newsubmission->description = ''; // ...updated later.
-        $newsubmission->descriptionformat = FORMAT_HTML; // ...updated later.
-        $newsubmission->descriptiontrust = 0; // ...updated later.
+        // The editor content is saved after insertion, when the challenge has
+        // an ID to use as the file area item ID.
+        $newsubmission->description = '';
+        $newsubmission->descriptionformat = FORMAT_HTML;
+        $newsubmission->descriptiontrust = 0;
     }
     $newsubmission->timecreated = time();
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
@@ -620,6 +918,14 @@ function quest_upload_challenge(
         if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
             throw new \moodle_exception('inserterror', 'quest', '', "quest_submissions");
         }
+        if ($questionitems) {
+            \mod_quest\question\question_reference_service::replace_challenge_questions(
+                (int)$context->id,
+                (int)$quest->id,
+                (int)$newsubmission->id,
+                $questionitems
+            );
+        }
     } else {
         $isnew = false;
         if ($canapprove && $action === 'approve') { // ...the challenge is approved by the teacher..
@@ -630,6 +936,14 @@ function quest_upload_challenge(
             }
         } else { // The challenge is modified, the status does not change.
             $newsubmission->state = $DB->get_field('quest_submissions', 'state', ['id' => $newsubmission->id]);
+        }
+        if ($questionitems && $action === 'modif') {
+            \mod_quest\question\question_reference_service::replace_challenge_questions(
+                (int)$context->id,
+                (int)$quest->id,
+                (int)$newsubmission->id,
+                $questionitems
+            );
         }
     }
 
@@ -705,7 +1019,9 @@ function quest_preserve_linked_challenge_content(\stdClass $submission, int $que
         'id' => $submission->id,
         'questid' => $questid,
     ], 'id, title, description, descriptionformat, descriptiontrust', MUST_EXIST);
-    $submission->title = $stored->title;
+    if (!isset($submission->title)) {
+        $submission->title = $stored->title;
+    }
     $submission->description = $stored->description;
     $submission->descriptionformat = $stored->descriptionformat;
     $submission->descriptiontrust = $stored->descriptiontrust;
@@ -1974,6 +2290,8 @@ function quest_print_answer_info($quest, $answer) {
         throw new \moodle_exception("course_misconfigured", 'quest');
     }
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
+    $context = context_module::instance($cm->id);
+    $isteacher = has_capability('mod/quest:manage', $context) || has_capability('mod/quest:grade', $context);
     // Print standard assignment heading..
     echo $OUTPUT->box_start("center");
     // Print phase and date info..
@@ -2000,7 +2318,7 @@ function quest_print_answer_info($quest, $answer) {
         }
     }
     $string .= '<b>' . get_string('pointsmax', 'quest') . ":&nbsp;&nbsp;" . number_format($answer->pointsmax, 4) . '</b><br>';
-    if (($answer->phase == 1) || ($answer->phase == 2)) {
+    if (($answer->phase == 1) || ($answer->phase == 2) || ($isteacher && $assessment)) {
         $string .= '<b>' . get_string('points', 'quest') . ":&nbsp;&nbsp;$points" . '</b><br>';
     }
     echo $string;
@@ -2052,7 +2370,11 @@ function quest_answer_phase($answer, $course, $style = '') {
                 $badgeclass = 'bg-warning text-dark';
             }
         } else {
-            if ($answer->phase == ANSWER_PHASE_GRADED) {
+            if (!empty($answer->questionusageid) &&
+                    in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)) {
+                $string = get_string('gradedautomatically', 'quest');
+                $badgeclass = 'bg-success text-white';
+            } else if ($answer->phase == ANSWER_PHASE_GRADED) {
                 $string = get_string('phase3answer' . $style, 'quest');
                 $badgeclass = 'bg-success text-white';
             } else if ($answer->phase == ANSWER_PHASE_PASSED) {
@@ -2101,6 +2423,7 @@ function quest_print_answer($quest, $answer) {
 
     $description = $answer->description;
     $context = context_module::instance($cm->id);
+    $isteacher = has_capability('mod/quest:manage', $context) || has_capability('mod/quest:grade', $context);
 
     if (!empty($answer->questionusageid)) {
         require_once($CFG->libdir . '/questionlib.php');
@@ -2113,16 +2436,29 @@ function quest_print_answer($quest, $answer) {
 
         echo '<div class="card border-0 shadow-sm mb-4">';
         echo '  <div class="card-body p-4">';
-        echo \mod_quest\service\autograde_service::render_question($quba, 1, true, $showcorrectanswer);
-        $question = $quba->get_question(1);
-        if (!$question->qtype->is_manual_graded() &&
-                in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)) {
-            $iscorrect = (int)$answer->phase === ANSWER_PHASE_PASSED;
+        echo \mod_quest\service\autograde_service::render_questions($quba, true, $showcorrectanswer, $isteacher);
+        $allautomatic = true;
+        foreach ($quba->get_slots() as $slot) {
+            if ($quba->get_question($slot)->qtype->is_manual_graded()) {
+                $allautomatic = false;
+                break;
+            }
+        }
+        $automaticgrade = $isteacher
+            ? \mod_quest\service\autograde_service::get_automatic_grade($answer)
+            : null;
+        $showresult = $allautomatic && (
+            in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)
+            || ($isteacher && $automaticgrade !== null)
+        );
+        if ($showresult) {
+            $grade = $automaticgrade ?? (float)$answer->grade;
+            $iscorrect = $grade >= 50.0;
             $resultlabel = $iscorrect ? get_string('correct', 'quest') : get_string('incorrect', 'quest');
             $badgeclass = $iscorrect ? 'bg-success text-white' : 'bg-danger text-white';
             echo html_writer::div(
                 html_writer::span($resultlabel, 'badge ' . $badgeclass) . ' ' .
-                html_writer::span(get_string('grade', 'quest') . ': ' . format_float((float)$answer->grade, 2) . '%'),
+                html_writer::span(get_string('grade', 'quest') . ': ' . format_float($grade, 2) . '%'),
                 'quest-autograde-result mt-3'
             );
         }
@@ -2148,14 +2484,15 @@ function quest_print_answer($quest, $answer) {
     }
 
     $ismanager = has_capability('mod/quest:manage', $context);
+    $isteacher = $ismanager || has_capability('mod/quest:grade', $context);
     if (!empty($answer->commentsforteacher)) {
-        if (($answer->userid == $USER->id) || ($ismanager)) {
+        if (($answer->userid == $USER->id) || ($isteacher)) {
             echo $OUTPUT->heading(get_string('commentsforteacher', 'quest'));
             echo $OUTPUT->box(format_text($answer->commentsforteacher), 'center');
         }
     }
     if (!empty($answer->commentsteacher)) {
-        if (($answer->userid == $USER->id) || ($ismanager)) {
+        if (($answer->userid == $USER->id) || ($isteacher)) {
             echo $OUTPUT->heading(get_string('commentsteacher', 'quest'));
             echo $OUTPUT->box(format_text($answer->commentsteacher), 'center');
         }
@@ -4225,8 +4562,11 @@ function quest_recalification($answer, $quest, $assessment, $course) {
         case 0: // ...no grading.
                 // Insert all the elements that contain something.
             $points = quest_get_points($submission, $quest, $answer);
-            $grade = 0;
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
+            // There are no criterion marks to reconstruct a rubric grade. Keep
+            // the percentage saved when the answer was assessed.
+            $percent = (float)$answer->grade / 100;
+            $grade = $points * $percent;
+            if ((100.0 * $percent) >= 50.0000) {
                 $submission->points = $grade;
 
                 if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
@@ -4282,7 +4622,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
-            foreach ($grades as $key => $grade) {
+            foreach ($grades ?? [] as $key => $grade) {
                 if (!isset($elements[$key]) || !is_object($elements[$key])) {
                     continue;
                 }
@@ -4295,7 +4635,14 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 $rawgrade += $maxscore > 0 ? ($grade / $maxscore) * $weight : 0;
             }
             $points = quest_get_points($submission, $quest, $answer);
-            $percent = $totalweight > 0 ? ($rawgrade / $totalweight) : 0;
+            if ($grades) {
+                $rubricfraction = $totalweight > 0 ? ($rawgrade / $totalweight) : 0;
+                $percent = \mod_quest\service\autograde_service::combine_with_rubric_grade($answer, $rubricfraction);
+            } else {
+                // A teacher may have entered a direct percentage instead of
+                // criterion marks, so retain its saved combined percentage.
+                $percent = (float)$answer->grade / 100;
+            }
             $grade = $points * $percent;
             if ((100.0 * $percent) >= 50.0000) {
                 $submission->points = $grade;
@@ -4309,8 +4656,6 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                     $answer->phase = 2;
                 }
             } else {
-                $points = quest_get_points($submission, $quest, $answer);
-                $grade = $points * ($rawgrade / $totalweight);
                 $submission->points = $grade;
                 if ($answer->phase == 2) {
                     $submission->nanswerscorrect--;
@@ -4323,7 +4668,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             throw new InvalidArgumentException('Unknown grading strategy.');
     } // ...end of switch.
 
-    $answer->grade = 100 * ($grade / $points);
+    $answer->grade = 100 * $percent;
 
     // ...update the time of the assessment record (may be re-edited)....
     $assessment->dateassessment = $timenow;

@@ -79,9 +79,7 @@ $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add(get_string('challenge', 'quest') . ': ' . $submission->title,
-        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge']));
-$PAGE->navbar->add(get_string('answername', 'quest', $answer));
+quest_add_breadcrumbs($cm, $submission, $answer, get_string('evaluate', 'quest'));
 echo $OUTPUT->header();
 
 // ...there can be an assessment record , if there isn't...

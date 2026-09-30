@@ -57,14 +57,21 @@ quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$isteacher = $ismanager || has_capability('mod/quest:grade', $context);
 
 $action = required_param('action', PARAM_ALPHA);
 
 $url = new moodle_url('/mod/quest/answer.php',
         ['sid' => $sid, 'action' => $action, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'aid' => $aid]);
 $PAGE->set_url($url);
-$PAGE->navbar->add(get_string('submission', 'quest') . ':' . $submission->title,
-        new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge']));
+if ($action === 'answer') {
+    quest_add_breadcrumbs($cm, $submission, null, get_string('answer', 'quest'));
+} else if ($aid) {
+    $breadcrumppage = $action === 'confirmdelete' ? get_string('delete') : null;
+    quest_add_breadcrumbs($cm, $submission, $answer, $breadcrumppage);
+} else {
+    quest_add_breadcrumbs($cm, $submission);
+}
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
@@ -81,10 +88,10 @@ if ($action == "answer") {
     // Check if challenge is linked to a Question Bank question.
     $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
     if ($linkedquestion) {
-        [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_attempt($quest, $submission, $USER->id, $context);
+        [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_attempt($quest, $submission, $USER->id, $context);
 
         if (data_submitted() && confirm_sesskey() && optional_param('submitqbankanswer', 0, PARAM_BOOL)) {
-            $result = \mod_quest\service\autograde_service::process_submission($quest, $submission, $USER->id, $quba, $slot);
+            $result = \mod_quest\service\autograde_service::process_submission($quest, $submission, $USER->id, $quba);
             $returnurl = new moodle_url('/mod/quest/challenges.php', [
                 'id' => $cm->id,
                 'cid' => $submission->id,
@@ -105,7 +112,7 @@ if ($action == "answer") {
             echo '<form method="post" action="' . $url->out() . '" class="m-3">';
             echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
             echo '<input type="hidden" name="submitqbankanswer" value="1">';
-            echo \mod_quest\service\autograde_service::render_question($quba, $slot);
+            echo \mod_quest\service\autograde_service::render_questions($quba);
             echo '<div class="mt-3"><button type="submit" class="btn btn-primary">' . get_string('submit') . '</button></div>';
             echo '</form>';
             echo $OUTPUT->footer();
@@ -166,7 +173,7 @@ if ($action == "answer") {
         echo $OUTPUT->footer();
     }
 } else if ($action == "showanswer") {
-    if (($quest->usepassword) && (!$ismanager)) {
+    if (($quest->usepassword) && (!$isteacher)) {
         quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
     }
     $aid = required_param('aid', PARAM_INT); // Answer ID..
@@ -177,7 +184,7 @@ if ($action == "answer") {
     $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid]);
     quest_require_answer_ownership($answer, (int)$quest->id);
 
-    if ((!$ismanager) && ($submission->userid != $USER->id) && ($answer->userid != $USER->id) && ($submission->dateend > time()) &&
+    if ((!$isteacher) && ($submission->userid != $USER->id) && ($answer->userid != $USER->id) && ($submission->dateend > time()) &&
              ($submission->nanswerscorrect < $quest->nmaxanswers)) {
         throw new \moodle_exception('notpermissionanswer', 'quest');
     }
@@ -187,13 +194,12 @@ if ($action == "answer") {
     $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'action' => 'showchallenge', 'cid' => $submission->id]))->out();
     $subject .= "<a name=\"sid_$submission->id\" href=\"$url\">$submission->title</a>";
 
-    if (($ismanager) || ($answer->userid == $USER->id)) {
+    if (($isteacher) || ($answer->userid == $USER->id)) {
         $title .= ' ' . get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
     }
 
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-    $PAGE->navbar->add(get_string('answername', 'quest', $answer));
     echo $OUTPUT->header();
     echo $OUTPUT->heading($title . ' ' . $subject);
 
@@ -203,7 +209,7 @@ if ($action == "answer") {
     quest_print_answer($quest, $answer);
 
     // The teacher's assessment comment is separate from question-bank feedback.
-    if (!empty($answer->questionusageid) && ($ismanager || (int)$answer->userid === (int)$USER->id)) {
+    if (!empty($answer->questionusageid) && ($isteacher || (int)$answer->userid === (int)$USER->id)) {
         $assessment = $DB->get_record('quest_assessments', [
             'answerid' => $answer->id,
             'questid' => $quest->id,

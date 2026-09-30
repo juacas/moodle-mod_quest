@@ -25,6 +25,9 @@ export default class AddQuestionModal extends Modal {
         this.questCmId = modalConfig.questCmId;
         this.bankCmId = modalConfig.bankCmId;
         this.courseId = modalConfig.courseId;
+        this.returnAction = modalConfig.returnAction || 'addqchallenge';
+        this.challengeId = modalConfig.challengeId || null;
+        this.currentQuestionIds = modalConfig.currentQuestionIds || [];
 
         // Store the original title of the modal, so we can revert back to it once we have switched to another bank.
         this.originalTitle = modalConfig.title;

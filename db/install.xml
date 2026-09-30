@@ -75,9 +75,9 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="questid" UNIQUE="false" FIELDS="questid"/>
         <INDEX NAME="submissionid" UNIQUE="false" FIELDS="submissionid"/>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="questid" UNIQUE="false" FIELDS="questid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="quest_assessments_autors" COMMENT="Assessments received for authoring task.">
@@ -289,6 +289,23 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
         <INDEX NAME="questid" UNIQUE="false" FIELDS="questid"/>
         <INDEX NAME="mailed" UNIQUE="false" FIELDS="mailed"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="quest_challenge_questions" COMMENT="Ordered question bank slots composing a challenge.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="questid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="submissionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="slotnumber" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="maxmark" TYPE="number" LENGTH="10" DECIMALS="5" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="questid_fk" TYPE="foreign" FIELDS="questid" REFTABLE="quest" REFFIELDS="id"/>
+        <KEY NAME="submissionid_fk" TYPE="foreign" FIELDS="submissionid" REFTABLE="quest_submissions" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="submission_slot" UNIQUE="true" FIELDS="submissionid, slotnumber"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="quest_teams" COMMENT="Self-organized teams of users.">

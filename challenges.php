@@ -109,7 +109,7 @@ if ($action == 'confirmdelete') {
     }
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-    $PAGE->navbar->add(\format_string($submission->title));
+    quest_add_breadcrumbs($cm, $submission, null, get_string('delete'));
     echo $OUTPUT->header();
     echo "<br>";
     echo $OUTPUT->confirm(get_string("confirmdeletionofthisitem", "quest", $submission->title),
@@ -123,7 +123,7 @@ if ($action == 'confirmdelete') {
     $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     $PAGE->set_title(format_string($quest->name));
     $PAGE->set_heading($course->fullname);
-    $PAGE->navbar->add(\format_string($submission->title));
+    quest_add_breadcrumbs($cm, $submission, null, get_string('delete'));
     echo $OUTPUT->header();
     // ...check if the user has enough capability to delete the submission and only up to the
     // deadline.
@@ -191,61 +191,105 @@ if ($action == 'confirmdelete') {
     }
     \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
     $category = \mod_quest\question\bank_provider::get_or_create_activity_category($context);
+    $questionids = optional_param_array('questionids', [], PARAM_INT);
+    $lastchanged = optional_param('lastchanged', 0, PARAM_INT);
+    if ($lastchanged > 0) {
+        $questionids[] = $lastchanged;
+    }
+    $questionids = array_values(array_unique(array_filter(array_map('intval', $questionids))));
     $returnurl = new moodle_url('/mod/quest/challenges.php', [
         'id' => $cm->id,
-        'action' => 'processnewqchallenge',
+        'action' => 'addqchallenge',
         'sesskey' => sesskey(),
+        'questionids' => $questionids,
     ]);
-    $chooseqtype = get_string('chooseqtypetoadd', 'question');
-    $PAGE->set_title($chooseqtype);
-    $PAGE->set_heading($course->fullname);
-    $PAGE->navbar->add($chooseqtype);
-    echo $OUTPUT->header();
-    // Question bank selector.
-    // Moodle 5.0+: shared question banks via question_bank_helper (mod_qbank).
-    // Moodle 4.x:  direct listing of course question bank questions.
+    // Prepare the question-bank and create-question actions for the composer toolbar.
+    $questionbankbutton = '';
     if ($canaddquestionbank && \mod_quest\question\bank_provider::has_bank_helper()) {
-        // Moodle 5.0+: shared-bank modal picker.
         $availablebanks = \mod_quest\question\bank_provider::get_available_banks($course->id);
         if (!empty($availablebanks)) {
             $defaultbank = reset($availablebanks);
-            echo html_writer::start_div("generalbox boxwidthnormal boxaligncenter mb-4", ["id" => "quest-question-bank-picker"]);
-            echo $OUTPUT->heading(get_string("addfromquestionbank", "quest"), 3);
-            echo html_writer::tag("button", get_string("addfromquestionbank", "quest"), [
+            $questionbankbutton = html_writer::tag("button", get_string('addfromquestionbank', 'quest'), [
                 "type" => "button",
                 "class" => "btn btn-outline-primary",
                 "data-action" => "questionbank",
                 "data-header" => get_string("addfromquestionbank", "quest"),
             ]);
-            echo html_writer::end_div();
             $PAGE->requires->js_call_amd("mod_quest/modal_quest_question_bank", "init",
                 [$context->id, (int)$defaultbank->modid, $cm->id, $course->id]);
         }
     } else if ($canaddquestionbank) {
-        // Moodle 4.x: modal question bank picker.
-        echo html_writer::start_div("generalbox boxwidthnormal boxaligncenter mb-4", ["id" => "quest-question-bank-picker"]);
-        echo $OUTPUT->heading(get_string("addfromquestionbank", "quest"), 3);
-        echo html_writer::tag("button", get_string("addfromquestionbank", "quest"), [
+        $questionbankbutton = html_writer::tag("button", get_string('addfromquestionbank', 'quest'), [
             "type" => "button",
             "class" => "btn btn-outline-primary",
             "data-action" => "questionbank",
             "data-header" => get_string("addfromquestionbank", "quest"),
         ]);
-        echo html_writer::end_div();
         $PAGE->requires->js_call_amd("mod_quest/modal_quest_question_bank_45", "init",
             [$context->id, (int)$cm->id, (int)$course->id]);
     }
     require_once($CFG->dirroot . '/question/editlib.php');
     require_once($CFG->dirroot . '/question/bank/editquestion/classes/editquestion_helper.php');
-    $params = [
-        'cmid' => $cm->id,
-        'returnurl' => $returnurl->out_as_local_url(false),
-    ];
     $canadd = has_capability('moodle/question:add', $context) || has_capability('mod/quest:addchallenge', $context);
-    echo html_writer::start_div('generalbox boxwidthnormal boxaligncenter my-4', ['id' => 'quest-qtype-create-container']);
-    echo $OUTPUT->heading(get_string('createnewquestion', 'question'), 3);
-    echo $OUTPUT->render(new \qbank_editquestion\output\add_new_question((int)$category->id, $params, $canadd));
-    echo html_writer::end_div(); // End quest-qtype-create-container.
+    $qtypewidget = $OUTPUT->render(new \qbank_editquestion\output\add_new_question(
+        (int)$category->id,
+        ['cmid' => $cm->id, 'returnurl' => $returnurl->out_as_local_url(false)],
+        $canadd
+    ));
+
+    $PAGE->set_title(get_string('composequestionchallenge', 'quest'));
+    $PAGE->set_heading($course->fullname);
+    quest_add_breadcrumbs($cm, null, null, get_string('composequestionchallenge', 'quest'));
+    echo $OUTPUT->header();
+    echo html_writer::div($questionbankbutton . $qtypewidget, 'quest-composer-toolbar d-flex flex-wrap align-items-center gap-2 mb-3');
+    if ($questionids) {
+        require_once($CFG->libdir . '/questionlib.php');
+        $selectedquestions = [];
+        foreach ($questionids as $questionid) {
+            $question = \mod_quest\question\bank_provider::require_question($questionid, $context);
+            $selectedquestions[] = $question;
+        }
+        $descriptionoptions = [
+            'trusttext' => true,
+            'subdirs' => false,
+            'maxfiles' => -1,
+            'maxbytes' => $course->maxbytes,
+            'context' => $context,
+        ];
+        $attachmentoptions = [
+            'subdirs' => false,
+            'maxfiles' => $quest->nattachments,
+            'maxbytes' => $quest->maxbytes,
+            'context' => $context,
+        ];
+        $newsubmission = (object)[
+            'id' => null,
+            'title' => shorten_text($selectedquestions[0]->name, 100),
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'descriptiontrust' => 0,
+        ];
+        $newsubmission = file_prepare_standard_editor(
+            $newsubmission, 'description', $descriptionoptions, $context, 'mod_quest', 'submission', null
+        );
+        $newsubmission = file_prepare_standard_filemanager(
+            $newsubmission, 'attachment', $attachmentoptions, $context, 'mod_quest', 'attachment', null
+        );
+        $composerform = new quest_print_upload_form(null, [
+            'submission' => $newsubmission,
+            'quest' => $quest,
+            'cm' => $cm,
+            'definitionoptions' => $descriptionoptions,
+            'attachmentoptions' => $attachmentoptions,
+            'action' => 'submitchallenge',
+            'composerquestions' => $selectedquestions,
+        ], 'post', '', ['class' => 'quest-question-composer']);
+        $PAGE->requires->js_call_amd('mod_quest/question_composer', 'init');
+        $composerform->display();
+    } else {
+        echo $OUTPUT->heading(get_string('composequestionchallenge', 'quest'), 3);
+        echo html_writer::div(get_string('questioncomposerinstructions', 'quest'), 'alert alert-info');
+    }
     echo $OUTPUT->footer();
     exit();
 } else if ($action === 'processexistingqchallenge') {
@@ -257,7 +301,7 @@ if ($action == 'confirmdelete') {
     }
     $questionid = required_param('questionid', PARAM_INT);
     require_once($CFG->libdir . '/questionlib.php');
-    $question = \mod_quest\question\bank_provider::require_question($questionid);
+    $question = \mod_quest\question\bank_provider::require_question($questionid, $context);
     $entryid = (int)$question->questionbankentryid;
     // Get the highest version question record for this entry.
     $latestq = $DB->get_record_sql(
@@ -323,7 +367,7 @@ if ($action == 'confirmdelete') {
     if ($lastchanged <= 0) {
         redirect(new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id]));
     }
-    $question = \mod_quest\question\bank_provider::require_question($lastchanged);
+    $question = \mod_quest\question\bank_provider::require_question($lastchanged, $context);
     $newsubmission = new stdClass();
     $newsubmission->questid = $quest->id;
     $newsubmission->userid = $USER->id;
@@ -410,8 +454,9 @@ if ($action == 'confirmdelete') {
         redirect("view.php?id=$cm->id");
     } else if ($newsubmission = $mform->get_data()) {
         $authorid = $USER->id;
+        $questionitems = quest_get_submitted_question_composition([], null, null, $context);
         quest_upload_challenge($quest, $newsubmission, $canaddchallenge, $cm, $descriptionoptions, $attachmentoptions, $context,
-                $action, $authorid);
+                $action, $authorid, false, $questionitems);
     } else {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
@@ -427,7 +472,7 @@ if ($action == 'confirmdelete') {
     }
     $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     $titlesubmission = $submission->title;
-    $PAGE->navbar->add(\format_string($submission->title));
+    quest_add_breadcrumbs($cm, $submission, null, get_string('adjustchallenge', 'quest'));
     if (($submission->userid != $USER->id) && (!$caneditchallenges)) {
         throw new \moodle_exception('nopermissions', 'error', '', "Edit submission: Only teachers and autors can look this page");
     }
@@ -441,6 +486,43 @@ if ($action == 'confirmdelete') {
                     'context' => $context];
     $attachmentoptions = ['subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes];
     $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+    $composerquestions = [];
+    $existingquestions = [];
+    if ($linkedquestion) {
+        $existingquestions = \mod_quest\question\question_reference_service::get_challenge_questions((int)$submission->id);
+        $questionsbyentry = [];
+        foreach ($existingquestions as $slot) {
+            $entryid = (int)$slot->reference->questionbankentryid;
+            $questionsbyentry[$entryid] = (object)[
+                'question' => $slot->question,
+                'maxmark' => (float)$slot->maxmark,
+            ];
+        }
+        $requestedquestionids = optional_param_array('questionids', [], PARAM_INT);
+        $lastchanged = optional_param('lastchanged', 0, PARAM_INT);
+        if ($lastchanged > 0) {
+            $requestedquestionids[] = $lastchanged;
+        }
+        if ($requestedquestionids) {
+            require_capability('mod/quest:addchallenge', $context);
+            if (!$ismanager && empty($quest->allowqbankquestions)) {
+                throw new \moodle_exception('questionbankdisabled', 'quest');
+            }
+        }
+        require_once($CFG->libdir . '/questionlib.php');
+        foreach (array_values(array_unique(array_filter(array_map('intval', $requestedquestionids)))) as $questionid) {
+            $question = \mod_quest\question\bank_provider::require_question((int)$questionid, $context);
+            $entryid = (int)$question->questionbankentryid;
+            $questionsbyentry[$entryid] = (object)[
+                'question' => $question,
+                'maxmark' => $questionsbyentry[$entryid]->maxmark ?? 1.0,
+            ];
+        }
+        foreach ($questionsbyentry as $item) {
+            $item->question->maxmark = $item->maxmark;
+            $composerquestions[] = $item->question;
+        }
+    }
     if (!$linkedquestion) {
         $submission = file_prepare_standard_editor($submission, 'description', $descriptionoptions, $context,
             'mod_quest', 'submission', $submission->id);
@@ -453,13 +535,17 @@ if ($action == 'confirmdelete') {
     $mform = new quest_print_upload_form(null,
             ['submission' => $submission, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
                             'attachmentoptions' => $attachmentoptions, 'action' => $action,
-                            'linkedquestion' => $linkedquestion]);
+                            'linkedquestion' => $linkedquestion, 'composerquestions' => $composerquestions],
+            'post', '', ['class' => $composerquestions ? 'quest-question-composer' : '']);
     if ($mform->is_cancelled()) {
         redirect("view.php?id=$cm->id");
     } else if ($modifsubmission = $mform->get_data()) {
         $authorid = $submission->userid;
+        $questionitems = $linkedquestion
+            ? quest_get_submitted_question_composition($existingquestions, null, null, $context)
+            : [];
         quest_upload_challenge($quest, $modifsubmission, $caneditchallenges, $cm, $descriptionoptions,
-                $attachmentoptions, $context, $action, $authorid, (bool)$linkedquestion);
+                $attachmentoptions, $context, $action, $authorid, (bool)$linkedquestion, $questionitems);
     } else {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
@@ -468,44 +554,51 @@ if ($action == 'confirmdelete') {
         // Question bank notification in the modification view.
         // Show a banner if this challenge is already linked to a question bank question.
         // Visible to: teachers (editchallengeall) and the author while in approval_pending state.
-        $isownpendingmodif = ($submission->userid == $USER->id)
-            && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING);
-        if (has_capability('mod/quest:editchallengeall', $context) || $isownpendingmodif) {
-            if ($linkedquestion) {
-                $qtypeobj = question_bank::get_qtype($linkedquestion->qtype, false);
-                $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
-                $badgetext = $isautograded ? ' <span class="badge bg-success ms-2">Auto-graded</span>' : '';
-                if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedquestion->id)) {
-                    $badgetext .= ' <span class="badge bg-warning text-dark ms-1">' .
-                        '<i class="fa fa-clock-o me-1" aria-hidden="true"></i>' .
-                        get_string('approvalpending', 'quest') . '</span>';
-                }
-                $catparam = !empty($linkedquestion->category) ? "{$linkedquestion->category},{$context->id}" : '';
-                $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
-                $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
-                    'id' => $linkedquestion->id, 'cmid' => $cm->id,
+        if ($linkedquestion && $composerquestions) {
+            $canaddqbankquestions = (has_capability('mod/quest:addchallenge', $context) || $ismanager) &&
+                ($ismanager || !empty($quest->allowqbankquestions));
+            if ($canaddqbankquestions) {
+                $questionids = array_map(static fn($question) => (int)$question->id, $composerquestions);
+                $questionbankbutton = html_writer::tag('button', get_string('addfromquestionbank', 'quest'), [
+                    'type' => 'button',
+                    'class' => 'btn btn-outline-primary',
+                    'data-action' => 'questionbank',
+                    'data-header' => get_string('addfromquestionbank', 'quest'),
+                    'data-return-action' => 'modif',
+                    'data-challengeid' => (int)$submission->id,
+                    'data-questionids' => implode(',', $questionids),
                 ]);
-                $viewlink = '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-primary ms-2 py-0 px-2">' .
-                    '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' .
-                    get_string('viewinquestionbank', 'quest') . '</a>';
-                $editlink = '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary ms-2 py-0 px-2">' .
-                    '<i class="fa fa-pencil me-1" aria-hidden="true"></i>' . get_string('editquestion', 'quest') . '</a>';
-                echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
-                     '<i class="fa fa-database fa-2x me-3"></i><div>' .
-                     '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
-                     '<a href="' . $qbankurl->out() . '" class="alert-link font-weight-bold">' .
-                     format_string($linkedquestion->name) . '</a> (' . $linkedquestion->qtype . ')' .
-                     $badgetext . $viewlink . $editlink . '</div></div>';
+                if (\mod_quest\question\bank_provider::has_bank_helper()) {
+                    $banks = \mod_quest\question\bank_provider::get_available_banks($course->id);
+                    if ($banks) {
+                        $bank = reset($banks);
+                        $PAGE->requires->js_call_amd('mod_quest/modal_quest_question_bank', 'init',
+                            [$context->id, (int)$bank->modid, $cm->id, $course->id]);
+                    }
+                } else {
+                    $PAGE->requires->js_call_amd('mod_quest/modal_quest_question_bank_45', 'init',
+                        [$context->id, (int)$cm->id, (int)$course->id]);
+                }
+                $returnparams = [
+                    'id' => $cm->id,
+                    'sid' => $submission->id,
+                    'action' => 'modif',
+                    'questionids' => $questionids,
+                ];
+                $category = \mod_quest\question\bank_provider::get_or_create_activity_category($context);
+                require_once($CFG->dirroot . '/question/editlib.php');
+                require_once($CFG->dirroot . '/question/bank/editquestion/classes/editquestion_helper.php');
+                $cancreatequestion = has_capability('moodle/question:add', $context) ||
+                    has_capability('mod/quest:addchallenge', $context);
+                $createquestion = $OUTPUT->render(new \qbank_editquestion\output\add_new_question(
+                    (int)$category->id,
+                    ['cmid' => $cm->id, 'returnurl' => (new moodle_url('/mod/quest/challenges.php', $returnparams))->out_as_local_url(false)],
+                    $cancreatequestion
+                ));
+                echo html_writer::div($questionbankbutton . $createquestion,
+                    'quest-composer-toolbar d-flex flex-wrap align-items-center gap-2 mb-3');
             }
-        }
-        // End question bank notification.
-        if ($linkedquestion) {
-            [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
-                $quest, $submission, $linkedquestion, $context
-            );
-            echo '<div class="card border-0 mb-4" id="quest-qpreview-panel"><div class="card-body p-4 bg-white rounded shadow-sm">';
-            echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
-            echo '</div></div>';
+            $PAGE->requires->js_call_amd('mod_quest/question_composer', 'init');
         }
         $mform->display();
     }
@@ -561,7 +654,7 @@ if ($action == 'confirmdelete') {
     }
     $PAGE->set_title(format_string($quest->name . ' ' . $submission->title));
     $PAGE->set_heading($course->fullname);
-    $PAGE->navbar->add(\format_string($submission->title));
+    quest_add_breadcrumbs($cm, $submission);
     echo $OUTPUT->header();
     // Flag to force a recalculation of team statistics and scores.
     $debugrecalculate = optional_param('recalculate', 'no', PARAM_ALPHA);
@@ -650,48 +743,14 @@ if ($action == 'confirmdelete') {
         get_string('specimenassessmentformanswer', 'quest') . '</a> ';
     $actionbarbtns .= $OUTPUT->help_icon('specimenanswer', 'quest');
     $anylinkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
-    // Export / Question Bank notification (manager, or own challenge with linked question).
-    if ($ismanager || $isownpending) {
-        $linkedq = $anylinkedq;
-        if ($linkedq) {
-            $qtypeobj = question_bank::get_qtype($linkedq->qtype, false);
-            $isautograded = $qtypeobj ? !$qtypeobj->is_manual_graded() : false;
-            $badgetext = $isautograded ? ' <span class="badge bg-success ms-2">Auto-graded</span>' : '';
-            if (\mod_quest\question\question_reference_service::is_approval_pending((int)$linkedq->id)) {
-                $badgetext .= ' <span class="badge bg-warning text-dark ms-1">'
-                    . '<i class="fa fa-clock-o me-1" aria-hidden="true"></i>'
-                    . get_string('approvalpending', 'quest') . '</span>';
-            }
-            $catparam = !empty($linkedq->category) ? "{$linkedq->category},{$context->id}" : '';
-            $qbankurl = new moodle_url('/question/edit.php', array_filter(['cmid' => $cm->id, 'cat' => $catparam]));
-            $editurl  = new moodle_url('/question/bank/editquestion/question.php', [
-                'id' => $linkedq->id, 'cmid' => $cm->id,
-            ]);
-            $previewurl = \qbank_previewquestion\helper::question_preview_url(
-                $linkedq->id, null, null, null, null, $context, $cm->id
-            );
-            // Add buttons to the action bar.
-            $actionbarbtns .= '<a href="' . $editurl->out() . '" class="btn btn-sm btn-outline-secondary">'
-                    . '<i class="fa fa-pencil me-1"></i>' . get_string('editquestion', 'quest') . '</a> ';
-            $actionbarbtns .= '<a href="' . $qbankurl->out() . '" class="btn btn-sm btn-outline-secondary">'
-                    . '<i class="fa fa-external-link me-1"></i>'
-                    . get_string('viewinquestionbank', 'quest') . '</a> ';
-            $actionbarbtns .= '<a href="' . $previewurl->out() . '" class="btn btn-sm btn-outline-secondary" '
-                    . 'onclick="window.open(this.href,\'qpreview\',\'width=800,height=600,scrollbars=yes\');return false;">'
-                    . '<i class="fa fa-eye me-1"></i>' . get_string('preview') . '</a> ';
-            echo '<div class="alert alert-info d-flex align-items-center mb-3">' .
-                 '<i class="fa fa-database fa-2x me-3"></i><div>' .
-                 '<strong>' . get_string('questionbank', 'quest') . ':</strong> ' .
-                 format_string($linkedq->name) . ' (' . $linkedq->qtype . ')' .
-                 $badgetext . '</div></div>';
-        } else {
-            $exporturl = new moodle_url('/mod/quest/challenges.php', [
-                'id' => $cm->id, 'sid' => $submission->id,
-                'action' => 'exporttoqbank', 'sesskey' => sesskey(),
-            ]);
-            $actionbarbtns .= '<a href="' . $exporturl->out() . '" class="btn btn-sm btn-outline-dark ms-2">' .
-                '<i class="fa fa-upload me-1"></i> ' . get_string('exporttoquestionbank', 'quest') . '</a>';
-        }
+    // Offer export for open challenges; linked question challenges need no bank notice.
+    if (($ismanager || $isownpending) && !$anylinkedq) {
+        $exporturl = new moodle_url('/mod/quest/challenges.php', [
+            'id' => $cm->id, 'sid' => $submission->id,
+            'action' => 'exporttoqbank', 'sesskey' => sesskey(),
+        ]);
+        $actionbarbtns .= '<a href="' . $exporturl->out() . '" class="btn btn-sm btn-outline-dark ms-2">' .
+            '<i class="fa fa-upload me-1"></i> ' . get_string('exporttoquestionbank', 'quest') . '</a>';
     }
     // Render the action bar.
     echo '<div class="quest-challenge-action-bar d-flex flex-wrap align-items-center gap-2 mb-3 p-2' .
@@ -708,6 +767,9 @@ if ($action == 'confirmdelete') {
             $attentionlabel,
             ['class' => $attentionstatus['class'], 'title' => $attentionstatus['label']]
         );
+    }
+    if ($anylinkedq && \mod_quest\service\autograde_service::is_fully_automatic_challenge((int)$submission->id)) {
+        $challengebadges[] = html_writer::span(get_string('autograding', 'quest'), 'badge bg-success');
     }
     $challengephaselabel = quest_challenge_phase($submission, $quest, $course);
     if (quest_should_show_challenge_phase_badge($submission, $attentionstatuses, $challengephaselabel)) {
@@ -736,17 +798,9 @@ if ($action == 'confirmdelete') {
         quest_print_challenge($quest, $submission);
     } else {
         echo $OUTPUT->heading(get_string('description', 'quest'));
-        echo '<div class="card border-0 mb-4" id="quest-qpreview-panel">';
-        echo '  <div class="card-body p-4 bg-white rounded shadow-sm">';
-        [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
-            $quest,
-            $submission,
-            $anylinkedq,
-            $context
+        echo \mod_quest\service\autograde_service::render_challenge_questions_preview(
+            $quest, $submission, $context, (int)$cm->id, $ismanager || $isownpending
         );
-        echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
-        echo '  </div>';
-        echo '</div>';
     }
     if (!empty($answerbutton)) {
         echo '<div class="quest-question-answer-action d-flex justify-content-center mb-4">';
@@ -772,7 +826,7 @@ if ($action == 'confirmdelete') {
 } else if ($action == 'approve') {
     $submission = $DB->get_record("quest_submissions", ["id" => $sid, "questid" => $quest->id], '*', MUST_EXIST);
     $authorid = $submission->userid;
-    $PAGE->navbar->add(\format_string($submission->title));
+    quest_add_breadcrumbs($cm, $submission, null, get_string('approve', 'quest'));
     if (!$canapprove) {
         throw new \moodle_exception('nopermissions', 'error', '', "Approve challenge: Not enought permissions to take this action");
     }
@@ -811,11 +865,13 @@ if ($action == 'confirmdelete') {
         echo $OUTPUT->header();
         echo $OUTPUT->heading_with_help(get_string("approvesubmission", "quest"), "approvesubmission", "quest");
         if ($linkedquestion) {
-            [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
-                $quest, $submission, $linkedquestion, $context
+            [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
+                $quest, $submission,
+                \mod_quest\question\question_reference_service::get_challenge_questions((int)$submission->id),
+                $context
             );
             echo '<div class="card border-0 mb-4" id="quest-qpreview-panel"><div class="card-body p-4 bg-white rounded shadow-sm">';
-            echo \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
+            echo \mod_quest\service\autograde_service::render_questions_preview($quba, $context, (int)$cm->id, true);
             echo '</div></div>';
         }
         $mform->display();

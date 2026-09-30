@@ -43,6 +43,76 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_quest_activity_structure_step::class)]
 final class question_bank_restore_test extends advanced_testcase {
     /**
+     * Same-course duplication keeps every composed question in order.
+     */
+    public function test_duplicate_keeps_two_question_slots_and_marks(): void {
+        global $DB, $USER;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
+        $context = context_module::instance($quest->cmid);
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $generator->create_question_category(['contextid' => $context->id]);
+        $first = $generator->create_question('shortanswer', null, [
+            'category' => $category->id,
+            'name' => 'First duplicate question',
+        ]);
+        $second = $generator->create_question('essay', null, [
+            'category' => $category->id,
+            'name' => 'Second duplicate question',
+        ]);
+        $entryids = $DB->get_records_list('question_versions', 'questionid', [$first->id, $second->id],
+            '', 'questionid,questionbankentryid');
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
+            'questid' => $quest->id,
+            'userid' => $USER->id,
+            'title' => 'Composed challenge to duplicate',
+            'description' => 'Answer both questions',
+            'timecreated' => time(),
+            'datestart' => time() - HOURSECS,
+            'dateend' => time() + DAYSECS,
+            'perceiveddifficulty' => 2,
+        ]);
+        question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, [
+            ['questionbankentryid' => (int)$entryids[$first->id]->questionbankentryid, 'maxmark' => 2],
+            ['questionbankentryid' => (int)$entryids[$second->id]->questionbankentryid, 'maxmark' => 3],
+        ]);
+
+        $backup = new backup_controller(backup::TYPE_1ACTIVITY, $quest->cmid, backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+        $backupid = $backup->get_backupid();
+        $backup->execute_plan();
+        $backup->destroy();
+
+        $restore = new restore_controller($backupid, $course->id, backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+        $this->assertTrue($restore->execute_precheck());
+        $restore->execute_plan();
+        $restore->destroy();
+
+        $restoredquest = $DB->get_record_select('quest', 'course = :course AND id <> :original', [
+            'course' => $course->id,
+            'original' => $quest->id,
+        ], '*', MUST_EXIST);
+        $restoredchallenge = $DB->get_record('quest_submissions', ['questid' => $restoredquest->id], '*', MUST_EXIST);
+        $this->assertEquals(2, $restoredchallenge->perceiveddifficulty);
+        $slots = question_reference_service::get_challenge_questions((int)$restoredchallenge->id);
+        $this->assertCount(2, $slots);
+        $this->assertEquals([1, 2], array_map(static fn($slot) => (int)$slot->slotnumber, $slots));
+        $this->assertEquals([2.0, 3.0], array_map(static fn($slot) => (float)$slot->maxmark, $slots));
+        $this->assertSame('First duplicate question', $slots[0]->question->name);
+        $this->assertSame('Second duplicate question', $slots[1]->question->name);
+        $restoredcm = get_coursemodule_from_instance('quest', $restoredquest->id, $course->id);
+        foreach ($slots as $slot) {
+            $this->assertSame(question_reference_service::SLOTQUESTIONAREA, $slot->reference->questionarea);
+            $this->assertEquals(context_module::instance($restoredcm->id)->id, $slot->reference->usingcontextid);
+        }
+    }
+
+    /**
      * Challenge links and their bank questions are kept even without user data.
      */
     public function test_linked_question_survives_restore_without_user_data(): void {
@@ -96,7 +166,9 @@ final class question_bank_restore_test extends advanced_testcase {
         $restoredchallenge = $DB->get_record('quest_submissions', ['questid' => $restoredquest->id], '*', MUST_EXIST);
         $reference = question_reference_service::get_challenge_question_reference($restoredchallenge->id);
         $this->assertNotNull($reference);
-        $this->assertEquals($restoredchallenge->id, $reference->itemid);
+        $slot = $DB->get_record('quest_challenge_questions', ['submissionid' => $restoredchallenge->id], '*', MUST_EXIST);
+        $this->assertEquals($slot->id, $reference->itemid);
+        $this->assertSame(question_reference_service::SLOTQUESTIONAREA, $reference->questionarea);
         $this->assertEquals(1, $reference->version);
         $this->assertSame('Essay for Quest',
             question_reference_service::get_question_for_challenge($restoredchallenge->id)->name);
@@ -200,7 +272,9 @@ final class question_bank_restore_test extends advanced_testcase {
 
         $this->assertNotNull($reference);
         $this->assertEquals($restoredcontext->id, $reference->usingcontextid);
-        $this->assertEquals($restoredchallenge->id, $reference->itemid);
+        $slot = $DB->get_record('quest_challenge_questions', ['submissionid' => $restoredchallenge->id], '*', MUST_EXIST);
+        $this->assertEquals($slot->id, $reference->itemid);
+        $this->assertSame(question_reference_service::SLOTQUESTIONAREA, $reference->questionarea);
         $this->assertGreaterThan(0, $reference->questionbankentryid);
         $restoredquestion = question_reference_service::get_question_for_challenge($restoredchallenge->id);
         $this->assertNotNull($restoredquestion);

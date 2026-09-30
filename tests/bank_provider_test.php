@@ -64,4 +64,24 @@ final class bank_provider_test extends advanced_testcase {
         $this->assertSame('ready', $metadata->status);
         $this->assertTrue($DB->record_exists('question_versions', ['questionid' => $question->id]));
     }
+
+    /**
+     * A question in this Quest activity's private category can be added to its challenge composer.
+     */
+    public function test_require_question_accepts_the_current_quest_local_category(): void {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
+        $context = \context_module::instance($quest->cmid);
+        $category = $this->getDataGenerator()->get_plugin_generator('core_question')
+            ->create_question_category(['contextid' => $context->id]);
+        $question = $this->getDataGenerator()->get_plugin_generator('core_question')
+            ->create_question('shortanswer', null, ['category' => $category->id]);
+
+        $usable = bank_provider::require_question((int)$question->id, $context);
+
+        $this->assertSame((int)$question->id, (int)$usable->id);
+    }
 }

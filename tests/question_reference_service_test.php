@@ -76,4 +76,31 @@ final class question_reference_service_test extends advanced_testcase {
         $this->assertNull(question_reference_service::get_challenge_question_reference(50));
         $this->assertNotNull(question_reference_service::get_challenge_question_reference(51));
     }
+
+    /**
+     * Replacing a composition stores its explicit order, marks and references.
+     */
+    public function test_replace_challenge_questions_stores_ordered_slots(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        question_reference_service::replace_challenge_questions(
+            \context_system::instance()->id,
+            20,
+            60,
+            [
+                ['questionbankentryid' => 700, 'maxmark' => 2.5],
+                ['questionbankentryid' => 701, 'maxmark' => 4],
+            ]
+        );
+
+        $slots = array_values($DB->get_records('quest_challenge_questions', ['submissionid' => 60], 'slotnumber ASC'));
+        $this->assertCount(2, $slots);
+        $this->assertSame([1, 2], array_map('intval', array_column($slots, 'slotnumber')));
+        $this->assertSame([2.5, 4.0], array_map('floatval', array_column($slots, 'maxmark')));
+        $this->assertSame(2, $DB->count_records('question_references', [
+            'component' => question_reference_service::COMPONENT,
+            'questionarea' => question_reference_service::SLOTQUESTIONAREA,
+        ]));
+    }
 }

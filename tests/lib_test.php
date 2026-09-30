@@ -126,6 +126,25 @@ final class lib_test extends advanced_testcase {
     }
 
     /**
+     * Question engine grades without a manual assessment show their actual source.
+     */
+    public function test_automatically_graded_answer_has_automatic_phase_badge(): void {
+        $this->resetAfterTest(true);
+
+        foreach ([ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED] as $phase) {
+            $html = quest_answer_phase((object)[
+                'id' => 1,
+                'phase' => $phase,
+                'state' => ANSWER_STATE_EDITTED,
+                'questionusageid' => 123,
+            ], (object)[]);
+
+            $this->assertStringContainsString('Graded automatically', $html);
+            $this->assertStringNotContainsString('Assessed by Teacher', $html);
+        }
+    }
+
+    /**
      * A permitted resubmission is visible alongside the answer phase.
      */
     public function test_answer_phase_shows_resubmission_badge(): void {
