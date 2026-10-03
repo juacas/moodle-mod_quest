@@ -185,7 +185,7 @@ if ($action == 'confirmdelete') {
     if (!$canaddchallenge) {
         throw new \moodle_exception('nocapabilityaddchallenge', 'quest');
     }
-    $canaddquestionbank = $ismanager || !empty($quest->allowqbankquestions);
+    $canaddquestionbank = \mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager);
     if (!$canaddquestionbank) {
         throw new \moodle_exception('questionbankdisabled', 'quest');
     }
@@ -241,7 +241,10 @@ if ($action == 'confirmdelete') {
     $PAGE->set_heading($course->fullname);
     quest_add_breadcrumbs($cm, null, null, get_string('composequestionchallenge', 'quest'));
     echo $OUTPUT->header();
-    echo html_writer::div($questionbankbutton . $qtypewidget, 'quest-composer-toolbar d-flex flex-wrap align-items-center gap-2 mb-3');
+    echo html_writer::div(
+        $questionbankbutton . $qtypewidget,
+        'quest-composer-toolbar d-flex flex-wrap align-items-center gap-2 mb-3'
+    );
     if ($questionids) {
         require_once($CFG->libdir . '/questionlib.php');
         $selectedquestions = [];
@@ -296,7 +299,7 @@ if ($action == 'confirmdelete') {
     // Create a challenge linked to an already-existing question bank question.
     require_sesskey();
     require_capability('mod/quest:addchallenge', $context);
-    if (!$ismanager && empty($quest->allowqbankquestions)) {
+    if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
         throw new \moodle_exception('questionbankdisabled', 'quest');
     }
     $questionid = required_param('questionid', PARAM_INT);
@@ -360,7 +363,7 @@ if ($action == 'confirmdelete') {
     if (!$canaddchallenge) {
         throw new \moodle_exception('nocapabilityaddchallenge', 'quest');
     }
-    if (!$ismanager && empty($quest->allowqbankquestions)) {
+    if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
         throw new \moodle_exception('questionbankdisabled', 'quest');
     }
     $lastchanged = optional_param('lastchanged', 0, PARAM_INT);
@@ -437,6 +440,14 @@ if ($action == 'confirmdelete') {
         echo $OUTPUT->footer();
         exit();
     }
+    $hascomposition = !empty(optional_param_array('question_order', [], PARAM_INT));
+    if ($hascomposition) {
+        if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+            throw new \moodle_exception('questionbankdisabled', 'quest');
+        }
+    } else if (!\mod_quest\challenge_type_policy::allows_simple($quest, $ismanager)) {
+        throw new \moodle_exception('simplechallengedisabled', 'quest');
+    }
     $newsubmission = new stdClass();
     $newsubmission->id = null;
     $descriptionoptions = ['trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
@@ -505,7 +516,7 @@ if ($action == 'confirmdelete') {
         }
         if ($requestedquestionids) {
             require_capability('mod/quest:addchallenge', $context);
-            if (!$ismanager && empty($quest->allowqbankquestions)) {
+            if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
                 throw new \moodle_exception('questionbankdisabled', 'quest');
             }
         }
@@ -556,7 +567,7 @@ if ($action == 'confirmdelete') {
         // Visible to: teachers (editchallengeall) and the author while in approval_pending state.
         if ($linkedquestion && $composerquestions) {
             $canaddqbankquestions = (has_capability('mod/quest:addchallenge', $context) || $ismanager) &&
-                ($ismanager || !empty($quest->allowqbankquestions));
+                \mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager);
             if ($canaddqbankquestions) {
                 $questionids = array_map(static fn($question) => (int)$question->id, $composerquestions);
                 $questionbankbutton = html_writer::tag('button', get_string('addfromquestionbank', 'quest'), [
@@ -592,7 +603,10 @@ if ($action == 'confirmdelete') {
                     has_capability('mod/quest:addchallenge', $context);
                 $createquestion = $OUTPUT->render(new \qbank_editquestion\output\add_new_question(
                     (int)$category->id,
-                    ['cmid' => $cm->id, 'returnurl' => (new moodle_url('/mod/quest/challenges.php', $returnparams))->out_as_local_url(false)],
+                    [
+                        'cmid' => $cm->id,
+                        'returnurl' => (new moodle_url('/mod/quest/challenges.php', $returnparams))->out_as_local_url(false),
+                    ],
                     $cancreatequestion
                 ));
                 echo html_writer::div($questionbankbutton . $createquestion,

@@ -225,9 +225,12 @@ class view_page implements renderable, templatable {
             'datestartstr' => userdate($this->quest->datestart, get_string('strftimedatetime', 'langconfig')),
             'dateendstr' => userdate($this->quest->dateend, get_string('strftimedatetime', 'langconfig')),
             'allowteams' => !empty($this->quest->allowteams),
-            'canaddchallenge' => $this->canaddchallenge,
+            'canaddchallenge' => $this->canaddchallenge &&
+                \mod_quest\challenge_type_policy::allows_simple(
+                    $this->quest, !empty($this->summarydata['ismanager'])),
             'canaddqchallenge' => $this->canaddchallenge &&
-                (!empty($this->quest->allowqbankquestions) || !empty($this->summarydata['ismanager'])),
+                \mod_quest\challenge_type_policy::allows_question_bank(
+                    $this->quest, !empty($this->summarydata['ismanager'])),
             'addchallengeurl' => (new moodle_url('/mod/quest/challenges.php', [
                 'id' => $this->cm->id,
                 'action' => 'submitchallenge',

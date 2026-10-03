@@ -187,6 +187,8 @@ function quest_update_instance($quest, $form) {
     // will update an existing instance with new data.
     global $CFG, $DB;
 
+    $quest->timemodified = time();
+
     if ($quest->initialpoints > $quest->maxcalification) {
         $quest->initialpoints = $quest->maxcalification;
     }

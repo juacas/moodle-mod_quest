@@ -4,6 +4,8 @@
 
 QUESTOURnament (`mod_quest`) is an advanced educational gamification activity module for Moodle 4.x and 5.x. It enables instructors and students to launch, solve, and peer-assess time-constrained intellectual challenges in competitive or collaborative learning tournaments (both individual and group-based), governed by a real-time dynamic scoring model (stationary, inflationary, and deflationary curves).
 
+The [standalone English and Spanish website](https://github.com/juacas/moodle-mod_quest/tree/feature/multiquestion/website) contains illustrated creation, usage and installation guides for the current multi-question branch. Published plugin packages may have a different feature set; check the selected release before using those instructions.
+
 - **Author:** Juan Pablo de Castro <[juan.pablo.de.castro@gmail.com](mailto:juan.pablo.de.castro@gmail.com)>
 - **Organization:** EDUVALab, University of Valladolid
 - **License:** GNU General Public License v3 or later (GPLv3+)
@@ -61,8 +63,9 @@ In contemporary higher education and professional training, passive learning mod
   - Bidirectional bar resizing with overlap handling for narrow or short-duration challenges.
   - Atomic validation with auto-expansion of tournament boundaries and synchronization of Moodle calendar events (`{event}`).
 - **Question Bank Integration (`mod_qbank` / Core Question API)**:
-  - Integration modal to import questions from the course Question Bank directly into challenges.
-  - Automated question grading for supported question types (multiple choice, true/false, short answer).
+  - Compose a challenge from multiple ordered Question Bank questions with independent maximum marks.
+  - Automatically grade supported question types and combine their marks with rubric grades for manual questions.
+  - Activity setting controls whether student authors may use the Question Bank; teachers retain access.
   - Ability to export teacher-approved student challenges back into the course Question Bank.
 - **Official Tournament Leaderboards (`viewclasification.php`)**:
   - Canonical ranking computation (`points DESC, nanswers DESC, userid/teamid ASC`) with tie-breaking rules.

@@ -581,7 +581,7 @@ if ($action == 'notavailable') {
     $legendhtml = !empty($table->data) ? get_string('legend', 'quest', $grafic) : '';
 
     // 3. Get challenges for cards.
-    if ($ismanager || !empty($quest->allowqbankquestions)) {
+    if (\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
         \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
     }
     $challenges = \mod_quest\service\tournament_manager::get_challenges($quest->id, $USER->id);

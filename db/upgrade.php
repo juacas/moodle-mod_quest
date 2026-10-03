@@ -222,5 +222,17 @@ function xmldb_quest_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2026093000, 'quest');
     }
 
+    if ($oldversion < 2026100300) {
+        // Moodle updates this field when the course-module visibility changes.
+        $table = new xmldb_table('quest');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0,
+            'autoexportqbank');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026100300, 'quest');
+    }
+
     return true;
 }

@@ -81,8 +81,7 @@ echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 $actionbuttons = [];
 
 if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $timenow) {
-    $canaddquestionbank = $ismanager || !empty($quest->allowqbankquestions);
-    if ($canaddquestionbank) {
+    if (\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
         \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
         $addqurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'addqchallenge']);
         $actionbuttons[] = html_writer::link(
@@ -92,12 +91,14 @@ if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $tim
         );
     }
 
-    $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
-    $actionbuttons[] = html_writer::link(
-        $addurl,
-        '<i class="fa fa-pencil-square-o me-1" aria-hidden="true"></i>' . get_string('addchallenge', 'quest'),
-        ['class' => 'btn btn-outline-primary shadow-sm']
-    );
+    if (\mod_quest\challenge_type_policy::allows_simple($quest, $ismanager)) {
+        $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
+        $actionbuttons[] = html_writer::link(
+            $addurl,
+            '<i class="fa fa-pencil-square-o me-1" aria-hidden="true"></i>' . get_string('addchallenge', 'quest'),
+            ['class' => 'btn btn-outline-primary shadow-sm']
+        );
+    }
 }
 
 $leaderboardurl = new moodle_url('/mod/quest/viewclasification.php', [
@@ -168,6 +169,7 @@ $tablesort = new stdClass();
 $tablesort->data = [];
 $tablesort->sortdata = [];
 $table = new html_table();
+$table->attributes['class'] = 'generaltable table table-striped table-hover align-middle mb-0 quest-myplace-table';
 $table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
 $columns = ['title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
                 'nanswerswhithoutassess', 'datestart', 'dateend', 'calification'];
@@ -307,23 +309,22 @@ foreach ($columns as $column) {
 
 $table->head = ["$title", "$phase",
                 "$nanswersshort($nanswerscorrectshort)[$nanswerswhithoutassess]",
-                "$datestart", "$dateend", "$calification", "Grade"];
+                "$datestart", "$dateend", "$calification", get_string('grade')];
 
-echo '<tr><td>';
+echo '<div class="card border-0 shadow-sm mb-4"><div class="table-responsive">';
 echo html_writer::table($table);
+echo '</div>';
 $clearicon = $OUTPUT->pix_icon('t/check', '');
 
-echo "<center>";
+echo '<div class="text-center text-muted small p-3 border-top">';
 echo get_string('legend', 'quest', $clearicon);
-echo "</center>";
+echo '</div></div>';
 
 // Javascript counter support.
 $servertime = time();
 if ($indice > 0) {
     $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
 }
-echo '</td></tr>';
-
 $title = get_string('myanswers', 'quest');
 echo $OUTPUT->heading_with_help($title, 'myanswers', 'quest');
 
@@ -409,8 +410,6 @@ foreach ($tablesort->sortdata as $key => $row) {
 $table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
 $columnsanswer = ['title', 'dateanswer', 'actions', 'calification'];
 
-$table->width = "95%";
-
 $string = [];
 foreach ($columnsanswer as $columnanswer) {
     $string[$columnanswer] = get_string("$columnanswer", 'quest');
@@ -432,13 +431,13 @@ foreach ($columnsanswer as $columnanswer) {
 
 $table->head = ["$title", "$dateanswer", get_string('actions', 'quest'), "$calification"];
 
-echo '<tr><td>';
+echo '<div class="card border-0 shadow-sm mb-4"><div class="table-responsive">';
 echo html_writer::table($table);
-echo '</td></tr>';
+echo '</div></div>';
 
 if (!$ismanager) {
     $title = get_string('myranking', 'quest');
-    echo $OUTPUT->heading($title);
+    echo $OUTPUT->heading_with_help($title, 'myranking', 'quest');
 
     $tablesort->data = [];
     $tablesort->sortdata = [];
@@ -497,8 +496,6 @@ if (!$ismanager) {
     }
 
     $table->align = ['left', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
-    $table->valign = ['center', 'center', 'center', 'center', 'left', 'center', 'center',
-                            'center', 'center', 'center', 'center'];
 
     if ($quest->allowteams) {
         $columns = ['picture', 'firstname', 'lastname', 'nanswers', 'nanswersassessment', 'nsubmissions',
@@ -540,18 +537,14 @@ if (!$ismanager) {
                     get_string('nsubmissionsassessment', 'quest'), get_string('pointssubmission', 'quest'),
                     get_string('pointsanswers', 'quest'), get_string('points', 'quest')];
     }
-    echo '<tr><td>';
-    echo '<div valign="center">';
+    echo '<div class="card border-0 shadow-sm mb-4"><div class="table-responsive">';
     echo html_writer::table($table);
-    echo '</div>';
-    echo '</td></tr>';
+    echo '</div></div>';
 }
-echo '<tr><td>';
-echo '</td></tr>';
 if ((!$ismanager) && ($quest->allowteams)) {
 
-    $title = get_string('myranking', 'quest');
-    $OUTPUT->heading_with_help($title, 'myrankingteam', 'quest');
+    $title = get_string('myrankingteam', 'quest');
+    echo $OUTPUT->heading_with_help($title, 'myrankingteam', 'quest');
 
     // Now prepare table with student assessments and submissions.
     $tablesort->data = [];
@@ -606,8 +599,6 @@ if ((!$ismanager) && ($quest->allowteams)) {
     $columns = ['team', 'nanswers', 'nanswersassessment', 'nsubmissions', 'nsubmissionsassessment', 'pointssubmission',
                 'pointsanswers', 'points'];
 
-    $table->width = "95%";
-
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -629,15 +620,10 @@ if ((!$ismanager) && ($quest->allowteams)) {
                 get_string('nsubmissions', 'quest'), get_string('nsubmissionsassessment', 'quest'),
                 get_string('pointssubmission', 'quest'), get_string('pointsanswers', 'quest'), get_string('points', 'quest')];
 
-    echo '<tr><td>';
+    echo '<div class="card border-0 shadow-sm mb-4"><div class="table-responsive">';
     echo html_writer::table($table);
-    echo '</td></tr>';
-    echo '<tr><td>';
-
-    echo '</td></tr>';
+    echo '</div></div>';
 }
-
-echo '</table>';
 
 echo $OUTPUT->continue_button('view.php?id=' . $cm->id);
 // Finish the page.

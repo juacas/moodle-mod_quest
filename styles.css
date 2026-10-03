@@ -648,6 +648,25 @@
     width: 100%;
 }
 
+.quest-myplace-table {
+    min-width: 48rem;
+}
+
+.quest-myplace-table thead th {
+    background-color: #edf4fb;
+    color: #203b56;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.quest-myplace-table tbody td {
+    vertical-align: middle;
+}
+
+.quest-myplace-table tbody td:first-child {
+    min-width: 12rem;
+}
+
 @media (max-width: 767.98px) {
     .quest-question-composer-row {
         flex-wrap: wrap;

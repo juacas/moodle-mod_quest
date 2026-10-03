@@ -696,8 +696,7 @@ $string['dateend_help'] = '
 <P align="justify">Este par&aacute;metro establece la fecha de cierre de este m&oacute;dulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan a este m&oacute;dulo no podr&aacute;n realizar ninguna de las acciones asociadas al mismo. En este momento se tendr&aacute;n las calificaciones finales del concurso. </P>
 <P align="justify">Una vez cerrado el concurso, su contenido permanecer&aacute; visible para los alumnos y profesores del curso, siempre que así se hubiera definido al crear el módulo QUESTOURnament, de manera que se podr&aacute; acceder a los desaf&iacute;os y respuestas realizadas por todos los participantes, así como a las calificaciones por ellos obtenidas. </P>';
 $string['dateofend'] = 'Fecha de cierre';
-$string['dateofend_help'] = '<P align="justify">This paramenter sets the closing date of this QUESTOURnament. After this closing date, the students that access the QUESTOURnament will not be able to do any of the usual actions. At this point, the classifications of the QUESTOURnament will be definitive.</P>
-<P align="justify">Once the contest is over, its content will still be accesible for the students and teachers of the course, whenever this was defined when the QUESTOURnament was created, this means that it will still be possible to access challenges and answers submitted by each and every participant, as well as their classifications.</P>';
+$string['dateofend_help'] = 'Fecha de cierre del torneo. Después de esta fecha no se admiten nuevas participaciones y la clasificación queda fijada. El contenido podrá seguir consultándose según la configuración de visibilidad.';
 $string['datestart'] = 'Fecha de Comienzo';
 $string['datestart_help'] = '<P align="justify">Este par&aacute;metro establece la fecha de comienzo de este m&oacute;dulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan al m&oacute;dulo podr&aacute;n a&ntilde;adir desaf&iacute;os, responder a los ya plantedos o realizar cualquier otra actividad contemplada en este módulo QUESTOURnament. </P>
 <P align="justify">Esta fecha se comprobar&aacute; al crear el m&oacute;dulo, de manera que si fuese posterior a la <a href="help.php?component=quest&identifier=dateend"">
@@ -746,26 +745,8 @@ $string['global_help'] = '<P align="justify">Esta opción muestra la clasificaci
   <p>Por defecto la clasificaci&oacute;n viene ordenada de acuerdo a la puntuaci&oacute;n total obtenida por cada alumno, aunque este orden podr&aacute; modificarse escogiendo otro par&aacute;metro de ordenaci&oacute;n pulsando sobre el nombre del mismo.</p>
   <p>Se puede acceder a la clasificaci&oacute;n por equipos a trav&eacute;s de la opción <a href="help.php?component=quest&identifier=teams"">Ver Clasificaci&oacute;n por Equipos</a> que aparece en la parte inferior de la pantalla. </p>
 </div>';
-$string['individualranking'] = 'View (Individual) Ranking';
-$string['individualranking_help'] = '<P align="justify">This option shows the classification of the participants in the QUESTOURnament that belong to the same group.</P>
-<P align="justify">The following parameters are shown:</P>
-<div align="justify">
-  <ul>
-    <li><strong>Picture</strong>: image of the student introduced by himself in his profile.</li>
-      <li><strong>Firstname/Lastname</strong>: name and last name introduced by the student when he registered himself in the system.</li>
-      <li><strong>Answers</strong>: number of answers submitted by a student in this QUESTOURnament.</li>
-      <li><strong>Assessed Answers</strong>: number of answers assessed of all the ones submitted by this student in the QUESTOURnament.</li>
-      <li><strong>Number of Challenges</strong>: number of challenges proposed by a student in this QUESTOURnament.</li>
-      <li><strong>Assessed Challenges</strong>: number of challenges assessed of all the ones proposed by this student in the QUESTOURnament.</li>
-      <li><strong>Challenges Score</strong>: total score obtained by the student corresponding to the assessment made by the teachers of the challenges proposed by him.</li>
-      <li><strong>Answers Score</strong>: total score obtained by the student corresponding to the assessment of the answers submitted by him.</li>
-      <li><strong>Team Score</strong>: this parameter is only shown when the option <a href="help.php?component=quest&identifier=allowteams"">Allow Teams</a> is selected in the QUESTOURnament. It is the percentage, set by the option <a href="help.php?component=quest&identifier=teamporcent"">Percentage of Team Scoring</a>, of the total score obtained by the team to which the student belongs, that will be added to his individual score.</li>
-      <li><strong>Score</strong>: It is the total individual score of the student, incorporating his challenges and answers scores and a percentage of his team score if it were necessary.</li>
-  </ul>
-    <p>It must be emphasized that the teachers have access to all the information listed above, while the students can only see that information if the teacher that defined the QUESTOURnament selected the option <a href="help.php?component=quest&identifier=showauthoringdetails"">Show Authoring Details to the Students in Classifications</a>. In any other case, students will not have access to these partial data related to the challenges proposed by other students.</p>
-  <p>By default, the ranking is ordered according to the total individual score obtained by each student, although this order can be modified by choosing another ordering parameter and pressing its name.</p>
-  <p>It is also possible to access the ranking by teams through the option <a href="help.php?component=quest&identifier=teams"">View Summary by Teams</a>.</p>
-</div>';
+$string['individualranking'] = 'Ver clasificación individual';
+$string['individualranking_help'] = 'Muestra la clasificación individual y los puntos obtenidos por desafíos y respuestas. La visibilidad de los detalles de otros participantes depende de la configuración de la actividad. Puede ordenar la tabla por sus columnas.';
 $string['grading'] = 'Evaluar Respuesta ';
 $string['grading_help'] = '<P align="justify">Esta página permite a los profesores evaluar una respuesta enviada. La calificaci&oacute;n asignada deberá depender de c&oacute;mo se ajuste la respuesta a lo exigido en el desaf&iacute;o correspondiente.</P>
 
@@ -865,18 +846,7 @@ $string['modulename_help'] = '<UL>
 <p align="justify">Para la evaluaci&oacute;n de los desafíos propuestos, así como de las respuestas enviadas se definen sendos formularios de evaluaci&oacute;n, con elmentos de evaluaci&oacute;n y sus correspondientes pesos, que permitir&aacute;n determinar la puntuaci&oacute;n obtenida. </p>
 </UL>';
 $string['myplace'] = 'Mi Sitio';
-$string['myplace_help'] = '<P align="justify">Esta página muestra la informaci&oacute;n correspondiente a la actividad realizada por cada uno de los participantes del m&oacute;dulo QUESTOURnament.</P>
-<P align="justify">La información presentada se divide en varias secciones:</P>
-<ul>
-  <li>
-    <div align="justify"><strong>Mis Desaf&iacute;os </strong>: muestra una lista con todos los desaf&iacute;os que han sido a&ntilde;adidos por el usuario que visualiza esta p&aacute;gina. Para cada desafío se presenta su puntuaci&oacute;n actual (m&aacute;xima puntuaci&oacute;n que podr&aacute; obtener una respuesta enviada en ese instante), la fase o estado en que se encuentra, el n&uacute;mero de respuestas realizadas y número de ellas que son correctas, las fechas de inicio y de cierre y su t&iacute;tulo. Pulsando en el t&iacute;tulo se accede a la descripci&oacute;n completa del desaf&iacute;o. El profesor podr&aacute; modificar o borrar un desaf&iacute;o cualquiera en todo momento, mientras un alumno autor s&oacute;lo podr&aacute; hacerlo hasta que el desafío que ha propuesto sea aprobado por el profesor. </div>
-  </li>
-  <li><strong>Mis Respuestas</strong>: muestra una tabla con todas las respuestas que ha enviado el usuario que visualiza esta página. Para cada respuesta se presenta la fecha del env&iacute;o, las acciones que se pueden realizar (Ver Evaluación, etc.), la puntuaci&oacute;n obtenida y su t&iacute;tulo. Una respuesta podr&aacute;n ser modificada o borrada por el profesor en todo momento, mientras que un alumno s&oacute;lo podr&aacute; hacerlo hasta que la respuesta que ha enviado sea evaluada. </li>
-  <li><strong>Mi Clasificaci&oacute;n</strong>: muestra las distintas puntuaciones obtenidas por un alumno en el m&oacute;dulo QUESTOURnament, ya sean por las respuestas evaluadas o por los desaf&iacute;os a&ntilde;adidos. Esta secci&oacute;n no se presentará si el usuario que accede es un profesor.</li>
-  <li><strong>Mi Clasificaci&oacute;n por Equipos</strong>: muestra las puntuaciones obtenidas por el equipo al que pertenece el alumno. Esta opci&oacute;n s&oacute;lo se mostrará si se trata de un m&oacute;dulo QUEST que tenga habilitada la opci&oacute;n de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos</a>. Esta secci&oacute;n tampoco se presentará si el usuario que accede es un profesor.</li>
-</ul>
-<p>A trav&eacute;s de esta opci&oacute;n tambi&eacute;n podr&aacute;n realizarse distintas acciones como <a href="help.php?component=quest&identifier=submitchallengeassignment"">A&ntilde;adir Desaf&iacute;o </a>, <a href="help.php?component=quest&identifier=global"">Ver Clasificaci&oacute;n Total</a>
-o <a href="help.php?component=quest&identifier=changeteamteacher"">Gesti&oacute;n de Equipos</a>, &eacute;sta &uacute;ltima s&oacute;lo la podr&aacute;n llevar a cabo los profesores. </p>';
+$string['myplace_help'] = 'Consulta tus desafíos, respuestas y puntos en este QUESTOURnament.';
 $string['numberofattachments'] = 'Número de Anexos esperados en los Envíos';
 $string['numberofattachments_help'] = '<p align="justify">El número introducido aquí determina cuántas cajas para la de subida de archivos se mostrarán cuando un estudiante o profesor realice un env&iacute;o. Este número puede oscilar entre 0 y 5. Normalmente este número será 0 ó 1, pero en ciertos casos puede ser necesario permitir el env&iacute;o de más de un anexo. Si el valor especificado es 0, que es además el valor por defecto para este parámetro, esto indica que no se permite adjuntar anexos en los envíos.</p>
 <p align="justify">Si, por ejemplo, el número especificado es 3, y sólo se adjuntan 2 archivos al envío, dicho envío se realiza sin que se muestre ningún mensaje de advertencia. Es decir que, cuando se envía un trabajo se puede adjuntar cualquier número de archivos hasta el máximo permitido.</p>';
@@ -1111,9 +1081,9 @@ $string['closebeforeopen'] = 'La fecha de cierre del QUESTOURnament debe ser pos
 $string['completionpass'] = 'Requerir calificación de aprobado';
 $string['completionpassdesc'] = 'El estudiante debe obtener una calificación de aprobado para completar esta actividad.';
 $string['completionpass_help'] = 'Si se activa, la actividad se considera completada cuando el estudiante obtiene una calificación de aprobado o superior.';
-$string['allowqbankquestions'] = 'Permitir a los estudiantes añadir desafíos del banco de preguntas';
-$string['allowqbankquestions_help'] = 'Si se activa, los estudiantes pueden añadir desafíos basados en preguntas del banco. Si se desactiva, solo pueden añadir desafíos abiertos de tipo ensayo.';
-$string['questionbankdisabled'] = 'Los estudiantes no pueden añadir desafíos del banco de preguntas en este Quest.';
+$string['allowqbankquestions'] = 'Tipos de desafíos que pueden crear los estudiantes';
+$string['allowqbankquestions_help'] = 'Seleccione los tipos de desafíos que pueden crear los estudiantes en esta actividad. La restricción general del sitio también afecta a los profesores. Los valores anteriores siguen siendo compatibles: desactivado equivale a «solo desafíos simples» y activado a «ambos tipos».';
+$string['questionbankdisabled'] = 'No se pueden crear desafíos con cuestionario en esta actividad o en este sitio.';
 $string['addfromquestionbank'] = 'Añadir pregunta del banco de preguntas';
 
 $string['questionpreviewattachments'] = 'Esta pregunta permite hasta {$a->count} adjunto(s). La subida está desactivada en esta vista previa.';
@@ -1126,3 +1096,222 @@ $string['noquestionsselected'] = 'Selecciona al menos una pregunta para el desaf
 $string['invalidquestioncomposition'] = 'Las preguntas seleccionadas o sus puntuaciones máximas no son válidas.';
 $string['createchallenge'] = 'Crear desafío';
 $string['savechallenge'] = 'Guardar desafío';
+
+// Site settings and challenge construction.
+$string['challengeconstruction'] = 'Construcción de desafíos';
+$string['allowedchallengetypes'] = 'Tipos de desafíos permitidos';
+$string['allowedchallengetypes_desc'] = 'Restricción general para profesores y estudiantes. Cada actividad puede restringir más los tipos que crean los estudiantes. Si una actividad existente solo permite el tipo opuesto, sus estudiantes no podrán crear desafíos hasta que se actualice ese ajuste.';
+$string['challengetype_simple'] = 'Solo simples';
+$string['challengetype_quiz'] = 'Solo cuestionarios';
+$string['challengetype_both'] = 'Simples y cuestionarios';
+$string['challengemodenotavailable'] = 'Este tipo de desafío no está permitido por la configuración general del sitio.';
+$string['simplechallengedisabled'] = 'No se pueden crear desafíos simples en esta actividad o en este sitio.';
+$string['autoexportqbank'] = 'Exportar automáticamente los desafíos simples aprobados al banco de preguntas';
+$string['autoexportqbank_help'] = 'Si se activa, los desafíos simples aprobados se exportan automáticamente como preguntas de ensayo al banco de preguntas de la actividad. Los desafíos compuestos con preguntas del banco no se exportan.';
+
+// Reports, capabilities and notifications.
+$string['adminlogs'] = 'Registros de administración';
+$string['gettechnicallogs'] = 'Obtener registros técnicos';
+$string['fullactivitylisting'] = 'Listado completo de actividad';
+$string['feedback'] = 'Comentarios de evaluación';
+$string['feedback_help'] = 'Escriba aquí comentarios sobre esta parte de la evaluación.';
+$string['nofeedback'] = 'No se han proporcionado comentarios.';
+$string['quest:view'] = 'Ver un torneo';
+$string['quest:addchallenge'] = 'Añadir un desafío al torneo';
+$string['quest:addinstance'] = 'Añadir una instancia del torneo (obsoleto)';
+$string['quest:approvechallenge'] = 'Aprobar un desafío propuesto';
+$string['quest:approvegrade'] = 'Aprobar una calificación pendiente';
+$string['quest:attempt'] = 'Enviar una respuesta a un desafío';
+$string['quest:deleteattempts'] = 'Eliminar respuestas propias y de otras personas';
+$string['quest:deletechallengeall'] = 'Eliminar desafíos propios y de otras personas';
+$string['quest:deletechallengemine'] = 'Eliminar desafíos propios';
+$string['quest:downloadlogs'] = 'Descargar los registros del torneo';
+$string['quest:generateCSVlogs'] = 'Generar un informe CSV de:';
+$string['quest:generateLogsReport'] = 'Registros';
+$string['quest:generateIPAccessesReport'] = 'Accesos por dirección IP';
+$string['quest:generateActivityReport'] = 'Actividad';
+$string['quest:notifylocale'] = '<p>En su idioma «{$a->localelang}», el separador decimal es «{$a->localeconfigdecimal}». Compruebe que su hoja de cálculo lo interpreta correctamente.</p>';
+$string['quest:notifyemptylogs'] = 'La última consulta no ha devuelto resultados. Compruebe si los registros heredados están activados en este servidor.';
+$string['quest:editattempt'] = 'Editar respuestas enviadas por cualquier participante';
+$string['quest:editattemptmine'] = 'Editar respuestas propias';
+$string['quest:editchallengeall'] = 'Editar desafíos de cualquier participante';
+$string['quest:editchallengemine'] = 'Editar desafíos propios';
+$string['quest:emailconfirmchallenge'] = 'Recibir por correo la confirmación de mis desafíos';
+$string['quest:emailnotifychallenge'] = 'Recibir por correo avisos de desafíos de otras personas';
+$string['quest:grade'] = 'Calificar y comentar manualmente respuestas, y recalificar torneos';
+$string['quest:gradeownchallenge'] = 'Calificar el propio desafío';
+$string['quest:ignoretimelimits'] = 'Ignorar límites de tiempo';
+$string['quest:manage'] = 'Gestionar la configuración y los desafíos del torneo';
+$string['quest:manageownchallenge'] = 'Gestionar desafíos propios';
+$string['quest:preview'] = 'Ver información ampliada y enlaces del torneo';
+$string['quest:viewotherattemptsowners'] = 'Ver quién ha enviado respuestas de otras personas';
+$string['quest:viewreports'] = 'Ver los informes del torneo';
+$string['messageprovider:challenge_start'] = 'Ha comenzado un desafío';
+
+// Contextual help and personal overview.
+$string['team_help'] = 'Equipo al que pertenece el participante.';
+$string['commentsforauthor_help'] = 'Sugerencias del profesor para quien creó el desafío. También pueden verlas los demás profesores.';
+$string['commentsforstudent_help'] = 'Comentarios del profesor sobre el desafío, visibles para los participantes.';
+$string['generalcomment_help'] = 'Escriba una valoración general, respetuosa y constructiva, del trabajo evaluado.';
+$string['globalranking_help'] = 'Muestra la clasificación individual. Puede ordenar la tabla por sus columnas. La visibilidad de los detalles de autoría para estudiantes depende de la configuración de la actividad.';
+$string['picture_help'] = 'Imagen de perfil del participante.';
+$string['firstname_help'] = 'Nombre del participante.';
+$string['lastname_help'] = 'Apellidos del participante.';
+$string['nanswers_help'] = 'Número de respuestas enviadas por el participante.';
+$string['nanswersassessment_help'] = 'Número de respuestas del participante que ya han sido evaluadas.';
+$string['nsubmissions_help'] = 'Número de desafíos propuestos por el participante.';
+$string['nsubmissionsassessment_help'] = 'Número de desafíos propuestos que ya han sido evaluados.';
+$string['pointssubmission_help'] = 'Puntos obtenidos por los desafíos propuestos.';
+$string['pointsanswers_help'] = 'Puntos obtenidos por las respuestas enviadas.';
+$string['pointsteam_help'] = 'Aportación de la puntuación del equipo a la calificación individual, según el porcentaje configurado.';
+$string['points_help'] = 'Puntuación total de desafíos, respuestas y, si procede, del equipo.';
+$string['myranking'] = 'Mi clasificación';
+$string['myrankingteam'] = 'Mi clasificación por equipos';
+$string['mychallenges'] = 'Mis desafíos';
+$string['mychallenges_help'] = 'Muestra tus desafíos, su estado, respuestas, fechas y puntuación. Pulsa el título para ver un desafío.';
+$string['myanswers_help'] = 'Muestra las respuestas que has enviado, sus fechas, acciones disponibles y puntuaciones.';
+$string['myranking_help'] = 'Tus puntos por desafíos y respuestas evaluadas. Esta sección se muestra a estudiantes, no a profesores.';
+$string['myrankingteam_help'] = 'Puntos de tu equipo cuando la participación por equipos está activada. Esta sección se muestra a estudiantes.';
+
+// Question bank and challenge lists.
+$string['questionbank'] = 'Banco de preguntas';
+$string['selectquestion'] = 'Seleccionar pregunta';
+$string['exporttoquestionbank'] = 'Exportar al banco de preguntas';
+$string['exportedtoquestionbank'] = 'El desafío se ha exportado al banco de preguntas.';
+$string['viewinquestionbank'] = 'Ver en el banco de preguntas';
+
+// Challenge, answer and grading messages.
+$string['autograde_passed'] = '¡Respuesta correcta! Se ha corregido automáticamente y has obtenido {$a} puntos.';
+$string['autograde_manual_pending'] = 'Tu respuesta se ha enviado y está pendiente de evaluación.';
+$string['cannotanswerownchallenge'] = 'No puedes responder a tu propio desafío.';
+$string['challengenotstarted'] = 'Este desafío aún no ha comenzado.';
+$string['challengeclosed'] = 'Este desafío ya no admite respuestas.';
+$string['maxanswersreached'] = 'Se ha alcanzado el número máximo de respuestas permitidas para este desafío.';
+$string['nochallengestoshow'] = 'No hay desafíos disponibles para mostrar.';
+$string['answerpoints'] = 'Puntos de la respuesta';
+$string['cannotgetsubmissionrecord'] = 'No se puede recuperar el registro del desafío.';
+$string['notauthorizedtodeleteanswer'] = 'No tienes permiso para eliminar esta respuesta.';
+$string['unknownactionerror'] = 'Acción desconocida: {$a}';
+$string['assess_forbidden'] = 'No tienes permiso para evaluar esta respuesta.';
+$string['course_misconfigured'] = 'La configuración del curso no es válida.';
+$string['notauthorizedtodeletesubmission'] = 'No tienes permiso para eliminar este desafío.';
+$string['errornotquestionbankchallenge'] = 'Este desafío no está vinculado a una pregunta del banco.';
+$string['gradetable'] = 'Tabla de calificaciones';
+$string['numberofnegativeresponses'] = 'Número de respuestas incorrectas';
+$string['summarydata'] = 'Resumen';
+$string['rankingoverview'] = 'Resumen de la clasificación';
+$string['nodescription'] = 'No se ha proporcionado una descripción.';
+$string['challenge'] = 'Desafío';
+$string['challengeadded'] = 'Desafío creado correctamente';
+$string['useexistingquestion'] = 'Usar esta pregunta';
+$string['showchallenge'] = 'Mostrar desafío';
+$string['showchallenges'] = 'Mostrar desafíos';
+$string['showchallengesteam'] = 'Mostrar desafíos por equipos';
+$string['showchallengesuser'] = 'Mostrar desafíos individuales';
+$string['listallchallenges'] = 'Listar todos los desafíos';
+$string['studentchallenges'] = 'Desafíos de {$a}';
+$string['studentchallengesforassessment'] = 'Desafíos de {$a} pendientes de evaluación';
+$string['assessmentofthischallenge'] = 'Evaluación de este desafío';
+$string['authorofchallenge'] = 'Autor del desafío';
+$string['currentphasechallenge'] = 'Fase del desafío';
+$string['dateendchallengeevent'] = 'Cierre del desafío «{$a}»';
+$string['datestartchallengeevent'] = 'Inicio del desafío «{$a}»';
+$string['emailaddchallenge'] = 'Hola, {$a->firstname}. Se ha añadido el desafío «{$a->title}» al QUESTOURnament «{$a->name}» en {$a->sitename}. Puedes verlo en <a href="{$a->link}">{$a->link}</a>.';
+$string['emailaddchallengesubject'] = 'Moodle: nuevo desafío en QUESTOURnament';
+$string['emaildeletechallenge'] = 'Hola, {$a->firstname}. El desafío «{$a->title}» se ha eliminado del QUESTOURnament «{$a->name}» en {$a->sitename}.';
+$string['emaildeletechallengesubject'] = 'Moodle: desafío eliminado en QUESTOURnament';
+$string['gradeofchallenge'] = 'Calificación del desafío: {$a}';
+$string['pointsmaxchallenge'] = 'Se ha alcanzado la puntuación máxima.';
+$string['pointschallenge'] = 'Puntos de los desafíos';
+$string['questapprovechallenge'] = 'Desafíos aprobados en QUESTOURnament';
+$string['questsubmitchallenge'] = 'Desafíos enviados a QUESTOURnament';
+$string['savemychallenge'] = 'Guardar mi desafío';
+$string['specimenassessmentformchallenge'] = 'Ejemplo de formulario de evaluación de desafíos';
+$string['phase1challenge'] = 'Pendiente de aprobación';
+$string['phase2challenge'] = 'Pendiente de inicio';
+$string['phase3challenge'] = 'Desafío en curso';
+$string['phase4challenge'] = 'Desafío cerrado';
+$string['phase5challenge'] = 'Evaluado. Pendiente de aprobación';
+$string['phase6challenge'] = 'Evaluado. Desafío en curso';
+$string['phase7challenge'] = 'Evaluado. Desafío cerrado';
+$string['phase8challenge'] = 'Evaluado. Pendiente de inicio';
+$string['answerchallenge'] = 'Responder al desafío';
+$string['answerchallenge_help'] = 'Envía tu respuesta al desafío. Escribe un título y una descripción que cubra los criterios de evaluación; añade archivos si están permitidos.';
+$string['approvechallenge'] = 'Aprobar o rechazar el desafío';
+$string['approvechallenge_help'] = 'Revisa el desafío propuesto por un estudiante. Al aprobarlo, estará disponible para los demás participantes cuando comience. Si guardas sin aprobar, el autor podrá introducir los cambios solicitados.';
+$string['assessthischallenge'] = 'Evaluar este desafío';
+$string['assessthischallenge_help'] = 'Evalúa el trabajo de quien propuso el desafío según la rúbrica, incluida su tarea como evaluador de respuestas. Justifica la puntuación y ofrece comentarios respetuosos y constructivos.';
+$string['notauthorizedtodeletechallenge'] = 'No tienes permiso para eliminar este desafío.';
+$string['cannotgetchallengerecord'] = 'No se puede recuperar el registro del desafío.';
+$string['selectquestionbank'] = 'Banco de preguntas';
+$string['editbankquestion'] = 'Editar pregunta en el banco de preguntas';
+
+// Privacy metadata.
+$string['privacy:metadata:quest_submissions'] = 'Almacena los desafíos propuestos por los usuarios.';
+$string['privacy:metadata:quest_submissions:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_submissions:userid'] = 'Identificador del usuario que propone el desafío.';
+$string['privacy:metadata:quest_submissions:title'] = 'Título del desafío propuesto.';
+$string['privacy:metadata:quest_submissions:description'] = 'Descripción o contenido del desafío.';
+$string['privacy:metadata:quest_submissions:attachment'] = 'Archivos adjuntos al desafío.';
+$string['privacy:metadata:quest_submissions:timecreated'] = 'Fecha de creación del desafío.';
+$string['privacy:metadata:quest_submissions:points'] = 'Puntos asignados u obtenidos por el desafío.';
+$string['privacy:metadata:quest_submissions:commentteacherpupil'] = 'Comentarios del profesor para el autor y los estudiantes.';
+$string['privacy:metadata:quest_submissions:commentteacherauthor'] = 'Comentarios del profesor para el autor del desafío.';
+$string['privacy:metadata:quest_answers'] = 'Almacena las respuestas enviadas a los desafíos.';
+$string['privacy:metadata:quest_answers:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_answers:submissionid'] = 'Identificador del desafío respondido.';
+$string['privacy:metadata:quest_answers:userid'] = 'Identificador del usuario que envía la respuesta.';
+$string['privacy:metadata:quest_answers:title'] = 'Título de la respuesta.';
+$string['privacy:metadata:quest_answers:description'] = 'Contenido de la respuesta.';
+$string['privacy:metadata:quest_answers:attachment'] = 'Archivos adjuntos a la respuesta.';
+$string['privacy:metadata:quest_answers:date'] = 'Fecha de envío de la respuesta.';
+$string['privacy:metadata:quest_answers:pointsmax'] = 'Puntuación máxima de la respuesta.';
+$string['privacy:metadata:quest_answers:grade'] = 'Calificación o puntos obtenidos por la respuesta.';
+$string['privacy:metadata:quest_answers:commentforteacher'] = 'Comentarios privados del estudiante para el profesor.';
+$string['privacy:metadata:quest_answers:perceiveddifficulty'] = 'Dificultad del desafío percibida por el estudiante.';
+$string['privacy:metadata:quest_answers:questionusageid'] = 'Identificador del intento en el motor de preguntas.';
+$string['privacy:metadata:quest_assessments'] = 'Almacena las evaluaciones de respuestas a desafíos.';
+$string['privacy:metadata:quest_assessments:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_assessments:answerid'] = 'Identificador de la respuesta evaluada.';
+$string['privacy:metadata:quest_assessments:userid'] = 'Identificador del usuario que realiza la evaluación.';
+$string['privacy:metadata:quest_assessments:teacherid'] = 'Identificador del profesor que revisa la evaluación.';
+$string['privacy:metadata:quest_assessments:pointsautor'] = 'Puntos otorgados por el autor del desafío.';
+$string['privacy:metadata:quest_assessments:pointsteacher'] = 'Puntos otorgados por el profesor.';
+$string['privacy:metadata:quest_assessments:dateassessment'] = 'Fecha de creación de la evaluación.';
+$string['privacy:metadata:quest_assessments:commentsforteacher'] = 'Comentarios privados dirigidos al profesor.';
+$string['privacy:metadata:quest_assessments:commentsteacher'] = 'Comentarios del profesor sobre la evaluación.';
+$string['privacy:metadata:quest_assessments_autors'] = 'Almacena las evaluaciones de la autoría de desafíos.';
+$string['privacy:metadata:quest_assessments_autors:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_assessments_autors:submissionid'] = 'Identificador del desafío evaluado.';
+$string['privacy:metadata:quest_assessments_autors:userid'] = 'Identificador del usuario que evalúa el desafío.';
+$string['privacy:metadata:quest_assessments_autors:points'] = 'Puntos otorgados por la autoría del desafío.';
+$string['privacy:metadata:quest_assessments_autors:dateassessment'] = 'Fecha de evaluación de la autoría.';
+$string['privacy:metadata:quest_assessments_autors:commentsforteacher'] = 'Comentarios privados dirigidos al profesor.';
+$string['privacy:metadata:quest_assessments_autors:commentsteacher'] = 'Comentarios del profesor para el autor.';
+$string['privacy:metadata:quest_elements_assessments'] = 'Almacena las valoraciones por criterio de las respuestas.';
+$string['privacy:metadata:quest_elements_assessments:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_elements_assessments:assessmentid'] = 'Identificador de la evaluación principal.';
+$string['privacy:metadata:quest_elements_assessments:userid'] = 'Identificador del usuario evaluador.';
+$string['privacy:metadata:quest_elements_assessments:answer'] = 'Texto de evaluación o comentario del criterio.';
+$string['privacy:metadata:quest_elements_assessments:commentteacher'] = 'Comentario del profesor sobre el criterio.';
+$string['privacy:metadata:quest_elements_assessments:calification'] = 'Calificación otorgada al criterio.';
+$string['privacy:metadata:quest_items_assesments_autor'] = 'Almacena las valoraciones por criterio de la autoría de desafíos.';
+$string['privacy:metadata:quest_items_assesments_autor:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_items_assesments_autor:assessmentautorid'] = 'Identificador de la evaluación de autoría.';
+$string['privacy:metadata:quest_items_assesments_autor:userid'] = 'Identificador del usuario evaluador.';
+$string['privacy:metadata:quest_items_assesments_autor:answer'] = 'Texto de evaluación o comentario del criterio.';
+$string['privacy:metadata:quest_items_assesments_autor:commentteacher'] = 'Comentario del profesor sobre el criterio.';
+$string['privacy:metadata:quest_items_assesments_autor:calification'] = 'Calificación otorgada al criterio.';
+$string['privacy:metadata:quest_calification_users'] = 'Almacena los puntos acumulados y estadísticas de participación.';
+$string['privacy:metadata:quest_calification_users:questid'] = 'Identificador de la actividad QUESTOURnament.';
+$string['privacy:metadata:quest_calification_users:userid'] = 'Identificador del usuario.';
+$string['privacy:metadata:quest_calification_users:teamid'] = 'Identificador del equipo del usuario.';
+$string['privacy:metadata:quest_calification_users:points'] = 'Puntos acumulados en el torneo.';
+$string['privacy:metadata:quest_calification_users:nanswers'] = 'Número de respuestas enviadas.';
+$string['privacy:metadata:quest_calification_users:nsubmissions'] = 'Número de desafíos propuestos.';
+$string['privacy:metadata:quest_calification_users:pointssubmission'] = 'Puntos obtenidos por proponer desafíos.';
+$string['privacy:metadata:quest_calification_users:pointsanswers'] = 'Puntos obtenidos por responder desafíos.';
+$string['privacy:metadata:core_files'] = 'Archivos adjuntos a desafíos y respuestas.';
+$string['privacy:metadata:core_question'] = 'Datos de intentos generados al responder preguntas corregidas automáticamente.';
+$string['privacy:request:deleted:title'] = '[Desafío eliminado]';
+$string['privacy:request:deleted:content'] = '[El autor solicitó la eliminación de sus datos personales]';
