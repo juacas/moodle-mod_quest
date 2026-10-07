@@ -16,8 +16,8 @@
 /**
  * @module quest_counter
  * @package mod_quest
- * @copyright 2017 Juan Pablo de Castro <jpdecastro@tel.uva.es>
- * @author Juan Pablo de Castro <jpdecastro@tel.uva.es>
+ * @copyright 2017 Juan Pablo de Castro <juanpablo.decastro@uva.es>
+ * @author Juan Pablo de Castro <juanpablo.decastro@uva.es>
  * @license http:// www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
  */
 
