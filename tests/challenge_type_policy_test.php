@@ -25,11 +25,13 @@ use advanced_testcase;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\challenge_type_policy
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(challenge_type_policy::class)]
 final class challenge_type_policy_test extends advanced_testcase {
     /**
      * A site without the new setting keeps both creation routes available.
+     * @covers     \mod_quest\challenge_type_policy
      */
     public function test_missing_site_setting_defaults_to_both_types(): void {
         $this->resetAfterTest();
@@ -45,6 +47,7 @@ final class challenge_type_policy_test extends advanced_testcase {
 
     /**
      * Existing activities retain their historical simple-only and both-type values.
+     * @covers     \mod_quest\challenge_type_policy
      */
     public function test_legacy_activity_values(): void {
         $this->resetAfterTest();
@@ -64,6 +67,7 @@ final class challenge_type_policy_test extends advanced_testcase {
 
     /**
      * The site setting also restricts teachers, independently of activity settings.
+     * @covers     \mod_quest\challenge_type_policy
      */
     public function test_site_setting_restricts_all_users(): void {
         $this->resetAfterTest();
@@ -73,19 +77,24 @@ final class challenge_type_policy_test extends advanced_testcase {
         $this->assertTrue(challenge_type_policy::allows_simple($both, true));
         $this->assertFalse(challenge_type_policy::allows_question_bank($both, true));
         $this->assertFalse(challenge_type_policy::allows_question_bank($both, false));
-        $this->assertSame([challenge_type_policy::SIMPLE_ONLY],
-            array_keys(challenge_type_policy::mode_options(true)));
+        $this->assertSame(
+            [challenge_type_policy::SIMPLE_ONLY],
+            array_keys(challenge_type_policy::mode_options(true))
+        );
 
         set_config('allowedchallengetypes', challenge_type_policy::QUIZ_ONLY, 'quest');
         $this->assertFalse(challenge_type_policy::allows_simple($both, true));
         $this->assertTrue(challenge_type_policy::allows_question_bank($both, true));
         $this->assertFalse(challenge_type_policy::allows_simple($both, false));
-        $this->assertSame([challenge_type_policy::QUIZ_ONLY],
-            array_keys(challenge_type_policy::mode_options(true)));
+        $this->assertSame(
+            [challenge_type_policy::QUIZ_ONLY],
+            array_keys(challenge_type_policy::mode_options(true))
+        );
     }
 
     /**
      * A more restrictive activity value does not grant access denied by the site.
+     * @covers     \mod_quest\challenge_type_policy
      */
     public function test_conflicting_restrictions_do_not_grant_access(): void {
         $this->resetAfterTest();

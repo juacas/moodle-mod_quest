@@ -34,7 +34,7 @@ $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 
 global $DB, $PAGE, $OUTPUT;
 $timenow = time();
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
@@ -67,7 +67,6 @@ $currentgroup = groups_get_course_group($course);
 $groupmode = $currentgroup = false; // JPC group support desactivation.
 
 if ($ismanager) {
-
     $title = get_string('changeteamteacher', 'quest');
     echo $OUTPUT->heading_with_help($title, "changeteamteacher", "quest");
 
@@ -81,22 +80,29 @@ if ($ismanager) {
                 }
                 require_sesskey();
                 foreach ($teams as $i => $teamfield) {
-
                     $teamfield = trim($teamfield);
                     if (!empty($teamfield)) {
                         $userid = $userids[$i];
-                        if ($calificationuser = $DB->get_record("quest_calification_users",
-                                ["userid" => $userid, "questid" => $quest->id])) {
+                        if (
+                            $calificationuser = $DB->get_record(
+                                "quest_calification_users",
+                                ["userid" => $userid, "questid" => $quest->id]
+                            )
+                        ) {
                             if (!empty($calificationuser->teamid)) {
                                 $oldteam = $DB->get_record("quest_teams", ["id" => $calificationuser->teamid]);
                             } else {
                                 $oldteam = null;
                             }
 
-                            if ($team = $DB->get_record("quest_teams",
+                            if (
+                                $team = $DB->get_record(
+                                    "quest_teams",
                                     ["name" => $teamfield,
                                           "currentgroup" => $currentgroup,
-                                          "questid" => $quest->id])) { // Exist the team with this name.
+                                    "questid" => $quest->id]
+                                )
+                            ) { // Exist the team with this name.
                                 if ($calificationuser->teamid == $team->id) {
                                     continue;
                                 }
@@ -105,8 +111,12 @@ if ($ismanager) {
 
                                 if ($quest->ncomponents > $team->ncomponents) {
                                     $calificationuser->teamid = $team->id;
-                                    $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                            ["id" => $calificationuser->id]);
+                                    $DB->set_field(
+                                        "quest_calification_users",
+                                        "teamid",
+                                        $calificationuser->teamid,
+                                        ["id" => $calificationuser->id]
+                                    );
                                     quest_update_team_scores($quest->id, $team->id);
                                 } else {
                                     echo ("<center><b>The Team \"" . s($team->name) . "\" is complete</b></center>");
@@ -129,8 +139,12 @@ if ($ismanager) {
                                 $team->id = $DB->insert_record("quest_teams", $team);
 
                                 $calificationuser->teamid = $team->id;
-                                $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                        ["id" => $calificationuser->id]);
+                                $DB->set_field(
+                                    "quest_calification_users",
+                                    "teamid",
+                                    $calificationuser->teamid,
+                                    ["id" => $calificationuser->id]
+                                );
 
                                 quest_update_team_scores($quest->id, $team->id);
                                 if (!empty($oldteam)) {
@@ -144,8 +158,10 @@ if ($ismanager) {
                                     if ($oldteam->ncomponents == 0) {
                                         print("<p>Team: $oldteam->name ($oldteam->id) empty.Deleted.</p>");
                                         $DB->delete_records("quest_teams", ["id" => $oldteam->id]);
-                                        $DB->delete_records('quest_calification_teams',
-                                                ['questid' => $quest->id, 'teamid' => $oldteam->id]);
+                                        $DB->delete_records(
+                                            'quest_calification_teams',
+                                            ['questid' => $quest->id, 'teamid' => $oldteam->id]
+                                        );
                                     }
                                 }
                             }
@@ -175,7 +191,6 @@ if ($ismanager) {
     foreach ($users as $user) {
         // ...skip if student not in group.
         if ($ismanager) {
-
             if ($currentgroup) {
                 if (!groups_is_member($currentgroup, $user->id)) {
                     continue;

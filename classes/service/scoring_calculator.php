@@ -26,7 +26,6 @@ namespace mod_quest\service;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class scoring_calculator {
-
     /** Challenge has not started yet. */
     public const PHASE_PENDING = 'pending';
     /** Challenge is in its stationary phase. */
@@ -213,7 +212,14 @@ class scoring_calculator {
 
         foreach ($dates as $d) {
             $pt = self::calculate_points(
-                $d, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $pointsmin
+                $d,
+                $datestart,
+                $dateend,
+                $tinitial,
+                $dateanswercorrect,
+                $initialpoints,
+                $pointsmax,
+                $pointsmin
             );
             $actualcurve[] = [
                 'x' => $d,
@@ -222,7 +228,14 @@ class scoring_calculator {
 
             if ($hasinflection) {
                 $worstpt = self::calculate_points(
-                    $d, $datestart, $dateend, $tinitial, $firstinflection, $initialpoints, $pointsmax, $pointsmin
+                    $d,
+                    $datestart,
+                    $dateend,
+                    $tinitial,
+                    $firstinflection,
+                    $initialpoints,
+                    $pointsmax,
+                    $pointsmin
                 );
                 $worstcasecurve[] = [
                     'x' => $d,
@@ -232,7 +245,14 @@ class scoring_calculator {
         }
 
         $currentpoints = self::calculate_points(
-            $timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $initialpoints, $pointsmax, $pointsmin
+            $timenow,
+            $datestart,
+            $dateend,
+            $tinitial,
+            $dateanswercorrect,
+            $initialpoints,
+            $pointsmax,
+            $pointsmin
         );
         $currentphase = self::get_phase($timenow, $datestart, $dateend, $tinitial, $dateanswercorrect);
 

@@ -26,12 +26,13 @@ use mod_quest\service\scoring_calculator;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\service\scoring_calculator
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\scoring_calculator::class)]
 final class scoring_calculator_test extends advanced_testcase {
-
     /**
      * Test stationary scoring phase (before inflation begins).
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_stationary_phase(): void {
         $start = 1000;
@@ -56,6 +57,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test phase transitions at their exact temporal boundaries.
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_phase_boundaries(): void {
         $start = 1000;
@@ -63,24 +65,45 @@ final class scoring_calculator_test extends advanced_testcase {
         $tinit = 500;
 
         $this->assertEquals(scoring_calculator::PHASE_PENDING, scoring_calculator::get_phase(
-            $start - 1, $start, $end, $tinit, null
+            $start - 1,
+            $start,
+            $end,
+            $tinit,
+            null
         ));
         $this->assertEquals(scoring_calculator::PHASE_STATIONARY, scoring_calculator::get_phase(
-            $start, $start, $end, $tinit, null
+            $start,
+            $start,
+            $end,
+            $tinit,
+            null
         ));
         $this->assertEquals(scoring_calculator::PHASE_STATIONARY, scoring_calculator::get_phase(
-            $start + $tinit - 1, $start, $end, $tinit, null
+            $start + $tinit - 1,
+            $start,
+            $end,
+            $tinit,
+            null
         ));
         $this->assertEquals(scoring_calculator::PHASE_INFLATION, scoring_calculator::get_phase(
-            $start + $tinit, $start, $end, $tinit, null
+            $start + $tinit,
+            $start,
+            $end,
+            $tinit,
+            null
         ));
         $this->assertEquals(scoring_calculator::PHASE_ENDED, scoring_calculator::get_phase(
-            $end, $start, $end, $tinit, null
+            $end,
+            $start,
+            $end,
+            $tinit,
+            null
         ));
     }
 
     /**
      * Test inflationary phase (points increase over time until answered).
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_inflationary_phase(): void {
         $start = 1000;
@@ -101,6 +124,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test deflationary phase (points decrease after first correct answer).
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_deflationary_phase(): void {
         $start = 1000;
@@ -126,6 +150,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test answers recorded before the challenge start are clamped safely.
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_answer_before_start_is_clamped(): void {
         $start = 1000;
@@ -136,7 +161,14 @@ final class scoring_calculator_test extends advanced_testcase {
         $min = 10.0;
 
         $points = scoring_calculator::calculate_points(
-            2000, $start, $end, $tinit, 500, $initial, $max, $min
+            2000,
+            $start,
+            $end,
+            $tinit,
+            500,
+            $initial,
+            $max,
+            $min
         );
 
         // The answer timestamp is normalised to the challenge start.
@@ -149,6 +181,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test challenge conclusion at or after end date.
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_ended_phase(): void {
         $start = 1000;
@@ -172,6 +205,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test edge case where min and max points are equal.
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_equal_min_max_points(): void {
         $start = 1000;
@@ -185,6 +219,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test get_chart_data returns valid trajectory structure.
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_chart_data_generation(): void {
         $start = 1000;
@@ -196,7 +231,15 @@ final class scoring_calculator_test extends advanced_testcase {
         $timenow = 2500;
 
         $data = scoring_calculator::get_chart_data(
-            $start, $end, $tinit, 2000, 1800, $initial, $max, $min, $timenow
+            $start,
+            $end,
+            $tinit,
+            2000,
+            1800,
+            $initial,
+            $max,
+            $min,
+            $timenow
         );
 
         $this->assertIsArray($data);
@@ -209,6 +252,7 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test chart data without an answer or inflection point.
+     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_chart_data_without_inflection(): void {
         $data = scoring_calculator::get_chart_data(

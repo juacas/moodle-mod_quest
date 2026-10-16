@@ -56,8 +56,10 @@ if (!quest_user_passed_password($quest, $context)) {
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
 
-$url = new moodle_url('/mod/quest/viewassessment.php',
-        ['asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
+$url = new moodle_url(
+    '/mod/quest/viewassessment.php',
+    ['asid' => $asid, 'sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]
+);
 $PAGE->set_url($url);
 if (!$ismanager && !$cangrade && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'error', '', "Unauthorized access!");

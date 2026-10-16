@@ -37,13 +37,15 @@ $diranswer = optional_param('diranswer', 'DESC', PARAM_ALPHA);
 global $DB, $OUTPUT, $PAGE;
 $timenow = time();
 
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
-$url = new moodle_url('/mod/quest/myplace.php',
-        ['id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer,
-                        'diranswer' => $diranswer]);
+$url = new moodle_url(
+    '/mod/quest/myplace.php',
+    ['id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir, 'sortanswer' => $sortanswer,
+    'diranswer' => $diranswer]
+);
 $PAGE->set_url($url);
 
 quest_check_visibility($course, $cm);
@@ -69,9 +71,12 @@ $groupmode = $currentgroup = false; // JPC group support desactivation in this v
                                     // Allow the teacher to change groups (for this session).
 if ($groupmode && $ismanager) {
     if ($groups = $DB->get_records_menu("groups", ["courseid" => $course->id], "name ASC", "id,name")) {
-
-        groups_print_activity_menu($cm, $CFG->wwwroot . "mod/quest/myplace.php?id=$cm->id", $return = false,
-                $hideallparticipants = false);
+        groups_print_activity_menu(
+            $cm,
+            $CFG->wwwroot . "mod/quest/myplace.php?id=$cm->id",
+            $return = false,
+            $hideallparticipants = false
+        );
     }
 }
 
@@ -182,9 +187,10 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
         $sortdata = [];
 
         if ($submission->userid == $USER->id) {
-
-            if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-                     ($submission->nanswerscorrect < $quest->nmaxanswers)) {
+            if (
+                ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
+                     ($submission->nanswerscorrect < $quest->nmaxanswers)
+            ) {
                 $submission->phase = SUBMISSION_PHASE_ACTIVE;
             }
 
@@ -198,7 +204,6 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                          get_string('delete', 'quest') . '" /></a>';
                 $sortdata['title'] = strtolower($submission->title);
             } else if (($submission->nanswers == 0) && ($timenow < $submission->dateend) && ($submission->state < 2)) {
-
                 $data[] = quest_print_submission_title($quest, $submission) .
                          " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
@@ -216,8 +221,13 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
 
             $nanswersassess = 0;
-            if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
-                    [$quest->id, $submission->id])) {
+            if (
+                $answers = $DB->get_records_select(
+                    "quest_answers",
+                    "questid=? AND submissionid=?",
+                    [$quest->id, $submission->id]
+                )
+            ) {
                 foreach ($answers as $answer) {
                     if (($answer->phase == 1) || ($answer->phase == 2)) {
                         $nanswersassess++;
@@ -226,8 +236,12 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
             }
             $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
             $image = '';
-            if ($answer = $DB->get_record("quest_answers",
-                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id])) {
+            if (
+                $answer = $DB->get_record(
+                    "quest_answers",
+                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id]
+                )
+            ) {
                 $image = " <img src=\"" . $CFG->wwwroot . "/pix/t/clear.png\" />";
             }
 
@@ -262,8 +276,12 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
 
             $columns[] = 'grade';
             $table->align[] = 'center';
-            if ($submission->evaluated != 0 && $assessment = $DB->get_record("quest_assessments_autors",
-                    ["questid" => $quest->id, "submissionid" => $submission->id])) {
+            if (
+                $submission->evaluated != 0 && $assessment = $DB->get_record(
+                    "quest_assessments_autors",
+                    ["questid" => $quest->id, "submissionid" => $submission->id]
+                )
+            ) {
                 if ($submission->pointsanswercorrect > 0) {
                     $data[] = number_format($assessment->points * 100 / $submission->pointsanswercorrect, 1) . '% (' .
                               number_format($assessment->points, 4) . ')';
@@ -365,8 +383,10 @@ if ($answers) {
                      get_string('delete', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
-            } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase > 0) &&
-                             ($answer->permitsubmit == 1)) {
+            } else if (
+                ($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase > 0) &&
+                             ($answer->permitsubmit == 1)
+            ) {
                         $data[] = quest_print_answer_title($quest, $answer, $submission) .
                          " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
@@ -472,8 +492,12 @@ if (!$ismanager) {
         $sortdata['pointsanswers'] = $clasification->pointsanswers;
 
         if ($quest->allowteams) {
-            if ($clasificationteam = $DB->get_record("quest_calification_teams",
-                    ["teamid" => $clasification->teamid, "questid" => $quest->id])) {
+            if (
+                $clasificationteam = $DB->get_record(
+                    "quest_calification_teams",
+                    ["teamid" => $clasification->teamid, "questid" => $quest->id]
+                )
+            ) {
                 $data[] = $clasificationteam->points * $quest->teamporcent / 100;
                 $sortdata['pointsteam'] = $clasificationteam->points * $quest->teamporcent / 100;
 
@@ -530,7 +554,6 @@ if (!$ismanager) {
                     get_string('nsubmissionsassessment', 'quest'), get_string('pointssubmission', 'quest'),
                     get_string('pointsanswers', 'quest'), get_string('pointsteam', 'quest'), get_string('points', 'quest')];
     } else {
-
         $table->head = ["", get_string('firstname', 'quest') . '/' . get_string('lastname', 'quest'),
                     get_string('nanswers', 'quest'),
                     get_string('nanswersassessment', 'quest'), get_string('nsubmissions', 'quest'),
@@ -542,20 +565,25 @@ if (!$ismanager) {
     echo '</div></div>';
 }
 if ((!$ismanager) && ($quest->allowteams)) {
-
     $title = get_string('myrankingteam', 'quest');
     echo $OUTPUT->heading_with_help($title, 'myrankingteam', 'quest');
 
     // Now prepare table with student assessments and submissions.
     $tablesort->data = [];
     $tablesort->sortdata = [];
-    if ($clasificationuser = $DB->get_record("quest_calification_users",
-                                                ["userid" => $USER->id, "questid" => $quest->id])) {
-        if ($calificationteam = $DB->get_record("quest_calification_teams",
-                    ["teamid" => $clasificationuser->teamid, "questid" => $quest->id])) {
-
+    if (
+        $clasificationuser = $DB->get_record(
+            "quest_calification_users",
+            ["userid" => $USER->id, "questid" => $quest->id]
+        )
+    ) {
+        if (
+            $calificationteam = $DB->get_record(
+                "quest_calification_teams",
+                ["teamid" => $clasificationuser->teamid, "questid" => $quest->id]
+            )
+        ) {
             if ($team = $DB->get_record("quest_teams", ["id" => $calificationteam->teamid])) {
-
                         $data = [];
                         $sortdata = [];
 

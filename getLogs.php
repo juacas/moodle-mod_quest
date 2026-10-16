@@ -29,7 +29,7 @@ require_once("locallib.php");
 global $CFG, $DB, $PAGE, $OUTPUT;
 
 $id = required_param('id', PARAM_INTEGER);
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
@@ -50,15 +50,24 @@ $PAGE->set_url($thispageurl);
 $sqlquery = null;
 switch ($queryid) {
     case 'ip':
-        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
-                                        [$context->id], "timecreated", "id,ip,timecreated");
+        $query = $DB->get_records_select(
+            "logstore_standard_log",
+            "component='mod_quest' and contextid=?",
+            [$context->id],
+            "timecreated",
+            "id,ip,timecreated"
+        );
         break;
     case 'logs':
-        $query = $DB->get_records_select("logstore_standard_log", "component='mod_quest' and contextid=?",
-                                        [$context->id], "timecreated");
+        $query = $DB->get_records_select(
+            "logstore_standard_log",
+            "component='mod_quest' and contextid=?",
+            [$context->id],
+            "timecreated"
+        );
         break;
     case 'activity':
-        list($insql, $inparams) = $DB->get_in_or_equal([$cm->id]);
+        [$insql, $inparams] = $DB->get_in_or_equal([$cm->id]);
         $allparams = array_merge([$cm->module], $inparams);
         $sqlquery = <<<SQL
 SELECT {log}.id as id_log, {course_modules}.id AS id_QUEST_URL,
@@ -107,7 +116,7 @@ if ($query) {
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
     $localelang = current_language();
-    setlocale(LC_ALL, $localelang );
+    setlocale(LC_ALL, $localelang);
     $localeconfig = localeconv();
     $a = (object)['localelang' => $localelang, 'localeconfigdecimal' => $localeconfig['decimal_point']];
     echo $OUTPUT->notification(get_string('quest:notifylocale', 'quest', $a), 'info');

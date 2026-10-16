@@ -30,7 +30,6 @@ use mod_quest\question\question_reference_service;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class autograde_service {
-
     /**
      * Return the grade recorded by the question engine for an automatically graded answer.
      *
@@ -427,7 +426,13 @@ class autograde_service {
             $actions = '';
             if ($showactions && $context && $cmid) {
                 $previewurl = \qbank_previewquestion\helper::question_preview_url(
-                    (int)$question->id, null, null, null, null, $context, $cmid
+                    (int)$question->id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    $context,
+                    $cmid
                 );
                 $actions .= \html_writer::link(
                     $previewurl,
@@ -447,7 +452,11 @@ class autograde_service {
                     $actions .= \html_writer::link(
                         $editurl,
                         $OUTPUT->pix_icon('t/edit', get_string('edit')) . ' ' . get_string('editquestion', 'quest'),
-                        ['class' => 'btn btn-sm btn-outline-secondary', 'target' => '_blank', 'title' => get_string('editquestion', 'quest')]
+                        [
+                            'class' => 'btn btn-sm btn-outline-secondary',
+                            'target' => '_blank',
+                            'title' => get_string('editquestion', 'quest'),
+                        ]
                     );
                 }
             }

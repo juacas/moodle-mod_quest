@@ -46,7 +46,7 @@ global $DB, $PAGE, $OUTPUT, $USER;
 $timenow = time();
 // Print the page header.
 
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
@@ -95,7 +95,6 @@ if (($quest->usepassword) && (!$ismanager)) {
 
 // Teachers must complete grading elements and students must enroll in a team if enabled.
 if (has_capability('mod/quest:manage', $context)) {
-
     if (empty($action)) { // No action specified, either go straight to elements page else the admin
                           // page has the assignment any elements.
         $elementsforthissubmission = $DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]);
@@ -107,10 +106,12 @@ if (has_capability('mod/quest:manage', $context)) {
             $numelementsexpectedinsubmission = 0;
         }
 
-        if ($quest->gradingstrategy == 0 ||
+        if (
+            $quest->gradingstrategy == 0 ||
                  ($DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]) >= $quest->nelements)
                  ||
-                 (($elementsforthissubmission >= $numelementsexpectedinsubmission) && ($elementsforthissubmission != 0))) {
+                 (($elementsforthissubmission >= $numelementsexpectedinsubmission) && ($elementsforthissubmission != 0))
+        ) {
             $numelements = $DB->count_records("quest_elementsautor", ["questid" => $quest->id]);
 
             if ($quest->gradingstrategyautor == 0 || $numelements >= $quest->nelementsautor) {
@@ -169,14 +170,22 @@ if (has_capability('mod/quest:manage', $context)) {
                     exit();
                 } else {
                     // Team assignation or creation.
-                    if ($team = $DB->get_record("quest_teams",
-                            ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup])) {
+                    if (
+                        $team = $DB->get_record(
+                            "quest_teams",
+                            ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup]
+                        )
+                    ) {
                         if ($quest->ncomponents > $team->ncomponents) {
                             $team->ncomponents++;
                             $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, ["id" => $team->id]);
                             $calificationuser->teamid = $team->id;
-                            $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                    ["id" => $calificationuser->id]);
+                            $DB->set_field(
+                                "quest_calification_users",
+                                "teamid",
+                                $calificationuser->teamid,
+                                ["id" => $calificationuser->id]
+                            );
                         } else {
                             echo $OUTPUT->header();
                             echo ('<center><b>The Team is complete</b></center>');
@@ -199,8 +208,12 @@ if (has_capability('mod/quest:manage', $context)) {
                         $calificationteam->questid = $quest->id;
                         $calificationteam->id = $DB->insert_record("quest_calification_teams", $calificationteam);
                         $calificationuser->teamid = $team->id;
-                        $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                ["id" => $calificationuser->id]);
+                        $DB->set_field(
+                            "quest_calification_users",
+                            "teamid",
+                            $calificationuser->teamid,
+                            ["id" => $calificationuser->id]
+                        );
                     }
                 } // ...end team assignation.
             }
@@ -241,14 +254,22 @@ if (has_capability('mod/quest:manage', $context)) {
                 echo $OUTPUT->footer();
                 exit();
             } else if (isset($teamname) && trim($teamname) !== '') {
-                if ($team = $DB->get_record("quest_teams",
-                        ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup])) {
+                if (
+                    $team = $DB->get_record(
+                        "quest_teams",
+                        ["name" => $teamname, "questid" => $quest->id, "currentgroup" => $currentgroup]
+                    )
+                ) {
                     if ($quest->ncomponents > $team->ncomponents) {
                         $team->ncomponents++;
                         $DB->set_field("quest_teams", "ncomponents", $team->ncomponents, ["id" => $team->id]);
                         $calificationuser->teamid = $team->id;
-                        $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                ["id" => $calificationuser->id]);
+                        $DB->set_field(
+                            "quest_calification_users",
+                            "teamid",
+                            $calificationuser->teamid,
+                            ["id" => $calificationuser->id]
+                        );
                     } else {
                         echo $OUTPUT->header();
                         echo ('<center><b>The Team is complete</b></center>');
@@ -348,31 +369,39 @@ if ($action == 'notavailable') {
             $data = [];
             $sortdata = [];
 
-            if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-                     ($submission->nanswerscorrect < $quest->nmaxanswers) && $submission->phase != SUBMISSION_PHASE_ACTIVE) {
+            if (
+                ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
+                     ($submission->nanswerscorrect < $quest->nmaxanswers) && $submission->phase != SUBMISSION_PHASE_ACTIVE
+            ) {
                 $submission->phase = SUBMISSION_PHASE_ACTIVE; // Running...
                 $DB->update_record('quest_submissions', $submission);
             }
 
             // Skip a submission not viewable by this user...
-            if ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING &&
+            if (
+                $submission->state == SUBMISSION_STATE_APPROVAL_PENDING &&
                     !has_capability('mod/quest:approvechallenge', $context) &&
-                    !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id) {
+                    !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id
+            ) {
                 continue;
             }
             // Skip challenge for student if the challenge is not started...
-            if (!has_capability('mod/quest:manage', $context) && // Manage permission.
+            if (
+                !has_capability('mod/quest:manage', $context) && // Manage permission.
                 $submission->datestart > $timenow && // Challenge is pending start.
-                $submission->userid != $USER->id) { // User is not the author.
+                $submission->userid != $USER->id
+            ) { // User is not the author.
                 continue; // Omit it.
             }
             $mineicon = $submission->userid == $USER->id && !$canviewauthors ? $OUTPUT->user_picture($USER) : '';
             $titletext = $mineicon . quest_print_submission_title($quest, $submission);
 
             // Show or not the edit controls.
-            if (((has_capability('mod/quest:editchallengeall', $context) || ($submission->userid == $USER->id)) &&
+            if (
+                ((has_capability('mod/quest:editchallengeall', $context) || ($submission->userid == $USER->id)) &&
                     ($submission->nanswers == 0) && ($timenow < $submission->dateend) &&
-                     ($submission->state != SUBMISSION_STATE_APROVED)) || ($ismanager)) {
+                     ($submission->state != SUBMISSION_STATE_APROVED)) || ($ismanager)
+            ) {
                 $editicon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
                 $titletext .= "<a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . $editicon .
@@ -433,8 +462,13 @@ if ($action == 'notavailable') {
             $data[] = $phasehtml;
 
             $nanswersassess = 0;
-            if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?",
-                    [$quest->id, $submission->id])) {
+            if (
+                $answers = $DB->get_records_select(
+                    "quest_answers",
+                    "questid=? AND submissionid=?",
+                    [$quest->id, $submission->id]
+                )
+            ) {
                 foreach ($answers as $answer) {
                     if (($answer->phase == 1) || ($answer->phase == 2)) {
                         $nanswersassess++;
@@ -443,8 +477,12 @@ if ($action == 'notavailable') {
             }
             $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
             $image = '';
-            if ($answer = $DB->get_record("quest_answers",
-                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id])) {
+            if (
+                $answer = $DB->get_record(
+                    "quest_answers",
+                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id]
+                )
+            ) {
                 $image = $OUTPUT->pix_icon('t/check', 'ok');
             }
 

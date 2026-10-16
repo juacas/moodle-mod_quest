@@ -67,14 +67,14 @@ $plotheight = $height - ($padding * 2);
 $ymin = 0;
 $ymax = max($pointsmax * 1.15, $initialpoints * 1.2, 10);
 
-$getx = function($val) use ($padding, $plotwidth, $datestart, $dateend) {
+$getx = function ($val) use ($padding, $plotwidth, $datestart, $dateend) {
     if ($dateend <= $datestart) {
         return $padding;
     }
     return $padding + (($val - $datestart) / ($dateend - $datestart)) * $plotwidth;
 };
 
-$gety = function($val) use ($padding, $plotheight, $ymin, $ymax) {
+$gety = function ($val) use ($padding, $plotheight, $ymin, $ymax) {
     if ($ymax <= $ymin) {
         return $padding + $plotheight;
     }

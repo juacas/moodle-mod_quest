@@ -25,6 +25,7 @@ use advanced_testcase;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \quest_question_composer_url
  */
 final class question_composer_url_test extends advanced_testcase {
     /**

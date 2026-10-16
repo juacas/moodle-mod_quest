@@ -24,6 +24,7 @@ use advanced_testcase;
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\question\question_reference_service
  */
 final class challenge_approval_display_test extends advanced_testcase {
     /**
@@ -65,7 +66,9 @@ final class challenge_approval_display_test extends advanced_testcase {
         ]);
         $entryid = $DB->get_field('question_versions', 'questionbankentryid', ['questionid' => $question->id]);
         \mod_quest\question\question_reference_service::set_challenge_question(
-            $context->id, $submissionid, (int)$entryid
+            $context->id,
+            $submissionid,
+            (int)$entryid
         );
         $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge($submissionid);
         $descriptionoptions = ['context' => $context, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes];
@@ -97,7 +100,7 @@ final class challenge_approval_display_test extends advanced_testcase {
             'attachmentoptions' => $attachmentoptions,
             'action' => 'modif',
             'linkedquestion' => $linkedquestion,
-            'composerquestions' => array_map(static function($slot) {
+            'composerquestions' => array_map(static function ($slot) {
                 $slot->question->maxmark = (float)$slot->maxmark;
                 return $slot->question;
             }, \mod_quest\question\question_reference_service::get_challenge_questions($submissionid)),
@@ -113,7 +116,10 @@ final class challenge_approval_display_test extends advanced_testcase {
         $this->assertStringContainsString('quest-question-composer-bank', $modifhtml);
 
         [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
-            $quest, $submission, $linkedquestion, $context
+            $quest,
+            $submission,
+            $linkedquestion,
+            $context
         );
         $preview = \mod_quest\service\autograde_service::render_question_preview($quba, $slots[0]);
         $this->assertStringContainsString('Name an amphibian', $preview);

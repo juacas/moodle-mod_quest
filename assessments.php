@@ -50,7 +50,7 @@ if (!is_array($questscales)) {
 if (!is_array($questeweights)) {
     $questeweights = quest_get_default_weights();
 }
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 
 $context = context_module::instance($cm->id);
@@ -145,11 +145,11 @@ if ($action == 'displaygradingform') {
             echo $OUTPUT->continue_button(new moodle_url("view.php", ['id' => $id]));
         } else {
             echo $OUTPUT->continue_button(
-                    new moodle_url("challenges.php", ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']));
+                new moodle_url("challenges.php", ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge'])
+            );
         }
     }
     echo $OUTPUT->footer();
-
 } else if ($action == 'editelements') {
     // ... edit assessment elements (for teachers)..
     require_sesskey();
@@ -176,13 +176,19 @@ if ($action == 'displaygradingform') {
     // Get existing elements, if none set up appropriate default ones..
     $elementstemplate = [];
     if ($sid) {
-        $elementstemplate = $DB->get_records("quest_elements", ["questid" => $quest->id, "submissionsid" => $sid],
-                "elementno ASC");
+        $elementstemplate = $DB->get_records(
+            "quest_elements",
+            ["questid" => $quest->id, "submissionsid" => $sid],
+            "elementno ASC"
+        );
     }
     if (count($elementstemplate) == 0) {
         // Template elements.
-        $elementstemplate = $DB->get_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0],
-                "elementno ASC");
+        $elementstemplate = $DB->get_records(
+            "quest_elements",
+            ["questid" => $quest->id, "submissionsid" => 0],
+            "elementno ASC"
+        );
     }
     // Reindex the array.
     $elements = array_values($elementstemplate);
@@ -349,7 +355,6 @@ if ($action == 'displaygradingform') {
     echo '</form>';
     echo '</div>'; // Quest assessment container.
     echo $OUTPUT->footer();
-
 } else if ($action == 'insertelements') {
     if (!optional_param('cancel', null, PARAM_ALPHA)) {
         // ... insert/update assignment elements (for teachers)..
@@ -398,8 +403,12 @@ if ($action == 'displaygradingform') {
                         $element->questid = $quest->id;
                         if ($newform == 1) {
                             $element->submissionsid = $sid;
-                        } else if (($newform == 0) || (($DB->count_records("quest_elements",
-                                ["questid" => $quest->id, "submissionsid" => 0]) == 0))) {
+                        } else if (
+                            ($newform == 0) || (($DB->count_records(
+                                "quest_elements",
+                                ["questid" => $quest->id, "submissionsid" => 0]
+                            ) == 0))
+                        ) {
                             $element->submissionsid = 0;
                         }
                         $element->elementno = $key;
@@ -433,11 +442,12 @@ if ($action == 'displaygradingform') {
     if ($viewgeneral == 1) {
         $urlto = new moodle_url("view.php", ['id' => $cm->id]);
     } else {
-        $urlto = new moodle_url("challenges.php",
-                ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']);
+        $urlto = new moodle_url(
+            "challenges.php",
+            ['id' => $cm->id, 'cid' => $sid, 'action' => 'showchallenge']
+        );
     }
     redirect($urlto, $msg);
-
 } else if ($action == 'updateassessment') {
     // Update assessment (by teacher or student)....
     $aid = required_param('aid', PARAM_INT);
@@ -502,8 +512,12 @@ if ($action == 'displaygradingform') {
     } else {
         // Form grading....
         // Grading by criteria!.
-        $percent = quest_get_answer_grade($quest, $answer, optional_param_array('grade', [], PARAM_FLOAT),
-                                                            optional_param_array('feedback', [], PARAM_TEXT));
+        $percent = quest_get_answer_grade(
+            $quest,
+            $answer,
+            optional_param_array('grade', [], PARAM_FLOAT),
+            optional_param_array('feedback', [], PARAM_TEXT)
+        );
     }
     $percent = \mod_quest\service\autograde_service::combine_with_rubric_grade($answer, $percent);
     $points = quest_get_points($submission, $quest, $answer);
@@ -570,8 +584,15 @@ if ($action == 'displaygradingform') {
     // ...update submission.
     // ...get first answer correct.
     // ...update pointsanswercorrect..
-    if ($query = $DB->get_record_select("quest_answers", "submissionid=? and grade>=50", [$submission->id], "date,pointsmax",
-            IGNORE_MULTIPLE)) {
+    if (
+        $query = $DB->get_record_select(
+            "quest_answers",
+            "submissionid=? and grade>=50",
+            [$submission->id],
+            "date,pointsmax",
+            IGNORE_MULTIPLE
+        )
+    ) {
         $submission->dateanswercorrect = $query->date;
         $submission->pointsanswercorrect = number_format($query->pointsmax, 4);
     } else {

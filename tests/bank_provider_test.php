@@ -26,9 +26,9 @@ use mod_quest\question\bank_provider;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\question\bank_provider
  */
 final class bank_provider_test extends advanced_testcase {
-
     /**
      * The provider exposes the capabilities used for bank selection.
      */

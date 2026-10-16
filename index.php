@@ -74,7 +74,6 @@ if ($course->format == "weeks") {
 }
 
 foreach ($quests as $quest) {
-
     $info = quest_phase($quest);
     $due = userdate($quest->dateend);
 

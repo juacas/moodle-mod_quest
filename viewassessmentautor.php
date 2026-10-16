@@ -40,7 +40,7 @@ $submission = $DB->get_record('quest_submissions', [
     'questid' => $assessment->questid,
 ], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
-list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
+[$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 
 require_login($course->id, false, $cm);
 $context = context_module::instance($cm->id);
@@ -48,8 +48,10 @@ if (!quest_user_passed_password($quest, $context)) {
     quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
 }
 
-$url = new moodle_url('/mod/quest/viewassessmentautor.php',
-        ['aid' => $aid, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'dir' => $dir, 'sort' => $sort]);
+$url = new moodle_url(
+    '/mod/quest/viewassessmentautor.php',
+    ['aid' => $aid, 'allowcomments' => $allowcomments, 'redirect' => $redirect, 'dir' => $dir, 'sort' => $sort]
+);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_activity_record($quest);
@@ -63,8 +65,10 @@ $cangrade = has_capability('mod/quest:grade', $context);
 $canviewotherauthors = has_capability('mod/quest:viewotherattemptsowners', $context);
 $isclosed = (int)$submission->dateend <= time() ||
     (int)$submission->nanswerscorrect >= (int)$quest->nmaxanswers;
-if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id &&
-        !($quest->permitviewautors && $isclosed && $canviewotherauthors)) {
+if (
+    !$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id &&
+        !($quest->permitviewautors && $isclosed && $canviewotherauthors)
+) {
     throw new \moodle_exception('nopermissions', 'error', '', 'view this assessment');
 }
 
@@ -78,38 +82,56 @@ $strquest = get_string("modulename", "quest");
 $strassess = get_string("viewassessmentautor", "quest");
 $newcalification = optional_param('newcalification', null, PARAM_FLOAT);
 if (isset($newcalification)) {
-
     require_sesskey();
-    if (!is_finite($newcalification) || $newcalification < 0 ||
-            $newcalification > (float)$submission->initialpoints) {
+    if (
+        !is_finite($newcalification) || $newcalification < 0 ||
+            $newcalification > (float)$submission->initialpoints
+    ) {
         throw new \moodle_exception('invaliddata', 'error');
     }
 
     if (($ismanager || $cangrade) && ($assessment->state != 0)) {
-
-        if ($calificationuser = $DB->get_record("quest_calification_users", [
+        if (
+            $calificationuser = $DB->get_record("quest_calification_users", [
             "userid" => $submission->userid,
             "questid" => $quest->id,
-        ])) {
+            ])
+        ) {
             $calificationuser->points -= $assessment->points;
             $calificationuser->pointssubmission -= $assessment->points;
             $calificationuser->points += $newcalification;
             $calificationuser->pointssubmission += $newcalification;
             $DB->set_field("quest_calification_users", "points", $calificationuser->points, ["id" => $calificationuser->id]);
-            $DB->set_field("quest_calification_users", "pointssubmission", $calificationuser->pointssubmission,
-                    ["id" => $calificationuser->id]);
+            $DB->set_field(
+                "quest_calification_users",
+                "pointssubmission",
+                $calificationuser->pointssubmission,
+                ["id" => $calificationuser->id]
+            );
 
             if ($quest->allowteams) {
-                if ($calificationteam = $DB->get_record("quest_calification_teams",
-                        ["teamid" => $calificationuser->teamid, "questid" => $quest->id])) {
+                if (
+                    $calificationteam = $DB->get_record(
+                        "quest_calification_teams",
+                        ["teamid" => $calificationuser->teamid, "questid" => $quest->id]
+                    )
+                ) {
                     $calificationteam->points -= $assessment->points;
                     $calificationteam->pointssubmission -= $assessment->points;
                     $calificationteam->points += $newcalification;
                     $calificationteam->pointssubmission += $newcalification;
-                    $DB->set_field("quest_calification_teams", "points", $calificationteam->points,
-                            ["id" => $calificationteam->id]);
-                    $DB->set_field("quest_calification_teams", "pointssubmission", $calificationteam->pointssubmission,
-                            ["id" => $calificationteam->id]);
+                    $DB->set_field(
+                        "quest_calification_teams",
+                        "points",
+                        $calificationteam->points,
+                        ["id" => $calificationteam->id]
+                    );
+                    $DB->set_field(
+                        "quest_calification_teams",
+                        "pointssubmission",
+                        $calificationteam->pointssubmission,
+                        ["id" => $calificationteam->id]
+                    );
                 }
             }
         }
@@ -147,8 +169,10 @@ quest_print_submission($quest, $submission);
 echo '</div></div></div>';
 
 $timenow = time();
-if (($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-    ($submission->nanswerscorrect < $quest->nmaxanswers)) {
+if (
+    ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
+    ($submission->nanswerscorrect < $quest->nmaxanswers)
+) {
     $submission->phase = SUBMISSION_PHASE_ACTIVE;
 }
 echo '<div class="text-center my-4">';

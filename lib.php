@@ -323,20 +323,24 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
         $entryid = 0;
     } else {
         if ($filearea === 'attachment' || $filearea === 'submission') {
-            if (!$entry = $DB->get_record('quest_submissions', [
+            if (
+                !$entry = $DB->get_record('quest_submissions', [
                 'id' => $entryid,
                 'questid' => $quest->id,
-            ])) {
+                ])
+            ) {
                 return false;
             }
             if (!quest_user_can_view_submission($quest, $entry, $context)) {
                 return false;
             }
         } else if ($filearea === 'answer_attachment' || $filearea === 'answer') {
-            if (!$entry = $DB->get_record('quest_answers', [
+            if (
+                !$entry = $DB->get_record('quest_answers', [
                 'id' => $entryid,
                 'questid' => $quest->id,
-            ])) {
+                ])
+            ) {
                 return false;
             }
             $submission = $DB->get_record('quest_submissions', [
@@ -349,7 +353,6 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
         } else {
             return false; // Unknown filearea.
         }
-
     }
 
     $filepath = '/';
@@ -404,8 +407,17 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
  * @param array $options additional options affecting the file serving
  * @return void Sends file or calls send_file_not_found()
  */
-function quest_question_pluginfile($course, $context, $component,
-        $filearea, $qubaid, $slot, $args, $forcedownload, array $options = []) {
+function quest_question_pluginfile(
+    $course,
+    $context,
+    $component,
+    $filearea,
+    $qubaid,
+    $slot,
+    $args,
+    $forcedownload,
+    array $options = []
+) {
     global $CFG, $DB;
 
     require_once(__DIR__ . '/locallib.php');
@@ -421,7 +433,7 @@ function quest_question_pluginfile($course, $context, $component,
     $answer = null;
     $canviewfeedback = false;
     if ($owningcontext && $owningcontext->contextlevel == CONTEXT_MODULE) {
-        list($modcontext, $course, $cm) = get_context_info_array($owningcontext->id);
+        [$modcontext, $course, $cm] = get_context_info_array($owningcontext->id);
         if (!$cm || $cm->modname !== 'quest') {
             send_file_not_found();
         }
@@ -509,10 +521,28 @@ function quest_question_file_path(context $context, string $component, string $f
 /**
  * Alternative callback alias for quest_question_pluginfile.
  */
-function mod_quest_question_pluginfile($course, $context, $component,
-        $filearea, $qubaid, $slot, $args, $forcedownload, array $options = []) {
-    quest_question_pluginfile($course, $context, $component,
-        $filearea, $qubaid, $slot, $args, $forcedownload, $options);
+function mod_quest_question_pluginfile(
+    $course,
+    $context,
+    $component,
+    $filearea,
+    $qubaid,
+    $slot,
+    $args,
+    $forcedownload,
+    array $options = []
+) {
+    quest_question_pluginfile(
+        $course,
+        $context,
+        $component,
+        $filearea,
+        $qubaid,
+        $slot,
+        $args,
+        $forcedownload,
+        $options
+    );
 }
 
 /**
@@ -585,10 +615,14 @@ function quest_user_complete($course, $user, $mod, $quest) {
 
     $nanswers = 0;
     if ($submissions = $DB->get_records_select("quest_submissions", "questid = ?", [$quest->id])) {
-
         foreach ($submissions as $submission) {
-            if ($answers = $DB->get_records_select("quest_answers", "questid=? and submissionid=? and userid=?",
-                    [$quest->id, $submission->id, $user->id])) {
+            if (
+                $answers = $DB->get_records_select(
+                    "quest_answers",
+                    "questid=? and submissionid=? and userid=?",
+                    [$quest->id, $submission->id, $user->id]
+                )
+            ) {
                 foreach ($answers as $answer) {
                     $nanswers++;
                     echo $OUTPUT->box_start('block');
@@ -637,7 +671,6 @@ function quest_print_feedback($course, $submission, $user) {
     $strnoassessments = get_string('noassessments', 'quest');
 
     if (!$answers = $DB->get_records('quest_answers', ['submissionid' => $submission->id])) {
-
         echo '<table cellspacing="0" class="workshop_feedbackbox">';
         echo '<tr>';
         echo '<td>';
@@ -655,7 +688,6 @@ function quest_print_feedback($course, $submission, $user) {
         return;
     }
     foreach ($answers as $answer) {
-
         if (!$feedbacks = $DB->get_records('quest_assessments', ['answerid' => $answer->id])) {
             echo '<table cellspacing="0" class="workshop_feedbackbox">';
             echo '<tr>';
@@ -674,7 +706,6 @@ function quest_print_feedback($course, $submission, $user) {
         }
 
         foreach ($feedbacks as $feedback) {
-
             echo '<table cellspacing="0" class="workshop_feedbackbox">';
 
             echo '<tr>';
@@ -1004,8 +1035,12 @@ function quest_get_user_grades($quest, $userid = 0) {
                     }
                 }
                 // Calculate proportionally...
-                if ($calificationstudent = $DB->get_record("quest_calification_users",
-                        ["questid" => $quest->id, "userid" => $student->id])) {
+                if (
+                    $calificationstudent = $DB->get_record(
+                        "quest_calification_users",
+                        ["questid" => $quest->id, "userid" => $student->id]
+                    )
+                ) {
                     $points = 0;
                     if ($quest->typegrade == QUEST_TYPE_GRADE_INDIVIDUAL) { // Grading by
                                                                             // individuals...
@@ -1014,8 +1049,12 @@ function quest_get_user_grades($quest, $userid = 0) {
                     $textinfo = number_format($calificationstudent->points, 1) . " points";
 
                     if ($quest->allowteams) { // Add team score...
-                        if ($calificationteam = $DB->get_record("quest_calification_teams",
-                                ["questid" => $quest->id, "teamid" => $calificationstudent->teamid])) {
+                        if (
+                            $calificationteam = $DB->get_record(
+                                "quest_calification_teams",
+                                ["questid" => $quest->id, "teamid" => $calificationstudent->teamid]
+                            )
+                        ) {
                             $points += $calificationteam->points * $quest->teamporcent / 100;
                             $textinfo .= "+ $quest->teamporcent% of " .
                                         number_format($calificationteam->points, 1) . " team points";
@@ -1083,17 +1122,23 @@ function quest_get_participants($questid) {
 
     // Get students from quest_submissions.
     $stsubmissions = $DB->get_records_sql(
-            "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_submissions} s " .
-            "WHERE s.questid = ? and u.id = s.userid", [$questid]);
+        "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_submissions} s " .
+        "WHERE s.questid = ? and u.id = s.userid",
+        [$questid]
+    );
     // Get students from quest_assessments.
     $stassessments = $DB->get_records_sql(
-            "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_assessments} a " .
-            "WHERE a.questid = ? and ( u.id = a.userid or u.id = a.teacherid )", [$questid]);
+        "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_assessments} a " .
+        "WHERE a.questid = ? and ( u.id = a.userid or u.id = a.teacherid )",
+        [$questid]
+    );
 
     // Get students from quest_comments.
     $stanswers = $DB->get_records_sql(
-            "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_answers} c " .
-            "WHERE c.questid = ? and u.id = c.userid", [$questid]);
+        "SELECT DISTINCT u.id, u.id FROM {user} u, {quest_answers} c " .
+        "WHERE c.questid = ? and u.id = c.userid",
+        [$questid]
+    );
 
     // Add st_answers to st_submissions.
     if ($stanswers) {
@@ -1195,7 +1240,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
     // ... get challenges submitted.
     $params = array_merge($params, ['sincetime' => $sincetime], ['course' => $courseid]);
     $posts = $DB->get_records_sql(
-            "SELECT s.id, s.userid, s.title, s.timecreated, u.firstname, u.lastname,
+        "SELECT s.id, s.userid, s.title, s.timecreated, u.firstname, u.lastname,
             u.picture, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename, cm.instance, q.name, cm.section
             FROM {quest_submissions} s
             JOIN {user} u ON s.userid = u.id
@@ -1206,13 +1251,13 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
             $userselect $selectuser
             AND q.course = :course
             AND cm.course = q.course
-            ORDER BY s.id", $params);
+            ORDER BY s.id",
+        $params
+    );
 
     if (!empty($posts)) {
         foreach ($posts as $post) {
-
             if (empty($groupid) || groups_is_member($groupid, $post->userid)) {
-
                 $tmpactivity = new stdClass();
                 $tmpactivity->cmid = $questcmid;
                 $tmpactivity->type = "quest";
@@ -1237,7 +1282,7 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
     }
     // ... get the answers submitted.
     $posts = $DB->get_records_sql(
-            "SELECT a.*, u.firstname, u.lastname,
+        "SELECT a.*, u.firstname, u.lastname,
             u.picture, u.imagealt, u.email, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename,
             cm.instance, q.name, cm.section
             FROM {quest_answers} a
@@ -1248,13 +1293,13 @@ function quest_get_recent_mod_activity(&$activities, &$index, $sincetime, $cours
             $userselect $selectuser
             AND q.course = :course
             AND cm.course = q.course
-            ORDER BY a.id", $params);
+            ORDER BY a.id",
+        $params
+    );
 
     if (!empty($posts)) {
         foreach ($posts as $post) {
-
             if (empty($groupid) || groups_is_member($groupid, $post->userid)) {
-
                 $tmpactivity = new \stdClass();
 
                 $tmpactivity->type = "quest";
@@ -1377,12 +1422,11 @@ function quest_reset_userdata($data) {
     foreach ($questidssql as $quid) {
         $questids[] = $quid->id;
     }
-    list($insql, $inparams) = $DB->get_in_or_equal($questids);
+    [$insql, $inparams] = $DB->get_in_or_equal($questids);
     $answerssql = "SELECT a.id as id FROM mdl_quest_answers a, mdl_quest q WHERE q.course=? and a.questid=q.id";
     $answerparams = [$data->courseid];
 
     if ($removeanswers) {
-
         $DB->delete_records_select('quest_elements_assessments', "questid $insql", $inparams);
         $DB->delete_records_select('quest_items_assesments_autor', "questid $insql", $inparams);
         $DB->delete_records_select('quest_assessments', "questid $insql", $inparams);
@@ -1422,7 +1466,6 @@ function quest_reset_userdata($data) {
 
     // ...updating dates - shift may be negative too.
     if ($data->timeshift) {
-
         shift_course_mod_dates('quest', ['datestart', 'dateend'], $data->timeshift, $data->courseid);
         $shifttimesql = "UPDATE {quest_submissions} " .
                         "SET datestart = datestart + (?), dateend = dateend + (?) " .
@@ -1479,31 +1522,42 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
     $questobject = $DB->get_record("quest", ["id" => $PAGE->cm->instance]);
     $context = $PAGE->cm->context;
 
-    $questnode->add('Questournaments', new moodle_url('/mod/quest/index.php', ['id' => $PAGE->course->id]),
-            navigation_node::TYPE_SETTING);
+    $questnode->add(
+        'Questournaments',
+        new moodle_url('/mod/quest/index.php', ['id' => $PAGE->course->id]),
+        navigation_node::TYPE_SETTING
+    );
 
     // ...manage Teams.
     if (has_capability('mod/quest:manage', $context)) {
         if ($questobject && $questobject->allowteams) {
-            $questnode->add(get_string('changeteamteacher', 'quest'),
-                    new moodle_url('/mod/quest/team.php', ['id' => $PAGE->cm->id, 'action' => 'change']),
-                    navigation_node::TYPE_SETTING);
+            $questnode->add(
+                get_string('changeteamteacher', 'quest'),
+                new moodle_url('/mod/quest/team.php', ['id' => $PAGE->cm->id, 'action' => 'change']),
+                navigation_node::TYPE_SETTING
+            );
         }
     }
     if (has_capability('mod/quest:downloadlogs', $context)) {
         $catnode = $questnode->add(get_string('adminlogs', 'quest'), null, navigation_node::TYPE_CONTAINER);
-        $catnode->add(get_string('gettechnicallogs', 'quest'),
-                new moodle_url('/mod/quest/getLogs.php', ['id' => $PAGE->cm->id]),
-                navigation_node::TYPE_SETTING);
-        $catnode->add(get_string('fullactivitylisting', 'quest'),
-                new moodle_url('/mod/quest/report.php', ['id' => $PAGE->cm->id]),
-                navigation_node::TYPE_SETTING);
+        $catnode->add(
+            get_string('gettechnicallogs', 'quest'),
+            new moodle_url('/mod/quest/getLogs.php', ['id' => $PAGE->cm->id]),
+            navigation_node::TYPE_SETTING
+        );
+        $catnode->add(
+            get_string('fullactivitylisting', 'quest'),
+            new moodle_url('/mod/quest/report.php', ['id' => $PAGE->cm->id]),
+            navigation_node::TYPE_SETTING
+        );
     }
 
     // Question bank integration.
-    if (has_capability('moodle/question:managecategory', $context) ||
+    if (
+        has_capability('moodle/question:managecategory', $context) ||
             has_capability('moodle/question:add', $context) ||
-            has_capability('moodle/question:viewall', $context)) {
+            has_capability('moodle/question:viewall', $context)
+    ) {
         require_once($CFG->libdir . '/questionlib.php');
         $qnode = question_extend_settings_navigation($questnode, $context);
         if ($qnode) {
@@ -1519,8 +1573,12 @@ function quest_extend_settings_navigation(settings_navigation $settingsnav, navi
  */
 function quest_get_user_answers($submission, $user) {
     global $DB;
-    return $DB->get_records_select("quest_answers", "submissionid = ? AND userid = ? AND date > 0",
-            [$submission->id, $user->id], "date DESC");
+    return $DB->get_records_select(
+        "quest_answers",
+        "submissionid = ? AND userid = ? AND date > 0",
+        [$submission->id, $user->id],
+        "date DESC"
+    );
 }
 /**
  * Gets all answers for a challenge.
@@ -1550,8 +1608,12 @@ function quest_get_submission_answers($submission) {
  */
 function quest_get_user_answer($quest, $user) {
     global $DB;
-    return $DB->get_records_select("quest_answers", "questid = ? AND userid = ? AND date > 0", [$quest->id, $user->id],
-            "date DESC");
+    return $DB->get_records_select(
+        "quest_answers",
+        "questid = ? AND userid = ? AND date > 0",
+        [$quest->id, $user->id],
+        "date DESC"
+    );
 }
 /**
  *
@@ -1561,8 +1623,12 @@ function quest_get_user_answer($quest, $user) {
  */
 function quest_get_user_assessments($quest, $user) {
     global $DB;
-    return $DB->get_records_select("quest_assessments", "questid = ? AND userid = ? AND dateassessment > 0",
-            [$quest->id, $user->id], "dateassessment DESC");
+    return $DB->get_records_select(
+        "quest_assessments",
+        "questid = ? AND userid = ? AND dateassessment > 0",
+        [$quest->id, $user->id],
+        "dateassessment DESC"
+    );
 }
 /**
  *
@@ -1571,8 +1637,12 @@ function quest_get_user_assessments($quest, $user) {
  */
 function quest_get_user_assessment($answer) {
     global $DB;
-    return $DB->get_records_select("quest_assessments", "answerid = ? AND dateassessment > 0", [$answer->id],
-            "dateassessment DESC");
+    return $DB->get_records_select(
+        "quest_assessments",
+        "answerid = ? AND dateassessment > 0",
+        [$answer->id],
+        "dateassessment DESC"
+    );
 }
 /**
  * Return the maximum team score for a Quest.
@@ -1607,10 +1677,11 @@ function mod_quest_build_required_parameters_for_custom_view(array $params, arra
     $viewclass = $extraparams['view'] ?? null;
     $defaultpagesize = $viewclass ? $viewclass::DEFAULT_PAGE_SIZE : 20;
     [$thispageurl, $contexts, $cmid, $cm, , $pagevars] = question_build_edit_resources(
-            'editq',
-            '/mod/quest/challenges.php',
-            array_merge($params, $extraparams),
-            $defaultpagesize);
+        'editq',
+        '/mod/quest/challenges.php',
+        array_merge($params, $extraparams),
+        $defaultpagesize
+    );
     $extraparams['cmid'] = $cmid;
     if (\mod_quest\question\bank_provider::has_bank_helper()) {
         $extraparams['requirebankswitch'] = true;

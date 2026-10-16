@@ -4,12 +4,12 @@
 
 QUESTOURnament (`mod_quest`) is an advanced educational gamification activity module for Moodle 4.x and 5.x. It enables instructors and students to launch, solve, and peer-assess time-constrained intellectual challenges in competitive or collaborative learning tournaments (both individual and group-based), governed by a real-time dynamic scoring model (stationary, inflationary, and deflationary curves).
 
-The [standalone English and Spanish website](https://github.com/juacas/moodle-mod_quest/tree/feature/multiquestion/website) contains illustrated creation, usage and installation guides for the current multi-question branch. Published plugin packages may have a different feature set; check the selected release before using those instructions.
+The [standalone English and Spanish website](website/) contains illustrated creation, usage and installation guides. Check the package's `version.php` before installing: a published download may not yet match the current source described by these guides. See [RELEASE.md](RELEASE.md) and [CHANGELOG.md](CHANGELOG.md) for release information.
 
 - **Author:** Juan Pablo de Castro <[juan.pablo.de.castro@gmail.com](mailto:juan.pablo.de.castro@gmail.com)>
 - **Organization:** EDUVALab, University of Valladolid
 - **License:** GNU General Public License v3 or later (GPLv3+)
-- **Compatibility:** Moodle 4.05 to Moodle 5.02+ (PHP 8.1+, Boost, Moove, and modern Bootstrap 5 themes)
+- **Compatibility:** Moodle 4.5 or later, with a PHP version supported by that Moodle installation.
 
 ---
 
@@ -397,8 +397,8 @@ If you only need to restrict challenge creation for one specific QUESTOURnament 
 ## 6. Installation, Upgrade & Development
 
 ### Prerequisites
-- Web server running PHP 8.1 or higher.
-- Moodle 4.05 LTS, 4.5 LTS, 5.02, or higher.
+- Web server running a PHP version supported by the target Moodle installation.
+- Moodle 4.5 or later, as declared by the current `version.php`.
 
 ### Installation Steps
 1. Clone or extract the repository into the Moodle `mod/` directory:
@@ -426,31 +426,32 @@ npx terser amd/src/schedule_calendar.js --comments "/@license|@copyright|@author
 ```
 
 ### Automated Testing
-Run the PHPUnit test suite for `mod_quest`:
+Run the PHPUnit test suite for `mod_quest` from the Moodle root:
 ```bash
 vendor/bin/phpunit --testsuite mod_quest_testsuite
 ```
+The GitHub workflow uses Moodle Plugin CI's generated PHPUnit configuration.
+Do not add a plugin-level `phpunit.xml`: its relative bootstrap path is not
+valid when GitHub Actions checks out the plugin beside the Moodle installation.
+
+### PHP coding style
+From the Moodle root, check the entire plugin with the Moodle CodeSniffer standard:
+```bash
+vendor/bin/phpcs --standard=moodle mod/quest
+```
+To apply safe mechanical formatting, run `vendor/bin/phpcbf --standard=moodle mod/quest`,
+then run PHPCS again and review the diff. The GitHub workflow runs
+`moodle-plugin-ci phpcs --max-warnings 0 ./plugin` in its own checkout. PHP syntax
+checks, PHPUnit, and JavaScript compilation do not check PHP coding style.
 
 ---
 
 ## 7. Changelog & Version History
 
-- **v2.2.0 (2026-09-19)**:
-  - **Leaderboard Overhaul**: Canonical tournament rank calculation with intrinsic sorting reordering.
-  - **Vector Medal Drawings**: Dedicated SVG drawings for Gold (1º), Silver (2º), and Bronze (3º) medalists; direct numeric positioning from 4th onwards.
-  - **Scheduler Integrity Safeguards**: Atomic pre-validation for challenge dates, answer dependency verification, inflection point constraints, and automatic tournament boundary expansion.
-  - **Permissions & Roles Documentation**: Comprehensive capabilities matrix and tailored role recipes for lead teachers, tutors, author students, solver-only students, and auditors.
-  - **Cache & Subsystem Sync**: Multi-environment synchronization across Moodle 4.05 and 5.02+.
-- **v2.1.0 (2026-09-18)**:
-  - **GANTT Timeline**: Interactive challenge rescheduling (`schedule.php`) with multi-tier header and weekend shading.
-  - **Modern Templating**: Introduced Mustache templates for `view.php` and `viewclasification.php`, deprecating legacy HTML tables.
-- **v2.0.0 (2026-09-17)**:
-  - **Architectural Refactor**: Service-oriented domain layer (`classes/service/`).
-  - **Question Bank Integration**: Modal question importer and automated question grading.
-  - **Interactive Chart**: AMD-driven dynamic vector scoring curve chart.
-- **v1.5.0**: Compatibility upgrade for Moodle 4.x.
-- **v1.4.x**: Rubric assessment improvements, CSV score export, notification grouping.
-- **v1.0.0 - v1.3.x**: Initial releases and Moodle 2.x/3.x legacy support.
+See [CHANGELOG.md](CHANGELOG.md) for the current source history and
+[RELEASE.md](RELEASE.md) for the v2.0.0 release notes and upgrade checklist.
+Earlier published versions remain listed on
+[GitHub Releases](https://github.com/juacas/moodle-mod_quest/releases).
 
 ---
 

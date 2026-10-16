@@ -52,23 +52,33 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
             'quest_slot_question_reference',
             $challengequestion->get_path() . '/slot_question_reference'
         );
-        $paths[] = new restore_path_element('quest_particular_element',
-                '/activity/quest/challenges/challenge/particular_elements/particular_element');
+        $paths[] = new restore_path_element(
+            'quest_particular_element',
+            '/activity/quest/challenges/challenge/particular_elements/particular_element'
+        );
 
         if ($userinfo) {
             $answerpath = new restore_path_element('quest_answer', '/activity/quest/challenges/challenge/answers/answer');
             $paths[] = $answerpath;
             $this->add_question_usages($answerpath, $paths);
-            $paths[] = new restore_path_element('quest_assessment',
-                    '/activity/quest/challenges/challenge/answers/answer/assessments/assessment');
-            $paths[] = new restore_path_element('quest_assessment_autor',
-                    '/activity/quest/challenges/challenge/assessments_autor/assessment_autor');
-            $paths[] = new restore_path_element('quest_element_assess',
-                    '/activity/quest/challenges/challenges/elements_assess/elements_assess');
+            $paths[] = new restore_path_element(
+                'quest_assessment',
+                '/activity/quest/challenges/challenge/answers/answer/assessments/assessment'
+            );
+            $paths[] = new restore_path_element(
+                'quest_assessment_autor',
+                '/activity/quest/challenges/challenge/assessments_autor/assessment_autor'
+            );
+            $paths[] = new restore_path_element(
+                'quest_element_assess',
+                '/activity/quest/challenges/challenges/elements_assess/elements_assess'
+            );
             $paths[] = new restore_path_element('quest_team', '/activity/quest/teams/team');
             $paths[] = new restore_path_element('quest_calification_user', '/activity/quest/califications_users/calification_user');
-            $paths[] = new restore_path_element('quest_calification_team',
-                    '/activity/quest/teams/team/califications_teams/calification_team');
+            $paths[] = new restore_path_element(
+                'quest_calification_team',
+                '/activity/quest/teams/team/califications_teams/calification_team'
+            );
         }
 
         // Return the paths wrapped into standard activity structure.
@@ -193,8 +203,10 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
 
         $data = (object)$data;
         $entryid = $this->get_mappingid('question_bank_entry', $data->questionbankentryid);
-        if (!$entryid && $this->task->is_samesite() &&
-                $DB->record_exists('question_bank_entries', ['id' => $data->questionbankentryid])) {
+        if (
+            !$entryid && $this->task->is_samesite() &&
+                $DB->record_exists('question_bank_entries', ['id' => $data->questionbankentryid])
+        ) {
             // Older Quest backups omitted the bank data but can still use it on the original site.
             $entryid = $data->questionbankentryid;
         }
@@ -356,8 +368,12 @@ class restore_quest_activity_structure_step extends restore_questions_activity_s
     protected function inform_new_usage_id($newusageid) {
         global $DB;
 
-        $DB->set_field('quest_answers', 'questionusageid', $newusageid,
-                ['id' => $this->get_new_parentid('quest_answer')]);
+        $DB->set_field(
+            'quest_answers',
+            'questionusageid',
+            $newusageid,
+            ['id' => $this->get_new_parentid('quest_answer')]
+        );
     }
 
     /**

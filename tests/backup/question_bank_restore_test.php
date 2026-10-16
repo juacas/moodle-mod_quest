@@ -39,12 +39,14 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\question\question_reference_service
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\backup_quest_activity_structure_step::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_quest_activity_structure_step::class)]
 final class question_bank_restore_test extends advanced_testcase {
     /**
      * Same-course duplication keeps every composed question in order.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_duplicate_keeps_two_question_slots_and_marks(): void {
         global $DB, $USER;
@@ -65,8 +67,13 @@ final class question_bank_restore_test extends advanced_testcase {
             'category' => $category->id,
             'name' => 'Second duplicate question',
         ]);
-        $entryids = $DB->get_records_list('question_versions', 'questionid', [$first->id, $second->id],
-            '', 'questionid,questionbankentryid');
+        $entryids = $DB->get_records_list(
+            'question_versions',
+            'questionid',
+            [$first->id, $second->id],
+            '',
+            'questionid,questionbankentryid'
+        );
         $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => $quest->id,
             'userid' => $USER->id,
@@ -82,14 +89,26 @@ final class question_bank_restore_test extends advanced_testcase {
             ['questionbankentryid' => (int)$entryids[$second->id]->questionbankentryid, 'maxmark' => 3],
         ]);
 
-        $backup = new backup_controller(backup::TYPE_1ACTIVITY, $quest->cmid, backup::FORMAT_MOODLE,
-            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+        $backup = new backup_controller(
+            backup::TYPE_1ACTIVITY,
+            $quest->cmid,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id
+        );
         $backupid = $backup->get_backupid();
         $backup->execute_plan();
         $backup->destroy();
 
-        $restore = new restore_controller($backupid, $course->id, backup::INTERACTIVE_NO,
-            backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+        $restore = new restore_controller(
+            $backupid,
+            $course->id,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id,
+            backup::TARGET_CURRENT_ADDING
+        );
         $this->assertTrue($restore->execute_precheck());
         $restore->execute_plan();
         $restore->destroy();
@@ -115,6 +134,7 @@ final class question_bank_restore_test extends advanced_testcase {
 
     /**
      * Challenge links and their bank questions are kept even without user data.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_linked_question_survives_restore_without_user_data(): void {
         global $DB, $USER;
@@ -144,16 +164,32 @@ final class question_bank_restore_test extends advanced_testcase {
             'initialpoints' => 10,
         ]);
         question_reference_service::set_challenge_question(
-            context_module::instance($quest->cmid)->id, $challengeid, $entryid, 1);
+            context_module::instance($quest->cmid)->id,
+            $challengeid,
+            $entryid,
+            1
+        );
 
-        $backup = new backup_controller(backup::TYPE_1ACTIVITY, $quest->cmid, backup::FORMAT_MOODLE,
-            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+        $backup = new backup_controller(
+            backup::TYPE_1ACTIVITY,
+            $quest->cmid,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id
+        );
         $backupid = $backup->get_backupid();
         $backup->execute_plan();
         $backup->destroy();
 
-        $restore = new restore_controller($backupid, $targetcourse->id, backup::INTERACTIVE_NO,
-            backup::MODE_IMPORT, $USER->id, backup::TARGET_CURRENT_ADDING);
+        $restore = new restore_controller(
+            $backupid,
+            $targetcourse->id,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id,
+            backup::TARGET_CURRENT_ADDING
+        );
         $this->assertTrue($restore->execute_precheck());
         $this->assertTrue($DB->record_exists('backup_ids_temp', [
             'itemname' => 'question',
@@ -170,13 +206,16 @@ final class question_bank_restore_test extends advanced_testcase {
         $this->assertEquals($slot->id, $reference->itemid);
         $this->assertSame(question_reference_service::SLOTQUESTIONAREA, $reference->questionarea);
         $this->assertEquals(1, $reference->version);
-        $this->assertSame('Essay for Quest',
-            question_reference_service::get_question_for_challenge($restoredchallenge->id)->name);
+        $this->assertSame(
+            'Essay for Quest',
+            question_reference_service::get_question_for_challenge($restoredchallenge->id)->name
+        );
         $this->assertEquals(0, $DB->count_records('quest_answers', ['questid' => $restoredquest->id]));
     }
 
     /**
      * Back up a challenge linked to an external bank and restore it in another course.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_linked_question_and_answer_usage_survive_restore(): void {
         global $DB, $USER;
@@ -233,8 +272,14 @@ final class question_bank_restore_test extends advanced_testcase {
             'questionusageid' => $oldusageid,
         ]);
 
-        $backup = new backup_controller(backup::TYPE_1ACTIVITY, $quest->cmid, backup::FORMAT_MOODLE,
-            backup::INTERACTIVE_NO, backup::MODE_IMPORT, $USER->id);
+        $backup = new backup_controller(
+            backup::TYPE_1ACTIVITY,
+            $quest->cmid,
+            backup::FORMAT_MOODLE,
+            backup::INTERACTIVE_NO,
+            backup::MODE_IMPORT,
+            $USER->id
+        );
         $backup->get_plan()->get_setting('users')->set_status(backup_setting::NOT_LOCKED);
         $backup->get_plan()->get_setting('users')->set_value(true);
         $backup->get_plan()->get_setting('quest_' . $quest->cmid . '_userinfo')
@@ -244,8 +289,14 @@ final class question_bank_restore_test extends advanced_testcase {
         $backup->execute_plan();
         $backup->destroy();
 
-        $restore = new restore_controller($backupid, $targetcourse->id, backup::INTERACTIVE_NO,
-            backup::MODE_GENERAL, $USER->id, backup::TARGET_CURRENT_ADDING);
+        $restore = new restore_controller(
+            $backupid,
+            $targetcourse->id,
+            backup::INTERACTIVE_NO,
+            backup::MODE_GENERAL,
+            $USER->id,
+            backup::TARGET_CURRENT_ADDING
+        );
         $restore->get_plan()->get_setting('users')->set_status(backup_setting::NOT_LOCKED);
         $restore->get_plan()->get_setting('users')->set_value(true);
         $restore->get_plan()->get_setting('quest_' . $quest->cmid . '_userinfo')
@@ -283,8 +334,10 @@ final class question_bank_restore_test extends advanced_testcase {
         $this->assertGreaterThan(0, $answer->questionusageid);
         $this->assertNotEquals($oldusageid, $answer->questionusageid);
         $attempt = $DB->get_record('question_attempts', ['questionusageid' => $answer->questionusageid], '*', MUST_EXIST);
-        $this->assertTrue($DB->record_exists('question', ['id' => $attempt->questionid]),
-            'Restored attempt question ID: ' . $attempt->questionid);
+        $this->assertTrue(
+            $DB->record_exists('question', ['id' => $attempt->questionid]),
+            'Restored attempt question ID: ' . $attempt->questionid
+        );
         $restoredusage = question_engine::load_questions_usage_by_activity($answer->questionusageid);
         $this->assertSame('Linked Quest question', $restoredusage->get_question(1)->name);
         $this->assertEquals($restoredcontext->id, $restoredusage->get_owning_context()->id);

@@ -27,7 +27,6 @@ use context_module;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tournament_manager {
-
     /** Challenge phases / states. */
     /** Challenge is waiting for approval. */
     public const STATE_PENDING_APPROVAL = 0;
@@ -390,8 +389,10 @@ class tournament_manager {
                     throw new \dml_exception('dmlwriteexception');
                 }
                 $stored = $DB->get_record('quest_submissions', ['id' => $sub->id], 'id, datestart, dateend', MUST_EXIST);
-                if ((int)$stored->datestart !== (int)$sub->datestart ||
-                        (int)$stored->dateend !== (int)$sub->dateend) {
+                if (
+                    (int)$stored->datestart !== (int)$sub->datestart ||
+                        (int)$stored->dateend !== (int)$sub->dateend
+                ) {
                     throw new \dml_exception('dmlwriteexception');
                 }
                 $persisted[] = [

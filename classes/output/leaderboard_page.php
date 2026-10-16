@@ -31,7 +31,6 @@ use user_picture;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class leaderboard_page implements renderable, templatable {
-
     /**
      * Quest activity record.
      *
@@ -170,14 +169,14 @@ class leaderboard_page implements renderable, templatable {
         }
 
         $sm = get_string_manager();
-        $gethelp = function(string $identifier) use ($output, $sm): string {
+        $gethelp = function (string $identifier) use ($output, $sm): string {
             if ($sm->string_exists($identifier . '_help', 'quest')) {
                 return $output->help_icon($identifier, 'quest');
             }
             return '';
         };
 
-        $buildsort = function(string $column) use ($output): array {
+        $buildsort = function (string $column) use ($output): array {
             $isactive = ($this->sort === $column);
             if ($isactive) {
                 $nextdir = ($this->dir === 'ASC') ? 'DESC' : 'ASC';

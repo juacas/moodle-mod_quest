@@ -45,5 +45,6 @@
 .footer-partner{display:flex;align-items:center;justify-content:center;min-height:88px;padding:12px 18px;border-radius:14px}
 .footer-partner img{width:auto;max-width:100%;height:auto;max-height:64px;object-fit:contain}
 .footer-partner-edu{background:#293251}
-.footer-partner-uva{background:#fff}
+.footer-partner-uva{background:#293251}
 @media(max-width:560px){.footer-partners{gap:12px}.footer-partner{min-height:72px;padding:10px 12px}.footer-partner img{max-height:50px}}
+.section .card code{overflow-wrap:anywhere}

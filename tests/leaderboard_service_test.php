@@ -26,12 +26,13 @@ use mod_quest\service\leaderboard_service;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\service\leaderboard_service
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\leaderboard_service::class)]
 final class leaderboard_service_test extends advanced_testcase {
-
     /**
      * Test answer points are calculated for both a single user and a list.
+     * @covers     \mod_quest\service\leaderboard_service
      */
     public function test_calculate_user_answer_score(): void {
         global $DB;
@@ -56,6 +57,7 @@ final class leaderboard_service_test extends advanced_testcase {
 
     /**
      * Test author points only include assessments for the user's submissions.
+     * @covers     \mod_quest\service\leaderboard_service
      */
     public function test_calculate_user_author_score(): void {
         global $DB;
@@ -94,6 +96,7 @@ final class leaderboard_service_test extends advanced_testcase {
 
     /**
      * Test official rank stays attached to a user when display sorting changes.
+     * @covers     \mod_quest\service\leaderboard_service
      */
     public function test_individual_standings_preserve_official_rank(): void {
         global $DB;

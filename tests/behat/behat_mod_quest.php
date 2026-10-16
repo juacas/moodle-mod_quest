@@ -29,7 +29,6 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  * Quest-specific Behat steps.
  */
 class behat_mod_quest extends behat_base {
-
     /**
      * Resolve a challenge title to its detail page.
      *

@@ -81,13 +81,16 @@ class action_column extends \core_question\local\bank\column_base {
 
         if (question_has_capability_on($question, 'edit') && \question_bank::is_qtype_installed($question->qtype)) {
             $title = get_string('editbankquestion', 'quest');
-            echo \html_writer::link($this->qbank->question_edit_url((int)$question->id),
-                $OUTPUT->pix_icon('t/edit', $title, 'moodle', ['class' => 'icon']), [
+            echo \html_writer::link(
+                $this->qbank->question_edit_url((int)$question->id),
+                $OUTPUT->pix_icon('t/edit', $title, 'moodle', ['class' => 'icon']),
+                [
                     'class' => 'btn btn-icon btn-sm btn-outline-secondary me-1',
                     'title' => $title,
                     'aria-label' => $title,
                     'target' => '_blank',
-                ]);
+                ]
+            );
         }
 
         $usable = method_exists('\question_bank', 'is_qtype_usable')
@@ -98,7 +101,8 @@ class action_column extends \core_question\local\bank\column_base {
             $title = get_string('preview');
             echo \html_writer::link(
                 new \moodle_url('/question/bank/previewquestion/preview.php', ['id' => $question->id]),
-                $OUTPUT->pix_icon('t/preview', $title, 'moodle', ['class' => 'icon']), [
+                $OUTPUT->pix_icon('t/preview', $title, 'moodle', ['class' => 'icon']),
+                [
                     'class' => 'btn btn-icon btn-sm btn-outline-secondary',
                     'title' => $title,
                     'aria-label' => $title,

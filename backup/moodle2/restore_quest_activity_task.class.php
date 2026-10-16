@@ -26,7 +26,6 @@ require_once($CFG->dirroot . '/mod/quest/backup/moodle2/restore_quest_stepslib.p
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_quest_activity_task extends restore_activity_task {
-
     /**
      * Define particular settings for this activity.
      *
@@ -87,10 +86,16 @@ class restore_quest_activity_task extends restore_activity_task {
     public static function define_decode_contents() {
         $contents = [];
         $contents[] = new restore_decode_content('quest', ['intro'], 'quest');
-        $contents[] = new restore_decode_content('quest_answers', ['description', 'title', 'commentforteacher'],
-                                                'quest_answer');
-        $contents[] = new restore_decode_content('quest_submissions',
-                ['description', 'title', 'commentteacherpupil', 'commentteacherauthor'], 'quest_submisssion');
+        $contents[] = new restore_decode_content(
+            'quest_answers',
+            ['description', 'title', 'commentforteacher'],
+            'quest_answer'
+        );
+        $contents[] = new restore_decode_content(
+            'quest_submissions',
+            ['description', 'title', 'commentteacherpupil', 'commentteacherauthor'],
+            'quest_submisssion'
+        );
 
         return $contents;
     }
@@ -120,14 +125,30 @@ class restore_quest_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('quest', 'add', 'view.php?id={course_module}', '{quest}');
         $rules[] = new restore_log_rule('quest', 'update', 'view.php?id={course_module}', '{quest}');
         $rules[] = new restore_log_rule('quest', 'view', 'view.php?id={course_module}', '{quest}');
-        $rules[] = new restore_log_rule('quest', 'read_submission',
-                'challenges.php?id={course_module}&cid={submission}&action=showchallenge', '{quest}');
-        $rules[] = new restore_log_rule('quest', 'read_challenge',
-                'challenges.php?id={course_module}&cid={submission}&action=showchallenge', '{quest}');
-        $rules[] = new restore_log_rule('quest', 'read_answer', 'answer.php?sid={submission}&aid={answer}&action=showanswer',
-                '{quest}');
-        $rules[] = new restore_log_rule('quest', 'newattachment',
-                'challenges.php?id={course_module}&cid={submission}&action=showchallenge', '{quest}');
+        $rules[] = new restore_log_rule(
+            'quest',
+            'read_submission',
+            'challenges.php?id={course_module}&cid={submission}&action=showchallenge',
+            '{quest}'
+        );
+        $rules[] = new restore_log_rule(
+            'quest',
+            'read_challenge',
+            'challenges.php?id={course_module}&cid={submission}&action=showchallenge',
+            '{quest}'
+        );
+        $rules[] = new restore_log_rule(
+            'quest',
+            'read_answer',
+            'answer.php?sid={submission}&aid={answer}&action=showanswer',
+            '{quest}'
+        );
+        $rules[] = new restore_log_rule(
+            'quest',
+            'newattachment',
+            'challenges.php?id={course_module}&cid={submission}&action=showchallenge',
+            '{quest}'
+        );
 
         return $rules;
     }

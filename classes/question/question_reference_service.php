@@ -28,7 +28,6 @@ use core_question\local\bank\question_version_status;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class question_reference_service {
-
     /** Component used by Moodle's question reference API. */
     public const COMPONENT = 'mod_quest';
     /** Question reference area used for challenge links. */
@@ -181,7 +180,10 @@ class question_reference_service {
         global $DB;
 
         $slotids = $DB->get_fieldset_select(
-            'quest_challenge_questions', 'id', 'submissionid = :sid', ['sid' => $challengeid]
+            'quest_challenge_questions',
+            'id',
+            'submissionid = :sid',
+            ['sid' => $challengeid]
         );
         if ($slotids) {
             [$insql, $params] = $DB->get_in_or_equal($slotids, SQL_PARAMS_NAMED);
@@ -266,7 +268,12 @@ class question_reference_service {
         return $questions ? $questions[0]->question : null;
     }
 
-    /** Resolve a Moodle question reference to its current question record. */
+    /**
+     * Resolve a Moodle question reference to its current question record.
+     *
+     * @param stdClass $ref Question reference.
+     * @return stdClass|null Resolved question or null if unavailable.
+     */
     private static function resolve_reference(stdClass $ref): ?stdClass {
         global $DB;
 
@@ -314,13 +321,18 @@ class question_reference_service {
     public static function delete_challenge_reference(int $challengeid): void {
         global $DB;
         $slotids = $DB->get_fieldset_select(
-            'quest_challenge_questions', 'id', 'submissionid = :sid', ['sid' => $challengeid]
+            'quest_challenge_questions',
+            'id',
+            'submissionid = :sid',
+            ['sid' => $challengeid]
         );
         if ($slotids) {
             [$insql, $params] = $DB->get_in_or_equal($slotids, SQL_PARAMS_NAMED, 'slot');
-            $DB->delete_records_select('question_references',
+            $DB->delete_records_select(
+                'question_references',
                 'component = :component AND questionarea = :area AND itemid ' . $insql,
-                array_merge(['component' => self::COMPONENT, 'area' => self::SLOTQUESTIONAREA], $params));
+                array_merge(['component' => self::COMPONENT, 'area' => self::SLOTQUESTIONAREA], $params)
+            );
             $DB->delete_records('quest_challenge_questions', ['submissionid' => $challengeid]);
         }
         $DB->delete_records('question_references', [

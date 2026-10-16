@@ -31,7 +31,6 @@ use mod_quest\service\scoring_calculator;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class view_page implements renderable, templatable {
-
     /**
      * Quest activity record.
      *
@@ -227,10 +226,14 @@ class view_page implements renderable, templatable {
             'allowteams' => !empty($this->quest->allowteams),
             'canaddchallenge' => $this->canaddchallenge &&
                 \mod_quest\challenge_type_policy::allows_simple(
-                    $this->quest, !empty($this->summarydata['ismanager'])),
+                    $this->quest,
+                    !empty($this->summarydata['ismanager'])
+                ),
             'canaddqchallenge' => $this->canaddchallenge &&
                 \mod_quest\challenge_type_policy::allows_question_bank(
-                    $this->quest, !empty($this->summarydata['ismanager'])),
+                    $this->quest,
+                    !empty($this->summarydata['ismanager'])
+                ),
             'addchallengeurl' => (new moodle_url('/mod/quest/challenges.php', [
                 'id' => $this->cm->id,
                 'action' => 'submitchallenge',
@@ -300,12 +303,12 @@ class view_page implements renderable, templatable {
         $ymax = max($pmax * 1.12, $pinit * 1.15, 10);
         $ymin = 0;
 
-        $getx = function($t) use ($datestart, $dateend, $padleft, $plotwidth) {
+        $getx = function ($t) use ($datestart, $dateend, $padleft, $plotwidth) {
             $clamped = max($datestart, min($dateend, $t));
             return round($padleft + (($clamped - $datestart) / ($dateend - $datestart)) * $plotwidth, 1);
         };
 
-        $gety = function($p) use ($ymin, $ymax, $padtop, $plotheight) {
+        $gety = function ($p) use ($ymin, $ymax, $padtop, $plotheight) {
             $clamped = max($ymin, min($ymax, $p));
             return round($padtop + $plotheight - (($clamped - $ymin) / ($ymax - $ymin)) * $plotheight, 1);
         };
@@ -321,7 +324,14 @@ class view_page implements renderable, templatable {
         $staty = $gety($pinit);
 
         $inflscore = scoring_calculator::calculate_points(
-            $inflend, $datestart, $dateend, $tinitial, $dateanswercorrect, $pinit, $pmax, $pmin
+            $inflend,
+            $datestart,
+            $dateend,
+            $tinitial,
+            $dateanswercorrect,
+            $pinit,
+            $pmax,
+            $pmin
         );
         $inflendy = $gety($inflscore);
 
@@ -368,7 +378,14 @@ class view_page implements renderable, templatable {
         $projinflend = $hascorrect ? $dateanswercorrect : $inflend;
         $projinflx   = $getx($projinflend);
         $projinflscore = scoring_calculator::calculate_points(
-            $projinflend, $datestart, $dateend, $tinitial, null, $pinit, $pmax, $pmin
+            $projinflend,
+            $datestart,
+            $dateend,
+            $tinitial,
+            null,
+            $pinit,
+            $pmax,
+            $pmin
         );
         $projinfly = $gety($projinflscore);
         $projendy  = $gety($pmin);
@@ -388,7 +405,14 @@ class view_page implements renderable, templatable {
         if ($timenow >= $datestart && $timenow <= $dateend) {
             $nowx = $getx($timenow);
             $nowscore = scoring_calculator::calculate_points(
-                $timenow, $datestart, $dateend, $tinitial, $dateanswercorrect, $pinit, $pmax, $pmin
+                $timenow,
+                $datestart,
+                $dateend,
+                $tinitial,
+                $dateanswercorrect,
+                $pinit,
+                $pmax,
+                $pmin
             );
             $nowy = $gety($nowscore);
 

@@ -25,9 +25,9 @@ use mod_quest\service\autograde_service;
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\service\autograde_service
  */
 final class autograde_restore_test extends advanced_testcase {
-
     /**
      * A manual override can be removed without deleting the submitted attempt.
      *
@@ -122,8 +122,10 @@ final class autograde_restore_test extends advanced_testcase {
         $this->assertTrue($DB->record_exists('question_usages', ['id' => $quba->get_id()]));
         $submission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
         $this->assertEquals($automaticgrade >= 50 ? 1 : 0, (int)$submission->nanswerscorrect);
-        $this->assertEquals($automaticgrade * (float)$restored->pointsmax / 100,
-            (float)quest_calculate_user_score($quest->id, $student->id));
+        $this->assertEquals(
+            $automaticgrade * (float)$restored->pointsmax / 100,
+            (float)quest_calculate_user_score($quest->id, $student->id)
+        );
     }
 
     /**

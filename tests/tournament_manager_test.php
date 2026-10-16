@@ -27,12 +27,13 @@ use mod_quest\service\tournament_manager;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\service\tournament_manager
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\tournament_manager::class)]
 final class tournament_manager_test extends advanced_testcase {
-
     /**
      * Test validation of user answer submissions.
+     * @covers     \mod_quest\service\tournament_manager
      */
     public function test_can_submit_answer(): void {
         $timenow = time();
@@ -72,6 +73,7 @@ final class tournament_manager_test extends advanced_testcase {
 
     /**
      * Test that the per-user answer limit is enforced.
+     * @covers     \mod_quest\service\tournament_manager
      */
     public function test_can_submit_answer_respects_maximum(): void {
         global $DB;
@@ -107,6 +109,7 @@ final class tournament_manager_test extends advanced_testcase {
 
     /**
      * Test answer aggregation and selection of the earliest correct answer.
+     * @covers     \mod_quest\service\tournament_manager
      */
     public function test_update_submission_counts(): void {
         global $DB;
@@ -158,6 +161,7 @@ final class tournament_manager_test extends advanced_testcase {
 
     /**
      * Test recording an answer also creates the user's initial score record.
+     * @covers     \mod_quest\service\tournament_manager
      */
     public function test_record_answer_updates_submission_and_user_scores(): void {
         global $DB;
