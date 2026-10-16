@@ -71,4 +71,4 @@ jobs:
         run: moodle-plugin-ci savepoints ./plugin
 
       - name: PHPUnit
-        run: moodle-plugin-ci phpunit --moodle ./moodle --fail-on-warning ./plugin
+        run: moodle-plugin-ci phpunit --moodle ./moodle --fail-on-warning ./moodle/mod/quest
