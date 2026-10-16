@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Questournament for Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Backup Questournament module
  *
@@ -26,9 +27,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  */
-defined('MOODLE_INTERNAL') || die();
-

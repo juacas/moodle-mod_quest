@@ -25,7 +25,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest*/
 defined('MOODLE_INTERNAL') || die();
@@ -33,6 +33,7 @@ global $CFG;
 require_once("$CFG->dirroot/mod/quest/lib.php");
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
+require_once(__DIR__ . '/scores_lib.php');
 $repeatactionsbelow = false; // Repeat actions at the bottom of pages to easy the access on long.
                              // ...pages..
 $questtype = [0 => get_string('notgraded', 'quest'), 1 => get_string('accumulative', 'quest')];
@@ -60,12 +61,83 @@ $questscales = [
 // Constants..
 define('QUEST_TYPE_GRADE_INDIVIDUAL', 0);
 define('QUEST_TYPE_GRADE_TEAM', 1);
+
+/**
+ * Build a composer URL with question IDs in Moodle's array parameter format.
+ *
+ * moodle_url only accepts scalar parameter values. Indexed questionids keys
+ * remain an array when the destination reads them with optional_param_array().
+ *
+ * @param int $cmid Course module ID.
+ * @param string $action Composer action.
+ * @param int[] $questionids Selected question IDs.
+ * @param int $submissionid Challenge ID when editing.
+ * @param bool $withsesskey Whether to include the current session key.
+ * @return moodle_url
+ */
+function quest_question_composer_url(int $cmid, string $action, array $questionids = [],
+        int $submissionid = 0, bool $withsesskey = false): moodle_url {
+    $params = ['id' => $cmid, 'action' => $action];
+    if ($submissionid > 0) {
+        $params['sid'] = $submissionid;
+    }
+    if ($withsesskey) {
+        $params['sesskey'] = sesskey();
+    }
+    foreach (array_values($questionids) as $index => $questionid) {
+        $params['questionids[' . $index . ']'] = (int)$questionid;
+    }
+    return new moodle_url('/mod/quest/challenges.php', $params);
+}
+
 $questeweights = [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25, 7 => 0.0, 8 => 0.25, 9 => 0.5,
                 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
 $questfweights = [0 => 0, 1 => 0.1, 2 => 0.25, 3 => 0.5, 4 => 0.75, 5 => 1.0, 6 => 1.5, 7 => 2.0,
                 8 => 3.0, 9 => 5.0, 10 => 7.5, 11 => 10.0, 12 => 50.0];
 $questeweightsrecalif = [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25,
                 7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
+
+/**
+ * Build a select menu using the legacy Quest form conventions.
+ *
+ * Returns the default quest scales array.
+ * Use as a safe fallback when the global $questscales is not populated.
+ *
+ * @return array
+ */
+function quest_get_default_scales() {
+    return [
+        0 => ['name' => get_string('scaleyes', 'quest'), 'type' => 'radio', 'size' => 2,
+              'start' => get_string('yes'), 'end' => get_string('no')],
+        1 => ['name' => get_string('scalepresent', 'quest'), 'type' => 'radio', 'size' => 2,
+              'start' => get_string('present', 'quest'), 'end' => get_string('absent', 'quest')],
+        2 => ['name' => get_string('scalecorrect', 'quest'), 'type' => 'radio', 'size' => 2,
+              'start' => get_string('correct', 'quest'), 'end' => get_string('incorrect', 'quest')],
+        3 => ['name' => get_string('scalegood3', 'quest'), 'type' => 'radio', 'size' => 3,
+              'start' => get_string('good', 'quest'), 'end' => get_string('poor', 'quest')],
+        4 => ['name' => get_string('scaleexcellent4', 'quest'), 'type' => 'radio', 'size' => 4,
+              'start' => get_string('excellent', 'quest'), 'end' => get_string('verypoor', 'quest')],
+        5 => ['name' => get_string('scaleexcellent5', 'quest'), 'type' => 'radio', 'size' => 5,
+              'start' => get_string('excellent', 'quest'), 'end' => get_string('verypoor', 'quest')],
+        6 => ['name' => get_string('scaleexcellent7', 'quest'), 'type' => 'radio', 'size' => 7,
+              'start' => get_string('excellent', 'quest'), 'end' => get_string('verypoor', 'quest')],
+        7 => ['name' => get_string('scale10', 'quest'), 'type' => 'selection', 'size' => 10],
+        8 => ['name' => get_string('scale20', 'quest'), 'type' => 'selection', 'size' => 20],
+        9 => ['name' => get_string('scale100', 'quest'), 'type' => 'selection', 'size' => 100],
+    ];
+}
+
+/**
+ * Returns the default quest element weights array.
+ * Use as a safe fallback when the global $questeweights is not populated.
+ *
+ * @return array
+ */
+function quest_get_default_weights() {
+    return [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25,
+            7 => 0.0, 8 => 0.25, 9 => 0.5, 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
+}
+
 /** assesment->state
  * 0 sin realizar
  * 1 realizada autor
@@ -116,6 +188,8 @@ define('SUBMISSION_PHASE_CLOSED', 0);
  */
 
 /**
+ * Build a select menu using the legacy Quest form conventions.
+ *
  * @param array $options
  * @param string $name
  * @param string $selected
@@ -216,16 +290,14 @@ function quest_print_quest_info($quest) {
  */
 function quest_print_challenge_grading_link($cm, $context, $quest) {
     global $OUTPUT;
-    $text = "<a href=\"assessments_autors.php?id=$cm->id&amp;action=displaygradingform\">" .
-             get_string("specimenassessmentformsubmission", "quest") . "</a>";
-    $text .= $OUTPUT->help_icon('specimensubmission', 'quest');
-
-    if (has_capability('mod/quest:manage', $context) && $quest->nelements) {
-        $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-        $text .= "<a href=\"assessments_autors.php?id=$cm->id&amp;action=editelements&sesskey=" . sesskey() . "\">" . $editicon .
-                 '</a>';
-    }
-    echo ($text);
+    $url = new moodle_url('/mod/quest/assessments_autors.php', ['id' => $cm->id, 'action' => 'displaygradingform']);
+    $html = html_writer::link(
+        $url,
+        '<i class="fa fa-file-text-o me-1" aria-hidden="true"></i>' . get_string("specimenassessmentformsubmission", "quest"),
+        ['class' => 'btn btn-sm btn-outline-info me-1']
+    );
+    $html .= $OUTPUT->help_icon('specimensubmission', 'quest');
+    echo $html;
 }
 /**
  *
@@ -235,17 +307,14 @@ function quest_print_challenge_grading_link($cm, $context, $quest) {
  */
 function quest_print_answer_grading_link($cm, $context, $quest) {
     global $OUTPUT;
-    $text = "<a href=\"assessments.php?id=$cm->id&amp;viewgeneral=1&amp;action=displaygradingform\">" .
-             get_string("specimenassessmentformanswer", "quest") . "</a>";
-    $text .= $OUTPUT->help_icon('specimenanswer', 'quest');
-
-    if (has_capability('mod/quest:manage', $context) && $quest->nelements) {
-        $editicon = $OUTPUT->pix_icon('t/edit', get_string('amendassessmentelements', 'quest'));
-        $url = new moodle_url('assessments.php', ['id' => $cm->id, 'newform' => 0, 'cambio' => 0, 'viewgeneral' => 1,
-                        'action' => 'editelements', 'sesskey' => sesskey()]);
-        $text .= "&nbsp;<a href=\"" . $url->out() . "\">" . $editicon . '</a>';
-    }
-    echo ($text);
+    $url = new moodle_url('/mod/quest/assessments.php', ['id' => $cm->id, 'viewgeneral' => 1, 'action' => 'displaygradingform']);
+    $html = html_writer::link(
+        $url,
+        '<i class="fa fa-check-square-o me-1" aria-hidden="true"></i>' . get_string("specimenassessmentformanswer", "quest"),
+        ['class' => 'btn btn-sm btn-outline-info me-1']
+    );
+    $html .= $OUTPUT->help_icon('specimenanswer', 'quest');
+    echo $html;
 }
 /**
  *
@@ -266,25 +335,98 @@ function quest_phase($quest, $style = '') {
 /**
  *
  * @param \stdClass $quest
+ * @param \stdClass $challenge
+ * @return string
+ */
+function quest_print_challenge_title($quest, $challenge) {
+    // Arguments are objects.
+    $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
+
+    if (!$challenge->timecreated) { // ...a "no submission".
+        return $challenge->title;
+    }
+    $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $challenge->id, 'action' => 'showchallenge']))->out();
+    return "<a name=\"cid_$challenge->id\" href=\"$url\">$challenge->title</a>";
+}
+
+/**
+ * Legacy wrapper for quest_print_challenge_title.
+ *
+ * @param \stdClass $quest
  * @param \stdClass $submission
  * @return string
  */
 function quest_print_submission_title($quest, $submission) {
-    // Arguments are objects.
-    $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
+    return quest_print_challenge_title($quest, $submission);
+}
 
-    if (!$submission->timecreated) { // ...a "no submission".
-        return $submission->title;
+/**
+ * Build the Quest > challenge > answer breadcrumb for activity subpages.
+ *
+ * @param object $cm Quest course module.
+ * @param stdClass|null $challenge Current challenge, if any.
+ * @param stdClass|null $answer Current answer, if any.
+ * @param string|null $page Label for a form or assessment below the current item.
+ * @return void
+ */
+function quest_add_breadcrumbs(object $cm, ?stdClass $challenge = null,
+        ?stdClass $answer = null, ?string $page = null): void {
+    global $PAGE;
+
+    if ($answer && !$challenge) {
+        throw new coding_exception('An answer breadcrumb requires its challenge.');
     }
-    $url = (new moodle_url('submissions.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission']))->out();
-    return "<a name=\"sid_$submission->id\" href=\"$url\">$submission->title</a>";
+    $questurl = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
+    // Keep Moodle's activity node in the trail, linking to the Quest overview.
+    navigation_node::override_active_url($questurl);
+    $PAGE->navigation->initialise();
+    $activitynode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
+    if ($activitynode && !$activitynode->mainnavonly) {
+        $activitynode->action = $questurl;
+    } else {
+        $PAGE->navbar->add(get_string('modulename', 'quest') . ': ' .
+            format_string($cm->name ?? get_string('modulename', 'quest')), $questurl);
+    }
+
+    if ($challenge) {
+        $challengeurl = new moodle_url('/mod/quest/challenges.php', [
+            'id' => $cm->id,
+            'cid' => $challenge->id,
+            'action' => 'showchallenge',
+        ]);
+        $PAGE->navbar->add(
+            get_string('challenge', 'quest') . ': ' . format_string($challenge->title),
+            $answer || $page !== null ? $challengeurl : null
+        );
+    }
+    if ($answer) {
+        $answerurl = new moodle_url('/mod/quest/answer.php', [
+            'id' => $cm->id,
+            'sid' => $challenge->id,
+            'aid' => $answer->id,
+            'action' => 'showanswer',
+        ]);
+        $PAGE->navbar->add(
+            get_string('answer', 'quest') . ': ' . format_string($answer->title),
+            $page !== null ? $answerurl : null
+        );
+    }
+    if ($page !== null) {
+        $PAGE->navbar->add($page);
+    }
 }
 /**
- * Form for a Challenge
+ * Form for creating or editing a Quest challenge.
+ *
  * @author juacas
  *
  */
 class quest_print_upload_form extends moodleform {
+    /**
+     * Define the challenge form fields.
+     *
+     * @return void
+     */
     public function definition() {
         $mform = & $this->_form;
         $submission = $this->_customdata['submission'];
@@ -293,6 +435,9 @@ class quest_print_upload_form extends moodleform {
         $definitionoptions = $this->_customdata['definitionoptions'];
         $attachmentoptions = $this->_customdata['attachmentoptions'];
         $action = $this->_customdata['action'];
+        $composerquestions = $this->_customdata['composerquestions'] ?? [];
+        $questionbankcontent = in_array($action, ['approve', 'modif'], true) &&
+            !empty($this->_customdata['linkedquestion']);
 
         $context = context_module::instance($cm->id);
         $ismanager = has_capability('mod/quest:manage', $context);
@@ -307,19 +452,32 @@ class quest_print_upload_form extends moodleform {
                                                      // ...definido. hay que ver si es necesario.
         $mform->setType('nosubmit', PARAM_BOOL);
 
-        $mform->addElement('text', 'title', get_string("title", "quest"), 'size="60" maxlength="100"');
-        $mform->setType('title', PARAM_TEXT);
-        $mform->addRule('title', null, 'required', null, 'client');
+        if ($composerquestions) {
+            $mform->addElement('html', $this->render_question_composer(
+                $composerquestions,
+                $cm,
+                $action,
+                (int)$submission->id
+            ));
+        }
 
-        $mform->addElement(
-            'editor',
-            'description_editor',
-            get_string("introductiontothechallenge", "quest"),
-            null,
-            $definitionoptions
-        );
-        $mform->setType('description_editor', PARAM_RAW);
-        $mform->addRule('description_editor', null, 'required', null, 'client');
+        if (!$questionbankcontent || $action === 'modif') {
+            $mform->addElement('text', 'title', get_string("title", "quest"), 'size="60" maxlength="100"');
+            $mform->setType('title', PARAM_TEXT);
+            $mform->addRule('title', null, 'required', null, 'client');
+        }
+
+        if (!$questionbankcontent) {
+            $mform->addElement(
+                'editor',
+                'description_editor',
+                get_string("introductiontothechallenge", "quest"),
+                null,
+                $definitionoptions
+            );
+            $mform->setType('description_editor', PARAM_RAW);
+            $mform->addRule('description_editor', null, 'required', null, 'client');
+        }
 
         if (time() < $quest->datestart) {
             $challengestart = $quest->datestart;
@@ -333,8 +491,6 @@ class quest_print_upload_form extends moodleform {
 
             $mform->addHelpButton('datestart', 'challengestart', 'quest');
         } else {
-            // ...$mform->addElement('html', '<div class="fitemtitle"> '.$stringchallengestart.' :.
-            // ...'.$date.' </div>');.
             $mform->addElement('html', get_string("challengestart", "quest") . ': ' . userdate($challengestart));
             $mform->addElement('hidden', 'datestart', $challengestart);
         }
@@ -349,13 +505,12 @@ class quest_print_upload_form extends moodleform {
             $mform->setDefault('dateend', $challengeend);
             $mform->addHelpButton('dateend', 'challengeend', 'quest');
         } else {
-            // ...$mform->addElement('html', '<div class="fitemtitle"> '.$stringchallengestart.' :.
-            // ...'.$date.' </div>');.
             $mform->addElement('html', '</br>' . get_string("challengeend", "quest") . ': ' . userdate($challengeend));
             $mform->addElement('hidden', 'dateend', $challengeend);
         }
         $mform->setType('dateend', PARAM_INT);
 
+        $numbers = [];
         for ($i = $quest->mincalification; $i <= $quest->maxcalification; $i++) {
             $numbers[$i] = $i;
         }
@@ -367,7 +522,7 @@ class quest_print_upload_form extends moodleform {
         $mform->setDefault('pointsmin', $quest->mincalification);
         $mform->addHelpButton('pointsmin', 'pointsmin', 'quest');
 
-        unset($numbers);
+        $numbers = [];
         if ($ismanager) {
             for ($i = $quest->mincalification; $i <= $quest->maxcalification; $i++) {
                 $numbers[$i] = $i;
@@ -436,12 +591,195 @@ class quest_print_upload_form extends moodleform {
             $buttonarray[] = & $mform->createElement('cancel');
             $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
         } else {
-            $this->add_action_buttons();
+            if ($action === 'modif' && $composerquestions) {
+                $submitlabel = get_string('savechallenge', 'quest');
+            } else if ($composerquestions) {
+                $submitlabel = get_string('createchallenge', 'quest');
+            } else {
+                $submitlabel = get_string('savechanges');
+            }
+            $this->add_action_buttons(true, $submitlabel);
         }
         // In the form the id hidden element is used to hold the cmid of the quest.
-        $submission->sid = $submission->id;
-        $submission->id = $cm->id;
-        $this->set_data($submission);
+        $formdata = clone $submission;
+        $formdata->sid = $submission->id;
+        $formdata->id = $cm->id;
+        $this->set_data($formdata);
+    }
+
+    /**
+     * Render the sortable question list included in the challenge creation form.
+     *
+     * @param stdClass[] $questions Selected ready questions.
+     * @param object $cm Activity course module.
+     * @return string
+     */
+    private function render_question_composer(array $questions, object $cm, string $action, int $submissionid): string {
+        global $CFG, $DB, $OUTPUT, $USER;
+
+        require_once($CFG->libdir . '/questionlib.php');
+        $context = \context_module::instance($cm->id);
+        $references = [];
+        if ($action === 'modif' && $submissionid > 0) {
+            foreach (\mod_quest\question\question_reference_service::get_challenge_questions($submissionid) as $slot) {
+                $references[(int)$slot->reference->questionbankentryid] = $slot->reference;
+            }
+        }
+        $questions = array_map(static function($question) {
+            $metadata = \mod_quest\question\bank_provider::get_question((int)$question->id);
+            $metadata->maxmark = (float)($question->maxmark ?? 1);
+            return $metadata;
+        }, $questions);
+        // Composer previews are not challenge attempts. Core's preview file handler
+        // can serve their question files before the challenge has been saved.
+        $usage = \question_engine::make_questions_usage_by_activity('core_question_preview', $context);
+        $usage->set_preferred_behaviour('deferredfeedback');
+        $previewslots = [];
+        foreach (array_values($questions) as $question) {
+            $loadedquestion = \question_bank::load_question((int)$question->id);
+            $previewslots[] = $usage->add_question($loadedquestion, (float)($question->maxmark ?? 1));
+        }
+        $usage->start_all_questions();
+        \question_engine::save_questions_usage_by_activity($usage);
+
+        $questionids = array_map(static fn($question) => (int)$question->id, $questions);
+        $returnurl = quest_question_composer_url($cm->id, $action === 'modif' ? 'modif' : 'addqchallenge',
+            $questionids, $action === 'modif' ? $submissionid : 0)->out_as_local_url(false);
+
+        $html = html_writer::tag('h4', get_string('page') . ' 1', ['class' => 'h5 mb-2']);
+        $html .= html_writer::start_tag('ul', [
+            'class' => 'list-group mb-3 quest-question-composer-slots',
+            'id' => 'quest-question-composer-slots',
+            'data-region' => 'question-composer-slots',
+        ]);
+        foreach (array_values($questions) as $index => $question) {
+            $html .= html_writer::start_tag('li', [
+                'class' => 'list-group-item quest-question-composer-slot',
+                'data-region' => 'question-composer-slot',
+                'data-questionid' => $question->id,
+            ]);
+            $html .= html_writer::empty_tag('input', [
+                'type' => 'hidden',
+                'name' => 'question_order[]',
+                'value' => $question->id,
+            ]);
+            $html .= html_writer::start_div('quest-question-composer-row');
+            $html .= html_writer::link('#', $OUTPUT->pix_icon('i/dragdrop', get_string('move')), [
+                'class' => 'quest-question-composer-drag',
+                'data-drag-type' => 'move',
+                'aria-label' => get_string('move') . ' ' . ($index + 1),
+            ]);
+            $html .= html_writer::tag('span', (string)($index + 1), [
+                'class' => 'quest-question-composer-number',
+                'data-region' => 'question-number',
+            ]);
+            $html .= html_writer::start_div('quest-question-composer-name');
+            $html .= html_writer::tag('span', format_string($question->name), [
+                'class' => 'fw-bold',
+                'data-region' => 'question-name',
+            ]);
+            $qtypename = \question_bank::get_qtype($question->qtype)->local_name();
+            $html .= html_writer::tag('span', $qtypename, ['class' => 'badge bg-light text-dark ms-2']);
+            $categoryname = $DB->get_field('question_categories', 'name', ['id' => $question->categoryid]);
+            if ($categoryname) {
+                $html .= html_writer::tag('span', format_string($categoryname), [
+                    'class' => 'badge bg-primary ms-2 quest-question-composer-bank',
+                ]);
+            }
+            $html .= html_writer::end_div();
+
+            $questioncontext = \context::instance_by_id($question->contextid);
+            $canedit = has_capability('moodle/question:editall', $questioncontext) ||
+                ((int)$question->createdby === (int)$USER->id &&
+                    has_capability('moodle/question:editmine', $questioncontext));
+            if ($canedit) {
+                $editurl = new moodle_url('/question/bank/editquestion/question.php', [
+                    'id' => $question->id,
+                    'cmid' => $cm->id,
+                    'returnurl' => $returnurl,
+                ]);
+                $html .= html_writer::link($editurl, $OUTPUT->pix_icon('t/edit', get_string('edit')), [
+                    'class' => 'btn btn-outline-secondary quest-question-composer-action',
+                    'target' => '_blank',
+                ]);
+            }
+            $selectedversion = $references[(int)$question->questionbankentryid]->version ?? null;
+            $versions = $DB->get_records_sql(
+                "SELECT version, questionid, status
+                   FROM {question_versions}
+                  WHERE questionbankentryid = :entryid AND status <> :draft
+               ORDER BY version DESC",
+                [
+                    'entryid' => $question->questionbankentryid,
+                    'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
+                ]
+            );
+            $versionoptions = html_writer::tag('option', get_string('alwayslatest', 'quiz'), [
+                'value' => 0,
+                'selected' => $selectedversion === null ? 'selected' : null,
+            ]);
+            $latestversion = 0;
+            foreach ($versions as $candidate) {
+                if ($candidate->status === \core_question\local\bank\question_version_status::QUESTION_STATUS_READY) {
+                    $latestversion = (int)$candidate->version;
+                    break;
+                }
+            }
+            if ($latestversion === 0 && $versions) {
+                $latestversion = (int)reset($versions)->version;
+            }
+            foreach ($versions as $version) {
+                $number = (int)$version->version;
+                $label = get_string($number === $latestversion ? 'questionversionlatest' : 'questionversion',
+                    'quiz', $number);
+                $versionoptions .= html_writer::tag('option', $label, [
+                    'value' => $number,
+                    'selected' => (int)$selectedversion === $number ? 'selected' : null,
+                ]);
+            }
+            $html .= html_writer::tag('select', $versionoptions, [
+                'class' => 'form-select quest-question-composer-version',
+                'name' => 'question_version[' . $question->id . ']',
+                'aria-label' => get_string('question_version', 'question'),
+            ]);
+            $previewurl = \qbank_previewquestion\helper::question_preview_url(
+                $question->id, null, null, null, null, $context, $cm->id
+            );
+            $html .= html_writer::link($previewurl, $OUTPUT->pix_icon('i/preview', get_string('preview')), [
+                'class' => 'btn btn-outline-primary quest-question-composer-action',
+                'target' => '_blank',
+            ]);
+            $html .= html_writer::tag('button', $OUTPUT->pix_icon('t/delete', get_string('remove')), [
+                'type' => 'button',
+                'class' => 'btn btn-outline-secondary quest-question-composer-action',
+                'data-action' => 'remove-question',
+                'aria-label' => get_string('remove'),
+            ]);
+            $html .= html_writer::start_div('quest-question-composer-mark');
+            $html .= html_writer::empty_tag('input', [
+                'type' => 'number',
+                'min' => 0.01,
+                'step' => 'any',
+                'required' => 'required',
+                'name' => 'question_mark[' . $question->id . ']',
+                'value' => $question->maxmark ?? 1,
+                'class' => 'form-control',
+                'aria-label' => get_string('questionmark', 'quest'),
+            ]);
+            $html .= html_writer::end_div();
+            $html .= html_writer::end_div();
+            $html .= html_writer::div(
+                \mod_quest\service\autograde_service::render_question_preview($usage, $previewslots[$index]),
+                'quest-question-composer-preview'
+            );
+            $html .= html_writer::end_tag('li');
+        }
+        $html .= html_writer::end_tag('ul');
+        $html .= html_writer::div(get_string('noquestionsselected', 'quest'), 'alert alert-warning d-none', [
+            'data-region' => 'question-composer-empty',
+        ]);
+
+        return $html;
     }
     /**
      *
@@ -465,8 +803,10 @@ class quest_print_upload_form extends moodleform {
             $errors['datestart'] = get_string('invaliddates', 'quest', $a);
         }
         if ($data['pointsmax'] > $quest->maxcalification) {
-            $errors['pointsmax'] = get_string('checkthat', 'quest') . ': ' . get_string('pointsmin', 'quest') .  ' (' . $data['pointsmin'] . ')' .
-                    ' < ' . get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')' . ' < ' . $quest->maxcalification;
+            $errors['pointsmax'] = get_string('checkthat', 'quest') . ': '
+                    . get_string('pointsmin', 'quest') . ' (' . $data['pointsmin'] . ')'
+                    . ' < ' . get_string('pointsmax', 'quest') . ' (' . $data['pointsmax'] . ')'
+                    . ' < ' . $quest->maxcalification;
         }
         if ($data['pointsmin'] < $quest->mincalification) {
             $errors['pointsmin'] = get_string('checkthat', 'quest') . ': ' .
@@ -494,14 +834,104 @@ class quest_print_upload_form extends moodleform {
     }
 }
 
-/** Receive and store a new challenge for the quest
+/** Read and validate the ordered question composition submitted by the form.
  *
- * @global stdClass $USER
- * @global stdClass $DB
- * @global stdClass $CFG
- * @global type $OUTPUT
- * @global type $COURSE
- * @global type $PAGE
+ * @param array $existingquestions Already-linked challenge questions.
+ * @param array|null $submittedquestionorder Ordered question IDs from the composer.
+ * @param array|null $submittedquestionmarks Maximum marks indexed by question ID.
+ * @param context_module|null $localcontext Context of the Quest activity being edited.
+ * @param array|null $submittedversions Version numbers indexed by question ID; zero means always latest.
+ * @return array Ordered question-bank references and their maximum marks.
+ */
+function quest_get_submitted_question_composition(
+    array $existingquestions = [],
+    ?array $submittedquestionorder = null,
+    ?array $submittedquestionmarks = null,
+    ?context_module $localcontext = null,
+    ?array $submittedversions = null
+): array {
+    global $CFG, $DB;
+
+    $questionorder = $submittedquestionorder ?? optional_param_array('question_order', [], PARAM_INT);
+    $questionmarks = $submittedquestionmarks ?? optional_param_array('question_mark', [], PARAM_FLOAT);
+    $questionversions = $submittedversions ?? optional_param_array('question_version', [], PARAM_INT);
+    if (!$questionorder) {
+        throw new \moodle_exception('noquestionsselected', 'quest');
+    }
+    require_once($CFG->libdir . '/questionlib.php');
+    if (count(array_unique($questionorder)) !== count($questionorder)) {
+        throw new \moodle_exception('invalidquestioncomposition', 'quest');
+    }
+    $existingbyquestionid = [];
+    foreach ($existingquestions as $existingquestion) {
+        if (!empty($existingquestion->question->id) && !empty($existingquestion->reference)) {
+            $existingbyquestionid[(int)$existingquestion->question->id] = $existingquestion;
+        }
+    }
+
+    $items = [];
+    foreach ($questionorder as $questionid) {
+        $questionid = (int)$questionid;
+        if (isset($existingbyquestionid[$questionid])) {
+            // Keep legacy references as-is. Older challenges can point to a question
+            // stored in the activity context, which is renderable but is not a
+            // shareable question bank in Moodle 5.x.
+            $reference = $existingbyquestionid[$questionid]->reference;
+            $entryid = (int)$reference->questionbankentryid;
+            $version = $reference->version;
+        } else {
+            $question = \mod_quest\question\bank_provider::require_question($questionid, $localcontext);
+            $entryid = (int)$question->questionbankentryid;
+            $version = null;
+        }
+        if (array_key_exists($questionid, $questionversions)) {
+            $selectedversion = (int)$questionversions[$questionid];
+            if ($selectedversion < 0 || ($selectedversion > 0 && !$DB->record_exists_select(
+                'question_versions',
+                'questionbankentryid = :entryid AND version = :version AND status <> :draft',
+                [
+                    'entryid' => $entryid,
+                    'version' => $selectedversion,
+                    'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
+                ]
+            ))) {
+                throw new \moodle_exception('invalidquestioncomposition', 'quest');
+            }
+            $version = $selectedversion === 0 ? null : $selectedversion;
+        }
+        $maxmark = (float)($questionmarks[$questionid] ?? 0);
+        if (!is_finite($maxmark) || $maxmark <= 0) {
+            throw new \moodle_exception('invalidquestioncomposition', 'quest');
+        }
+        $items[] = [
+            'questionbankentryid' => $entryid,
+            'maxmark' => $maxmark,
+            'version' => $version,
+        ];
+    }
+
+    // Date/title edits must not migrate or rewrite an unchanged legacy composition.
+    if (count($items) === count($existingquestions)) {
+        $unchanged = true;
+        foreach (array_values($existingquestions) as $index => $existingquestion) {
+            if ((int)$items[$index]['questionbankentryid'] !==
+                    (int)$existingquestion->reference->questionbankentryid ||
+                    (float)$items[$index]['maxmark'] !== (float)$existingquestion->maxmark ||
+                    $items[$index]['version'] !== $existingquestion->reference->version) {
+                $unchanged = false;
+                break;
+            }
+        }
+        if ($unchanged) {
+            return [];
+        }
+    }
+
+    return $items;
+}
+
+/** Receive and store a challenge for the quest.
+ *
  * @param stdClass $quest
  * @param stdClass $newsubmission
  * @param boolean $ismanager
@@ -510,7 +940,10 @@ class quest_print_upload_form extends moodleform {
  * @param array $attachmentoptions
  * @param \stdClass $context
  * @param string $action
- * @param int $authorid author of the $newsubmission will override $newsubmission->userid */
+ * @param int $authorid Author of the submission; overrides $newsubmission->userid.
+ * @param bool $preservequestioncontent Keep stored title and description for a linked question approval.
+ * @param array $questionitems Question-bank slots for a composed challenge.
+ */
 function quest_upload_challenge(
     stdClass $quest,
     stdClass $newsubmission,
@@ -520,7 +953,9 @@ function quest_upload_challenge(
     $attachmentoptions,
     $context,
     $action,
-    $authorid
+    $authorid,
+    bool $preservequestioncontent = false,
+    array $questionitems = []
 ) {
     global $USER, $DB, $CFG, $OUTPUT, $COURSE, $PAGE;
 
@@ -530,9 +965,15 @@ function quest_upload_challenge(
     $newsubmission->userid = $authorid;
     $newsubmission->id = $newsubmission->sid; // ...id is overused in the form but must be named id.
                                               // ...for the database..
-    $newsubmission->description = ''; // ...updated later.
-    $newsubmission->descriptionformat = FORMAT_HTML; // ...updated later.
-    $newsubmission->descriptiontrust = 0; // ...updated later.
+    if ($preservequestioncontent) {
+        $newsubmission = quest_preserve_linked_challenge_content($newsubmission, (int)$quest->id);
+    } else {
+        // The editor content is saved after insertion, when the challenge has
+        // an ID to use as the file area item ID.
+        $newsubmission->description = '';
+        $newsubmission->descriptionformat = FORMAT_HTML;
+        $newsubmission->descriptiontrust = 0;
+    }
     $newsubmission->timecreated = time();
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
     if ($ismanager) {
@@ -556,28 +997,49 @@ function quest_upload_challenge(
                                                                        // pending state..
         }
         if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
-            print_error('inserterror', 'quest', null, "quest_submissions");
+            throw new \moodle_exception('inserterror', 'quest', '', "quest_submissions");
+        }
+        if ($questionitems) {
+            \mod_quest\question\question_reference_service::replace_challenge_questions(
+                (int)$context->id,
+                (int)$quest->id,
+                (int)$newsubmission->id,
+                $questionitems
+            );
         }
     } else {
         $isnew = false;
-        if ($canapprove && $action === 'approve') { // ...the challenge is approved by the
-                                                    // teacher..
+        if ($canapprove && $action === 'approve') { // ...the challenge is approved by the teacher..
             $newsubmission->state = SUBMISSION_STATE_APROVED;
+            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$newsubmission->id);
+            if ($linkedq) {
+                \mod_quest\question\question_reference_service::mark_as_approved((int)$linkedq->id, $context);
+            }
         } else { // The challenge is modified, the status does not change.
             $newsubmission->state = $DB->get_field('quest_submissions', 'state', ['id' => $newsubmission->id]);
+        }
+        if ($questionitems && $action === 'modif') {
+            \mod_quest\question\question_reference_service::replace_challenge_questions(
+                (int)$context->id,
+                (int)$quest->id,
+                (int)$newsubmission->id,
+                $questionitems
+            );
         }
     }
 
     // ...management of files: save embedded images and attachments..
-    $newsubmission = file_postupdate_standard_editor(
-        $newsubmission,
-        'description',
-        $definitionoptions,
-        $context,
-        'mod_quest',
-        'submission',
-        $newsubmission->id
-    );
+    if (!$preservequestioncontent) {
+        $newsubmission = file_postupdate_standard_editor(
+            $newsubmission,
+            'description',
+            $definitionoptions,
+            $context,
+            'mod_quest',
+            'submission',
+            $newsubmission->id
+        );
+    }
     $newsubmission = file_postupdate_standard_filemanager(
         $newsubmission,
         'attachment',
@@ -599,47 +1061,52 @@ function quest_upload_challenge(
     }
 
     quest_update_challenge_calendar($cm, $quest, $newsubmission);
-    $redirecturl = new moodle_url('/mod/quest/submissions.php', ['id' => $cm->id, 'sid' => $newsubmission->id,
-                    'action' => 'showsubmission']);
+    $redirecturl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'cid' => $newsubmission->id,
+                    'action' => 'showchallenge']);
     if ($action == 'submitchallenge') {
         require_once('classes/event/challenge_created.php');
         mod_quest\event\challenge_created::create_from_parts($newsubmission, $cm)->trigger();
     } else if ($action == 'modif') {
-        if ($CFG->version >= 2014051200) {
-            require_once('classes/event/challenge_updated.php');
-            \mod_quest\event\challenge_updated::create_from_parts($USER, $newsubmission, $cm)->trigger();
-        } else {
-            add_to_log(
-                $COURSE->id,
-                "quest",
-                "modif_submission",
-                "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission",
-                "$newsubmission->id",
-                "$cm->id"
-            );
-        }
+        \mod_quest\event\challenge_updated::create_from_parts($USER, $newsubmission, $cm)->trigger();
     } else if ($action == 'approve') {
-        if ($CFG->version >= 2014051200) {
-            require_once('classes/event/challenge_approved.php');
-            \mod_quest\event\challenge_approved::create_from_parts($USER, $newsubmission, $cm)->trigger();
-        } else {
-            add_to_log(
-                $COURSE->id,
-                "quest",
-                "approve_submission",
-                "submissions.php?id=$cm->id&amp;sid=$newsubmission->id&amp;action=showsubmission",
-                "$newsubmission->id",
-                "$cm->id"
-            );
+        require_once('classes/event/challenge_approved.php');
+        \mod_quest\event\challenge_approved::create_from_parts($USER, $newsubmission, $cm)->trigger();
+
+        if (!empty($quest->autoexportqbank)) {
+            \mod_quest\question\open_question_exporter::export_challenge($quest, $newsubmission, $context);
         }
         // Get next url: assess_autor or approve.
         $redirecturl = quest_next_submission_url($newsubmission, $cm);
     }
-    $PAGE->set_title(format_string($quest->name));
-    $PAGE->set_heading($COURSE->fullname);
-    echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string("submitted", "quest") . " " . get_string("ok"));
-    echo $OUTPUT->continue_button($redirecturl);
+    redirect(
+        $redirecturl,
+        get_string("submitted", "quest") . " " . get_string("ok"),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
+}
+
+/**
+ * Restore text fields omitted from the approval form for a linked question.
+ *
+ * @param \stdClass $submission Submitted challenge data.
+ * @param int $questid Quest instance ID.
+ * @return \stdClass Submitted data with the stored text fields restored.
+ */
+function quest_preserve_linked_challenge_content(\stdClass $submission, int $questid): \stdClass {
+    global $DB;
+
+    $stored = $DB->get_record('quest_submissions', [
+        'id' => $submission->id,
+        'questid' => $questid,
+    ], 'id, title, description, descriptionformat, descriptiontrust', MUST_EXIST);
+    if (!isset($submission->title)) {
+        $submission->title = $stored->title;
+    }
+    $submission->description = $stored->description;
+    $submission->descriptionformat = $stored->descriptionformat;
+    $submission->descriptiontrust = $stored->descriptiontrust;
+    return $submission;
 }
 /**
  *
@@ -684,16 +1151,16 @@ function quest_get_difficulty_levels() {
                     2 => get_string("difficultyHard", "quest")];
 }
 /**
+ * Prints the challenge with optional attachments.
  *
  * @param \stdClass $quest
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  */
-function quest_print_submission($quest, $submission) {
-    // ...prints the submission with optional attachments.
-    global $USER, $OUTPUT;
+function quest_print_challenge($quest, $challenge) {
+    global $OUTPUT;
 
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
-    $description = $submission->description;
+    $description = $challenge->description;
     $context = context_module::instance($cm->id);
     $description = file_rewrite_pluginfile_urls(
         $description,
@@ -701,35 +1168,80 @@ function quest_print_submission($quest, $submission) {
         $context->id,
         'mod_quest',
         'submission',
-        $submission->id
+        $challenge->id
     );
 
     $options = new stdClass();
     $options->para = false;
-    $options->trusted = $submission->descriptiontrust;
+    $options->trusted = $challenge->descriptiontrust;
     $options->context = $context;
     $options->overflowdiv = true;
-    $description = format_text($description, $submission->descriptionformat, $options);
+    $description = format_text($description, $challenge->descriptionformat, $options);
     echo $OUTPUT->box($description);
-    $canpreview = has_capability('mod/quest:preview', $context);
-
-    if (!empty($submission->comentteacherautor)) {
-        if (($submission->userid == $USER->id) || ($canpreview)) {
-            echo $OUTPUT->heading(get_string('commentsforauthor', 'quest'));
-            echo $OUTPUT->box(format_text($submission->comentteacherautor), 'center');
-        }
-    }
-    if (!empty($submission->comentteacherpupil)) {
-        echo $OUTPUT->heading_with_help(get_string('commentsforstudent', 'quest'), 'commentsforstudent', 'quest');
-        echo $OUTPUT->box(format_text($submission->comentteacherpupil), 'center');
-    }
 
     if ($quest->nattachments) {
-        if ($submission->attachment) {
-            quest_print_attachments($context, 'attachment', $submission->id, 'timemodified');
+        if ($challenge->attachment) {
+            quest_print_attachments($context, 'attachment', $challenge->id, 'timemodified');
         }
     }
     return;
+}
+
+/**
+ * Render the audience-specific challenge comment beneath the author score.
+ *
+ * @param \stdClass $challenge Challenge record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid Viewer ID, or current user when omitted.
+ * @return string Comment panel or an empty string.
+ */
+function quest_challenge_comment_html($challenge, \context_module $context, ?int $userid = null): string {
+    global $DB, $USER;
+
+    $userid = $userid ?? (int)$USER->id;
+    $isstaff = has_capability('mod/quest:preview', $context, $userid);
+    $isauthor = (int)$challenge->userid === $userid;
+    $comments = [];
+
+    if ($isauthor || $isstaff) {
+        if (!empty($challenge->commentteacherauthor)) {
+            $comments[] = [get_string('commentsforauthor', 'quest'), $challenge->commentteacherauthor];
+        }
+        if (!empty($challenge->id) && !empty($challenge->questid)) {
+            $assessment = $DB->get_record('quest_assessments_autors', [
+                'questid' => $challenge->questid,
+                'submissionid' => $challenge->id,
+            ], 'id, commentsteacher');
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                $comments[] = [get_string('commentsteacher', 'quest'), $assessment->commentsteacher];
+            }
+        }
+    }
+
+    if ((!$isauthor || $isstaff) && !empty($challenge->commentteacherpupil)) {
+        $comments[] = [get_string('commentsforstudent', 'quest'), $challenge->commentteacherpupil];
+    }
+
+    $icon = html_writer::tag('i', '', ['class' => 'fa fa-info-circle me-2', 'aria-hidden' => 'true']);
+    $html = '';
+    foreach ($comments as [$title, $comment]) {
+        $html .= html_writer::div(
+            html_writer::tag('strong', $icon . $title) . html_writer::div(format_text($comment), 'mt-2'),
+            'alert alert-info quest-challenge-comment mt-3',
+            ['role' => 'note']
+        );
+    }
+    return $html;
+}
+
+/**
+ * Legacy wrapper for quest_print_challenge.
+ *
+ * @param \stdClass $quest
+ * @param \stdClass $submission
+ */
+function quest_print_submission($quest, $submission) {
+    return quest_print_challenge($quest, $submission);
 }
 /**
  *
@@ -740,23 +1252,18 @@ function quest_print_submission($quest, $submission) {
  */
 function quest_print_attachments($context, $filearea, $itemid, $order) {
     global $OUTPUT;
-    $n = 1;
-    echo "<table align=\"center\">\n";
     $fs = get_file_storage();
     if ($files = $fs->get_area_files($context->id, 'mod_quest', $filearea, $itemid, $order, false)) {
+        $n = 1;
+        echo "<ul class=\"list-unstyled mb-0 d-flex flex-wrap gap-2\">\n";
         foreach ($files as $file) {
             $filename = $file->get_filename();
             $iconimage = $OUTPUT->pix_icon(
                 file_file_icon($file),
                 get_mimetype_description($file),
                 'moodle',
-                ['class' => 'icon']
+                ['class' => 'icon me-1']
             );
-            $path = "/$context->id/mod_quest/$filearea/";
-            if ($itemid) {
-                $path .= $itemid . '/';
-            }
-            $path .= $filename;
             $filepathurl = moodle_url::make_pluginfile_url(
                 $file->get_contextid(),
                 $file->get_component(),
@@ -766,20 +1273,65 @@ function quest_print_attachments($context, $filearea, $itemid, $order) {
                 $file->get_filename()
             );
             $path = $filepathurl->out();
-            echo "<tr><td><b>" . get_string("attachment", "quest") . " $n:</b> \n";
+            echo "<li class=\"d-inline-flex align-items-center bg-light border rounded px-3 py-2 shadow-sm\">";
+            echo "<span class=\"fw-bold me-2 text-muted\">" . get_string("attachment", "quest") . " $n:</span> ";
             echo $iconimage;
-            echo format_text("<a href=\"$path\">" . s($filename) . "</a>", FORMAT_HTML, ['context' => $context]);
+            echo "<a href=\"$path\" class=\"text-decoration-none fw-semibold ms-1\">" . s($filename) . "</a>";
+            echo "</li>\n";
             $n++;
         }
+        echo "</ul>\n";
     }
-    echo "</table>\n";
 }
+
 /**
+ * Return the activity intro together with its additional files.
+ *
+ * The returned HTML is passed to Moodle's standard activity header, so the
+ * intro and the files are rendered inside activity-information/activity-details.
+ *
+ * @param stdClass $quest Activity record.
+ * @param cm_info $cm Course module.
+ * @param context_module $context Activity module context.
+ * @return string
+ */
+function quest_get_activity_header_description($quest, $cm, $context) {
+    $description = format_module_intro('quest', $quest, $cm->id);
+
+    ob_start();
+    quest_print_attachments($context, 'introattachment', false, 'timemodified');
+    $attachments = ob_get_clean();
+
+    if (empty(trim($attachments))) {
+        return $description;
+    }
+
+    $attachmentheading = html_writer::div(
+        html_writer::tag('i', '', [
+            'class' => 'fa fa-paperclip text-primary me-2',
+            'aria-hidden' => 'true',
+        ]) .
+        html_writer::tag('h6', get_string('introattachments', 'quest'), [
+            'class' => 'fw-bold mb-0 text-dark',
+        ]),
+        'd-flex align-items-center mb-2'
+    );
+
+    $attachmentblock = html_writer::div(
+        $attachmentheading . html_writer::div($attachments, 'quest-attachments-list'),
+        'quest-intro-attachments mt-3 p-3 bg-white rounded border shadow-sm'
+    );
+
+    return $description . $attachmentblock;
+}
+
+/**
+ * Prints challenge information.
  *
  * @param \stdClass $quest
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  */
-function quest_print_submission_info($quest, $submission) {
+function quest_print_challenge_info($quest, $challenge) {
     global $USER, $DB, $OUTPUT;
 
     $timenow = time();
@@ -792,9 +1344,9 @@ function quest_print_submission_info($quest, $submission) {
     echo $OUTPUT->box_start("center");
 
     // ...print phase and date info.
-    $string = '<b>' . get_string('currentphasesubmission', 'quest') . '</b>: ' .
-                quest_submission_phase($submission, $quest, $course) . '<br/>';
-    $dates = ['dateofstart' => $submission->datestart, 'dateofend' => $submission->dateend];
+    $string = '<b>' . get_string('currentphasechallenge', 'quest') . '</b>: ' .
+                quest_challenge_phase($challenge, $quest, $course) . '<br/>';
+    $dates = ['dateofstart' => $challenge->datestart, 'dateofend' => $challenge->dateend];
     foreach ($dates as $type => $date) {
         if ($date) {
             $strdifference = format_time($date - time());
@@ -805,28 +1357,37 @@ function quest_print_submission_info($quest, $submission) {
         }
     }
 
-    $string .= '<b>' . get_string('nanswers', 'quest') . ":&nbsp;&nbsp;$submission->nanswers" . '</b><br>';
-    $string .= '<b>' . get_string('nanswerscorrect', 'quest') . ":&nbsp;&nbsp;$submission->nanswerscorrect" . '</b><br>';
-    if (($submission->dateend < time()) || ($submission->nanswerscorrect >= $quest->nmaxanswers)) {
-        $string .= '<b>' . get_string('pointsmaxsubmission', 'quest') . ":&nbsp;&nbsp;$submission->pointsanswercorrect" .
+    $string .= '<b>' . get_string('nanswers', 'quest') . ":&nbsp;&nbsp;$challenge->nanswers" . '</b><br>';
+    $string .= '<b>' . get_string('nanswerscorrect', 'quest') . ":&nbsp;&nbsp;$challenge->nanswerscorrect" . '</b><br>';
+    if (($challenge->dateend < time()) || ($challenge->nanswerscorrect >= $quest->nmaxanswers)) {
+        $string .= '<b>' . get_string('pointsmaxsubmission', 'quest') . ":&nbsp;&nbsp;$challenge->pointsanswercorrect" .
         '</b><br>';
     }
     // Form field for the countdown of score.
     $string .= '<form name="puntos"><b>' . get_string('points', 'quest') .
                 ";&nbsp;&nbsp;<input name=\"calificacion\" id=\"formscore\" type=\"text\" " .
+                "class=\"quest-score-counter\" " .
+                "data-datestart=\"" . (int)$challenge->datestart . "\" " .
+                "data-dateend=\"" . (int)$challenge->dateend . "\" " .
+                "data-tinitial=\"" . ((int)$quest->tinitial * 86400) . "\" " .
+                "data-dateanswercorrect=\"" . (int)$challenge->dateanswercorrect . "\" " .
+                "data-initialpoints=\"" . (float)$challenge->initialpoints . "\" " .
+                "data-pointsmax=\"" . (float)$challenge->pointsmax . "\" " .
+                "data-pointsmin=\"" . (float)$challenge->pointsmin . "\" " .
+                "data-type=\"" . (int)$quest->typecalification . "\" " .
                 "value=\"0.000\" size=\"10\" readonly=\"1\" " .
                 "style=\"background-color:White; border:black; color:Black; font-size:14pt; text-align : center;\"></form></b><br>";
-    if (($USER->id == $submission->userid) || ($canpreview) || ($submission->dateend < time())) {
+    if (($USER->id == $challenge->userid) || ($canpreview) || ($challenge->dateend < time())) {
         if (
-            $submission->evaluated == 1 && $assessment = $DB->get_record(
+            $challenge->evaluated == 1 && $assessment = $DB->get_record(
                 "quest_assessments_autors",
-                ["questid" => $quest->id, "submissionid" => $submission->id]
+                ["questid" => $quest->id, "submissionid" => $challenge->id]
             )
         ) {
             $string .= '<b>' . get_string('calificationautor', 'quest') . ': ';
-            $string .= number_format(100 * $assessment->points / $submission->initialpoints, 1) . '% ';
+            $string .= number_format(100 * $assessment->points / $challenge->initialpoints, 1) . '% ';
             $string .= get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format(
-                $submission->initialpoints,
+                $challenge->initialpoints,
                 2
             );
             $string .= ' (' . number_format($assessment->points, 1) . ')</b>';
@@ -837,49 +1398,40 @@ function quest_print_submission_info($quest, $submission) {
     }
 
     if (
-        ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-             ($submission->nanswerscorrect < $quest->nmaxanswers)
+        ($challenge->datestart < $timenow) && ($challenge->dateend > $timenow) &&
+             ($challenge->nanswerscorrect < $quest->nmaxanswers)
     ) {
-        $submission->phase = SUBMISSION_PHASE_ACTIVE;
+        $challenge->phase = SUBMISSION_PHASE_ACTIVE;
     }
     echo $string;
 
-    $initialpoints[] = (float) $submission->initialpoints;
-    $nanswerscorrect[] = (int) $submission->nanswerscorrect;
-    $datesstart[] = (int) $submission->datestart;
-    $datesend[] = (int) $submission->dateend;
-    $dateanswercorrect[] = (int) $submission->dateanswercorrect;
-    $pointsmax[] = (float) $submission->pointsmax;
-    $pointsmin[] = (float) $submission->pointsmin;
-    $pointsanswercorrect[] = (float) $submission->pointsanswercorrect;
-    $tinitial[] = $quest->tinitial * 86400;
-    $state[] = (int) $submission->state;
-    $type = $quest->typecalification;
-    $nmaxanswers = (int) $quest->nmaxanswers;
-    $pointsnmaxanswers[] = (float) $submission->points;
-    // Javascript counter support.
-    $forms[] = "#formscore";
-    $incline[] = 0;
-    $servertime = time();
-    $params = [1, $pointsmax, $pointsmin, $initialpoints, $tinitial,
-                    $datesstart, $state, $nanswerscorrect, $dateanswercorrect,
-                    $pointsanswercorrect, $datesend,
-                    $forms, $type, $nmaxanswers, $pointsnmaxanswers,
-                    $servertime, null];
     global $PAGE;
-    $PAGE->requires->js_call_amd('mod_quest/counter', 'puntuacionarray', $params);
+    $servertime = time();
+    $PAGE->requires->js_call_amd('mod_quest/counter', 'init', [$servertime]);
 
     echo $OUTPUT->box_end();
 }
+
 /**
+ * Legacy wrapper for quest_print_challenge_info.
  *
+ * @param \stdClass $quest
  * @param \stdClass $submission
+ */
+function quest_print_submission_info($quest, $submission) {
+    return quest_print_challenge_info($quest, $submission);
+}
+
+/**
+ * Determines the current phase of a challenge.
+ *
+ * @param \stdClass $challenge
  * @param \stdClass $quest
  * @param \stdClass $course
  * @param string $style
  * @return string
  */
-function quest_submission_phase($submission, $quest, $course, $style = '') {
+function quest_challenge_phase($challenge, $quest, $course, $style = '') {
     global $USER;
 
     $context = context_course::instance($course->id);
@@ -887,42 +1439,42 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
     $cangrade = has_capability('mod/quest:grade', $context);
     $time = time();
 
-    if ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING) {
-        if ($submission->evaluated == false) {
+    if ($challenge->state == SUBMISSION_STATE_APPROVAL_PENDING) {
+        if ($challenge->evaluated == false) {
             return get_string('phase1submission' . $style, 'quest');
-        } else if ($submission->evaluated == true) {
-            if (($cangrade) || ($submission->userid == $USER->id)) {
+        } else if ($challenge->evaluated == true) {
+            if (($cangrade) || ($challenge->userid == $USER->id)) {
                 return get_string('phase5submission' . $style, 'quest');
             } else {
                 return get_string('phase1submission' . $style, 'quest');
             }
         }
-    } else if ($submission->state == SUBMISSION_STATE_APROVED) {
-        if ($time < $submission->datestart) {
-            if ($submission->evaluated == false) {
+    } else if ($challenge->state == SUBMISSION_STATE_APROVED) {
+        if ($time < $challenge->datestart) {
+            if ($challenge->evaluated == false) {
                 return get_string('phase2submission' . $style, 'quest');
-            } else if ($submission->evaluated == true) {
-                if (($cangrade) || ($submission->userid == $USER->id)) {
+            } else if ($challenge->evaluated == true) {
+                if (($cangrade) || ($challenge->userid == $USER->id)) {
                     return get_string('phase8submission' . $style, 'quest');
                 } else {
                     return get_string('phase2submission' . $style, 'quest');
                 }
             }
-        } else if (($time < $submission->dateend) && ($submission->nanswerscorrect < $quest->nmaxanswers)) {
-            if ($submission->evaluated == 0) {
+        } else if (($time < $challenge->dateend) && ($challenge->nanswerscorrect < $quest->nmaxanswers)) {
+            if ($challenge->evaluated == 0) {
                 return get_string('phase3submission' . $style, 'quest');
-            } else if ($submission->evaluated == 1) {
-                if (($cangrade) || ($submission->userid == $USER->id)) {
+            } else if ($challenge->evaluated == 1) {
+                if (($cangrade) || ($challenge->userid == $USER->id)) {
                     return get_string('phase6submission' . $style, 'quest');
                 } else {
                     return get_string('phase3submission' . $style, 'quest');
                 }
             }
         } else {
-            if ($submission->evaluated == 0) {
+            if ($challenge->evaluated == 0) {
                 return get_string('phase4submission' . $style, 'quest');
-            } else if ($submission->evaluated == 1) {
-                if (($cangrade) || ($submission->userid == $USER->id)) {
+            } else if ($challenge->evaluated == 1) {
+                if (($cangrade) || ($challenge->userid == $USER->id)) {
                     return get_string('phase7submission' . $style, 'quest');
                 } else {
                     return get_string('phase4submission' . $style, 'quest');
@@ -931,11 +1483,240 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
         }
     }
 }
+
 /**
- * Form for anwers.
+ * Legacy wrapper for quest_challenge_phase.
+ *
+ * @param \stdClass $submission
+ * @param \stdClass $quest
+ * @param \stdClass $course
+ * @param string $style
+ * @return string
+ */
+function quest_submission_phase($submission, $quest, $course, $style = '') {
+    return quest_challenge_phase($submission, $quest, $course, $style);
+}
+
+/**
+ * Validate that an answer and its challenge belong to the current Quest.
+ *
+ * @param stdClass $answer Answer record.
+ * @param int $questid Quest instance ID.
+ * @return void
+ */
+function quest_require_answer_ownership($answer, int $questid): void {
+    global $DB;
+
+    $submissionquestid = $DB->get_field('quest_submissions', 'questid', ['id' => $answer->submissionid]);
+    if ((int)($answer->questid ?? 0) !== $questid || (int)$submissionquestid !== $questid) {
+        throw new \moodle_exception('answer_not_found', 'quest');
+    }
+}
+
+/**
+ * Require a submission to belong to the current Quest activity.
+ *
+ * @param \stdClass $submission Challenge/submission record.
+ * @param int $questid Quest instance ID.
+ * @throws \moodle_exception If the record belongs to another activity.
+ */
+function quest_require_submission_ownership(\stdClass $submission, int $questid): void {
+    if ((int)$submission->questid !== $questid) {
+        throw new \moodle_exception('notpermissionsubmission', 'quest');
+    }
+}
+
+/**
+ * Check whether the current user may view a challenge's content and files.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Challenge/submission record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_view_submission(\stdClass $quest, \stdClass $submission,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$submission->questid !== (int)$quest->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:manage', $context, $userid) ||
+            has_capability('mod/quest:preview', $context, $userid) ||
+            has_capability('mod/quest:grade', $context, $userid) ||
+            has_capability('mod/quest:approvechallenge', $context, $userid) ||
+            (int)$submission->userid === $userid) {
+        return true;
+    }
+    return (int)$submission->state === SUBMISSION_STATE_APROVED &&
+        (int)$submission->datestart <= time();
+}
+
+/**
+ * Check whether the current user may view an answer and its files.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Parent challenge.
+ * @param \stdClass $answer Answer record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_view_answer(\stdClass $quest, \stdClass $submission, \stdClass $answer,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$answer->questid !== (int)$quest->id ||
+            (int)$submission->questid !== (int)$quest->id ||
+            (int)$answer->submissionid !== (int)$submission->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:manage', $context, $userid) ||
+            has_capability('mod/quest:preview', $context, $userid) ||
+            has_capability('mod/quest:grade', $context, $userid) ||
+            has_capability('mod/quest:approvechallenge', $context, $userid) ||
+            (int)$answer->userid === $userid || (int)$submission->userid === $userid) {
+        return true;
+    }
+    return (int)$submission->dateend <= time() ||
+        (int)$submission->nanswerscorrect >= (int)$quest->nmaxanswers;
+}
+
+/**
+ * Check whether the current user has passed this activity's optional password gate.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_passed_password(\stdClass $quest, \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    return empty($quest->usepassword) || has_capability('mod/quest:manage', $context, $userid) ||
+        (!empty($USER->questloggedin) && !empty($USER->questloggedin[$quest->id]));
+}
+
+/**
+ * Check whether a user may submit an answer to a challenge in its current state.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Challenge record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_answer_submission(\stdClass $quest, \stdClass $submission,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$submission->questid !== (int)$quest->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:manage', $context, $userid)) {
+        return true;
+    }
+    return has_capability('mod/quest:attempt', $context, $userid) &&
+        (int)$submission->userid !== $userid &&
+        (int)$submission->state === SUBMISSION_STATE_APROVED &&
+        (int)$submission->datestart <= time() && (int)$submission->dateend > time() &&
+        (int)$submission->nanswerscorrect < (int)$quest->nmaxanswers;
+}
+
+/**
+ * Check whether the current user may delete a challenge in this activity.
+ *
+ * @param \stdClass $quest Quest activity record.
+ * @param \stdClass $submission Challenge record.
+ * @param \context_module $context Activity context.
+ * @param int|null $userid User ID, defaults to the current user.
+ * @return bool
+ */
+function quest_user_can_delete_submission(\stdClass $quest, \stdClass $submission,
+        \context_module $context, ?int $userid = null): bool {
+    global $USER;
+    $userid = $userid ?? (int)$USER->id;
+    if ((int)$submission->questid !== (int)$quest->id) {
+        return false;
+    }
+    if (has_capability('mod/quest:deletechallengeall', $context, $userid)) {
+        return true;
+    }
+    return has_capability('mod/quest:deletechallengemine', $context, $userid) &&
+        (int)$submission->userid === $userid && time() < (int)$quest->dateend &&
+        (int)$submission->nanswers === 0 && time() < (int)$submission->dateend;
+}
+
+/**
+ * Get an actionable status for a challenge that needs staff attention.
+ *
+ * @param \stdClass $challenge Challenge submission.
+ * @param \stdClass $cm Course module.
+ * @param \context_module $context Activity context.
+ * @return array List of actionable badge data, possibly empty.
+ */
+function quest_get_challenge_attention_status($challenge, $cm, $context): array {
+    $statuses = [];
+
+    if ((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING
+            && has_capability('mod/quest:approvechallenge', $context)) {
+        $statuses[] = [
+            'label' => get_string('approvalpending', 'quest'),
+            'url' => (new moodle_url('/mod/quest/challenges.php', [
+                'id' => $cm->id,
+                'cid' => $challenge->id,
+                'action' => 'approve',
+            ]))->out(false),
+            'class' => 'badge quest-attention-badge quest-attention-badge-approval',
+            'icon' => 'fa fa-clock-o',
+        ];
+    }
+
+    if (empty($challenge->evaluated) && has_capability('mod/quest:grade', $context)) {
+        $statuses[] = [
+            'label' => get_string('challenge_not_evaluated', 'quest'),
+            'url' => (new moodle_url('/mod/quest/assess_autors.php', [
+                'id' => $cm->id,
+                'sid' => $challenge->id,
+                'action' => 'evaluate',
+            ]))->out(false),
+            'class' => 'badge quest-attention-badge quest-attention-badge-unevaluated',
+            'icon' => 'fa fa-exclamation-circle',
+        ];
+    }
+
+    return $statuses;
+}
+
+/**
+ * Keep a pending-approval phase badge from repeating the actionable notice.
+ *
+ * @param \stdClass $challenge Challenge record.
+ * @param array $attentionstatuses Actionable status data.
+ * @param string $phaselabel Text of the phase badge.
+ * @return bool Whether the phase badge adds new information.
+ */
+function quest_should_show_challenge_phase_badge($challenge, array $attentionstatuses, string $phaselabel): bool {
+    $labels = array_column($attentionstatuses, 'label');
+    if (in_array($phaselabel, $labels, true)) {
+        return false;
+    }
+    return !((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING &&
+        in_array(get_string('approvalpending', 'quest'), $labels, true));
+}
+
+/**
+ * Form for creating or editing an answer.
+ *
  * @author juacas
  */
 class quest_print_answer_form extends moodleform {
+    /**
+     * Define the answer form fields.
+     *
+     * @return void
+     */
     public function definition() {
         $mform = & $this->_form;
         $currententry = $this->_customdata['current'];
@@ -998,10 +1779,8 @@ class quest_print_answer_form extends moodleform {
 }
 
 /**
- * @global stdClass $DB
- * @global type $COURSE
- * @global type $OUTPUT
- * @global stdClass $USER
+ * Save a Quest answer and its attachments.
+ *
  * @param \stdClass $quest
  * @param \stdClass $answer
  * @param bool $ismanager
@@ -1012,27 +1791,51 @@ class quest_print_answer_form extends moodleform {
 function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions, $attachmentoptions, $context) {
     global $DB, $COURSE, $OUTPUT, $USER;
 
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     $timenow = time();
     // ...variable $modif to check if the answer is new of is being modified.
     if (empty($answer->id)) {
         $modif = false;
+        $submissionid = (int)($answer->sid ?? $answer->submissionid ?? 0);
+        $submission = $DB->get_record('quest_submissions', [
+            'id' => $submissionid,
+            'questid' => $quest->id,
+        ], '*', MUST_EXIST);
+        if (!quest_user_can_answer_submission($quest, $submission, $context)) {
+            throw new \moodle_exception('nopermissiontoanswer', 'quest');
+        }
         if (!$validate = quest_validate_user_answer($quest, $submission)) {
-            print_error('answerexisty', 'quest', "submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=showsubmission");
+            throw new \moodle_exception(
+                'answerexisty',
+                'quest',
+                "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge"
+            );
         }
         $answer->questid = $quest->id;
         $answer->userid = $USER->id;
-        $answer->submissionid = $answer->sid;
+        $answer->submissionid = $submission->id;
     } else {
         $modif = true;
-        $answer->id = $DB->get_field('quest_answers', 'id', ['id' => $answer->id], MUST_EXIST);
-        if (!($ismanager || (($USER->id == $answer->userid) && ($timenow < $quest->dateend)))) {
-            print_error(
+        $storedanswer = $DB->get_record('quest_answers', [
+            'id' => $answer->id,
+            'questid' => $quest->id,
+        ], '*', MUST_EXIST);
+        quest_require_answer_ownership($storedanswer, (int)$quest->id);
+        $submission = $DB->get_record('quest_submissions', [
+            'id' => $storedanswer->submissionid,
+            'questid' => $quest->id,
+        ], '*', MUST_EXIST);
+        if (!($ismanager || ((int)$USER->id === (int)$storedanswer->userid &&
+                (int)$submission->dateend > $timenow))) {
+            throw new \moodle_exception(
                 'answernoauthorizedupdate',
                 'quest',
-                "submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id"
+                "challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id"
             );
         }
+        $answer->id = $storedanswer->id;
+        $answer->questid = $quest->id;
+        $answer->userid = $storedanswer->userid;
+        $answer->submissionid = $storedanswer->submissionid;
     }
     $answer->date = $timenow;
     $answer->description = ''; // ...updated later.
@@ -1056,7 +1859,7 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     }
     if ($modif == false) {
         if (!$answer->id = $DB->insert_record("quest_answers", $answer)) {
-            print_error('inserterror', 'quest', null, "quest_answers");
+            throw new \moodle_exception('inserterror', 'quest', '', "quest_answers");
         }
     }
     $answer = file_postupdate_standard_editor(
@@ -1084,7 +1887,6 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     }
     $DB->update_record('quest_answers', $answer);
 
-    // TODO: en este punto no hay cambio de calificaciÃ³n.
     // Update scores and statistics.
     // Update current User scores.
     require_once('scores_lib.php');
@@ -1095,28 +1897,6 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     if ($quest->allowteams) {
         quest_update_team_scores($quest->id, quest_get_user_team($quest->id, $answer->userid));
     }
-    if (!$users = quest_get_course_members($COURSE->id, "u.lastname, u.firstname")) {
-        echo $OUTPUT->heading(get_string("nostudentsyet"));
-        echo $OUTPUT->footer($course);
-        exit();
-    }
-    // JPC 2013-11-28 disable excesive notifications.
-    if (false) {
-        foreach ($users as $user) {
-            if ($ismanager) {
-                quest_send_message(
-                    $user,
-                    "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer",
-                    'answeradd',
-                    $quest,
-                    $submission,
-                    $answer,
-                    $USER
-                );
-            }
-        }
-    }
-    // JPC disabled block.
     $user = get_complete_user_data('id', $submission->userid);
     if ($user) {
         quest_send_message(
@@ -1152,6 +1932,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
     $timenow = time();
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $cangrade = has_capability('mod/quest:grade', $context);
 
     // Get all the students.
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -1227,10 +2008,11 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
                 // Answer Phase.
-                $data[] = quest_answer_phase($answer, $course);
-                $sortdata['phase'] = quest_answer_phase($answer, $course);
+                $phasehtml = quest_answer_phase($answer, $course);
+                $data[] = $phasehtml;
+                $sortdata['phase'] = strip_tags($phasehtml);
 
-                $data[] = userdate($answer->date, get_string('datestr', 'quest'));
+                $data[] = userdate($answer->date, get_string('strftimedatetimeshort', 'langconfig'));
                 $sortdata['dateanswer'] = $answer->date;
 
                 if (($answer->phase == 1) || ($answer->phase == 2)) {
@@ -1299,6 +2081,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
 
     $table->width = "95%";
 
+    $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -1311,9 +2094,9 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
             } else {
                 $columnicon = $dir == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "/pix/i/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $url = (new moodle_url('submissions.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission',
+        $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge',
                                                     'sort' => $column, 'dir' => $columndir]))->out();
 
         $$column = "<a href=\"$url\">" . $string[$column] . "</a>$columnicon";
@@ -1350,6 +2133,34 @@ function quest_print_answer_title($quest, $answer, $submission) {
     return "<a name=\"sid_$answer->id\" href=\"$url\">$answer->title</a>";
 }
 /**
+ * Render an answer action as a compact Bootstrap button.
+ *
+ * @param moodle_url|string $url Action URL.
+ * @param string $label Button label.
+ * @param string $icon Font Awesome icon name without the fa- prefix.
+ * @param string $class Bootstrap button classes.
+ * @param string|null $name Optional anchor name.
+ * @return string
+ */
+function quest_answer_action_button(
+    $url,
+    string $label,
+    string $icon,
+    string $class = 'btn btn-sm btn-outline-secondary',
+    ?string $name = null
+): string {
+    $attributes = ['class' => $class . ' quest-answer-action'];
+    if ($name !== null) {
+        $attributes['name'] = $name;
+    }
+    $content = html_writer::tag(
+        'i',
+        '',
+        ['class' => 'fa fa-' . $icon . ' me-1', 'aria-hidden' => 'true']
+    ) . s($label);
+    return html_writer::link($url, $content, $attributes);
+}
+/**
  *
  * @param \stdClass $cm
  * @param \stdClass $answer
@@ -1360,99 +2171,194 @@ function quest_print_answer_title($quest, $answer, $submission) {
  */
 function quest_print_actions_answers($cm, $answer, $submission, $course, $assessment) {
     global $USER;
-    // Returns the teacher or peer grade and a hyperlinked list of grades for this submission..
-    $str = '';
 
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $isassessed = in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true);
+    $buttons = [];
+
+    $answerurl = new moodle_url('/mod/quest/answer.php', [
+        'sid' => $submission->id,
+        'aid' => $answer->id,
+        'action' => 'showanswer',
+        'sesskey' => sesskey(),
+    ]);
+    $assessurl = new moodle_url('/mod/quest/assess.php', [
+        'id' => $cm->id,
+        'sid' => $submission->id,
+        'aid' => $answer->id,
+        'action' => 'evaluate',
+        'sesskey' => sesskey(),
+    ]);
 
     if (!$ismanager && ($answer->userid == $USER->id)) {
-        if (($answer->phase == 1) || ($answer->phase == 2)) {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"viewassessment.php?asid=$assessment->id\">" . get_string(
-                'seevaluate',
-                'quest'
-            ) . "</a>";
+        if ($isassessed && $assessment) {
+            $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                'sid' => $submission->id,
+                'asid' => $assessment->id,
+                'aid' => $answer->id,
+                'sesskey' => sesskey(),
+            ]);
+            $buttons[] = quest_answer_action_button(
+                $viewurl,
+                get_string('seevaluate', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-info',
+                'sid_' . $answer->id
+            );
         } else {
-            $url = (new moodle_url('answer.php', ['sid' => $submission->id, 'action' => 'showanswer',
-                                                  'aid' => $answer->id]))->out();
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$url\">" . get_string(
-                'see',
-                'quest'
-            ) . "</a>";
+            $buttons[] = quest_answer_action_button(
+                $answerurl,
+                get_string('see', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-secondary',
+                'sid_' . $answer->id
+            );
         }
     } else if ($ismanager) {
-        $assessurl = new moodle_url(
-            "/mod/quest/assess.php",
-            ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
-        );
-        if (($answer->phase == 1) || ($answer->phase == 2)) {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$assessurl\">" . get_string('reevaluate', 'quest') . "</a>";
-
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" " .
-                    "href=\"viewassessment.php?sid=$submission->id&amp;asid=$assessment->id&amp;aid=$answer->id\">" . get_string(
-                        'seevaluate',
-                        'quest'
-                    ) . "</a>";
-        } else if ($answer->phase == 0) {
-            $str .= '&nbsp;&nbsp;<a href="' . $assessurl . '">' . get_string('evaluate', 'quest') . '</a>';
+        if ($isassessed) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('reevaluate', 'quest'),
+                'refresh',
+                'btn btn-sm btn-outline-warning',
+                'sid_' . $answer->id
+            );
+            if ($assessment) {
+                $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                    'sid' => $submission->id,
+                    'asid' => $assessment->id,
+                    'aid' => $answer->id,
+                    'sesskey' => sesskey(),
+                ]);
+                $buttons[] = quest_answer_action_button(
+                    $viewurl,
+                    get_string('seevaluate', 'quest'),
+                    'eye',
+                    'btn btn-sm btn-outline-info',
+                    'sid_' . $answer->id
+                );
+            }
+        } else if ($answer->phase == ANSWER_PHASE_UNGRADED) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('evaluate', 'quest'),
+                'check',
+                'btn btn-sm btn-primary',
+                'sid_' . $answer->id
+            );
         } else {
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" " .
-                    "href=\"answer.php?aid=$answer->id&amp;action=showanswer&amp;sid=$submission->id\">" . get_string(
-                        'see',
-                        'quest'
-                    ) . "</a>";
+            $buttons[] = quest_answer_action_button(
+                $answerurl,
+                get_string('see', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-secondary',
+                'sid_' . $answer->id
+            );
         }
     } else if ($submission->userid == $USER->id) {
-        if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 1)) {
-            $assessurl = new moodle_url(
-                "/mod/quest/assess.php",
-                ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+        if ($isassessed && $assessment && $assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('reevaluate', 'quest'),
+                'refresh',
+                'btn btn-sm btn-outline-warning',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$assessurl\">" . get_string('reevaluate', 'quest') . "</a>";
-            $viewurl = new moodle_url(
-                "/mod/quest/viewassessment.php",
-                ['sid' => $submission->id, 'asid' => $assessment->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+            $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                'sid' => $submission->id,
+                'asid' => $assessment->id,
+                'aid' => $answer->id,
+                'sesskey' => sesskey(),
+            ]);
+            $buttons[] = quest_answer_action_button(
+                $viewurl,
+                get_string('seevaluate', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-info',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$viewurl" . get_string('seevaluate', 'quest') . "</a>";
-        } else if ((($answer->phase == 1) || ($answer->phase == 2)) && ($assessment->state == 2)) {
-            $viewurl = new moodle_url(
-                "/mod/quest/viewassessment.php",
-                ['sid' => $submission->id, 'asid' => $assessment->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+        } else if ($isassessed && $assessment && $assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+            $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
+                'sid' => $submission->id,
+                'asid' => $assessment->id,
+                'aid' => $answer->id,
+                'sesskey' => sesskey(),
+            ]);
+            $buttons[] = quest_answer_action_button(
+                $viewurl,
+                get_string('seevaluate', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-info',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$viewurl\">" . get_string('seevaluate', 'quest') . "</a>";
-        } else if ($answer->phase == 0) {
-            $assessurl = new moodle_url(
-                "/mod/quest/assess.php",
-                ['id' => $cm->id, 'sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey(),
-                'action' => 'evaluate']
+        } else if ($answer->phase == ANSWER_PHASE_UNGRADED) {
+            $buttons[] = quest_answer_action_button(
+                $assessurl,
+                get_string('evaluate', 'quest'),
+                'check',
+                'btn btn-sm btn-primary',
+                'sid_' . $answer->id
             );
-            $assessmsg = get_string('evaluate', 'quest');
-            $str .= "&nbsp;&nbsp;<a href=\"$assessurl\">$assessmsg</a>";
         } else {
-            $answerurl = new moodle_url(
-                "/mod/quest/answer.php",
-                ['sid' => $submission->id, 'aid' => $answer->id, 'sesskey' => sesskey()]
+            $buttons[] = quest_answer_action_button(
+                $answerurl,
+                get_string('see', 'quest'),
+                'eye',
+                'btn btn-sm btn-outline-secondary',
+                'sid_' . $answer->id
             );
-            $str .= "&nbsp;&nbsp;<a name=\"$answerurl\">" . get_string('see', 'quest') . "</a>";
         }
     } else {
-        $answerurl = new moodle_url(
-            "/mod/quest/answer.php",
-            ['sid' => $submission->id, 'aid' => $answer->id, 'action' => 'showanswer', 'sesskey' => sesskey()]
+        $buttons[] = quest_answer_action_button(
+            $answerurl,
+            get_string('see', 'quest'),
+            'eye',
+            'btn btn-sm btn-outline-secondary',
+            'sid_' . $answer->id
         );
-        $str .= "&nbsp;&nbsp;<a name=\"sid_$answer->id\" href=\"$answerurl\">" . get_string('see', 'quest') . "</a>";
     }
-    if (
-        (($ismanager) || ($submission->userid == $USER->id)) && (($answer->phase == 1) || ($answer->phase == 2)) &&
-             ($answer->permitsubmit == 0)
-    ) {
-        $answerurl = new moodle_url(
-            "/mod/quest/answer.php",
-            ['sid' => $submission->id, 'aid' => $answer->id, 'action' => 'permitsubmit', 'sesskey' => sesskey()]
+
+    if (($ismanager || ($submission->userid == $USER->id))
+            && $isassessed && $answer->permitsubmit == 0) {
+        $permiturl = new moodle_url('/mod/quest/answer.php', [
+            'sid' => $submission->id,
+            'aid' => $answer->id,
+            'action' => 'permitsubmit',
+            'sesskey' => sesskey(),
+        ]);
+        $buttons[] = quest_answer_action_button(
+            $permiturl,
+            get_string('permitsubmit', 'quest'),
+            'unlock-alt',
+            'btn btn-sm btn-outline-success',
+            'sid_' . $answer->id
         );
-        $str .= "&nbsp;&nbsp;<a href=\"$answerurl\">" . get_string('permitsubmit', 'quest') . "</a>";
     }
-    return $str;
+
+    // The respondent can start a new attempt after the author or teacher has
+    // explicitly allowed another submission. The previous attempt remains
+    // available in the answer history.
+    if ((int)$answer->userid === (int)$USER->id
+            && (int)$answer->permitsubmit === ANSWER_PERMITSUBMIT_EDITABLE) {
+        $answeragainurl = new moodle_url('/mod/quest/answer.php', [
+            'sid' => $submission->id,
+            'uid' => $answer->userid,
+            'action' => 'answer',
+            'sesskey' => sesskey(),
+        ]);
+        $buttons[] = quest_answer_action_button(
+            $answeragainurl,
+            get_string('answeragain', 'quest'),
+            'reply',
+            'btn btn-sm btn-primary',
+            'sid_' . $answer->id
+        );
+    }
+
+    return $buttons
+        ? html_writer::div(implode(' ', $buttons), 'quest-answer-actions d-flex flex-wrap gap-1')
+        : '';
 }
 /**
  *
@@ -1462,9 +2368,11 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
 function quest_print_answer_info($quest, $answer) {
     global $CFG, $DB, $OUTPUT;
     if (!$course = $DB->get_record("course", ["id" => $quest->course])) {
-        print_error("course_misconfigured", 'quest');
+        throw new \moodle_exception("course_misconfigured", 'quest');
     }
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
+    $context = context_module::instance($cm->id);
+    $isteacher = has_capability('mod/quest:manage', $context) || has_capability('mod/quest:grade', $context);
     // Print standard assignment heading..
     echo $OUTPUT->box_start("center");
     // Print phase and date info..
@@ -1491,7 +2399,7 @@ function quest_print_answer_info($quest, $answer) {
         }
     }
     $string .= '<b>' . get_string('pointsmax', 'quest') . ":&nbsp;&nbsp;" . number_format($answer->pointsmax, 4) . '</b><br>';
-    if (($answer->phase == 1) || ($answer->phase == 2)) {
+    if (($answer->phase == 1) || ($answer->phase == 2) || ($isteacher && $assessment)) {
         $string .= '<b>' . get_string('points', 'quest') . ":&nbsp;&nbsp;$points" . '</b><br>';
     }
     echo $string;
@@ -1508,79 +2416,164 @@ function quest_print_answer_info($quest, $answer) {
  * answer->state 1
  * 2 modified */
 function quest_answer_phase($answer, $course, $style = '') {
-    global $USER, $DB;
+    global $DB;
+
+    $string = '';
+    $badgeclass = 'bg-secondary text-dark';
 
     if ($answer->phase == ANSWER_PHASE_UNGRADED) {
         $string = get_string('phase1answer' . $style, 'quest');
+        $badgeclass = 'bg-danger text-white';
     } else {
-        $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id]);
+        $assessment = $DB->get_record('quest_assessments', ['answerid' => $answer->id]);
 
-        if ($answer->phase == ANSWER_PHASE_GRADED) {
-            if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
-                $string = get_string('phase2answer' . $style, 'quest');
-            } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+        if ($assessment) {
+            if ($answer->phase == ANSWER_PHASE_GRADED) {
+                if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
+                    $string = get_string('phase2answer' . $style, 'quest');
+                    $badgeclass = 'bg-info text-dark';
+                } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+                    $string = get_string('phase3answer' . $style, 'quest');
+                    $badgeclass = 'bg-success text-white';
+                }
+            } else if ($answer->phase == ANSWER_PHASE_PASSED) {
+                if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
+                    $string = get_string('phase4answer' . $style, 'quest');
+                    $badgeclass = 'bg-success text-white';
+                } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+                    $string = get_string('phase5answer' . $style, 'quest');
+                    $badgeclass = 'bg-success text-white';
+                }
+            }
+
+            if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
+                $string = trim($string . ' *');
+                $badgeclass = 'bg-warning text-dark';
+            }
+        } else {
+            if (!empty($answer->questionusageid) &&
+                    in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)) {
+                $string = get_string('gradedautomatically', 'quest');
+                $badgeclass = 'bg-success text-white';
+            } else if ($answer->phase == ANSWER_PHASE_GRADED) {
                 $string = get_string('phase3answer' . $style, 'quest');
-            }
-            if ($answer->state == ANSWER_STATE_MODIFIED) {
-                $string .= get_string('modified', 'quest');
-            }
-        } else if ($answer->phase == ANSWER_PHASE_PASSED) {
-            if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
-                $string = get_string('phase4answer' . $style, 'quest');
-            } else if ($assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
+                $badgeclass = 'bg-success text-white';
+            } else if ($answer->phase == ANSWER_PHASE_PASSED) {
                 $string = get_string('phase5answer' . $style, 'quest');
-            }
-            if ($answer->state == ANSWER_STATE_MODIFIED) {
-                $string .= " " . get_string('modified', 'quest');
+                $badgeclass = 'bg-success text-white';
             }
         }
-        if ($assessment->phase == ASSESSMENT_PHASE_APPROVAL_PENDING) {
-            if (!isset($string)) {
-                $string = "*";
-            } else {
-                $string .= "*";
-            }
+
+        if ($answer->state == ANSWER_STATE_MODIFIED) {
+            $string = trim($string . ' ' . get_string('modified', 'quest'));
+            $badgeclass = 'bg-warning text-dark';
         }
     }
 
-    return $string;
+    if ($string === '') {
+        $string = get_string('phase1answer' . $style, 'quest');
+        $badgeclass = 'bg-danger text-white';
+    }
+
+    $html = html_writer::span(
+        $string,
+        'badge ' . $badgeclass . ' quest-answer-phase-badge'
+    );
+
+    if ((int)($answer->permitsubmit ?? ANSWER_PERMITSUBMIT_NO_EDITABLE) === ANSWER_PERMITSUBMIT_EDITABLE) {
+        $html .= ' ' . html_writer::span(
+            get_string('allowresubmission', 'quest'),
+            'badge bg-warning text-dark quest-answer-resubmission-badge'
+        );
+    }
+
+    return $html;
 }
 
 /**
- * @global type $CFG
- * @global stdClass $USER
- * @global type $OUTPUT
+ * Render an answer with its content, feedback, and attachments.
+ *
  * @param \stdClass $quest
  * @param \stdClass $answer
  */
 function quest_print_answer($quest, $answer) {
     // ...prints the answer with optional attachments.
-    global $CFG, $USER, $OUTPUT;
+    global $CFG, $DB, $USER, $OUTPUT;
 
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
 
     $description = $answer->description;
     $context = context_module::instance($cm->id);
+    $isteacher = has_capability('mod/quest:manage', $context) || has_capability('mod/quest:grade', $context);
 
-    $description = file_rewrite_pluginfile_urls($description, 'pluginfile.php', $context->id, 'mod_quest', 'answer', $answer->id);
+    if (!empty($answer->questionusageid)) {
+        require_once($CFG->libdir . '/questionlib.php');
+        $submission = $DB->get_record('quest_submissions', [
+            'id' => $answer->submissionid,
+            'questid' => $quest->id,
+        ], 'id, dateend', MUST_EXIST);
+        $quba = question_engine::load_questions_usage_by_activity($answer->questionusageid);
+        $showcorrectanswer = (int)$submission->dateend <= time();
 
-    $options = new stdClass();
-    $options->para = false;
-    $options->trusted = $answer->descriptiontrust;
-    $options->context = $context;
-    $options->overflowdiv = true;
-    $description = format_text($description, $answer->descriptionformat, $options);
-    echo $OUTPUT->box($description);
+        echo '<div class="card border-0 shadow-sm mb-4">';
+        echo '  <div class="card-body p-4">';
+        echo \mod_quest\service\autograde_service::render_questions($quba, true, $showcorrectanswer, $isteacher);
+        $allautomatic = true;
+        foreach ($quba->get_slots() as $slot) {
+            if ($quba->get_question($slot)->qtype->is_manual_graded()) {
+                $allautomatic = false;
+                break;
+            }
+        }
+        $automaticgrade = $isteacher
+            ? \mod_quest\service\autograde_service::get_automatic_grade($answer)
+            : null;
+        $showresult = $allautomatic && (
+            in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)
+            || ($isteacher && $automaticgrade !== null)
+        );
+        if ($showresult) {
+            $grade = $automaticgrade ?? (float)$answer->grade;
+            $iscorrect = $grade >= 50.0;
+            $resultlabel = $iscorrect ? get_string('correct', 'quest') : get_string('incorrect', 'quest');
+            $badgeclass = $iscorrect ? 'bg-success text-white' : 'bg-danger text-white';
+            echo html_writer::div(
+                html_writer::span($resultlabel, 'badge ' . $badgeclass) . ' ' .
+                html_writer::span(get_string('grade', 'quest') . ': ' . format_float($grade, 2) . '%'),
+                'quest-autograde-result mt-3'
+            );
+        }
+        echo '  </div>';
+        echo '</div>';
+    } else {
+        $description = file_rewrite_pluginfile_urls(
+            $description,
+            'pluginfile.php',
+            $context->id,
+            'mod_quest',
+            'answer',
+            $answer->id
+        );
+
+        $options = new stdClass();
+        $options->para = false;
+        $options->trusted = $answer->descriptiontrust;
+        $options->context = $context;
+        $options->overflowdiv = true;
+        $description = format_text($description, $answer->descriptionformat, $options);
+        echo $OUTPUT->box($description);
+    }
 
     $ismanager = has_capability('mod/quest:manage', $context);
+    $isteacher = $ismanager || has_capability('mod/quest:grade', $context);
     if (!empty($answer->commentsforteacher)) {
-        if (($answer->userid == $USER->id) || ($ismanager)) {
+        if (($answer->userid == $USER->id) || ($isteacher)) {
             echo $OUTPUT->heading(get_string('commentsforteacher', 'quest'));
             echo $OUTPUT->box(format_text($answer->commentsforteacher), 'center');
         }
     }
     if (!empty($answer->commentsteacher)) {
-        if (($answer->userid == $USER->id) || ($ismanager)) {
+        if (($answer->userid == $USER->id) || ($isteacher)) {
             echo $OUTPUT->heading(get_string('commentsteacher', 'quest'));
             echo $OUTPUT->box(format_text($answer->commentsteacher), 'center');
         }
@@ -1594,18 +2587,64 @@ function quest_print_answer($quest, $answer) {
 }
 
 /**
+ * Render an assessment form and its grading elements.
+ *
+ * Helper to render a rich Moodle editor for comments/feedback outside moodleform.
+ *
+ * @param string $name Form input name.
+ * @param string $id Unique HTML element id.
+ * @param string $text Initial content.
+ * @param \context $context Context.
+ * @param int $rows Number of rows.
+ */
+function quest_print_editor($name, $id, $text, $context, $rows = 4) {
+    global $CFG, $PAGE;
+    require_once($CFG->libdir . '/editorlib.php');
+
+    $options = [
+        'context' => $context,
+        'maxfiles' => 0,
+        'subdirs' => false,
+        'maxbytes' => 0,
+        'trusttext' => true,
+        'noclean' => false,
+    ];
+
+    $editor = editors_get_preferred_editor(FORMAT_HTML);
+    $editor->set_text($text);
+    $editor->use_editor($id, $options);
+
+    echo '<div class="quest-editor-wrap mb-2">';
+    echo '<textarea id="' . s($id) . '" name="' . s($name) . '" rows="' . $rows
+            . '" cols="75" class="form-control" style="width: 100%;">'
+            . s($text) . '</textarea>';
+    echo '</div>';
+}
+
+/**
+ * Render an assessment form and its grading elements.
+ *
  * @param stdClass $quest record
  * @param int $sid submissionid
- * @param stdClass $assessment
+ * @param stdClass|bool $assessment
  * @param boolean $allowchanges
  * @param boolean $showcommentlinks
  * @param string $returnto */
 function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false, $showcommentlinks = false, $returnto = '') {
     global $CFG, $USER, $questscales, $questeweights, $DB, $OUTPUT;
+    // Ensure global arrays are always populated, even if include order caused them to be null.
+    if (!is_array($questscales)) {
+        $questscales = quest_get_default_scales();
+    }
+    if (!is_array($questeweights)) {
+        $questeweights = quest_get_default_weights();
+    }
+
     $course = $DB->get_record("course", ["id" => $quest->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $cangrade = has_capability('mod/quest:grade', $context);
 
     if ($assessment) {
         $answer = $DB->get_record("quest_answers", ["id" => $assessment->answerid], '*', MUST_EXIST);
@@ -1627,50 +2666,64 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
         $showgrades = true;
     }
 
-    echo "<center>\n";
+    echo '<div class="quest-assessment-container my-4">';
 
     if (!isset($answer)) {
         $answer = new stdClass();
         $answer->id = -1;
     }
     // ...now print the grading form with the grading grade if any.
-    // FORM is needed for Mozilla browsers, else radio bttons are not checked..
     $sesskey = sesskey();
-    $formfragment = <<<FORM
-<form name="assessmentform" method="post" action="assessments.php">
-	<input type="hidden" name="id" value="$cm->id" /> <input
-		type="hidden" name="aid" value="$answer->id" /> <input
-		type="hidden" name="sid" value="$sid" /> <input
-		type="hidden" name="sesskey" value="$sesskey" /> <input
-		type="hidden" name="action" value="updateassessment" /> <input
-		type="hidden" name="returnto" value="$returnto" /> <input
-		type="hidden" name="elementno" value="" /> <input type="hidden"
-		name="stockcommentid" value="" />
-FORM;
-    echo $formfragment;
-    echo '<center> <table cellpadding="2" border="1">';
+    echo '<form name="assessmentform" method="post" action="assessments.php">';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="aid" value="' . $answer->id . '" />';
+    echo '<input type="hidden" name="sid" value="' . $sid . '" />';
+    echo '<input type="hidden" name="sesskey" value="' . $sesskey . '" />';
+    echo '<input type="hidden" name="action" value="updateassessment" />';
+    echo '<input type="hidden" name="returnto" value="' . s($returnto) . '" />';
+    echo '<input type="hidden" name="elementno" value="" />';
+    echo '<input type="hidden" name="stockcommentid" value="" />';
 
-    echo "<tr valign=\"top\">\n";
-    echo "  <td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
+    // Header Card.
+    echo '<div class="card shadow-sm border-0 mb-4 bg-light">';
+    echo '<div class="card-body d-flex flex-wrap justify-content-between align-items-center py-3 px-4 gap-2">';
+    echo '<div>';
+    echo '<h5 class="card-title mb-1 fw-bold text-dark">';
+    echo '<i class="fa fa-clipboard-check text-primary me-2" aria-hidden="true"></i>';
     if ($assessment) {
-        if ((isset($assessment->teacherid) && $assessment->teacherid != 0)) {
+        if (!empty($assessment->teacherid)) {
             $user = $DB->get_record('user', ['id' => $assessment->teacherid]);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
-        } else if (isset($assessment->userid) && $assessment->userid != 0 && $ismanager) {
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+        } else if (!empty($assessment->userid) && $ismanager) {
             $user = get_complete_user_data('id', $assessment->userid);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
-        } else if (isset($assessment->userid) && ($assessment->userid != 0) && ($assessment->userid == $USER->id) && !$ismanager) {
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+        } else if (!empty($assessment->userid) && ($assessment->userid == $USER->id) && !$ismanager) {
             $user = $DB->get_record('user', ['id' => $assessment->userid]);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
         } else {
-            print_string('assessment', 'quest');
+            echo get_string('assessment', 'quest');
         }
-
-        echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
-        echo "</tr>\n";
+        echo '</h5>';
+        if (!empty($assessment->dateassessment)) {
+            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>'
+                    . userdate($assessment->dateassessment) . '</small>';
+        }
     } else {
-        print_string('assessment', 'quest');
+        echo get_string('specimenassessmentform', 'quest') . '</h5>';
     }
+    echo '</div>';
+    echo '<div>';
+    if ($allowchanges && ($ismanager || $cangrade)) {
+        echo '<span class="badge bg-primary fs-7 px-3 py-2">'
+                . '<i class="fa fa-pencil me-1" aria-hidden="true"></i>'
+                . get_string('editing', 'quest') . '</span>';
+    } else {
+        echo '<span class="badge bg-secondary fs-7 px-3 py-2">'
+                . '<i class="fa fa-eye me-1" aria-hidden="true"></i>'
+                . get_string('view') . '</span>';
+    }
+    echo '</div>';
+    echo '</div></div>';
 
     // ...get the assignment elements....
     if (($DB->count_records("quest_elements", ["submissionsid" => $sid])) == 0) {
@@ -1678,8 +2731,11 @@ FORM;
         $nelements = $quest->nelements;
     } else {
         $condition = $sid;
-        if (isset($submissions->numelements)) {
-            $nelements = $submissions->numelements;
+        if (!isset($submission) && $sid) {
+            $submission = $DB->get_record("quest_submissions", ["id" => $sid]);
+        }
+        if (isset($submission->numelements)) {
+            $nelements = $submission->numelements;
         }
     }
 
@@ -1689,6 +2745,7 @@ FORM;
             echo $OUTPUT->notification("noteonassessmentelements", "quest");
         }
     }
+    $elements = [];
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
             if ($element->questid == $quest->id) {
@@ -1699,6 +2756,7 @@ FORM;
         $elements = null;
     }
 
+    $grades = [];
     if ($assessment) {
         // ...get any previous grades....
         if (
@@ -1721,287 +2779,267 @@ FORM;
             $grades[$i]->calification = 0;
         }
     }
-    if ($allowchanges == false) {
-        $enabled = "disabled=\"true\"";
-    } else {
-        $enabled = "";
-    }
-    // ...determine what sort of grading.
-    switch ($quest->gradingstrategy) {
-        case 0: // ...no grading.
-                // ...now print the form.
-            for ($i = 0; $i < count($elements); $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "</td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
-                echo "  <td>\n";
-                if ($allowchanges) {
-                    echo "<textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
-                    if (isset($grades[$i]->answer)) {
-                        echo $grades[$i]->answer;
-                    }
-                    echo "</textarea>\n";
-                } else {
-                    echo format_text($grades[$i]->answer);
-                }
-                echo "  </td>\n";
-                echo "</tr>\n";
 
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+    // ...render elements as modern cards.
+    if ($elements) {
+        $count = count($elements);
+        for ($i = 0; $i < $count; $i++) {
+            $iplus1 = $i + 1;
+            $weightval = isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0;
+            $weightstr = number_format($weightval, 2);
+
+            echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
+            echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
+            echo '<span class="fw-bold text-dark">';
+            echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>'
+                    . get_string('element', 'quest') . " $iplus1";
+            echo '</span>';
+            if ($quest->gradingstrategy == 1) {
+                echo '<span class="badge bg-secondary">' . get_string('weight', 'quest') . ": $weightstr</span>";
             }
-            break;
+            echo '</div>';
 
-        case 1: // ...accumulative grading.
-                // ...now print the form.
-            for ($i = 0; $i < count($elements); $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "<p align=\"right\"><font size=\"1\">" . get_string("weight", "quest") . ": " .
-                         number_format($questeweights[$elements[$i]->weight], 2) . "</font></p>\n";
-                echo "</td></tr>\n";
-                if ($showgrades) {
-                    echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "quest") . ":</b></p></td>\n";
-                    echo "  <td valign=\"top\">\n";
+            echo '<div class="card-body p-3">';
+            echo '<div class="criterion-description mb-3 text-secondary">';
+            echo format_text($elements[$i]->description);
+            echo '</div>';
 
-                    // ...get the appropriate scale.
-                    $scalenumber = $elements[$i]->scale;
-                    $scale = (object) $questscales[$scalenumber];
-                    switch ($scale->type) {
-                        case 'radio':
-                            // ...show selections highest first.
-                            echo "<center><b>$scale->start</b>&nbsp;&nbsp;&nbsp;";
-                            for ($j = $scale->size - 1; $j >= 0; $j--) {
-                                $checked = false;
-                                if (isset($grades[$i]->calification)) {
-                                    if ($j == $grades[$i]->calification) {
-                                        $checked = true;
-                                    }
-                                } else { // ...there's no previous grade so check the lowest option.
-                                    if ($j == 0) {
-                                        $checked = true;
-                                    }
-                                }
-                                if ($checked) {
-                                    echo " <input type=\"radio\" $enabled name=\"grade[$i]\" value=\"$j\" " .
-                                        "checked=\"checked\" alt=\"$j\" /> &nbsp;&nbsp;&nbsp;\n";
-                                } else {
-                                    echo " <input type=\"radio\" $enabled name=\"grade[$i]\" value=\"$j\" alt=\"$j\" /> " .
-                                    "&nbsp;&nbsp;&nbsp;\n";
-                                }
-                            }
-                            echo "&nbsp;&nbsp;&nbsp;<b>$scale->end</b></center>\n";
-                            break;
-                        case 'selection':
-                            unset($numbers);
-                            for ($j = 0; $j <= $scale->size; $j++) {
-                                $numbers[$j] = $j;
-                            }
-                            if (isset($grades[$i]->calification)) {
-                                $selected = $grades[$i]->calification;
-                            } else {
-                                $selected = '';
-                            }
+            // Grading scale block.
+            if ($showgrades && $quest->gradingstrategy == 1) {
+                echo '<div class="p-3 mb-3 bg-light rounded border">';
+                echo '<label class="form-label fw-bold d-block mb-2 text-dark">';
+                echo '<i class="fa fa-star text-warning me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ':';
+                echo '</label>';
 
-                            // Choose_from_menu: $numbers, "grade[$i]".
-                            echo html_writer::select(
-                                $numbers,
-                                "grade[$i]",
-                                $selected,
-                                false,
-                                $allowchanges ? null : ['disabled' => 'true']
-                            );
+                $scalenumber = $elements[$i]->scale;
+                $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
+                $scale = (object) $scaledata;
 
-                            break;
-                    }
-
-                    echo "  </td>\n";
-                    echo "</tr>\n";
-                }
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") . ":</b></p></td>\n";
-                echo "  <td>\n";
                 if ($allowchanges) {
-                    echo "<textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
-                    if (isset($grades[$i]->answer)) {
-                        echo $grades[$i]->answer;
+                    if ($scale->type === 'radio') {
+                        echo '<div class="quest-scale-radio-group">';
+                        if (!empty($scale->start)) {
+                            echo '<span class="fw-bold text-muted me-2 small">' . s($scale->start) . '</span>';
+                        }
+                        for ($j = $scale->size - 1; $j >= 0; $j--) {
+                            $checked = (isset($grades[$i]->calification) && $j == $grades[$i]->calification) ||
+                                       (!isset($grades[$i]->calification) && $j == 0);
+                            $checkedattr = $checked ? 'checked="checked"' : '';
+                            echo '<label class="quest-scale-option"><input type="radio" name="grade[' . $i . ']" '
+                                    . 'value="' . $j . '" ' . $checkedattr . ' /> '
+                                    . '<span class="badge bg-white text-dark border">' . $j . '</span></label>';
+                        }
+                        if (!empty($scale->end)) {
+                            echo '<span class="fw-bold text-muted ms-2 small">' . s($scale->end) . '</span>';
+                        }
+                        echo '</div>';
+                    } else { // Selection.
+                        unset($numbers);
+                        for ($j = 0; $j <= $scale->size; $j++) {
+                            $numbers[$j] = $j;
+                        }
+                        $selected = isset($grades[$i]->calification) ? $grades[$i]->calification : '';
+                        echo html_writer::select(
+                            $numbers,
+                            "grade[$i]",
+                            $selected,
+                            false,
+                            ['class' => 'form-select w-auto d-inline-block']
+                        );
                     }
-                    echo "</textarea>\n";
                 } else {
-                    if (isset($grades[$i]->answer)) {
-                        echo format_text($grades[$i]->answer);
+                    // Review mode: prominent badge.
+                    $selectedval = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
+                    echo '<div class="d-flex align-items-center gap-2">';
+                    echo '<span class="badge bg-primary fs-6 py-2 px-3"><i class="fa fa-check me-1" '
+                            . 'aria-hidden="true"></i>' . get_string('grade', 'quest') . ": $selectedval</span>";
+                    if (!empty($scale->start) || !empty($scale->end)) {
+                        echo '<span class="text-muted small">(' . s($scale->start) . ' &rarr; ' . s($scale->end) . ')</span>';
                     }
+                    echo '</div>';
                 }
-                echo "</td>\n";
-                echo "</tr>\n";
-
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+                echo '</div>';
             }
-            break;
-        default:
-            throw new InvalidArgumentException('Unknown grading strategy.');
-    } // ...end of outer switch.
-      // ...now get the general comment (present in all types).
-    echo "<tr valign=\"top\">\n";
-    switch ($quest->gradingstrategy) {
-        case 0:
-        case 1:
-        case 4: // ...no grading, accumulative and rubic.
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
-            $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
-            break;
+
+            // Feedback area.
+            echo '<div class="criterion-feedback">';
+            echo '<label class="form-label fw-bold mb-2 text-dark">';
+            echo '<i class="fa fa-comment-o text-info me-1" aria-hidden="true"></i>' . get_string('feedback') . ':';
+            echo '</label>';
+            if ($allowchanges) {
+                quest_print_editor(
+                    "feedback[$i]",
+                    "id_feedback_$i",
+                    isset($grades[$i]->answer) ? $grades[$i]->answer : '',
+                    $context,
+                    3
+                );
+            } else {
+                if (!empty($grades[$i]->answer)) {
+                    echo '<div class="quest-review-feedback-box">' . format_text($grades[$i]->answer) . '</div>';
+                } else {
+                    echo '<p class="text-muted fst-italic mb-0">' . get_string('nofeedback', 'quest') . '</p>';
+                }
+            }
+            echo '</div>'; // End criterion feedback.
+            echo '</div>'; // End card body.
+            echo '</div>'; // End card.
+        }
     }
-    echo "  <td>\n";
+
+    // General comment section.
+    echo '<div class="card shadow-sm mb-4 border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-comments-o text-info me-2" aria-hidden="true"></i>' . get_string('generalcomment', 'quest');
+    echo ' ' . $OUTPUT->help_icon('generalcomment', 'quest');
+    echo '</div>';
+    echo '<div class="card-body p-3">';
     quest_print_general_comment_box($course, $allowchanges, $assessment);
+    echo '</div></div>';
 
-    echo "&nbsp;</td>\n";
-    echo "</tr>\n";
-
+    // Teacher and author cross-comments.
     if (!$ismanager) {
         if (!empty($assessment->commentsteacher)) {
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>" . get_string("commentsteacher", "quest") . ":</b></p></td>\n";
-            echo "  <td>\n";
-            echo format_text($assessment->commentsteacher);
-            echo "&nbsp;</td>\n";
-            echo "</tr>\n";
+            echo '<div class="card shadow-sm mb-4 border-0">';
+            echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+            echo '<i class="fa fa-user-circle text-primary me-2" aria-hidden="true"></i>' . get_string('commentsteacher', 'quest');
+            echo '</div>';
+            echo '<div class="card-body p-3 quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
+            echo '</div>';
         }
     } else {
         if (!empty($assessment->commentsforteacher)) {
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>" . get_string("commentsauthor", "quest") . ":</b></p></td>\n";
-            echo "  <td>\n";
-            echo format_text($assessment->commentsforteacher);
-            echo "&nbsp;</td>\n";
-            echo "</tr>\n";
+            echo '<div class="card shadow-sm mb-4 border-0">';
+            echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+            echo '<i class="fa fa-user-circle text-info me-2" aria-hidden="true"></i>' . get_string('commentsauthor', 'quest');
+            echo '</div>';
+            echo '<div class="card-body p-3 quest-review-feedback-box">' . format_text($assessment->commentsforteacher) . '</div>';
+            echo '</div>';
         }
     }
 
-    $timenow = time();
-    // ...now show the grading grade if available....
+    // Global Assessment Summary (when evaluated).
     if (isset($assessment->state)) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\" align=\"center\"><b>" .
-                get_string('assessmentglobal', 'quest') . "</b></td>\n";
-        echo "</tr>\n";
-
+        echo '<div class="card quest-global-score-card mb-4 shadow-sm">';
+        echo '<div class="card-body p-4 text-center">';
+        echo '<h5 class="card-title fw-bold text-success mb-3">'
+                . '<i class="fa fa-trophy me-2" aria-hidden="true"></i>'
+                . get_string('assessmentglobal', 'quest') . '</h5>';
+        echo '<div class="d-flex flex-wrap justify-content-center align-items-center gap-4">';
         if ($assessment->state == 2) {
             if (!empty($assessment->pointsautor)) {
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>";
-                print_string('gradeautor', 'quest');
-                echo ":</b></p></td><td>\n";
                 $perct = $assessment->pointsmax == 0 ? 0 : $assessment->pointsautor / $assessment->pointsmax;
-                echo number_format($perct, 1) . '% (';
-                echo number_format($assessment->pointsautor, 4);
-                echo ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ') ';
-                echo "&nbsp;</td>\n";
-                echo "</tr>\n";
+                echo '<div class="text-center">';
+                echo '<span class="text-muted small d-block mb-1">' . get_string('gradeautor', 'quest') . '</span>';
+                echo '<span class="badge bg-secondary fs-6 py-2 px-3">' . number_format($perct * 100, 1)
+                        . '% (' . number_format($assessment->pointsautor, 4) . ' ' . get_string('of', 'quest')
+                        . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
+                echo '</div>';
             }
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>";
-            print_string('grade', 'quest');
-            echo ":</b></p></td><td>\n";
-
-            echo number_format($answer->grade, 1) . '% (';
-            echo number_format($assessment->pointsteacher, 4);
-
-            echo ' ' . get_string('of', 'quest') . ' ' . number_format($answer->pointsmax, 4) . ') ';
+            echo '<div class="text-center">';
+            echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($answer->grade, 1)
+                    . '% (' . number_format($assessment->pointsteacher, 4) . ' ' . get_string('of', 'quest')
+                    . ' ' . number_format($answer->pointsmax, 4) . ')</span>';
+            echo '</div>';
+        } else if ($assessment->state == 1) {
+            echo '<div class="text-center">';
+            echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
+            $oftext = ($answer->pointsmax == 0)
+                ? get_string('phase4submission', 'quest')
+                : get_string('of', 'quest') . ' (' . number_format($answer->pointsmax, 4) . ')';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">'
+                    . number_format($assessment->pointsautor, 4) . ' ' . $oftext . '</span>';
+            echo '</div>';
         }
-        if ($assessment->state == 1) {
-            echo "<tr valign=\"top\">\n";
-            echo "  <td align=\"right\"><p><b>";
-            print_string('grade', 'quest');
-            echo ":</b></p></td><td>\n";
-
-            echo number_format($assessment->pointsautor, 4);
-            if ($answer->pointsmax == 0) {
-                echo ' ' . get_string('phase4submission', 'quest') . ')';
-            } else {
-                echo ' ' . get_string('of', 'quest') . ' (' . number_format($answer->pointsmax, 4) . ')';
-            }
-        }
-        echo "&nbsp;</td>\n";
-        echo "</tr>\n";
+        echo '</div></div></div>';
     }
 
-    /*
-     * Manual Grading Form
-     */
-    if ($allowchanges == true) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-        echo get_string('changemanualcalification', 'quest') . '</b></center></td></tr>';
-        echo "<tr valign=\"top\">";
-        echo "<td align=\"right\"><p><b>" . get_string('newcalification', 'quest') . ": </b></p></td>\n";
-        echo "<td><input size=\"3\" maxlength=\"3\" name=\"manualcalification\" type=\"text\">%</td></tr>";
+    // Manual qualification override is restricted to users who can grade.
+    if ($allowchanges && ($ismanager || $cangrade)) {
+        echo '<div class="card mb-4 border-warning shadow-sm">';
+        echo '<div class="card-header bg-warning text-dark fw-bold py-2 px-3">';
+        echo '<i class="fa fa-sliders me-2" aria-hidden="true"></i>' . get_string('changemanualcalification', 'quest');
+        echo '</div>';
+        echo '<div class="card-body p-3">';
+        echo '<div class="d-flex align-items-center gap-2" style="max-width: 320px;">';
+        echo '<label class="form-label mb-0 fw-bold small">' . get_string('newcalification', 'quest') . ':</label>';
+        echo '<div class="input-group">';
+        echo '<input type="text" name="manualcalification" class="form-control" placeholder="0 - 100" maxlength="3" />';
+        echo '<span class="input-group-text">%</span>';
+        echo '</div></div></div></div>';
     }
 
-    // ...and close the table, show submit button if needed....
-    echo "</table>\n";
-    if ($assessment) {
-        if ($allowchanges) {
-            echo "<input type=\"submit\" value=\"" . get_string("savemyassessment", "quest") . "\" />\n";
+    // Action buttons.
+    if ($assessment && $allowchanges) {
+        echo '<div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top gap-2">';
+        if (!empty($returnto)) {
+            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary">'
+                    . '<i class="fa fa-times me-1" aria-hidden="true"></i>'
+                    . get_string('cancel') . '</a>';
+        } else {
+            echo '<div></div>';
         }
+        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" '
+                . 'aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
+        echo '</div>';
     }
 
-    echo "</center>";
-    echo "</form>\n";
+    echo '</form>';
+    echo '</div>'; // End Quest assessment container.
 }
 
-/** */
+/**
+ * Print the general comment box for an assessment.
+ *
+ * @param stdClass $course Course record.
+ * @param bool $allowchanges Whether editing is allowed.
+ * @param stdClass|false $assessment Assessment record.
+ */
 function quest_print_general_comment_box($course, $allowchanges, $assessment) {
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
     if ($ismanager) {
         if ($allowchanges) {
-            echo "      <textarea name=\"generalcomment\" rows=\"5\" cols=\"75\" >\n";
-            if (isset($assessment->commentsteacher)) {
-                echo $assessment->commentsteacher;
-            }
-            echo "</textarea>\n";
+            $text = isset($assessment->commentsteacher) ? $assessment->commentsteacher : '';
+            quest_print_editor("generalcomment", "id_generalcomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsteacher)) {
-                    echo format_text($assessment->commentsteacher);
-                }
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     } else {
         if ($allowchanges) {
-            echo "      <textarea name=\"generalteachercomment\" rows=\"5\" cols=\"75\" >\n";
-            if (isset($assessment->commentsforteacher)) {
-                echo $assessment->commentsforteacher;
-            }
-            echo "</textarea>\n";
+            $text = isset($assessment->commentsforteacher) ? $assessment->commentsforteacher : '';
+            quest_print_editor("generalteachercomment", "id_generalteachercomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsforteacher)) {
-                    echo format_text($assessment->commentsforteacher);
-                }
+            if ($assessment && !empty($assessment->commentsforteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsforteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     }
 }
 
-/** Calculate a percentual grade for an answer. */
+/**
+ * Calculate a percentage grade for an answer.
+ *
+ * @param \stdClass $quest Quest activity.
+ * @param \stdClass $answer Answer being assessed.
+ * @param array $grades Criterion grades.
+ * @param array $feedbacks Criterion feedback.
+ * @return float Fractional grade.
+ */
 function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     global $questeweights, $DB;
+    // Ensure $questeweights is always an array, even if global was not populated.
+    if (!is_array($questeweights)) {
+        $questeweights = quest_get_default_weights();
+    }
     $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id], '*', MUST_EXIST);
     // Has personalized elements?
@@ -2022,6 +3060,17 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
         }
     } else {
         $elements = [];
+    }
+    if ($quest->gradingstrategy == 1) {
+        foreach ($grades as $key => $thegrade) {
+            if (!isset($elements[$key]) || !is_finite((float)$thegrade)) {
+                throw new \moodle_exception('invaliddata', 'error');
+            }
+            $maxscore = (float)$elements[$key]->maxscore;
+            if ($maxscore <= 0 || $thegrade < 0 || $thegrade > $maxscore) {
+                throw new \moodle_exception('invaliddata', 'error');
+            }
+        }
     }
     $num = count($elements);
     $percent = 0;
@@ -2044,7 +3093,7 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
+                    throw new \moodle_exception('inserterror', 'quest', '', "quest_elements_assessments");
                 }
             }
             $percent = 0;
@@ -2057,30 +3106,34 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
                 $element->questid = $quest->id;
                 $element->assessmentid = $assessment->id;
                 $element->elementno = $key;
-                $element->answer = $feedbacks[$key];
+                $element->answer = isset($feedbacks[$key]) ? $feedbacks[$key] : '';
                 $element->calification = $thegrade;
                 $element->commentteacher = '';
 
                 if (!$element->id = $DB->insert_record("quest_elements_assessments", $element)) {
-                    print_error('inserterror', 'quest', null, "quest_elements_assessments");
+                    throw new \moodle_exception('inserterror', 'quest', '', "quest_elements_assessments");
                 }
             }
             // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
             foreach ($grades as $key => $grade) {
+                if (!isset($elements[$key]) || !is_object($elements[$key])) {
+                    continue;
+                }
                 $elem  = $elements[$key];
-                $maxscore = $elem->maxscore;
-                $weight = $questeweights[$elem->weight];
+                $maxscore = isset($elem->maxscore) ? (float)$elem->maxscore : 0;
+                $weight = (isset($elem->weight) && is_array($questeweights)
+                    && isset($questeweights[$elem->weight])) ? (float)$questeweights[$elem->weight] : 0.0;
                 if ($weight > 0) {
                     $totalweight += $weight;
                 }
 
-                $rawgrade += ($grade / $maxscore) * $weight;
+                $rawgrade += $maxscore > 0 ? ($grade / $maxscore) * $weight : 0;
             }
 
             // Process grade into quest assesment.
-            $percent = ($rawgrade / $totalweight);
+            $percent = ($totalweight > 0) ? ($rawgrade / $totalweight) : 0;
             break;
         default:
             throw new InvalidArgumentException('Unknown grading strategy.');
@@ -2158,60 +3211,16 @@ function quest_calculate_points(
     $pointsmin = 0,
     $type = 0
 ) {
-    if (!$dateanswercorrect) {
-        $dateanswercorrect = PHP_INT_MAX; // This regularize comparisons.
-    }
-    if ($dateanswercorrect < $datestart) {
-        $dateanswercorrect = $datestart;
-    }
-    // Determine scoring zone.
-    if ($timenow >= $dateend) {
-        $zone = 'ended';
-    } else if ($timenow > $dateanswercorrect) {
-        $zone = 'deflaction';
-    } else if ($timenow < ($datestart + $tinitial)) {
-        $zone = 'stationary';
-    } else if ($timenow >= ($datestart + $tinitial)) {
-        $zone = 'inflaction';
-    } else {
-        print_error('error');
-    }
-
-    switch ($zone) {
-        case 'stationary': // Stationary score.
-            $points = $initialpoints;
-            break;
-        case 'ended':
-            if ($dateanswercorrect <= $dateend) {
-                $points = $pointsmin;
-            } else {
-                $points = $pointsmax;
-            }
-            break;
-        case 'inflaction': // Inflactionary zone.
-            $dt = $timenow - ($datestart + $tinitial);
-            $points = $dt * ($pointsmax - $initialpoints) / ($dateend - $datestart - $tinitial) + $initialpoints;
-            break;
-        case 'deflaction': // Deflactionary score.
-            $pointscorrect = quest_calculate_points(
-                $dateanswercorrect,
-                $datestart,
-                $dateend,
-                $tinitial,
-                $dateanswercorrect,
-                $initialpoints,
-                $pointsmax,
-                $pointsmin
-            );
-            $incline2 = ($pointscorrect - $pointsmin) / ($dateend - $dateanswercorrect);
-            $points = $pointscorrect - $incline2 * ($timenow - $dateanswercorrect);
-            break;
-    }
-
-    if ($points < $pointsmin) {
-        $points = $pointsmin;
-    }
-    return $points;
+    return \mod_quest\service\scoring_calculator::calculate_points(
+        (int)$timenow,
+        (int)$datestart,
+        (int)$dateend,
+        (int)$tinitial,
+        !empty($dateanswercorrect) ? (int)$dateanswercorrect : null,
+        (float)$initialpoints,
+        (float)$pointsmax,
+        (float)$pointsmin
+    );
 }
 /**
  *
@@ -2229,11 +3238,19 @@ function quest_print_assessment_autor(
     $returnto = ''
 ) {
     global $CFG, $USER, $questscales, $questeweights, $DB, $OUTPUT;
+    // Ensure global arrays are always populated, even if include order caused them to be null.
+    if (!is_array($questscales)) {
+        $questscales = quest_get_default_scales();
+    }
+    if (!is_array($questeweights)) {
+        $questeweights = quest_get_default_weights();
+    }
 
     $course = $DB->get_record("course", ["id" => $quest->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
     $context = context_module::instance($cm->id);
     $ismanager = has_capability('mod/quest:manage', $context);
+    $cangrade = has_capability('mod/quest:grade', $context);
 
     if ($assessment) {
         $submission = $DB->get_record("quest_submissions", ["id" => $assessment->submissionid], '*', MUST_EXIST);
@@ -2241,7 +3258,7 @@ function quest_print_assessment_autor(
             get_string(
                 'assessmentof',
                 'quest',
-                "<a href=\"submissions.php?id=$cm->id&amp;action=showsubmission&amp;sid=$submission->id\" " .
+                "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\" " .
                 "target=\"submission\">$submission->title</a>"
             )
         );
@@ -2256,14 +3273,7 @@ function quest_print_assessment_autor(
         $showgrades = true;
     }
 
-    if ($assessment) {
-        // ...set the internal flag if necessary.
-        if ($allowchanges) {
-            $showgrades = true;
-        }
-
-        echo "<center>\n";
-    }
+    echo '<div class="quest-assessment-container my-4">';
 
     if (!$assessment) {
         $assessment = new stdClass();
@@ -2278,34 +3288,49 @@ function quest_print_assessment_autor(
     }
     $numelements = min(count($elementsraw), $quest->nelementsautor);
     // Now print the grading form with the grading grade if any.
-    $formfragment = <<<FORM
-        <form name="assessmentform" method="post"
-		action="assessments_autors.php">
-		<input type="hidden" name="id" value="$cm->id" /> <input
-			type="hidden" name="aid" value="$assessment->id" /> <input
-			type="hidden" name="action" value="updateassessment" /> <input
-			type="hidden" name="returnto" value="$returnto" /> <input
-			type="hidden" name="elementno" value="$numelements" /> <input type="hidden"
-			name="stockcommentid" value="" />
-		<center>
-			<table cellpadding="2" border="1">
-FORM;
-    echo $formfragment;
-    echo "<tr valign=\"top\">\n";
-    echo "  <td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-    if ($assessment) {
+    echo '<form name="assessmentform" method="post" action="assessments_autors.php">';
+    echo '<input type="hidden" name="id" value="' . $cm->id . '" />';
+    echo '<input type="hidden" name="aid" value="' . $assessment->id . '" />';
+    echo '<input type="hidden" name="action" value="updateassessment" />';
+    echo '<input type="hidden" name="sesskey" value="' . sesskey() . '" />';
+    echo '<input type="hidden" name="returnto" value="' . s($returnto) . '" />';
+    echo '<input type="hidden" name="elementno" value="' . $numelements . '" />';
+    echo '<input type="hidden" name="stockcommentid" value="" />';
+
+    // Header Card.
+    echo '<div class="card shadow-sm border-0 mb-4 bg-light">';
+    echo '<div class="card-body d-flex flex-wrap justify-content-between align-items-center py-3 px-4 gap-2">';
+    echo '<div>';
+    echo '<h5 class="card-title mb-1 fw-bold text-dark">';
+    echo '<i class="fa fa-user-check text-primary me-2" aria-hidden="true"></i>';
+    if ($assessment && !empty($assessment->id)) {
         if ($assessment->userid != 0) {
             $user = $DB->get_record('user', ['id' => $assessment->userid]);
-            print_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
+            echo get_string("assessmentby", "quest", quest_fullname($user->id, $course->id));
         } else {
-            print_string('assessment', 'quest');
+            echo get_string('assessment', 'quest');
         }
+        echo '</h5>';
+        if (!empty($assessment->dateassessment)) {
+            echo '<small class="text-muted"><i class="fa fa-calendar-o me-1" aria-hidden="true"></i>'
+                    . userdate($assessment->dateassessment) . '</small>';
+        }
+    } else {
+        echo get_string('specimenassessmentform', 'quest') . '</h5>';
     }
-
-    if ($assessment->dateassessment != null) {
-        echo '</b><br />' . userdate($assessment->dateassessment) . "</center></td>\n";
+    echo '</div>';
+    echo '<div>';
+    if ($allowchanges) {
+        echo '<span class="badge bg-primary fs-7 px-3 py-2">'
+                . '<i class="fa fa-pencil me-1" aria-hidden="true"></i>'
+                . get_string('editing', 'quest') . '</span>';
+    } else {
+        echo '<span class="badge bg-secondary fs-7 px-3 py-2">'
+                . '<i class="fa fa-eye me-1" aria-hidden="true"></i>'
+                . get_string('view') . '</span>';
     }
-    echo "</tr>\n";
+    echo '</div>';
+    echo '</div></div>';
 
     if ($elementsraw) {
         foreach ($elementsraw as $element) {
@@ -2315,8 +3340,7 @@ FORM;
         $elements = null;
     }
     $grades = [];
-    if ($assessment) {
-        // ...get any previous grades....
+    if ($assessment && !empty($assessment->id)) {
         if (
             $gradesraw = $DB->get_records(
                 "quest_items_assesments_autor",
@@ -2331,254 +3355,261 @@ FORM;
     }
 
     if (empty($grades)) {
-        // ...setup dummy grades array.
-        for ($i = 0; $i < $numelements; $i++) { // ...gives a suitable sized loop.
+        for ($i = 0; $i < $numelements; $i++) {
             $grades[$i] = new stdClass();
             $grades[$i]->answer = '';
-            get_string("yourfeedbackgoeshere", "quest");
             $grades[$i]->calification = 0;
         }
     }
-    // ...determine what sort of grading.
-    switch ($quest->gradingstrategyautor) {
-        case 0: // ...no grading.
-                // ...now print the form.
-            for ($i = 0; $i < $numelements; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "</td></tr>\n";
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") .
-                $OUTPUT->help_icon('feedback', 'quest') . ":</b></p></td>\n";
-                echo "  <td>\n";
-                if ($allowchanges) {
-                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
-                    if (isset($grades[$i]->answer)) {
-                        echo $grades[$i]->answer;
-                    }
-                    echo "</textarea>\n";
-                } else {
-                    echo format_text($grades[$i]->answer);
-                }
-                echo "  </td>\n";
-                echo "</tr>\n";
 
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+    // Render elements as cards.
+    for ($i = 0; $i < $numelements; $i++) {
+        $iplus1 = $i + 1;
+        $weightval = isset($questeweights[$elements[$i]->weight]) ? $questeweights[$elements[$i]->weight] : 0.0;
+        $weightstr = number_format($weightval, 2);
+
+        echo '<div class="card shadow-sm mb-4 quest-criterion-card">';
+        echo '<div class="card-header quest-criterion-header d-flex justify-content-between align-items-center py-2 px-3">';
+        echo '<span class="fw-bold text-dark">';
+        echo '<i class="fa fa-check-circle-o text-primary me-2" aria-hidden="true"></i>'
+                . get_string('element', 'quest') . " $iplus1";
+        echo '</span>';
+        if ($quest->gradingstrategyautor == 1) {
+            echo '<span class="badge bg-secondary">' . get_string('weight', 'quest') . ": $weightstr</span>";
+        }
+        echo '</div>';
+
+        echo '<div class="card-body p-3">';
+        echo '<div class="criterion-description mb-3 text-secondary">';
+        echo format_text($elements[$i]->description);
+        echo '</div>';
+
+        // Grading scale block.
+        if ($showgrades && $quest->gradingstrategyautor == 1) {
+            echo '<div class="p-3 mb-3 bg-light rounded border">';
+            echo '<label class="form-label fw-bold d-block mb-2 text-dark">';
+            echo '<i class="fa fa-star text-warning me-1" aria-hidden="true"></i>' . get_string('grade', 'quest') . ':';
+            echo '</label>';
+
+            $scalenumber = $elements[$i]->scale;
+            $scaledata = isset($questscales[$scalenumber]) ? $questscales[$scalenumber] : quest_get_default_scales()[0];
+            $scale = (object) $scaledata;
+
+            if ($allowchanges) {
+                if ($scale->type === 'radio') {
+                    echo '<div class="quest-scale-radio-group">';
+                    if (!empty($scale->start)) {
+                        echo '<span class="fw-bold text-muted me-2 small">' . s($scale->start) . '</span>';
+                    }
+                    for ($j = $scale->size - 1; $j >= 0; $j--) {
+                        $checked = (isset($grades[$i]->calification) && $j == $grades[$i]->calification) ||
+                                   (!isset($grades[$i]->calification) && $j == 0);
+                        $checkedattr = $checked ? 'checked="checked"' : '';
+                        echo '<label class="quest-scale-option"><input type="radio" name="grade[' . $i . ']" '
+                                . 'value="' . $j . '" ' . $checkedattr . ' /> '
+                                . '<span class="badge bg-white text-dark border">' . $j . '</span></label>';
+                    }
+                    if (!empty($scale->end)) {
+                        echo '<span class="fw-bold text-muted ms-2 small">' . s($scale->end) . '</span>';
+                    }
+                    echo '</div>';
+                } else { // Selection.
+                    unset($numbers);
+                    for ($j = $scale->size; $j >= 0; $j--) {
+                        $numbers[$j] = $j;
+                    }
+                    $selected = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
+                    echo html_writer::select(
+                        $numbers,
+                        "grade[$i]",
+                        $selected,
+                        false,
+                        ['class' => 'form-select w-auto d-inline-block']
+                    );
+                }
+            } else {
+                // Review mode: badge display.
+                $selectedval = isset($grades[$i]->calification) ? $grades[$i]->calification : 0;
+                echo '<div class="d-flex align-items-center gap-2">';
+                echo '<span class="badge bg-primary fs-6 py-2 px-3">'
+                        . '<i class="fa fa-check me-1" aria-hidden="true"></i>'
+                        . get_string('grade', 'quest') . ": $selectedval</span>";
+                if (!empty($scale->start) || !empty($scale->end)) {
+                    echo '<span class="text-muted small">(' . s($scale->start) . ' &rarr; ' . s($scale->end) . ')</span>';
+                }
+                echo '</div>';
             }
-            break;
+            echo '</div>';
+        }
 
-        case 1: // ...accumulative grading.
-                // ...now print the form.
-            for ($i = 0; $i < $numelements; $i++) {
-                $iplus1 = $i + 1;
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("element", "quest") . " $iplus1:</b></p></td>\n";
-                echo "  <td>" . format_text($elements[$i]->description);
-                echo "<p align=\"right\"><font size=\"1\">" . get_string("weight", "quest") . ": " .
-                         number_format($questeweights[$elements[$i]->weight], 2) . "</font></p>\n";
-                echo "</td></tr>\n";
-                if ($showgrades) {
-                    echo "<tr valign=\"top\">\n";
-                    echo "  <td align=\"right\"><p><b>" . get_string("grade", "grades") .
-                    ":</b></p></td>\n";
-                    echo "  <td valign=\"top\">\n";
-
-                    // ...get the appropriate scale.
-                    $scalenumber = $elements[$i]->scale;
-                    $scale = (object) $questscales[$scalenumber];
-                    switch ($scale->type) {
-                        case 'radio':
-                            // ...show selections highest first.
-                            echo "<center><b>$scale->start</b>&nbsp;&nbsp;&nbsp;";
-                            for ($j = $scale->size - 1; $j >= 0; $j--) {
-                                $checked = false;
-                                if (isset($grades[$i]->calification)) {
-                                    if ($j == $grades[$i]->calification) {
-                                        $checked = true;
-                                    }
-                                } else { // ...there's no previous grade so check the lowest option.
-                                    if ($j == 0) {
-                                        $checked = true;
-                                    }
-                                }
-                                if ($checked) {
-                                    echo "<input type=\"radio\" name=\"grade[$i]\" value=\"$j\" " .
-                                        "checked=\"checked\" alt=\"$j\" /> &nbsp;&nbsp;&nbsp;\n";
-                                } else {
-                                    echo "<input type=\"radio\" name=\"grade[$i]\" value=\"$j\" alt=\"$j\" /> &nbsp;&nbsp;&nbsp;\n";
-                                }
-                            }
-                            echo "&nbsp;&nbsp;&nbsp;<b>$scale->end</b></center>\n";
-                            break;
-                        case 'selection':
-                            unset($numbers);
-                            for ($j = $scale->size; $j >= 0; $j--) {
-                                $numbers[$j] = $j;
-                            }
-                            if (isset($grades[$i]->calification)) {
-                                echo html_writer::select($numbers, "grade[$i]", $grades[$i]->calification, "");
-                            } else {
-                                echo html_writer::select($numbers, "grade[$i]", 0, "");
-                            }
-                            break;
-                    }
-
-                    echo "  </td>\n";
-                    echo "</tr>\n";
-                }
-                echo "<tr valign=\"top\">\n";
-                echo "  <td align=\"right\"><p><b>" . get_string("feedback") .
-                        $OUTPUT->help_icon('feedback', 'quest') . ":</b></p></td>\n";
-                echo "  <td>\n";
-                if ($allowchanges) {
-                    echo "      <textarea name=\"feedback[$i]\" rows=\"3\" cols=\"75\" >\n";
-                    if (isset($grades[$i]->answer)) {
-                        echo $grades[$i]->answer;
-                    }
-                    echo "</textarea>\n";
-                } else {
-                    if (isset($grades[$i]->answer)) {
-                        echo format_text($grades[$i]->answer);
-                    }
-                }
-                echo "  </td>\n";
-                echo "</tr>\n";
-
-                echo "<tr valign=\"top\">\n";
-                echo "  <td colspan=\"2\" class=\"workshopassessmentheading\">&nbsp;</td>\n";
-                echo "</tr>\n";
+        // Feedback block.
+        echo '<div class="criterion-feedback">';
+        echo '<label class="form-label fw-bold mb-2 text-dark">';
+        echo '<i class="fa fa-comment-o text-info me-1" aria-hidden="true"></i>' . get_string('feedback');
+        echo ' ' . $OUTPUT->help_icon('feedback', 'quest') . ':';
+        echo '</label>';
+        if ($allowchanges) {
+            quest_print_editor(
+                "feedback[$i]",
+                "id_autor_feedback_$i",
+                isset($grades[$i]->answer) ? $grades[$i]->answer : '',
+                $context,
+                3
+            );
+        } else {
+            if (!empty($grades[$i]->answer)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($grades[$i]->answer) . '</div>';
+            } else {
+                echo '<p class="text-muted fst-italic mb-0">' . get_string('nofeedback', 'quest') . '</p>';
             }
-            break;
-        default:
-            throw new InvalidArgumentException('Unknown grading strategy.');
-    } // ...end of outer switch.
-      // ...now get the general comment (present in all types).
-    echo "<tr valign=\"top\">\n";
-    switch ($quest->gradingstrategy) {
-        case 0:
-        case 1:
-        case 4: // ...no grading, accumulative and rubic.
-            echo "  <td align=\"right\"><p><b>" . get_string("generalcomment", "quest") . ":</b>" .
-                    $OUTPUT->help_icon('generalcomment', 'quest') . "</p></td>\n";
-            break;
+        }
+        echo '</div>'; // End criterion feedback.
+        echo '</div>'; // End card body.
+        echo '</div>'; // End card.
     }
-    echo "  <td>\n";
+
+    // General comment section.
+    echo '<div class="card shadow-sm mb-4 border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-comments-o text-info me-2" aria-hidden="true"></i>' . get_string('generalcomment', 'quest');
+    echo ' ' . $OUTPUT->help_icon('generalcomment', 'quest');
+    echo '</div>';
+    echo '<div class="card-body p-3">';
     if ($ismanager) {
         if ($allowchanges) {
-            echo "      <textarea name=\"generalcomment\" rows=\"5\" cols=\"75\" >\n";
-            if (isset($assessment->commentsteacher)) {
-                echo $assessment->commentsteacher;
-            }
-            echo "</textarea>\n";
+            $text = isset($assessment->commentsteacher) ? $assessment->commentsteacher : '';
+            quest_print_editor("generalcomment", "id_autor_generalcomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsteacher)) {
-                    echo format_text($assessment->commentsteacher);
-                }
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     } else {
         if ($allowchanges) {
-            echo "      <textarea name=\"generalteachercomment\" rows=\"5\" cols=\"75\" >\n";
-            if (isset($assessment->commentsteacher)) {
-                echo $assessment->commentsteacher;
-            }
-            echo "</textarea>\n";
+            $text = isset($assessment->commentsteacher) ? $assessment->commentsteacher : '';
+            quest_print_editor("generalteachercomment", "id_autor_generalteachercomment", $text, $context, 5);
         } else {
-            if ($assessment) {
-                if (isset($assessment->commentsteacher)) {
-                    echo format_text($assessment->commentsteacher);
-                }
+            if ($assessment && !empty($assessment->commentsteacher)) {
+                echo '<div class="quest-review-feedback-box">' . format_text($assessment->commentsteacher) . '</div>';
             } else {
-                print_string("yourfeedbackgoeshere", "quest");
+                echo '<p class="text-muted fst-italic mb-0">' . get_string("nofeedback", "quest") . '</p>';
             }
         }
     }
+    echo '</div></div>';
 
-    echo "&nbsp;</td>\n";
-    echo "</tr>\n";
-
-    $timenow = time();
-    // ...now show the grading grade if available....
+    // Global Assessment Summary (when evaluated).
     if (isset($assessment->state)) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\" align=\"center\"><b>" .
-                get_string('assessmentglobal', 'quest') . "</b></td>\n";
-        echo "</tr>\n";
-
-        echo "<tr valign=\"top\">\n";
-        echo "  <td align=\"right\"><p><b>";
-        print_string('grade', 'quest');
-        echo ":</b></p></td><td>\n";
-
+        echo '<div class="card quest-global-score-card mb-4 shadow-sm">';
+        echo '<div class="card-body p-4 text-center">';
+        echo '<h5 class="card-title fw-bold text-success mb-3">'
+                . '<i class="fa fa-trophy me-2" aria-hidden="true"></i>'
+                . get_string('assessmentglobal', 'quest') . '</h5>';
+        echo '<div class="d-flex flex-wrap justify-content-center align-items-center gap-4">';
         if ($assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
-            echo number_format($assessment->points, 4);
-            echo ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest') . ' ' . number_format(
-                $submission->initialpoints,
-                2
-            );
+            echo '<div class="text-center">';
+            echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
+            echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->points, 4)
+                    . ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest')
+                    . ' ' . number_format($submission->initialpoints, 2) . '</span>';
+            echo '</div>';
         }
-        echo "&nbsp;</td>\n";
-        echo "</tr>\n";
+        echo '</div></div></div>';
     }
 
-    /*
-     * Manual Grading Form
-     */
-    if ($allowchanges == true) {
-        echo "<tr valign=\"top\">\n";
-        echo "<td colspan=\"2\" class=\"workshopassessmentheading\"><center><b>";
-        echo get_string('changemanualcalification', 'quest') . '</b></center></td></tr>';
-        echo "<tr valign=\"top\">";
-        echo "<td align=\"right\"><p><b>" . get_string('newcalification', 'quest') . ": </b></p></td>\n";
-        echo "<td><input size=\"3\" maxlength=\"3\" name=\"manualcalification\" type=\"text\">%</td></tr>";
+    // Manual qualification override (for teachers when $allowchanges).
+    if ($allowchanges == true && ($ismanager || $cangrade)) {
+        echo '<div class="card mb-4 border-warning shadow-sm">';
+        echo '<div class="card-header bg-warning text-dark fw-bold py-2 px-3">';
+        echo '<i class="fa fa-sliders me-2" aria-hidden="true"></i>' . get_string('changemanualcalification', 'quest');
+        echo '</div>';
+        echo '<div class="card-body p-3">';
+        echo '<div class="d-flex align-items-center gap-2" style="max-width: 320px;">';
+        echo '<label class="form-label mb-0 fw-bold small">' . get_string('newcalification', 'quest') . ':</label>';
+        echo '<div class="input-group">';
+        echo '<input type="text" name="manualcalification" class="form-control" placeholder="0 - 100" maxlength="3" />';
+        echo '<span class="input-group-text">%</span>';
+        echo '</div></div></div></div>';
     }
 
-    // ...and close the table, show submit button if needed....
-    echo "</table>\n";
-    if ($assessment) {
-        if ($allowchanges) {
-            echo "<input type=\"submit\" value=\"" . get_string("savemyassessment", "quest") . "\" />\n";
+    // Action buttons.
+    if ($assessment && $allowchanges) {
+        echo '<div class="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top gap-2">';
+        if (!empty($returnto)) {
+            echo '<a href="' . s($returnto) . '" class="btn btn-outline-secondary">'
+                    . '<i class="fa fa-times me-1" aria-hidden="true"></i>'
+                    . get_string('cancel') . '</a>';
+        } else {
+            echo '<div></div>';
         }
+        echo '<button type="submit" class="btn btn-primary btn-lg px-4"><i class="fa fa-check me-2" '
+                . 'aria-hidden="true"></i>' . get_string("savemyassessment", "quest") . '</button>';
+        echo '</div>';
     }
-    echo "</center>";
-    echo "</form>\n";
+    echo '</form>';
+    echo '</div>'; // End Quest assessment container.
 }
 
-/** Sort callback
- * @param array $a
- * @param array $b
- * @return integer */
+/**
+ * Sort assessment rows by their qualification.
+ *
+ * @param array $a First row.
+ * @param array $b Second row.
+ * @return int Comparison result.
+ */
 function quest_sortfunction_calification($a, $b) {
-    $sort = 'calification';
-    $dir = 'DESC';
-    if ($dir == 'ASC') {
-        return ($a[$sort] - $b[$sort]);
-    } else {
-        return ($a[$sort] - $b[$sort]);
+    $vala = $a['calification'] ?? 0;
+    $valb = $b['calification'] ?? 0;
+
+    if (is_numeric($vala) && is_numeric($valb)) {
+        return $valb <=> $vala;
     }
+    return strcasecmp((string)$valb, (string)$vala);
 }
 
-/** Insert scoring graph */
+/**
+ * Render the scoring graph for a submission.
+ *
+ * @param stdClass $quest Quest record.
+ * @param stdClass $submission Submission record.
+ * @return void
+ */
 function quest_print_score_graph($quest, $submission) {
-    global $CFG;
-    global $DB;
+    global $DB, $OUTPUT;
     $datefirstanswer = $DB->get_field("quest_answers", "min(date)", ["submissionid" => $submission->id]);
-    $tinit = $quest->tinitial * 86400; // Days to seconds.
-    $imgurl = new moodle_url(
-        '/mod/quest/graph_submission.php',
-        ['dfirstansw' => $datefirstanswer, 'tinit' => $tinit, 'dst' => $submission->datestart, 'dend' => $submission->dateend,
-             'ipoints' => $submission->initialpoints, 'daswcorr' => $submission->dateanswercorrect,
-             'pointsmax' => $submission->pointsmax, 'pointsmin' => $submission->pointsmin,
-        ]
+    $tinit = (int)($quest->tinitial * 86400);
+
+    $chartdata = \mod_quest\service\scoring_calculator::get_chart_data(
+        (int)$submission->datestart,
+        (int)$submission->dateend,
+        $tinit,
+        !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : null,
+        !empty($datefirstanswer) ? (int)$datefirstanswer : null,
+        (float)$submission->initialpoints,
+        (float)$submission->pointsmax,
+        (float)$submission->pointsmin
     );
-    echo "<center><img src = '" . $imgurl->out() . "'></center>";
+
+    $containerid = 'quest_score_chart_' . $submission->id . '_' . uniqid();
+    $templatedata = [
+        'containerid' => $containerid,
+        'chartdatajson' => json_encode($chartdata),
+        'currentpoints' => number_format((float)$chartdata['currentpoints'], 4),
+        'currentphase' => $chartdata['currentphase'],
+        'datestart' => (int)$submission->datestart,
+        'dateend' => (int)$submission->dateend,
+        'tinitial' => $tinit,
+        'dateanswercorrect' => !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : 0,
+        'initialpoints' => (float)$submission->initialpoints,
+        'pointsmax' => (float)$submission->pointsmax,
+        'pointsmin' => (float)$submission->pointsmin,
+        'type' => (int)$quest->typecalification,
+        'servertime' => time(),
+    ];
+
+    echo $OUTPUT->render_from_template('mod_quest/score_chart', $templatedata);
 }
 /**
  *
@@ -2728,7 +3759,7 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 
                 foreach ($teams as $team) {
                     if ($calificationteams[$i]->teamid == $team->id) {
-                        $data[] = $team->name;
+                        $data[] = s($team->name);
                         $sortdata['team'] = strtolower($team->name);
                     }
                 }
@@ -2769,6 +3800,8 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 }
 
 /**
+ * Sort rows according to the selected column and direction.
+ *
  * @param array $a
  * @param array $b
  * @return int
@@ -2776,24 +3809,35 @@ function quest_print_simple_calification($quest, $course, $currentgroup, $action
 function quest_sortfunction($a, $b) {
     global $sort, $dir;
 
-    if ($dir == 'ASC') {
-        return ($a[$sort] - $b[$sort]);
+    $vala = $a[$sort] ?? '';
+    $valb = $b[$sort] ?? '';
+
+    if (is_numeric($vala) && is_numeric($valb)) {
+        $cmp = $vala <=> $valb;
     } else {
-        return ($a[$sort] - $b[$sort]);
+        $cmp = strcasecmp((string)$vala, (string)$valb);
     }
+
+    return (strtoupper((string)$dir) === 'DESC') ? -$cmp : $cmp;
 }
 
 /**
- * @global stdClass $USER
- * @global stdClass $DB
- * @global type $OUTPUT
  * @param \stdClass $course
  * @param \stdClass $submission
  * @param \stdClass $quest
  * @param \stdClass $cm
+ */
+/**
+ * Actions available for a challenge.
+ *
+ * @param \stdClass $course
+ * @param \stdClass $challenge
+ * @param \stdClass $quest
+ * @param \stdClass $cm
  * @param array $options array with booleans for recalification, and in the future other options
- * @return string */
-function quest_actions_submission($course, $submission, $quest, $cm, $options = null) {
+ * @return string
+ */
+function quest_actions_challenge($course, $challenge, $quest, $cm, $options = null) {
     global $USER, $DB, $OUTPUT;
 
     $string = '';
@@ -2802,17 +3846,17 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
     $ismanager = has_capability('mod/quest:manage', $context);
 
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
-    if (($canapprove) && ($submission->state == SUBMISSION_STATE_APPROVAL_PENDING)) {
-        $string = "<a href=\"submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=approve\">" .
+    if (($canapprove) && ($challenge->state == SUBMISSION_STATE_APPROVAL_PENDING)) {
+        $string = "<a href=\"challenges.php?id=$cm->id&amp;cid=$challenge->id&amp;action=approve\">" .
                  get_string('approve', 'quest') . "</a>";
     }
 
     $cananswer = has_capability('mod/quest:attempt', $context);
-    if ($ismanager || ($cananswer && $submission->userid != $USER->id)) {
+    if ($ismanager || ($cananswer && $challenge->userid != $USER->id)) {
         $answered = false;
-        if ($answers = quest_get_user_answers($submission, $USER)) {
+        if ($answers = quest_get_user_answers($challenge, $USER)) {
             foreach ($answers as $answer) {
-                if ($answer->submissionid == $submission->id) {
+                if ($answer->submissionid == $challenge->id) {
                     $answered = true;
                     if ($string != '') {
                         $string .= '&nbsp;/&nbsp;';
@@ -2821,33 +3865,33 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
                 }
             }
         }
-        if ($submission->state != SUBMISSION_STATE_APROVED) {
+        if ($challenge->state != SUBMISSION_STATE_APROVED) {
             if ($string != '') {
                 $string .= '&nbsp;/&nbsp;';
             }
             $string .= get_string('phase1submission', 'quest');
         }
         if (
-            ($ismanager && !$answered) || ($answered == false && $submission->phase == SUBMISSION_PHASE_ACTIVE &&
-                 $submission->state == SUBMISSION_STATE_APROVED)
+            ($ismanager && !$answered) || ($answered == false && $challenge->phase == SUBMISSION_PHASE_ACTIVE &&
+                 $challenge->state == SUBMISSION_STATE_APROVED)
         ) {
             if ($string != '') {
                 $string .= '&nbsp;/&nbsp;';
             }
-            $string .= "<a href=\"answer.php?id=$cm->id&amp;uid=$USER->id&amp;action=answer&amp;sid=$submission->id\">" .
+            $string .= "<a href=\"answer.php?id=$cm->id&amp;uid=$USER->id&amp;action=answer&amp;sid=$challenge->id\">" .
                         get_string("reply", "quest") . "</a>";
             $string .= $OUTPUT->help_icon('answersubmission', 'quest');
         }
     } else if (!$cananswer) {
         $string .= get_string('cantRespond_WARN', 'quest');
         $string .= $OUTPUT->help_icon('answersubmission', 'quest');
-    } else if ($submission->userid == $USER->id) {
-        $string .= get_string('authorofsubmission', 'quest');
+    } else if ($challenge->userid == $USER->id) {
+        $string .= get_string('authorofchallenge', 'quest');
         $string .= $OUTPUT->help_icon('answersubmission', 'quest');
     }
 
-    if ($ismanager || ($submission->userid == $USER->id || $submission->phase != SUBMISSION_PHASE_ACTIVE)) {
-        $assessmentautor = quest_get_submission_assessment($submission);
+    if ($ismanager || ($challenge->userid == $USER->id || $challenge->phase != SUBMISSION_PHASE_ACTIVE)) {
+        $assessmentautor = quest_get_challenge_assessment($challenge);
         if ($assessmentautor) {
             if ($string != '') {
                 $string .= '&nbsp;/&nbsp;';
@@ -2861,13 +3905,13 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
         if ($string != '') {
             $string .= '&nbsp;/&nbsp;';
         }
-        $assessmentautor = quest_get_submission_assessment($submission);
+        $assessmentautor = quest_get_challenge_assessment($challenge);
         if ($assessmentautor) {
-            $string .= "<a href=\"assess_autors.php?id=$cm->id&amp;sid=$submission->id&amp;action=evaluate\">" .
+            $string .= "<a href=\"assess_autors.php?id=$cm->id&amp;sid=$challenge->id&amp;action=evaluate\">" .
                      get_string('reevaluate', 'quest') . "</a>";
             $string .= $OUTPUT->help_icon('assessthissubmission', 'quest');
         } else {
-            $string .= "<a href=\"assess_autors.php?id=$cm->id&amp;sid=$submission->id&amp;action=evaluate\">" .
+            $string .= "<a href=\"assess_autors.php?id=$cm->id&amp;sid=$challenge->id&amp;action=evaluate\">" .
                      get_string('evaluate', 'quest') . "</a>";
         }
     }
@@ -2876,15 +3920,29 @@ function quest_actions_submission($course, $submission, $quest, $cm, $options = 
         if ($string != '') {
             $string .= '&nbsp;/&nbsp;';
         }
-        $string .= "<a href=\"submissions.php?id=$cm->id&amp;sid=$submission->id&amp;action=recalificationall\">" .
+        $string .= "<a href=\"challenges.php?id=$cm->id&amp;cid=$challenge->id&amp;action=recalificationall\">" .
                  get_string('recalificationall', 'quest') . "</a>";
     }
     return $string;
 }
 
 /**
- * @global stdClass $USER
- * @global stdClass $DB
+ * Legacy wrapper for quest_actions_challenge.
+ *
+ * @param \stdClass $course
+ * @param \stdClass $submission
+ * @param \stdClass $quest
+ * @param \stdClass $cm
+ * @param array $options
+ * @return string
+ */
+function quest_actions_submission($course, $submission, $quest, $cm, $options = null) {
+    return quest_actions_challenge($course, $submission, $quest, $cm, $options);
+}
+
+/**
+ * Check whether a user may submit another answer.
+ *
  * @param stdClass $quest
  * @param stdClass $submission
  * @return boolean */
@@ -2923,14 +3981,71 @@ function quest_update_grade_for_answer($answeractual, $submission, $quest, $cour
     }
 }
 
-/** Update a submission details in the database.
- * Trucate numeric values to workaround weird database truncation errors with Moodle 2.5
- * @param \stdClass $submission */
-function quest_update_submission($submission) {
+/**
+ * Remove a manual assessment and restore the result kept by the question engine.
+ *
+ * @param \stdClass $quest Quest activity.
+ * @param \stdClass $answer Answer with a finished automatic attempt.
+ * @param \stdClass $assessment Manual assessment to remove.
+ * @return float Restored grade percentage.
+ */
+function quest_restore_automatic_assessment($quest, $answer, $assessment): float {
     global $DB;
-    $submission->points = number_format($submission->points, 4);
-    $DB->update_record('quest_submissions', $submission);
+
+    if ((int)$answer->questid !== (int)$quest->id || (int)$assessment->questid !== (int)$quest->id ||
+            (int)$assessment->answerid !== (int)$answer->id ||
+            (int)$assessment->state === ASSESSMENT_STATE_UNDONE) {
+        throw new \moodle_exception('autograde_restorenotavailable', 'quest');
+    }
+    $grade = \mod_quest\service\autograde_service::get_automatic_grade($answer);
+    if ($grade === null) {
+        throw new \moodle_exception('autograde_restorenotavailable', 'quest');
+    }
+
+    $submission = $DB->get_record('quest_submissions', [
+        'id' => $answer->submissionid,
+        'questid' => $quest->id,
+    ], '*', MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $quest->course], '*', MUST_EXIST);
+    $transaction = $DB->start_delegated_transaction();
+
+    $DB->delete_records('quest_elements_assessments', ['assessmentid' => $assessment->id]);
+    $DB->delete_records('quest_assessments', ['id' => $assessment->id, 'answerid' => $answer->id]);
+    $answer->grade = $grade;
+    $answer->phase = $grade >= 50.0 ? ANSWER_PHASE_PASSED : ANSWER_PHASE_GRADED;
+    $answer->state = ANSWER_STATE_EDITTED;
+    $DB->update_record('quest_answers', $answer);
+
+    $submission = \mod_quest\service\tournament_manager::update_submission_counts((int)$submission->id);
+    quest_update_grade_for_answer($answer, $submission, $quest, $course);
+    \mod_quest\service\tournament_manager::update_submission_counts((int)$submission->id);
+    quest_grade_updated($quest, (int)$answer->userid);
+    if ((int)$submission->userid !== (int)$answer->userid) {
+        \mod_quest\service\leaderboard_service::update_user_scores($quest, (int)$submission->userid);
+    }
+
+    $transaction->allow_commit();
+    return $grade;
 }
+
+/** Update a challenge details in the database.
+ * Truncate numeric values to workaround database truncation errors
+ * @param \stdClass $challenge */
+function quest_update_challenge($challenge) {
+    global $DB;
+    $challenge->points = number_format($challenge->points, 4);
+    $DB->update_record('quest_submissions', $challenge);
+}
+
+/**
+ * Legacy wrapper for quest_update_challenge.
+ *
+ * @param \stdClass $submission
+ */
+function quest_update_submission($submission) {
+    quest_update_challenge($submission);
+}
+
 /**
  *
  * @param \stdClass $cm
@@ -2949,8 +4064,8 @@ function quest_update_challenge_calendar($cm, $quest, $challenge) {
         $eventdata = new stdClass();
         $eventdata->name = get_string($stringevent, 'quest', $challenge->title);
         $url = new moodle_url(
-            '/mod/quest/submissions.php',
-            ['id' => $cm->id, 'sid' => $challenge->id, 'action' => 'showsubmission']
+            '/mod/quest/challenges.php',
+            ['id' => $cm->id, 'cid' => $challenge->id, 'action' => 'showchallenge']
         );
         $eventdata->description = "<a href=\"$url\">$eventdata->name</a>";
         $eventdata->eventtype = $type;
@@ -3055,7 +4170,9 @@ function quest_update_calification_user($calificationuser) {
     $DB->update_record('quest_calification_users', $calificationuser);
 }
 
-/** get the team for the user and quest
+/**
+ * Get the team assigned to a user in a Quest.
+ *
  * @param questid id of the quest
  * @param userid id of the user being queried for
  * @return false if failure or null data, mixed with the id otherway */
@@ -3065,7 +4182,9 @@ function quest_get_user_team($questid, $userid) {
     return $query;
 }
 
-/** get the members of a team
+/**
+ * Get the members of a Quest team.
+ *
  * @param int $questid
  * @param int $teamid
  * @return array of userids: */
@@ -3075,19 +4194,22 @@ function quest_get_team_members($questid, $teamid) {
     return $query;
 }
 
-/** calculate user answer points from records in database
- * do not sum assessments in phase 0 or 1 (approval pending)
+/** Calculate user answer points from approved assessments or automatic grades.
+ *
+ * Empty assessment placeholders do not replace the question-engine result.
  * @param integer $questid integer id
  * @param integer $userid integer id o array de id
  * @return number */
 function quest_calculate_user_score($questid, $userid) {
-    global $CFG, $DB;
+    global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
-    $params = array_merge([$questid], $inparams);
-    $sql = "select sum(ans.grade*ans.pointsmax/100) points from {quest_answers} ans, " .
-            "{quest_assessments} assess WHERE " .
-             "ans.questid=? AND ans.userid $insql AND ans.id=assess.answerid AND assess.phase=" .
-             ASSESSMENT_PHASE_APPROVED;
+    $params = array_merge([$questid], $inparams, [ASSESSMENT_PHASE_APPROVED, ASSESSMENT_STATE_UNDONE]);
+    $sql = "SELECT SUM(ans.grade * ans.pointsmax / 100) AS points
+              FROM {quest_answers} ans
+         LEFT JOIN {quest_assessments} assess ON assess.answerid = ans.id
+             WHERE ans.questid = ? AND ans.userid $insql
+               AND (assess.phase = ? OR (ans.questionusageid > 0 AND ans.phase > 0
+                    AND (assess.id IS NULL OR assess.state = ?)))";
     if ($query = $DB->get_record_sql($sql, $params)) {
         if (isset($query->points)) {
             return $query->points;
@@ -3099,22 +4221,29 @@ function quest_calculate_user_score($questid, $userid) {
     }
 }
 
-/** calculate user submission points from records in database
+/**
+ * Calculate challenge points for a user from database records.
+ *
  * @param integer $questid id
  * @param integer|array $userid id o array de ids
  * @return number */
-function quest_calculate_user_submissions_score($questid, $userid) {
+function quest_calculate_user_challenges_score($questid, $userid) {
     global $DB;
     $points = 0;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
     $allparams = array_merge([$questid], $inparams);
     if ($query = $DB->get_records_select("quest_submissions", "questid=? and userid $insql", $allparams)) {
+        $submissions = [];
         foreach ($query as $s) {
             $submissions[] = $s->id;
         }
         [$insql2, $inparams2] = $DB->get_in_or_equal($submissions);
-        if ($query = $DB->get_record_select("quest_assessments_autors", "submissionid $insql2", $inparams2, "sum(points) as points")) { // ...evp.
-                                                                                                                                        // ...funcione.
+        if ($query = $DB->get_record_select(
+            "quest_assessments_autors",
+            "submissionid $insql2",
+            $inparams2,
+            "sum(points) as points"
+        )) {
             if ($query->points) {
                 $points = $query->points;
             }
@@ -3124,8 +4253,22 @@ function quest_calculate_user_submissions_score($questid, $userid) {
 }
 
 /**
- * @param $userid array de identificadores */
-function quest_count_user_submissions_assesed($questid, $userid) {
+ * Legacy wrapper for quest_calculate_user_challenges_score.
+ *
+ * @param integer $questid
+ * @param integer|array $userid
+ * @return number
+ */
+function quest_calculate_user_submissions_score($questid, $userid) {
+    return quest_calculate_user_challenges_score($questid, $userid);
+}
+
+/**
+ * Count assessed challenges for a user.
+ *
+ * @param integer $questid
+ * @param int|array $userid array de identificadores */
+function quest_count_user_challenges_assesed($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
     $allparams = array_merge([$questid], $inparams);
@@ -3152,8 +4295,22 @@ function quest_count_user_submissions_assesed($questid, $userid) {
 }
 
 /**
- * @param $userid array de identificadores */
-function quest_count_user_submissions($questid, $userid) {
+ * Legacy wrapper for quest_count_user_challenges_assesed.
+ *
+ * @param integer $questid
+ * @param int|array $userid
+ * @return int
+ */
+function quest_count_user_submissions_assesed($questid, $userid) {
+    return quest_count_user_challenges_assesed($questid, $userid);
+}
+
+/**
+ * Count challenges attempted by a user.
+ *
+ * @param integer $questid
+ * @param int|array $userid array de identificadores */
+function quest_count_user_challenges($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
     $allparams = array_merge([$questid], $inparams);
@@ -3165,7 +4322,21 @@ function quest_count_user_submissions($questid, $userid) {
 }
 
 /**
- * @param $userid array de identificadores */
+ * Legacy wrapper for quest_count_user_challenges.
+ *
+ * @param integer $questid
+ * @param int|array $userid
+ * @return int
+ */
+function quest_count_user_submissions($questid, $userid) {
+    return quest_count_user_challenges($questid, $userid);
+}
+
+/**
+ * Count answers submitted by a user.
+ *
+ * @param int|array $userid User ID or IDs.
+ */
 function quest_count_user_answers($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
@@ -3178,7 +4349,10 @@ function quest_count_user_answers($questid, $userid) {
 }
 
 /**
- * @param $userid array de identificadores */
+ * Count assessed answers submitted by a user.
+ *
+ * @param int|array $userid User ID or IDs.
+ */
 function quest_count_user_answers_assesed($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
@@ -3191,24 +4365,41 @@ function quest_count_user_answers_assesed($questid, $userid) {
     }
 }
 
-/** Count submissions's assessments */
-function quest_count_submission_assessments($sid) {
+/**
+ * Count assessments belonging to a challenge.
+ *
+ * @param int $cid Challenge ID.
+ * @return int Assessment count.
+ */
+function quest_count_challenge_assessments($cid) {
     global $DB;
-    $answersids = $DB->get_records('quest_answers', ["submissionid" => $sid], '', "id");
+    $answersids = $DB->get_records('quest_answers', ["submissionid" => $cid], '', "id");
 
     if ($answersids != false && count($answersids) > 0) {
+        $aids = [];
         foreach ($answersids as $aid) {
             $aids[] = $aid->id;
         }
-        $answersids = implode(",", $aids);
-        [$insql, $inparams] = $DB->get_in_or_equal([$answersids]);
+        [$insql, $inparams] = $DB->get_in_or_equal($aids);
         return $DB->count_records_select("quest_assessments", "answerid $insql", $inparams);
     } else {
         return 0;
     }
 }
 
-/** Recalculate scores, stats and report to the gradebook for an user and his team
+/**
+ * Legacy wrapper for quest_count_challenge_assessments.
+ *
+ * @param int $sid
+ * @return int
+ */
+function quest_count_submission_assessments($sid) {
+    return quest_count_challenge_assessments($sid);
+}
+
+/**
+ * Recalculate scores, statistics and gradebook data for a user and team.
+ *
  * @param \stdClass $quest record
  * @param int $userid specified user */
 function quest_grade_updated($quest, $userid) {
@@ -3233,7 +4424,9 @@ function quest_grade_updated($quest, $userid) {
     quest_update_grades($quest, 0);
 }
 
-/** Updates $calificationuser registry
+/**
+ * Update a user's qualification registry.
+ *
  * counting totals and pointanswers and points from the records in the database */
 function quest_update_user_scores($quest, $userid) {
     global $DB;
@@ -3258,6 +4451,8 @@ function quest_update_user_scores($quest, $userid) {
 }
 
 /**
+ * Update a team's qualification registry.
+ *
  * @param stdClass|int $questid
  * @param int $teamid Updates pointanswers and points from the records in the database
  *        $calificationteam->nanswers = $nanswers;
@@ -3314,6 +4509,15 @@ function quest_update_team_scores($quest, $teamid) {
 
     $DB->set_field("quest_teams", "ncomponents", count($members), ["questid" => $questid, "id" => $teamid]);
 }
+/**
+ * Render the legacy banded qualification form.
+ *
+ * @param stdClass $quest Quest record.
+ * @param int $num Number of elements.
+ * @param array $elements Qualification elements.
+ * @param array $questeweights Weight options.
+ * @return void
+ */
 function quest_print_error_banded_form($quest, $num, $elements, $questeweights) {
     for ($i = 0; $i < $num; $i++) {
         $iplus1 = $i + 1;
@@ -3439,8 +4643,11 @@ function quest_recalification($answer, $quest, $assessment, $course) {
         case 0: // ...no grading.
                 // Insert all the elements that contain something.
             $points = quest_get_points($submission, $quest, $answer);
-            $grade = 0;
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
+            // There are no criterion marks to reconstruct a rubric grade. Keep
+            // the percentage saved when the answer was assessed.
+            $percent = (float)$answer->grade / 100;
+            $grade = $points * $percent;
+            if ((100.0 * $percent) >= 50.0000) {
                 $submission->points = $grade;
 
                 if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
@@ -3496,17 +4703,29 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 // ...now work out the grade....
             $rawgrade = 0;
             $totalweight = 0;
-            foreach ($grades as $key => $grade) {
-                $maxscore = $elements[$key]->maxscore;
-                $weight = $questeweightsrecalif[$elements[$key]->weight];
+            foreach ($grades ?? [] as $key => $grade) {
+                if (!isset($elements[$key]) || !is_object($elements[$key])) {
+                    continue;
+                }
+                $maxscore = isset($elements[$key]->maxscore) ? (float)$elements[$key]->maxscore : 0;
+                $wkey = $elements[$key]->weight ?? null;
+                $weight = ($wkey !== null && isset($questeweightsrecalif[$wkey])) ? $questeweightsrecalif[$wkey] : 0.0;
                 if ($weight > 0) {
                     $totalweight += $weight;
                 }
-                $rawgrade += ($grade / $maxscore) * $weight;
+                $rawgrade += $maxscore > 0 ? ($grade / $maxscore) * $weight : 0;
             }
             $points = quest_get_points($submission, $quest, $answer);
-            $grade = $points * ($rawgrade / $totalweight);
-            if ((100.0 * ($rawgrade / $totalweight)) >= 50.0000) {
+            if ($grades) {
+                $rubricfraction = $totalweight > 0 ? ($rawgrade / $totalweight) : 0;
+                $percent = \mod_quest\service\autograde_service::combine_with_rubric_grade($answer, $rubricfraction);
+            } else {
+                // A teacher may have entered a direct percentage instead of
+                // criterion marks, so retain its saved combined percentage.
+                $percent = (float)$answer->grade / 100;
+            }
+            $grade = $points * $percent;
+            if ((100.0 * $percent) >= 50.0000) {
                 $submission->points = $grade;
 
                 if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
@@ -3518,8 +4737,6 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                     $answer->phase = 2;
                 }
             } else {
-                $points = quest_get_points($submission, $quest, $answer);
-                $grade = $points * ($rawgrade / $totalweight);
                 $submission->points = $grade;
                 if ($answer->phase == 2) {
                     $submission->nanswerscorrect--;
@@ -3532,7 +4749,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             throw new InvalidArgumentException('Unknown grading strategy.');
     } // ...end of switch.
 
-    $answer->grade = 100 * ($grade / $points);
+    $answer->grade = 100 * $percent;
 
     // ...update the time of the assessment record (may be re-edited)....
     $assessment->dateassessment = $timenow;
@@ -3574,21 +4791,6 @@ function quest_recalification($answer, $quest, $assessment, $course) {
     } else {
         if ($user = get_complete_user_data('id', $answer->userid)) {
             quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
-        }
-        if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
-            global $OUTPUT;
-            echo $OUTPUT->heading(get_string('nostudentsyet'));
-            echo $OUTPUT->footer();
-            exit();
-        }
-        // JPC 2013-11-28 disable excesive notifications.
-        if (false) {
-            foreach ($users as $user) {
-                if (!has_capability('mod/quest:manage', $context, $user->id)) {
-                    continue;
-                }
-                quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
-            }
         }
     }
 
@@ -3659,7 +4861,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
                 $sortdata['firstname'] = strtolower($user->firstname);
                 $sortdata['lastname'] = strtolower($user->lastname);
 
-                $data[] = $team->name;
+                $data[] = s($team->name);
                 $sortdata['teamname'] = strtolower($team->name);
 
                 $data[] = $team->ncomponents;
@@ -3673,13 +4875,23 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
         }
     }
 
+    /**
+     * Sort team classification rows.
+     *
+     * @param array $a First row.
+     * @param array $b Second row.
+     * @return int Comparison result.
+     */
     function quest_sortfunction_team($a, $b) {
         global $sortteam, $dirteam;
-        if ($dirteam == 'ASC') {
-            return ($a[$sortteam] > $b[$sortteam]);
+        $vala = $a[$sortteam] ?? '';
+        $valb = $b[$sortteam] ?? '';
+        if (is_numeric($vala) && is_numeric($valb)) {
+            $cmp = $vala <=> $valb;
         } else {
-            return ($a[$sortteam] < $b[$sortteam]);
+            $cmp = strcasecmp((string)$vala, (string)$valb);
         }
+        return (strtoupper((string)$dirteam) === 'DESC') ? -$cmp : $cmp;
     }
 
     uasort($tablesort->sortdata, 'quest_sortfunction_team');
@@ -3709,7 +4921,7 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
             } else {
                 $columnicon = $dirteam == 'ASC' ? 'down' : 'up';
             }
-            $columnicon = " <img src=\"" . $CFG->wwwroot . "pix/t/$columnicon.png\" alt=\"$columnicon\" />";
+            $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
         $$column = "<a href=\"view.php?id=$cm->id&amp;sortteam=$column&amp;dirteam=$columndir\">" . $string[$column] .
                  "</a>$columnicon";
@@ -3752,7 +4964,7 @@ function quest_recalification_all($submission, $quest, $course) {
 function quest_check_visibility($course, $cm) {
     $context = context_course::instance($course->id);
     if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-        print_error("modulehiddenerror", 'quest');
+        throw new \moodle_exception("modulehiddenerror", 'quest');
     }
 }
 /**
@@ -3762,7 +4974,7 @@ function quest_check_visibility($course, $cm) {
  * @param string $userpassword
  */
 function quest_require_password($quest, $course, $userpassword) {
-    global $USER, $OUTPUT;
+    global $DB, $USER, $OUTPUT;
     $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id);
     $context = context_module::instance($cm->id);
 
@@ -3771,11 +4983,22 @@ function quest_require_password($quest, $course, $userpassword) {
     if (($quest->usepassword) && (!$ismanager)) {
         $correctpass = false;
         if (!empty($userpassword)) {
-            if ($quest->password == md5(trim($userpassword))) {
-                $USER->questloggedin[$quest->id] = true;
-                $correctpass = true;
+            $password = trim($userpassword);
+            $storedpassword = (string)$quest->password;
+            $correctpass = password_verify($password, $storedpassword);
+
+            // Upgrade legacy MD5 values after a successful login.
+            if (!$correctpass && preg_match('/^[a-f0-9]{32}$/i', $storedpassword)) {
+                $correctpass = hash_equals($storedpassword, md5($password));
+                if ($correctpass) {
+                    $DB->set_field('quest', 'password', quest_hash_password($password), ['id' => $quest->id]);
+                }
             }
-        } else if ($USER->questloggedin[$quest->id]) {
+
+            if ($correctpass) {
+                $USER->questloggedin[$quest->id] = true;
+            }
+        } else if (!empty($USER->questloggedin) && !empty($USER->questloggedin[$quest->id])) {
             $correctpass = true;
         }
 
@@ -3873,11 +5096,11 @@ SQL;
     }
 }
 /**
- * Gets an unassessed submission ordered by time.
- * @param stdClass $submission
- * @return NULL | stdClass $submission next in the queue
+ * Gets an unassessed challenge ordered by time.
+ * @param stdClass $challenge
+ * @return NULL | stdClass $challenge next in the queue
  */
-function quest_next_unassesed_submission($submission) {
+function quest_next_unassesed_challenge($challenge) {
     global $DB;
     $sql = <<<SQL
 SELECT submission.id, assess.id assid
@@ -3885,24 +5108,35 @@ FROM {quest_submissions} submission
 LEFT JOIN {quest_assessments_autors} assess ON (submission.id = assess.submissionid)
 WHERE submission.questid = ? and  (assess.id IS NULL OR assess.state = 0) and submission.id <> ? order by dateassessment
 SQL;
-    $submissions = $DB->get_records_sql($sql, [$submission->questid, $submission->id]);
+    $submissions = $DB->get_records_sql($sql, [$challenge->questid, $challenge->id]);
     if (count($submissions) == 0) {
         return null;
     } else {
         return reset($submissions);
     }
 }
+
 /**
- * Gets an unapproved submission ordered by time.
+ * Legacy wrapper for quest_next_unassesed_challenge.
+ *
  * @param stdClass $submission
- * @return NULL | stdClass $submission next in the queue
+ * @return NULL | stdClass
  */
-function quest_next_unapproved_submission($submission) {
+function quest_next_unassesed_submission($submission) {
+    return quest_next_unassesed_challenge($submission);
+}
+
+/**
+ * Gets an unapproved challenge ordered by time.
+ * @param stdClass $challenge
+ * @return NULL | stdClass $challenge next in the queue
+ */
+function quest_next_unapproved_challenge($challenge) {
     global $DB;
     // APPROVED_PENDING is 0.
     $submissions = $DB->get_records(
         'quest_submissions',
-        ['questid' => $submission->questid, 'state' => SUBMISSION_STATE_APPROVAL_PENDING],
+        ['questid' => $challenge->questid, 'state' => SUBMISSION_STATE_APPROVAL_PENDING],
         'dateend ASC'
     );
     if (count($submissions) == 0) {
@@ -3911,28 +5145,39 @@ function quest_next_unapproved_submission($submission) {
         return reset($submissions);
     }
 }
+
 /**
- * Define the aproval/assessment workflow.
- * @param \stdClass $submission
+ * Legacy wrapper for quest_next_unapproved_challenge.
+ *
+ * @param stdClass $submission
+ * @return NULL | stdClass
+ */
+function quest_next_unapproved_submission($submission) {
+    return quest_next_unapproved_challenge($submission);
+}
+
+/**
+ * Define the aproval/assessment workflow for challenges.
+ * @param \stdClass $challenge
  * @param context_module $context
  * @return moodle_url
  */
-function quest_next_submission_url($submission, $cm) {
+function quest_next_challenge_url($challenge, $cm) {
     $context = context_module::instance($cm->id);
     $nextunapproved = null;
     $nextunassessed = null;
-    $submissionassessment = quest_get_submission_assessment($submission);
+    $submissionassessment = quest_get_challenge_assessment($challenge);
     // First own assesment. Then other approvals.
     if (!$submissionassessment) {
-        $nextunassessed = $submission;
+        $nextunassessed = $challenge;
     } else {
         if (has_capability('mod/quest:approvechallenge', $context)) {
-            $nextunapproved = quest_next_unapproved_submission($submission);
+            $nextunapproved = quest_next_unapproved_challenge($challenge);
         } else {
             $nextunapproved = null;
         }
         if (has_capability('mod/quest:grade', $context) && $nextunapproved === null) {
-            $nextunassessed = quest_next_unassesed_submission($submission);
+            $nextunassessed = quest_next_unassesed_challenge($challenge);
         } else {
             // ... else redirect to answers list.
             $nextunassessed = null;
@@ -3941,8 +5186,8 @@ function quest_next_submission_url($submission, $cm) {
     // Apply priority of approval above assessment.
     if ($nextunapproved !== null) {
         $nexturl = new moodle_url(
-            'submissions.php',
-            ['id' => $cm->id, 'sid' => $nextunapproved->id, 'action' => 'approve', 'sesskey' => sesskey()]
+            'challenges.php',
+            ['id' => $cm->id, 'cid' => $nextunapproved->id, 'action' => 'approve', 'sesskey' => sesskey()]
         );
     } else if ($nextunassessed !== null) {
         $nexturl = new moodle_url(
@@ -3953,6 +5198,17 @@ function quest_next_submission_url($submission, $cm) {
         $nexturl = new moodle_url('view.php', ['id' => $cm->id ]);
     }
     return $nexturl;
+}
+
+/**
+ * Legacy wrapper for quest_next_challenge_url.
+ *
+ * @param \stdClass $submission
+ * @param \stdClass $cm
+ * @return moodle_url
+ */
+function quest_next_submission_url($submission, $cm) {
+    return quest_next_challenge_url($submission, $cm);
 }
 /** Get all users that act as student (i.e.
  * can 'mod/quest:attempt')
@@ -3991,241 +5247,118 @@ function quest_get_course_and_cm_from_quest($quest) {
 /**
  * @deprecated
  *
- * @global type $CFG
- * @global type $OUTPUT
  * @param \stdClass $course
- * @param bool $isteacher
+ * @param bool $viewfullnames
  * @param integer $timestart
  * @return bool */
-function quest_print_recent_activity($course, $isteacher, $timestart) {
-    global $CFG, $OUTPUT;
+function quest_print_recent_activity($course, $viewfullnames, $timestart) {
+    global $CFG, $USER, $DB, $OUTPUT;
+
+    $modinfo = get_fast_modinfo($course);
+    if (empty($modinfo->instances['quest'])) {
+        return false;
+    }
 
     $context = context_course::instance($course->id);
-    $ismanager = has_capability('mod/quest:manage', $context);
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $namefields = $userfieldsapi->get_sql('u', false, '', 'userid', false)->selects;
 
-    $submitsubmissioncontent = false;
-    if ($isteacher) {
-        if ($logs = quest_get_submitsubmission_logs($course, $timestart)) {
-            foreach ($logs as $log) {
-                // Create a temp valid module structure (only need courseid, moduleid).
-                $tempmod = new stdClass();
-                $tempmod->course = $course->id;
-                $tempmod->id = $log->questid;
-                // Obtain the visible property from the instance.
-                if (instance_is_visible("quest", $tempmod)) {
-                    $submitsubmissioncontent = true;
-                    break;
-                }
+    $shownany = false;
+
+    // 1. Recent submissions (challenges).
+    $sql = "SELECT s.id, s.questid, s.title, s.timecreated, $namefields
+              FROM {quest_submissions} s
+              JOIN {quest} q ON q.id = s.questid
+              JOIN {user} u ON u.id = s.userid
+             WHERE s.timecreated > :timestart
+               AND q.course = :course
+          ORDER BY s.timecreated ASC";
+
+    $submissions = $DB->get_records_sql($sql, ['timestart' => $timestart, 'course' => $course->id]);
+
+    if (!empty($submissions)) {
+        $visiblesubmissions = [];
+        foreach ($submissions as $sub) {
+            if (!isset($modinfo->instances['quest'][$sub->questid])) {
+                continue;
             }
-            if ($submitsubmissioncontent) {
-                echo $OUTPUT->heading(get_string("questsubmitsubmission", "quest") . ":");
-                foreach ($logs as $log) {
-                    // Create a temp valid module structure (only need courseid, moduleid).
-                    $tempmod->course = $course->id;
-                    $tempmod->id = $log->questid;
-                    if (!has_capability('mod/quest:manage', $context, $log->userid)) {
-                        // Obtain the visible property from the instance.
-                        if (instance_is_visible("quest", $tempmod)) {
-                            print_recent_activity_note(
-                                $log->time,
-                                $log,
-                                $isteacher,
-                                $log->title,
-                                $CFG->wwwroot . '/mod/quest/' . $log->url
-                            );
-                        }
-                    }
-                }
+            $cm = $modinfo->instances['quest'][$sub->questid];
+            if (!$cm->uservisible) {
+                continue;
             }
+            $sub->cmid = $cm->id;
+            $visiblesubmissions[] = $sub;
+        }
+
+        if (!empty($visiblesubmissions)) {
+            echo $OUTPUT->heading(get_string("questsubmitchallenge", "quest") . ":", 6);
+            foreach ($visiblesubmissions as $sub) {
+                $link = new moodle_url('/mod/quest/challenges.php', [
+                    'id' => $sub->cmid,
+                    'cid' => $sub->id,
+                    'action' => 'showchallenge',
+                ]);
+                print_recent_activity_note(
+                    $sub->timecreated,
+                    $sub,
+                    $sub->title,
+                    $link->out(),
+                    false,
+                    $viewfullnames
+                );
+            }
+            $shownany = true;
         }
     }
 
-    $submitsubmissionusercontent = false;
-    if (!$isteacher) {
-        if ($logs = quest_get_submitsubmissionuser_logs($course, $timestart)) {
-            foreach ($logs as $log) {
-                // Create a temp valid module structure (only need courseid, moduleid).
-                $tempmod->course = $course->id;
-                $tempmod->id = $log->questid;
-                // Obtain the visible property from the instance.
-                if (instance_is_visible("quest", $tempmod)) {
-                    $submitsubmissionusercontent = true;
-                    break;
-                }
-            }
-            if ($submitsubmissionusercontent) {
-                echo $OUTPUT->heading(get_string("questsubmitsubmission", "quest"));
-                foreach ($logs as $log) {
-                    // Create a temp valid module structure (only need courseid, moduleid).
-                    $tempmod->course = $course->id;
-                    $tempmod->id = $log->questid;
+    // 2. Recent answers.
+    $sqlanswers = "SELECT a.id, a.submissionid, a.questid, a.date AS timecreated, s.title AS submissiontitle, $namefields
+                     FROM {quest_answers} a
+                     JOIN {quest_submissions} s ON s.id = a.submissionid
+                     JOIN {quest} q ON q.id = a.questid
+                     JOIN {user} u ON u.id = a.userid
+                    WHERE a.date > :timestart
+                      AND q.course = :course
+                 ORDER BY a.date ASC";
 
-                    // Obtain the visible property from the instance.
-                    if (instance_is_visible("quest", $tempmod)) {
-                        print_recent_activity_note(
-                            $log->time,
-                            $log,
-                            $isteacher,
-                            $log->title,
-                            $CFG->wwwroot . '/mod/quest/' . $log->url
-                        );
-                    }
-                }
+    $answers = $DB->get_records_sql($sqlanswers, ['timestart' => $timestart, 'course' => $course->id]);
+    if (!empty($answers)) {
+        $visibleanswers = [];
+        foreach ($answers as $ans) {
+            if (!isset($modinfo->instances['quest'][$ans->questid])) {
+                continue;
             }
+            $cm = $modinfo->instances['quest'][$ans->questid];
+            if (!$cm->uservisible) {
+                continue;
+            }
+            $ans->cmid = $cm->id;
+            $visibleanswers[] = $ans;
+        }
+
+        if (!empty($visibleanswers)) {
+            echo $OUTPUT->heading(get_string("answers", "quest") . ":", 6);
+            foreach ($visibleanswers as $ans) {
+                $link = new moodle_url('/mod/quest/challenges.php', [
+                    'id' => $ans->cmid,
+                    'cid' => $ans->submissionid,
+                    'action' => 'showchallenge',
+                ]);
+                $title = get_string('answer', 'quest') . ': ' . $ans->submissiontitle;
+                print_recent_activity_note(
+                    $ans->timecreated,
+                    $ans,
+                    $title,
+                    $link->out(),
+                    false,
+                    $viewfullnames
+                );
+            }
+            $shownany = true;
         }
     }
 
-    $approvesubmissioncontent = false;
-    if (!$isteacher) {
-        if ($logs = quest_get_approvesubmission_logs($course, $timestart)) {
-            foreach ($logs as $log) {
-                // Create a temp valid module structure (only need courseid, moduleid).
-                $tempmod->course = $course->id;
-                $tempmod->id = $log->questid;
-                // Obtain the visible property from the instance.
-                if (instance_is_visible("quest", $tempmod)) {
-                    $approvesubmissioncontent = true;
-                    break;
-                }
-            }
-            if ($approvesubmissioncontent) {
-                echo $OUTPUT->heading(get_string("questapprovesubmission", "quest"));
-                foreach ($logs as $log) {
-                    // Create a temp valid module structure (only need courseid, moduleid).
-                    $tempmod->course = $course->id;
-                    $tempmod->id = $log->questid;
-
-                    // Obtain the visible property from the instance.
-                    if (instance_is_visible("quest", $tempmod)) {
-                        print_recent_activity_note(
-                            $log->time,
-                            $log,
-                            $isteacher,
-                            $log->title,
-                            $CFG->wwwroot . '/mod/quest/' . $log->url
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    // ...have a look for new assessments for this user (assess).
-    $assessmentcontent = false;
-    if (!$isteacher) { // ...teachers only need to see submissions.
-        if ($logs = quest_get_assessments_logs($course, $timestart)) {
-            // ...got some, see if any belong to a visible module.
-            foreach ($logs as $log) {
-                // Create a temp valid module structure (only need courseid, moduleid).
-                $tempmod = new stdClass();
-                $tempmod->course = $course->id;
-                $tempmod->id = $log->questid;
-                // Obtain the visible property from the instance.
-                if (instance_is_visible("quest", $tempmod)) {
-                    $assessmentcontent = true;
-                    break;
-                }
-            }
-            // ...if we got some "live" ones then output them.
-            if ($assessmentcontent) {
-                echo $OUTPUT->heading(get_string("questassessments", "quest") . ":");
-                foreach ($logs as $log) {
-                    // Create a temp valid module structure (only need courseid, moduleid).
-                    $tempmod->course = $course->id;
-                    $tempmod->id = $log->questid;
-                    // Obtain the visible property from the instance.
-                    if (instance_is_visible("quest", $tempmod)) {
-                        if (!has_capability('mod/quest:manage', $context)) { // ...don't break.
-                                                                             // ...anonymous rule.
-                            $log->firstname = '';
-                            $log->lastname = '';
-                        }
-                        print_recent_activity_note(
-                            $log->time,
-                            $log,
-                            $isteacher,
-                            $log->title,
-                            $CFG->wwwroot . '/mod/quest/' . $log->url
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    $assessmentautorcontent = false;
-    if (!$isteacher) { // ...teachers only need to see submissions.
-        if ($logs = quest_get_assessmentsautor_logs($course, $timestart)) {
-            // ...got some, see if any belong to a visible module.
-            foreach ($logs as $log) {
-                // Create a temp valid module structure (only need courseid, moduleid).
-                $tempmod->course = $course->id;
-                $tempmod->id = $log->questid;
-                // Obtain the visible property from the instance.
-                if (instance_is_visible("quest", $tempmod)) {
-                    $assessmentautorcontent = true;
-                    break;
-                }
-            }
-            // ...if we got some "live" ones then output them.
-            if ($assessmentautorcontent) {
-                echo $OUTPUT->heading(get_string("questassessments", "quest") . ":");
-                foreach ($logs as $log) {
-                    // Create a temp valid module structure (only need courseid, moduleid).
-                    $tempmod->course = $course->id;
-                    $tempmod->id = $log->questid;
-                    // Obtain the visible property from the instance.
-                    if (instance_is_visible("quest", $tempmod)) {
-                        print_recent_activity_note(
-                            $log->time,
-                            $log,
-                            $isteacher,
-                            $log->title,
-                            $CFG->wwwroot . '/mod/quest/' . $log->url
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    // ...have a look for new assessment gradings for this user (grade).
-    $answercontent = false;
-    if ($logs = quest_get_submitanswer_logs($course, $timestart)) {
-        // ...got some, see if any belong to a visible module.
-        foreach ($logs as $log) {
-            // Create a temp valid module structure (only need courseid, moduleid).
-            $tempmod->course = $course->id;
-            $tempmod->id = $log->questid;
-            // Obtain the visible property from the instance.
-            if (instance_is_visible("quest", $tempmod)) {
-                $answercontent = true;
-                break;
-            }
-        }
-        // ...if we got some "live" ones then output them.
-        if ($answercontent) {
-            echo $OUTPUT->heading(get_string("questsubmitanswer", "quest") . ":");
-            foreach ($logs as $log) {
-                // Create a temp valid module structure (only need courseid, moduleid).
-                $tempmod->course = $course->id;
-                $tempmod->id = $log->questid;
-                // Obtain the visible property from the instance.
-                if (instance_is_visible("quest", $tempmod)) {
-                    print_recent_activity_note(
-                        $log->time,
-                        $log,
-                        $isteacher,
-                        $log->title,
-                        $CFG->wwwroot . '/mod/quest/' . $log->url
-                    );
-                }
-            }
-        }
-    }
-
-    return $submitsubmissioncontent || $submitsubmissionusercontent || $approvesubmissioncontent || $assessmentcontent ||
-             $assessmentautorcontent || $answercontent;
+    return $shownany;
 }
 /**
  *
@@ -4244,6 +5377,12 @@ function quest_send_message($user, $file, $msgtype, $quest, $object, $field2 = '
     return quest_send_message_data($data);
 }
 
+/**
+ * Send a composed Quest message.
+ *
+ * @param stdClass $data Message data.
+ * @return mixed Message send result.
+ */
 function quest_send_message_data($data) {
     // Actually send the message.
     global $CFG;
@@ -4263,6 +5402,14 @@ function quest_send_message_data($data) {
     $messagedata->fullmessageformat = FORMAT_HTML;
     $messagedata->notification = true;
     $messagedata->courseid = $data->courseid;
+    if (!empty($data->link)) {
+        $messagedata->contexturl = $data->link;
+        if (!empty($data->title)) {
+            $messagedata->contexturlname = $data->title;
+        } else if (!empty($data->subject)) {
+            $messagedata->contexturlname = $data->subject;
+        }
+    }
     $msgid = message_send($messagedata);
     return $msgid;
 }
@@ -4343,7 +5490,7 @@ function quest_compose_message_data($user, $file, $msgtype, $quest, $object, $fi
  * @return string
  */
 function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
-    global $CFG;
+    global $CFG, $OUTPUT;
 
     $outputhtml = '<head>';
     foreach ($CFG->stylesheets as $stylesheet) {
@@ -4355,14 +5502,14 @@ function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
     $outputhtml .= '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';
 
     $outputhtml .= '<tr class="header"><td width="35" valign="top" class="picture left">';
-    $outputhtml .= print_user_picture($userfrom->id, $courseid, $userfrom->picture, false, true);
+    $outputhtml .= $OUTPUT->user_picture($userfrom, ['courseid' => $courseid]);
     $outputhtml .= '</td>';
 
     $outputhtml .= '<td class="topic starter">';
 
     $outputhtml .= '<div class="subject">' . $subject . '</div>';
 
-    $fullname = fullname($userfrom, isteacher($courseid));
+    $fullname = fullname($userfrom);
     $by = new stdClass();
     $by->name = '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $userfrom->id . '&amp;course=' . $courseid . '">' . $fullname .
              '</a>';
@@ -4383,7 +5530,9 @@ function quest_message_html($messagehtml, $courseid, $userfrom, $subject) {
     return $outputhtml;
 }
 
-/** TODO reuse grade calculation with quest_get_maxpoints
+/**
+ * Return the highest group score in a Quest.
+ *
  * @param int $groupid
  * @param \stdClass $quest
  * @return number */
@@ -4425,7 +5574,9 @@ function quest_get_maxpoints_group($groupid, $quest) {
     return $maxpoints;
 }
 
-/** get max score achieved by participants
+/**
+ * Return the highest score achieved by Quest participants.
+ *
  * @param quest record $quest
  * @return number */
 function quest_get_maxpoints($quest) {
@@ -4505,31 +5656,61 @@ function quest_get_maxpoints_group_teams($groupid, $quest) {
 
 // Any other quest functions go here. Each of them must have a name that.
 // ...starts with quest.
-function quest_get_submissions($quest) {
+
+/**
+ * Gets all challenges for a quest.
+ *
+ * @param \stdClass $quest
+ * @return array
+ */
+function quest_get_challenges($quest) {
     global $DB;
     return $DB->get_records_select("quest_submissions", "questid = ?  AND timecreated > 0", [$quest->id], "timecreated DESC");
 }
+
 /**
+ * Legacy wrapper for quest_get_challenges.
+ *
+ * @param \stdClass $quest
+ * @return array
+ */
+function quest_get_submissions($quest) {
+    return quest_get_challenges($quest);
+}
+
+/**
+ * Gets all challenges submitted by a user.
+ *
+ * @param \stdClass $quest
+ * @param \stdClass $user
+ * @return array
+ */
+function quest_get_user_challenges($quest, $user) {
+    global $DB;
+    // ...return real challenges of user newest first, oldest last.
+    return $DB->get_records_select("quest_submissions", "questid = ? AND
+        userid = ? AND timecreated > 0", [$quest->id, $user->id], "timecreated DESC");
+}
+
+/**
+ * Legacy wrapper for quest_get_user_challenges.
  *
  * @param \stdClass $quest
  * @param \stdClass $user
  * @return array
  */
 function quest_get_user_submissions($quest, $user) {
-    global $DB;
-    // ...return real submissions of user newest first, oldest last. Ignores the dummy submissions.
-    // ...which get created to hold the final grades for users that make no submissions.
-    return $DB->get_records_select("quest_submissions", "questid = ? AND
-        userid = ? AND timecreated > 0", [$quest->id, $user->id], "timecreated DESC");
+    return quest_get_user_challenges($quest, $user);
 }
+
 /**
+ * Gets the student challenge.
  *
  * @param \stdClass $quest
  * @param \stdClass $user
  * @return mixed|stdClass|false|NULL
  */
-function quest_get_student_submission($quest, $user) {
-    // Return a submission for a particular user.
+function quest_get_student_challenge($quest, $user) {
     global $CFG, $DB;
 
     $submission = $DB->get_record("quest_submissions", ["questid" => $quest->id, "userid" => $user->id]);
@@ -4537,6 +5718,17 @@ function quest_get_student_submission($quest, $user) {
         return $submission;
     }
     return null;
+}
+
+/**
+ * Legacy wrapper for quest_get_student_challenge.
+ *
+ * @param \stdClass $quest
+ * @param \stdClass $user
+ * @return mixed|stdClass|false|NULL
+ */
+function quest_get_student_submission($quest, $user) {
+    return quest_get_student_challenge($quest, $user);
 }
 
 /**
@@ -4572,17 +5764,29 @@ function quest_get_assessments($answer, $all = '', $order = '') {
         );
     }
 }
+
 /**
+ * Gets author assessment for a challenge.
+ *
+ * @param \stdClass $challenge
+ * @return mixed|stdClass|false
+ */
+function quest_get_challenge_assessment($challenge) {
+    global $DB;
+    return $DB->get_record(
+        "quest_assessments_autors",
+        ["submissionid" => $challenge->id, "questid" => $challenge->questid]
+    );
+}
+
+/**
+ * Legacy wrapper for quest_get_challenge_assessment.
  *
  * @param \stdClass $submission
  * @return mixed|stdClass|false
  */
 function quest_get_submission_assessment($submission) {
-    global $DB;
-    return $DB->get_record(
-        "quest_assessments_autors",
-        ["submissionid" => $submission->id, "questid" => $submission->questid]
-    );
+    return quest_get_challenge_assessment($submission);
 }
 /**
  *
@@ -4646,9 +5850,6 @@ function quest_fullname($userid, $courseid) {
 }
 /** Get challenges submitted from timestart in a course
  *
- * @global type $CFG
- * @global type $USER
- * @global type $DB
  * @param \stdClass $course
  * @param integer $timestart
  * @return boolean */
@@ -4671,9 +5872,8 @@ function quest_get_submitsubmission_logs($course, $timestart) {
 }
 
 /**
- * @global type $CFG
- * @global type $USER
- * @global type $DB
+ * Return recent submissions made by the current user.
+ *
  * @param \stdClass $course
  * @param integer $timestart
  * @return boolean */

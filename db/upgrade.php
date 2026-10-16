@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /** Questournament activity for Moodle
  *
  *
@@ -39,7 +40,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
@@ -48,7 +49,6 @@ global $CFG;
 require_once($CFG->libdir . '/ddllib.php');
 /**
  *
- * @global moodle_database $DB
  * @param number $oldversion
  * @return boolean
  */
@@ -102,5 +102,137 @@ function xmldb_quest_upgrade($oldversion = 0) {
         // Msocial savepoint reached.
         upgrade_mod_savepoint(true, 2018030701, 'quest');
     }
+
+    if ($oldversion < 2026091600) {
+        // Drop deprecated tables if they exist.
+        $rubricstable = new xmldb_table('quest_rubrics');
+        if ($dbman->table_exists($rubricstable)) {
+            $dbman->drop_table($rubricstable);
+        }
+
+        $rubricsautortable = new xmldb_table('quest_rubrics_autor');
+        if ($dbman->table_exists($rubricsautortable)) {
+            $dbman->drop_table($rubricsautortable);
+        }
+
+        // Add autoexportqbank field to quest table.
+        $questtable = new xmldb_table('quest');
+        $field = new xmldb_field('autoexportqbank', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0, 'completionpass');
+        if (!$dbman->field_exists($questtable, $field)) {
+            $dbman->add_field($questtable, $field);
+        }
+
+        // Add questionusageid field to quest_answers table.
+        $answerstable = new xmldb_table('quest_answers');
+        $field = new xmldb_field('questionusageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'perceiveddifficulty');
+        if (!$dbman->field_exists($answerstable, $field)) {
+            $dbman->add_field($answerstable, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026091600, 'quest');
+    }
+
+    if ($oldversion < 2026091801) {
+        // Add questionusageid field to quest_submissions table.
+        $submissionstable = new xmldb_table('quest_submissions');
+        $field = new xmldb_field('questionusageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'evaluated');
+        if (!$dbman->field_exists($submissionstable, $field)) {
+            $dbman->add_field($submissionstable, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026091801, 'quest');
+    }
+
+    if ($oldversion < 2026092000) {
+        // Password hashes need more space than the legacy MD5 value.
+        $questtable = new xmldb_table('quest');
+        $passwordfield = new xmldb_field(
+            'password',
+            XMLDB_TYPE_CHAR,
+            '255',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            null
+        );
+        if ($dbman->field_exists($questtable, $passwordfield)) {
+            $dbman->change_field_precision($questtable, $passwordfield);
+        }
+
+        upgrade_mod_savepoint(true, 2026092000, 'quest');
+    }
+
+    if ($oldversion < 2026092001) {
+        // Allow each Quest to control student use of question bank challenges.
+        $questtable = new xmldb_table('quest');
+        $field = new xmldb_field(
+            'allowqbankquestions',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            1,
+            'completionpass'
+        );
+        if (!$dbman->field_exists($questtable, $field)) {
+            $dbman->add_field($questtable, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026092001, 'quest');
+    }
+
+    if ($oldversion < 2026093000) {
+        $table = new xmldb_table('quest_challenge_questions');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('questid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+        $table->add_field('submissionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+        $table->add_field('slotnumber', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, 1);
+        $table->add_field('maxmark', XMLDB_TYPE_NUMBER, '10, 5', null, XMLDB_NOTNULL, null, 1);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('questid_fk', XMLDB_KEY_FOREIGN, ['questid'], 'quest', ['id']);
+        $table->add_key('submissionid_fk', XMLDB_KEY_FOREIGN, ['submissionid'], 'quest_submissions', ['id']);
+        $table->add_index('submission_slot', XMLDB_INDEX_UNIQUE, ['submissionid', 'slotnumber']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Convert existing one-question challenge references into slot one.
+        $references = $DB->get_records('question_references', [
+            'component' => 'mod_quest',
+            'questionarea' => 'challenge_question',
+        ]);
+        foreach ($references as $reference) {
+            $submission = $DB->get_record('quest_submissions', ['id' => $reference->itemid], 'id, questid');
+            if (!$submission) {
+                continue;
+            }
+            $slot = (object)[
+                'questid' => $submission->questid,
+                'submissionid' => $submission->id,
+                'slotnumber' => 1,
+                'maxmark' => 1,
+            ];
+            $slot->id = $DB->insert_record('quest_challenge_questions', $slot);
+            $reference->questionarea = 'challenge_question_slot';
+            $reference->itemid = $slot->id;
+            $DB->update_record('question_references', $reference);
+        }
+
+        upgrade_mod_savepoint(true, 2026093000, 'quest');
+    }
+
+    if ($oldversion < 2026100300) {
+        // Moodle updates this field when the course-module visibility changes.
+        $table = new xmldb_table('quest');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0,
+            'autoexportqbank');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026100300, 'quest');
+    }
+
     return true;
 }

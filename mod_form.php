@@ -22,7 +22,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest
  */
@@ -162,7 +162,18 @@ class mod_quest_mod_form extends moodleform_mod {
             get_string('gradingstrategyautor', 'quest'),
             ['0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')]
         );
-        $mform->addHelpButton('gradingstrategyautor', "gradingstrategyautor", "quest");
+        $mform->addElement('header', 'questionbanksection', get_string('challengeconstruction', 'quest'));
+        $studentoptions = \mod_quest\challenge_type_policy::mode_options(true);
+        $mform->addElement('select', 'allowqbankquestions', get_string('allowqbankquestions', 'quest'), $studentoptions);
+        $mform->addHelpButton('allowqbankquestions', 'allowqbankquestions', 'quest');
+        $defaultstudentmode = \mod_quest\challenge_type_policy::BOTH;
+        if (!array_key_exists($defaultstudentmode, $studentoptions)) {
+            $defaultstudentmode = array_key_first($studentoptions);
+        }
+        $mform->setDefault('allowqbankquestions', $defaultstudentmode);
+        $mform->addElement('selectyesno', 'autoexportqbank', get_string('autoexportqbank', 'quest'));
+        $mform->addHelpButton('autoexportqbank', 'autoexportqbank', 'quest');
+        $mform->setDefault('autoexportqbank', 0);
 
         // Final grading for the activity.
         $questypegrades = [QUEST_TYPE_GRADE_INDIVIDUAL => get_string('typeindividual', 'quest'),
@@ -231,81 +242,6 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->setDefault('teamporcent', 25);
         $mform->addElement('hidden', 'gradepass', 50);
         $mform->setType('gradepass', PARAM_INT);
-        // Mod_cluster support disabled by now.
-        if (false) {
-            // Get clusterer instances available in the course.
-            if ($clusterersmods = get_all_instances_in_courses("clusterer", [$COURSE->id => $COURSE])) {
-                $mform->addElement('header', 'general', get_string('clusterer', 'questournament'));
-                $mform->addElement(
-                    'selectyesno',
-                    'clustererleagues',
-                    get_string('createligasfromclusterer', 'questournament')
-                );
-                $mform->setHelpButton('clustererleagues', ["clustererleagues",
-                get_string("createligasfromclusterer", "questournament"), "questournament"]);
-                $mform->setDefault('clustererleagues', $CFG->questournament_clustererleagues);
-                $mform->disabledIf('clustererleagues', 'allowteams', 'eq', 1);
-                $arrayclusterers = [];
-                foreach ($clusterersmods as $clusterermod) {
-                    $modname = $clusterermod->name . " :";
-                    if ($clusterers = $DB->get_records("clusterer_clusterers", "moduleinstanceid", $clusterermod->id)) {
-                        foreach ($clusterers as $clusterer) {
-                            $clusterername = "$clusterer->name :";
-                            if (
-                                $clustererinstances = $DB->get_records(
-                                    "clusterer_clusterer_instances",
-                                    "clustererid",
-                                    $clusterer->id
-                                )
-                            ) {
-                                foreach ($clustererinstances as $clustererinstance) {
-                                    $date = date("d\.m\.y => g\:i\:s", $clustererinstance->version);
-                                    $arrayclusterers[$clustererinstance->id] = "$modname $clusterername version: $date";
-                                    // ...clear the name for a tidier list.
-                                    $clusterername = "&nbsp;" . str_repeat("-", strlen($clusterername)) . ">";
-                                }
-                                $modname = "-" . str_repeat("-", strlen($modname)) . ">";// ...clear the name for a list more tidy.
-                            }
-                        }
-                    }
-                }
-                $mform->addElement('select', 'clustererid', get_string(
-                    'selectclusterer',
-                    'questournament'
-                ), $arrayclusterers);
-                $mform->setHelpButton('clustererid', ["clustererid",
-                get_string("selectclusterer", "questournament"), "questournament"]);
-                $mform->disabledIf('clustererid', 'allowteams', 'eq', 1);
-                echo <<< SCRIPT
-function pasarvariable() {
-    var valor=document.forms[0].clustererid.value;
-    var opciones="toolbar=no, location=no, directories=no, status=no, menubar=no,
-    scrollbars=yes, resizable=yes, width=1100, height=800, top=85, left=140";
-    window.open("../mod/questournament/popupviewcluster.php?cid="+valor+"","",opciones);
-}
-</script>'
-SCRIPT;
-                $strshowselectedcluster = get_string("showselectedcluster", "questournament");
-                $mform->addElement('html', '<br/><center><a onClick="javascript:pasarvariable()">' .
-                                $strshowselectedcluster . '</a>');
-                $mform->addElement('selectyesno', 'visibleleagues', get_string('visibleleagues', 'questournament'));
-                $mform->setHelpButton('visibleleagues', ["visibleleagues",
-                                    get_string("visibleleagues", "questournament"), "questournament"]);
-                $mform->setDefault('visibleleagues', $CFG->questournament_visibleleagues);
-                $mform->disabledIf('visibleleagues', 'allowteams', 'eq', 1);
-                $mform->addElement('selectyesno', 'anonymousleague', get_string('anonymousleague', 'questournament'));
-                $mform->setHelpButton('anonymousleague', ["anonymousleague",
-                get_string("anonymousleague", "questournament"), "questournament"]);
-                $mform->setDefault('anonymousleague', $CFG->questournament_anonymousleague);
-                $mform->disabledIf('anonymousleague', 'allowteams', 'eq', 1);
-            } else {
-                $arrayclusterers = null;
-                $mform->addElement('html', get_string('clustererModuleNotFound', 'questournament'));
-                $mform->addElement('hidden', 'clustererleagues', 0);
-                $mform->addElement('hidden', 'visibleleagues', 1);
-                $mform->addElement('hidden', 'anonymousleague', 1);
-            }
-        } // Clusterer support.
 
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
@@ -318,6 +254,11 @@ SCRIPT;
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+
+        if (!isset($data['allowqbankquestions']) || !array_key_exists((int)$data['allowqbankquestions'],
+                \mod_quest\challenge_type_policy::mode_options(true))) {
+            $errors['allowqbankquestions'] = get_string('challengemodenotavailable', 'quest');
+        }
 
         // Check open and close times are consistent.
         if ($data['datestart'] != 0 && $data['dateend'] != 0 && $data['dateend'] < $data['datestart']) {
@@ -352,6 +293,9 @@ SCRIPT;
     public function data_preprocessing(&$defaultvalues) {
         global $DB;
 
+        // Never send the stored password hash back to the browser.
+        unset($defaultvalues['password']);
+
         $ctx = null;
         if ($this->current && $this->current->coursemodule) {
             $cm = get_coursemodule_from_instance('quest', $this->current->id, 0, false, MUST_EXIST);
@@ -369,28 +313,4 @@ SCRIPT;
         file_prepare_draft_area($draftitemid, $ctx->id, 'mod_quest', 'introattachment', 0, ['subdirs' => 0]);
         $defaultvalues['introattachments'] = $draftitemid;
     }
-    /**
-     * Add any custom completion rules to the form.
-     *
-     * @return array Contains the names of the added form elements
-     */
-    // public function add_completion_rules() {
-    // $mform =& $this->_form;
-
-    // $mform->addElement('advcheckbox', 'completionpass', '', get_string('completionpass', 'quest'));
-    // $mform->disabledIf('completionpass', 'completionusegrade', 'notchecked');
-    // $mform->addHelpButton('completionpass', 'completionpass', 'quest');
-    // Enable this completion rule by default.
-    // $mform->setDefault('completionpass', 0);
-    // return array('completionpass');
-    // }
-    /**
-     * Determines if completion is enabled for this module.
-     *
-     * @param array $data
-     * @return bool
-     */
-    // public function completion_rule_enabled($data) {
-    // return !empty($data['completionpass']);
-    // }
 }

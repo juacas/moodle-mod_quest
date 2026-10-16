@@ -22,7 +22,7 @@
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest*/
 namespace mod_quest\event;
@@ -52,7 +52,7 @@ class challenge_created extends base {
      * @return \mod_quest\event\challenge_created
      */
     public static function create_from_parts($challenge, $cm) {
-        $url = "/mod/quest/submissions.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showsubmission";
+        $url = "/mod/quest/challenges.php?id=$cm->id&amp;cid=$challenge->id&amp;action=showchallenge";
         $data = ['relateduserid' => $challenge->userid, 'context' => \context_module::instance($cm->id),
                         'userid' => $challenge->userid, 'courseid' => $cm->course,
                         'other' => ['info' => $challenge->title, 'cmid' => $cm->id, 'activityid' => $challenge->questid,

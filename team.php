@@ -14,16 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee.
- * Use it as your own risk.
+/**
+ * Manage Quest teams.
  *
- * @author Juan Pablo de Castro and many others.
- * @copyright 2013 onwards EDUVALAB
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package mod_quest */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -37,16 +35,19 @@ $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 global $DB, $PAGE, $OUTPUT;
 $timenow = time();
 list($course, $cm) = quest_get_course_and_cm($id);
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 require_login($course->id, false, $cm);
 
 quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 
 // Print the page header.
 
-$url = new moodle_url('/mod/quest/team.php', array('id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir));
+$url = new moodle_url('/mod/quest/team.php', ['id' => $id, 'action' => $action, 'sort' => $sort, 'dir' => $dir]);
 $PAGE->set_url($url);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
@@ -57,7 +58,7 @@ $strquest = get_string("modulename", "quest");
 $straction = ($action) ? '-> ' . $action : '-> ' . get_string('changeteam', 'quest');
 
 if ($quest->allowteams != 1) {
-    print_error('nopermissions', 'error', null, 'It is not allowed teams for this Questournament.');
+    throw new \moodle_exception('nopermissions', 'error', '', 'It is not allowed teams for this Questournament.');
 }
 
 $changegroup = optional_param('group', -1, PARAM_INT); // Group change requested?
@@ -75,23 +76,27 @@ if ($ismanager) {
             $teams = optional_param_array('team', null, PARAM_ALPHANUMEXT);
             $userids = optional_param_array('userid', [], PARAM_INT);
             if (isset($teams)) {
+                if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+                    throw new \moodle_exception('invalidrequest', 'error');
+                }
+                require_sesskey();
                 foreach ($teams as $i => $teamfield) {
 
                     $teamfield = trim($teamfield);
                     if (!empty($teamfield)) {
                         $userid = $userids[$i];
                         if ($calificationuser = $DB->get_record("quest_calification_users",
-                                array("userid" => $userid, "questid" => $quest->id))) {
+                                ["userid" => $userid, "questid" => $quest->id])) {
                             if (!empty($calificationuser->teamid)) {
-                                $oldteam = $DB->get_record("quest_teams", array("id" => $calificationuser->teamid));
+                                $oldteam = $DB->get_record("quest_teams", ["id" => $calificationuser->teamid]);
                             } else {
                                 $oldteam = null;
                             }
 
                             if ($team = $DB->get_record("quest_teams",
-                                    array("name" => $teamfield,
+                                    ["name" => $teamfield,
                                           "currentgroup" => $currentgroup,
-                                          "questid" => $quest->id))) { // Exist the team with this name.
+                                          "questid" => $quest->id])) { // Exist the team with this name.
                                 if ($calificationuser->teamid == $team->id) {
                                     continue;
                                 }
@@ -101,10 +106,10 @@ if ($ismanager) {
                                 if ($quest->ncomponents > $team->ncomponents) {
                                     $calificationuser->teamid = $team->id;
                                     $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                            array("id" => $calificationuser->id));
+                                            ["id" => $calificationuser->id]);
                                     quest_update_team_scores($quest->id, $team->id);
                                 } else {
-                                    echo ("<center><b>The Team \"$team->name\" is complete</b></center>");
+                                    echo ("<center><b>The Team \"" . s($team->name) . "\" is complete</b></center>");
                                     echo $OUTPUT->continue_button("view.php?id=$cm->id");
                                     exit();
                                 }
@@ -125,7 +130,7 @@ if ($ismanager) {
 
                                 $calificationuser->teamid = $team->id;
                                 $DB->set_field("quest_calification_users", "teamid", $calificationuser->teamid,
-                                        array("id" => $calificationuser->id));
+                                        ["id" => $calificationuser->id]);
 
                                 quest_update_team_scores($quest->id, $team->id);
                                 if (!empty($oldteam)) {
@@ -138,9 +143,9 @@ if ($ismanager) {
                                     $oldteam->ncomponents--;
                                     if ($oldteam->ncomponents == 0) {
                                         print("<p>Team: $oldteam->name ($oldteam->id) empty.Deleted.</p>");
-                                        $DB->delete_records("quest_teams", array("id" => $oldteam->id));
+                                        $DB->delete_records("quest_teams", ["id" => $oldteam->id]);
                                         $DB->delete_records('quest_calification_teams',
-                                                array('questid' => $quest->id, 'teamid' => $oldteam->id));
+                                                ['questid' => $quest->id, 'teamid' => $oldteam->id]);
                                     }
                                 }
                             }
@@ -150,7 +155,7 @@ if ($ismanager) {
             }
         }
     } else {
-        print_error('unknownactionerror', 'quest', null, $action);
+        throw new \moodle_exception('unknownactionerror', 'quest', '', $action);
     }
 
     if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -161,11 +166,12 @@ if ($ismanager) {
 
     // Now prepare table with student team enrollments.
     $tablesort = new stdClass();
-    $tablesort->data = array();
-    $tablesort->sortdata = array();
+    $tablesort->data = [];
+    $tablesort->sortdata = [];
     $i = 0;
 
     echo "<form enctype=\"multipart/form-data\" name=\"team\" method=\"POST\" action=\"team.php?id=$id\">";
+    echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
     foreach ($users as $user) {
         // ...skip if student not in group.
         if ($ismanager) {
@@ -183,35 +189,35 @@ if ($ismanager) {
             }
         }
 
-        $calificationuser = $DB->get_record("quest_calification_users", array("userid" => $user->id, "questid" => $quest->id));
+        $calificationuser = $DB->get_record("quest_calification_users", ["userid" => $user->id, "questid" => $quest->id]);
 
         if ($calificationuser) {
-            $team = $DB->get_record("quest_teams", array("id" => $calificationuser->teamid));
+            $team = $DB->get_record("quest_teams", ["id" => $calificationuser->teamid]);
         }
 
         if (empty($calificationuser)) {
             $team = new stdClass();
-            $team->name = "<font color=\"#ff0000\"><i>Not participant</i></font>";
-            $team->ncomponents = "<font color=\"#ff0000\"><i>Undefined</i></font>";
+            $team->name = get_string('notavailable');
+            $team->ncomponents = get_string('notavailable');
         } else if (empty($team)) {
             $team = new stdClass();
-            $team->name = "<font color=\"#ff0000\"><i>Undefined</i></font>";
-            $team->ncomponents = "<font color=\"#ff0000\"><i>Undefined</i></font>";
+            $team->name = get_string('notavailable');
+            $team->ncomponents = get_string('notavailable');
         }
 
-        $data = array();
-        $sortdata = array();
+        $data = [];
+        $sortdata = [];
         $user->imagealt = fullname($user);
-        $data[] = $OUTPUT->user_picture($user, array('size' => 20)) .
+        $data[] = $OUTPUT->user_picture($user, ['size' => 20]) .
                  "<a name=\"userid$user->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
                  fullname($user) . '</a>';
         $sortdata['firstname'] = strtolower($user->firstname);
         $sortdata['lastname'] = strtolower($user->lastname);
 
-        $data[] = $team->name;
+        $data[] = s($team->name);
         $sortdata['teamname'] = strtolower($team->name);
 
-        $data[] = $team->ncomponents;
+        $data[] = s($team->ncomponents);
         $sortdata['ncomponents'] = $team->ncomponents;
         if (empty($calificationuser)) {
             $data[] = "";
@@ -229,16 +235,17 @@ if ($ismanager) {
 
     uasort($tablesort->sortdata, 'quest_sortfunction');
     $table = new html_table();
-    $table->data = array();
+    $table->data = [];
     foreach ($tablesort->sortdata as $key => $row) {
         $table->data[] = $tablesort->data[$key];
     }
 
-    $table->align = array('left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center');
+    $table->align = ['left', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center', 'center'];
 
-    $columns = array('firstname', 'lastname', 'teamname', 'ncomponents', 'newteam');
+    $columns = ['firstname', 'lastname', 'teamname', 'ncomponents', 'newteam'];
     $table->width = "95%";
 
+    $string = [];
     foreach ($columns as $column) {
         $string[$column] = get_string("$column", 'quest');
         if ($sort != $column) {
@@ -256,7 +263,7 @@ if ($ismanager) {
         $$column = "<a href=\"team.php?id=$id&amp;sort=$column&amp;dir=$columndir\">" . $string[$column] . "</a>$columnicon";
     }
 
-    $table->head = array("$firstname / $lastname", "$teamname", "$ncomponents", get_string('newteam', 'quest'));
+    $table->head = ["$firstname / $lastname", "$teamname", "$ncomponents", get_string('newteam', 'quest')];
 
     echo html_writer::table($table);
     echo "<input name=\"i\" type=\"hidden\" value=\"$i\">\n";

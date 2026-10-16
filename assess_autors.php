@@ -14,21 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/** Questournament activity for Moodle
+/**
+ * Display the assessment form for a Quest submission.
  *
- * Module developed at the University of Valladolid
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- *
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @copyright (c) 2014, INTUITEL Consortium
- * @package mod_quest
- *
- *          Show the page that allow to do the assess of a submission
- *
- *          **************************************************** */
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -36,10 +29,10 @@ require_once("locallib.php");
 $sid = required_param('sid', PARAM_INT); // Submission ID.
 $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_ALPHA);
-global $DB;
+global $DB, $USER;
 
-$submission = $DB->get_record('quest_submissions', array('id' => $sid), '*', MUST_EXIST);
-$quest = $DB->get_record("quest", array("id" => $submission->questid), '*', MUST_EXIST);
+$submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
 list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
 
 if (!$redirect) {
@@ -50,21 +43,30 @@ require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
+if (!quest_user_passed_password($quest, $context)) {
+    quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
+}
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
-$canapprove = has_capability('mod/quest:approvechallenge', $context);
+if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+    throw new \moodle_exception('nopermissions', 'error', '', 'assess this challenge');
+}
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
 $url = new moodle_url('/mod/quest/assess_autors.php',
-                array('sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect));
+                ['sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
 $PAGE->set_url($url);
+$PAGE->set_context($context);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-$PAGE->navbar->add(get_string('submission', 'quest') . ': ' . $submission->title,
-        new moodle_url('submissions.php', array('id' => $cm->id, 'sid' => $submission->id, 'action' => 'showsubmission')));
+quest_add_breadcrumbs($cm, $submission, null, get_string('evaluate', 'quest'));
 
 echo $OUTPUT->header();
 
@@ -75,13 +77,35 @@ if (has_capability('mod/quest:preview', $context)) {
 echo $OUTPUT->heading($title);
 quest_print_submission_info($quest, $submission);
 
-echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;action=displaygradingform\">" .
-         get_string("specimenassessmentform", "quest") . "</a></b></center>");
+echo '<div class="text-center my-3">';
+echo '<a class="btn btn-outline-secondary btn-sm" href="assessments_autors.php?id=' . $cm->id . '&amp;action=displaygradingform">';
+echo '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' . get_string("specimenassessmentform", "quest");
+echo '</a>';
+echo '</div>';
 
-echo $OUTPUT->heading(get_string('description', 'quest'));
-quest_print_submission($quest, $submission);
+$anylinkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
 
-$assessment = $DB->get_record("quest_assessments_autors", array("submissionid" => $submission->id));
+if (!$anylinkedq) {
+    echo '<div class="quest-assessment-container my-4">';
+    echo '<div class="card shadow-sm border-0">';
+    echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
+    echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('description', 'quest');
+    echo '</div>';
+    echo '<div class="card-body p-4">';
+    quest_print_submission($quest, $submission);
+    echo '</div></div></div>';
+}
+
+if ($anylinkedq) {
+    $isownpending = (int)$submission->userid === (int)$USER->id &&
+        (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING;
+    echo $OUTPUT->heading(get_string('description', 'quest'));
+    echo \mod_quest\service\autograde_service::render_challenge_questions_preview(
+        $quest, $submission, $context, (int)$cm->id, $ismanager || $isownpending
+    );
+}
+
+$assessment = $DB->get_record("quest_assessments_autors", ["submissionid" => $submission->id]);
 $now = time();
 if (!$assessment) {
     // ...create one and set timecreated way in the future, this is reset when record is updated.
@@ -95,26 +119,26 @@ if (!$assessment) {
     $assessment->commentsforteacher = '';
     $assessment->commentsteacher = '';
     if (!$assessment->id = $DB->insert_record("quest_assessments_autors", $assessment)) {
-        print_error('inserterror', 'quest', null, "quest_assessments_autors");
+        throw new \moodle_exception('inserterror', 'quest', '', "quest_assessments_autors");
     }
 }
 $assessment->dateassessment = $now;
 
 // ...if it's the teacher and the quest is error banded set all the elements to Yes.
-if ($cangrade and ($quest->gradingstrategy == 2)) {
+if ($cangrade && ($quest->gradingstrategy == 2)) {
     for ($i = 0; $i < $quest->nelements; $i++) {
-        unset($element);
+        $element = new stdClass();
         $element->questid = $quest->id;
         $element->assessmentautorid = $assessment->id;
         $element->elementno = $i;
         $element->userid = $USER->id;
         $element->calification = 1;
         if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-            print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
+            throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
         }
     }
     // ...now set the adjustment.
-    unset($element);
+    $element = new stdClass();
     $i = $quest->nelements;
     $element->questid = $quest->id;
     $element->assessmentautorid = $assessment->id;
@@ -122,7 +146,7 @@ if ($cangrade and ($quest->gradingstrategy == 2)) {
     $element->userid = $USER->id;
     $element->calification = 0;
     if (!$element->id = $DB->insert_record("quest_items_assesments_autor", $element)) {
-        print_error('inserterror', 'quest', null, "quest_items_assesments_autor");
+        throw new \moodle_exception('inserterror', 'quest', '', "quest_items_assesments_autor");
     }
 }
 
@@ -130,7 +154,7 @@ echo $OUTPUT->heading_with_help(get_string("assessthissubmission", "quest"), "as
 // ...show assessment autor and allow changes.
 // If user has general assess privileges get next answer to evaluate.
 
-$returnto = quest_next_submission_url($submission, $cm);
+$returnto = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
 quest_print_assessment_autor($quest, $assessment, true, $allowcomments, $returnto);
 $continueto = new moodle_url('view.php', ['id' => $cm->id ]);
 echo $OUTPUT->single_button($continueto, get_string('cancel'));

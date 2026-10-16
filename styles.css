@@ -1,0 +1,678 @@
+/**
+ * Assessment and Evaluation Form Styles for mod_quest.
+ * Compatible with Boost and Bootstrap 5 themes.
+ */
+
+.quest-assessment-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.quest-criterion-card {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.quest-criterion-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.quest-criterion-header {
+    background-color: #f8fafc;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.quest-scale-radio-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.quest-scale-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    margin-bottom: 0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease;
+}
+
+.quest-scale-option:hover {
+    background-color: #edf2f7;
+}
+
+.quest-scale-option input[type="radio"] {
+    cursor: pointer;
+    margin: 0;
+}
+
+.quest-review-feedback-box {
+    background-color: #f8fafc;
+    border-left: 4px solid #0d6efd;
+    padding: 0.85rem 1rem;
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.quest-global-score-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+    border: 1px solid #bbf7d0;
+}
+
+.quest-action-bar-sticky {
+    padding: 1rem;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Fix for question bank modal width on smaller screens */
+.quest-questionbank-modal .modal-dialog.modal-xl {
+    max-width: 95%;
+}
+.quest-questionbank-modal .modal-body {
+    overflow-x: auto;
+}
+.quest-questionbank-modal table.question-bank-table {
+    width: 100%;
+}
+
+/* Challenge Scheduling Timeline styles */
+.quest-timeline-wrapper {
+    overflow-x: hidden;
+    position: relative;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.quest-timeline-board {
+    width: 100%;
+    user-select: none;
+}
+
+.quest-timeline-table {
+    display: flex;
+    width: 100%;
+}
+
+.quest-timeline-left-column {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    position: sticky;
+    left: 0;
+    z-index: 15;
+    background: #fff;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.quest-left-header {
+    height: 84px;
+    box-sizing: border-box;
+    background-color: #f8fafc;
+}
+
+.quest-left-row {
+    height: auto;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease;
+}
+
+.quest-left-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+}
+
+.quest-left-meta {
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.quest-left-author {
+    min-width: 0;
+}
+
+.badge.quest-duration-badge {
+    --bs-bg-opacity: 1;
+    --bs-badge-color: #0c4a6e;
+    background: #e0f2fe;
+    background-color: #e0f2fe;
+    border: 1px solid #0369a1;
+    color: #0c4a6e;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.quest-left-row:hover {
+    background-color: #f1f5f9;
+}
+
+.quest-left-row {
+    cursor: pointer;
+}
+
+.quest-row-highlight {
+    animation: questRowPulse 1.8s ease-out;
+}
+
+@keyframes questRowPulse {
+    0% {
+        background-color: #bfdbfe;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Auto-sequence strategy chooser. */
+#quest-autosequence-modal #quest-autosequence-strategy-list .list-group-item {
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+#quest-autosequence-modal #quest-autosequence-strategy-list .list-group-item:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+#quest-autosequence-modal #quest-autosequence-strategy-list .list-group-item.active {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+    color: inherit;
+}
+
+#quest-autosequence-description-panel {
+    background-color: #fff;
+    min-height: 280px;
+}
+
+/* Editable date cells in the challenge table. */
+#quest-schedule-table td.quest-col-datestart,
+#quest-schedule-table td.quest-col-dateend {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#quest-schedule-table td.quest-col-datestart:hover,
+#quest-schedule-table td.quest-col-dateend:hover {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+#quest-schedule-table .quest-col-edit-icon {
+    color: #64748b;
+    opacity: 0.5;
+    transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+#quest-schedule-table td.quest-col-datestart:hover .quest-col-edit-icon,
+#quest-schedule-table td.quest-col-dateend:hover .quest-col-edit-icon {
+    opacity: 1;
+    color: #2563eb;
+}
+
+#quest-challenges-detail-table .quest-view-date-cell,
+#quest-challenges-detail-table .quest-view-date-field {
+    cursor: pointer;
+}
+
+#quest-challenges-detail-table .quest-view-date-field {
+    display: inline-block;
+    border-bottom: 1px dashed #2563eb;
+    color: #1e3a8a;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#quest-challenges-detail-table .quest-view-date-cell:hover,
+#quest-challenges-detail-table .quest-view-date-cell:focus-within,
+#quest-challenges-detail-table .quest-view-date-field:hover,
+#quest-challenges-detail-table .quest-view-date-field:focus {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    outline: 2px solid #93c5fd;
+    outline-offset: 1px;
+}
+
+.quest-timeline-right-area {
+    position: relative;
+    overflow: hidden;
+}
+
+.quest-bands-header {
+    height: 84px;
+    box-sizing: border-box;
+    background: #f8fafc;
+}
+
+.quest-band-row {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.quest-band-l1 {
+    height: 28px;
+    background: #e2e8f0;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.quest-band-l2 {
+    height: 28px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.quest-band-l3 {
+    height: 28px;
+    background: #fff;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+.quest-band-cell {
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border-right: 1px solid #e2e8f0;
+}
+
+.quest-cell-l1 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.quest-cell-l2 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.quest-cell-l3 {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.quest-timeline-lane {
+    height: auto;
+    min-height: 48px;
+    box-sizing: border-box;
+    position: relative;
+    background: #fff;
+    transition: background-color 0.15s ease;
+}
+
+.quest-timeline-lane:hover {
+    background-color: #fbfcfd;
+}
+
+.quest-lane-grid-tick {
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    border-right: 1px dashed rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+}
+
+.quest-band-cell.quest-cell-weekend {
+    background-color: #f1f5f9;
+}
+
+.quest-cell-l2.quest-cell-weekend {
+    background-color: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+}
+
+.quest-cell-l3.quest-cell-weekend {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+}
+
+.quest-lane-weekend {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(241, 245, 249, 0.7);
+    border-right: 1px solid rgba(226, 232, 240, 0.85);
+    border-left: 1px solid rgba(226, 232, 240, 0.85);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.quest-lane-grid-tick.quest-lane-grid-weekend {
+    background-color: rgba(241, 245, 249, 0.35);
+}
+
+.quest-calendar-bar {
+    position: absolute;
+    top: 7px;
+    height: 40px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-radius: 6px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    cursor: grab;
+    z-index: 2;
+    touch-action: none;
+    transition: box-shadow 0.15s ease;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.quest-calendar-bar.is-dragging {
+    cursor: grabbing;
+    box-shadow: 0 8px 24px rgba(29, 78, 216, 0.4);
+    z-index: 20;
+    opacity: 0.95;
+}
+
+.quest-bar-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+    z-index: 5;
+}
+
+.quest-bar-handle.handle-start {
+    left: 0;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.quest-bar-handle.handle-end {
+    right: 0;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.quest-bar-handle:hover,
+.quest-bar-handle:active {
+    background-color: rgba(255, 255, 255, 0.35);
+}
+
+.quest-bar-body {
+    width: 100%;
+    overflow: hidden;
+    padding: 0 12px;
+}
+
+.quest-timeline-hud {
+    position: absolute;
+    pointer-events: none;
+    z-index: 99;
+    background: rgba(33, 37, 41, 0.94);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 210px;
+    max-width: 290px;
+}
+
+.quest-schedule-page .smaller {
+    font-size: 0.75rem;
+}
+
+/* Leaderboard medal and rank styles */
+.quest-medal {
+    display: inline-block;
+    vertical-align: middle;
+    width: 28px;
+    height: 28px;
+    transition: transform 0.15s ease-in-out;
+}
+
+.quest-medal:hover {
+    transform: scale(1.15);
+}
+
+.quest-rank-number {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #64748b;
+    display: inline-block;
+    min-width: 28px;
+    text-align: center;
+}
+
+
+.quest-question-preview-attachments {
+    border-left: 4px solid #0d6efd;
+}
+
+.quest-question-preview-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.quest-question-preview-actions {
+    flex-shrink: 0;
+}
+
+.quest-question-preview [disabled],
+.quest-question-preview [aria-disabled="true"] {
+    cursor: not-allowed;
+}
+
+.quest-question-preview .filemanager a,
+.quest-question-preview .fp-toolbar a[role="button"],
+.quest-question-preview .dndupload-target,
+.quest-question-preview [contenteditable="true"],
+.quest-question-preview iframe,
+.quest-question-preview [contenteditable="false"] {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.quest-question-preview .disabled {
+    opacity: 0.65;
+}
+
+.quest-answer-phase-badge {
+    white-space: nowrap;
+}
+
+.quest-answer-actions {
+    min-width: max-content;
+}
+
+.quest-answer-action {
+    white-space: nowrap;
+}
+
+.quest-attention-badge {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 800;
+    gap: 0.3rem;
+    line-height: 1.2;
+    padding: 0.35rem 0.65rem;
+    text-decoration: none;
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.quest-attention-badge:hover,
+.quest-attention-badge:focus {
+    filter: brightness(0.94);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.quest-answer-phase-badge,
+.quest-attention-badge {
+    white-space: nowrap;
+}
+
+.quest-challenge-phase-badge {
+    white-space: nowrap;
+}
+
+
+/* Accessible challenge status and phase badges. */
+.badge.quest-phase-badge {
+    --bs-badge-color: #fff;
+    background-color: #15803d;
+    border: 1px solid #166534;
+    color: #fff;
+    font-weight: 700;
+}
+
+.badge.quest-phase-badge-closed,
+.badge.bg-secondary,
+.badge.bg-secondary.text-white {
+    --bs-badge-color: #fff;
+    --bs-secondary-rgb: 75, 85, 99;
+    --bs-white-rgb: 255, 255, 255;
+    background-color: #4b5563;
+    border: 1px solid #374151;
+    color: #fff;
+}
+
+.badge.quest-attention-badge-approval {
+    --bs-badge-color: #fff;
+    background-color: #b45309;
+    border: 1px solid #92400e;
+    color: #fff;
+}
+
+.badge.quest-attention-badge-unevaluated {
+    --bs-badge-color: #fff;
+    background-color: #b91c1c;
+    border: 1px solid #991b1b;
+    color: #fff;
+}
+
+.quest-challenge-status-badges {
+    align-items: center;
+}
+/* Question-bank challenge composer, following the familiar Quiz slot layout. */
+.quest-question-composer-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.quest-question-composer-slot {
+    background: #e8e8e8;
+    border: 0;
+    padding: 0.55rem 0.75rem;
+}
+
+.quest-question-composer-row {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+}
+
+.quest-question-composer-drag {
+    align-items: center;
+    color: #343a40;
+    cursor: move;
+    display: inline-flex;
+    flex: 0 0 1.5rem;
+    justify-content: center;
+    touch-action: none;
+}
+
+.quest-question-composer-number {
+    align-items: center;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    color: #0f6cbf;
+    display: none; /* display: inline-flex; */
+    flex: 0 0 3rem;
+    font-size: 1.1rem;
+    justify-content: center;
+    min-height: 2.75rem;
+}
+
+.quest-question-composer-name {
+    flex: 1 1 auto;
+    min-width: 12rem;
+}
+
+.quest-question-composer-version {
+    flex: 0 1 11rem;
+    min-width: 9rem;
+}
+
+.quest-question-composer-action {
+    flex: 0 0 auto;
+}
+
+.quest-question-composer-mark {
+    background: #fff;
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    flex: 0 0 5.75rem;
+}
+
+.quest-question-composer-mark input {
+    border: 0;
+    text-align: right;
+}
+
+.quest-question-composer-preview {
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    clear: both;
+    display: block;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    width: 100%;
+}
+
+.quest-myplace-table {
+    min-width: 48rem;
+}
+
+.quest-myplace-table thead th {
+    background-color: #edf4fb;
+    color: #203b56;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.quest-myplace-table tbody td {
+    vertical-align: middle;
+}
+
+.quest-myplace-table tbody td:first-child {
+    min-width: 12rem;
+}
+
+@media (max-width: 767.98px) {
+    .quest-question-composer-row {
+        flex-wrap: wrap;
+    }
+
+    .quest-question-composer-name {
+        flex-basis: calc(100% - 5rem);
+    }
+}

@@ -15,15 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Module developed at the University of Valladolid.
- * Designed and directed by Juan Pablo de Castro with the effort of many other
- * students of telecommunciation engineering
- * this module is provides as-is without any guarantee. Use it as your own risk.
- * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License.
- * @package quest
+ * Export a detailed report for a Quest activity.
+ *
+ * @package    mod_quest
+ * @copyright  2026 onwards EDUVALab, University of Valladolid
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// This page prints a long report of this QUEST.
+
 require_once("../../config.php");
 require_once("lib.php");
 require_once("locallib.php");
@@ -33,7 +31,7 @@ $cmid = required_param('id', PARAM_INT); // Course Module ID.
 global $DB, $PAGE, $OUTPUT;
 $timenow = time();
 list($course, $cm) = get_course_and_cm_from_cmid($cmid, "quest");
-$quest = $DB->get_record("quest", array("id" => $cm->instance), '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 // Print the page header and check login.
 require_login($course->id, false, $cm);
 
@@ -41,29 +39,27 @@ $context = context_module::instance($cm->id);
 require_capability('mod/quest:downloadlogs', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
-    print_error("modulehiddenerror.", 'quest', "view.php?id=$cmid");
+    throw new \moodle_exception('modulehiddenerror', 'quest', "view.php?id=$cmid");
 }
 
-$url = new moodle_url('/mod/quest/report.php', array('id' => $cmid));
+$url = new moodle_url('/mod/quest/report.php', ['id' => $cmid]);
 $PAGE->set_url($url);
+$PAGE->set_context($context);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($quest);
+$PAGE->activityheader->set_attrs([
+    'description' => quest_get_activity_header_description($quest, $cm, $context),
+]);
 
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
-// Log..
-
-if ($CFG->version >= 2014051200) {
-    require_once( 'classes/event/quest_viewed.php');
-    \mod_quest\event\briefting_viewed::create_from_parts($USER, $quest, $cm)->trigger();
-} else {
-    add_to_log($course->id, "quest", "report", "report.php?id=$cm->id", "$quest->id", "$cm->id");
-}
+// Log.
+\mod_quest\event\briefting_viewed::create_from_parts($USER, $quest, $cm)->trigger();
 
 echo $OUTPUT->header();
 quest_print_quest_heading($quest);
-echo $OUTPUT->box(format_module_intro('quest', $quest, $cm->id));
 
 echo '<br/>';
 // ...iterate through submissions..
@@ -74,7 +70,7 @@ if ($submissions = quest_get_submissions($quest)) {
         echo $OUTPUT->box_start();
         // Output a submission.
         $user = get_complete_user_data('id', $submission->userid);
-        echo "<b>Author:</b>";
+        echo '<div class="d-flex align-items-center mb-3"><b>Author:</b>&nbsp;';
         if ($user) {
             // User Name Surname.
             echo $OUTPUT->user_picture($user);
@@ -83,15 +79,19 @@ if ($submissions = quest_get_submissions($quest)) {
         } else {
             echo "Unknown ($submission->userid)";
         }
-        echo '</td><td width="100%">';
-        echo '<table border="0"><tr><td>';
+        echo '</div>';
+
+        echo '<div class="row g-4 align-items-start mb-4">';
+        echo '<div class="col-lg-8 col-md-7">';
         quest_print_submission_info($quest, $submission);
-        echo '</td><td>';
+        echo '</div>';
+        echo '<div class="col-lg-4 col-md-5 d-flex justify-content-center justify-content-md-end">';
         /*
          * INCRUSTA GRÁFICO DE EVOLUCION DE PUNTOS
          */
         quest_print_score_graph($quest, $submission);
-        echo '</td></tr></table>';
+        echo '</div>';
+        echo '</div>';
 
         echo $OUTPUT->heading($submission->title);
         /*

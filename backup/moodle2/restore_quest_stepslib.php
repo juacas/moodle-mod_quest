@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-defined('MOODLE_INTERNAL') || die();
+
 /** Backup Questournament module
  *
  * Structure step to restore one quest activity
@@ -24,30 +24,41 @@ defined('MOODLE_INTERNAL') || die();
  * this module is provides as-is without any guarantee. Use it as your own risk.
  *
  * @author Juan Pablo de Castro and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
-class restore_quest_activity_structure_step extends restore_activity_structure_step {
+class restore_quest_activity_structure_step extends restore_questions_activity_structure_step {
     /**
      *
      * {@inheritDoc}
      * @see restore_structure_step::define_structure()
      */
     protected function define_structure() {
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('quest', '/activity/quest');
         $paths[] = new restore_path_element('quest_element', '/activity/quest/elements/element');
-        $paths[] = new restore_path_element('quest_rubric', '/activity/quest/elements/element/rubrics/rubric');
         $paths[] = new restore_path_element('quest_element_autor', '/activity/quest/elements_autor/element_autor');
-        $paths[] = new restore_path_element('quest_rubric_autor', '/activity/quest/elements_autor/element_autor/rubrics/rubric');
-        $paths[] = new restore_path_element('quest_challenge', '/activity/quest/challenges/challenge');
+        $challenge = new restore_path_element('quest_challenge', '/activity/quest/challenges/challenge');
+        $paths[] = $challenge;
+        $this->add_question_references($challenge, $paths);
+        $challengequestion = new restore_path_element(
+            'quest_challenge_question',
+            '/activity/quest/challenges/challenge/challenge_questions/challenge_question'
+        );
+        $paths[] = $challengequestion;
+        $paths[] = new restore_path_element(
+            'quest_slot_question_reference',
+            $challengequestion->get_path() . '/slot_question_reference'
+        );
         $paths[] = new restore_path_element('quest_particular_element',
                 '/activity/quest/challenges/challenge/particular_elements/particular_element');
 
         if ($userinfo) {
-            $paths[] = new restore_path_element('quest_answer', '/activity/quest/challenges/challenge/answers/answer');
+            $answerpath = new restore_path_element('quest_answer', '/activity/quest/challenges/challenge/answers/answer');
+            $paths[] = $answerpath;
+            $this->add_question_usages($answerpath, $paths);
             $paths[] = new restore_path_element('quest_assessment',
                     '/activity/quest/challenges/challenge/answers/answer/assessments/assessment');
             $paths[] = new restore_path_element('quest_assessment_autor',
@@ -125,37 +136,6 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
      * Process data for this level of the backup.
      * @param \stdClass $data
      */
-    protected function process_quest_rubric_autor($data) {
-        global $DB;
-
-        $data = (object) $data;
-        $oldid = $data->id;
-
-        $data->questid = $this->get_new_parentid('quest');
-        $data->submissionsid = $this->get_mappingid('quest_challenge', $data->submissionsid);
-
-        $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
-        $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
-    }
-    /**
-     * Process data for this level of the backup.
-     * @param \stdClass $data
-     */
-    protected function process_quest_rubric($data) {
-        global $DB;
-
-        $data = (object) $data;
-        $oldid = $data->id;
-
-        $data->questid = $this->get_new_parentid('quest');
-
-        $newitemid = $DB->insert_record('quest_rubrics_autor', $data);
-        $this->set_mapping('quest_rubric_autor', $oldid, $newitemid);
-    }
-    /**
-     * Process data for this level of the backup.
-     * @param \stdClass $data
-     */
     protected function process_quest_challenge($data) {
         global $DB, $USER;
 
@@ -180,11 +160,78 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
             $data->maileduser = 0;
         }
         if ($data->initialpoints == null) {
-            $data->initialpoints = 0; // TODO JPC circunvents a bug with legacy backup.
+            $data->initialpoints = 0; // Keep legacy backups with no initial points valid.
         }
         $newitemid = $DB->insert_record('quest_submissions', $data);
         $this->set_mapping('quest_challenge', $oldid, $newitemid, true);
     }
+
+    /**
+     * Restore an ordered question slot belonging to a challenge.
+     *
+     * @param stdClass|array $data
+     */
+    protected function process_quest_challenge_question($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->questid = $this->get_new_parentid('quest');
+        $data->submissionid = $this->get_new_parentid('quest_challenge');
+        unset($data->id);
+        $newid = $DB->insert_record('quest_challenge_questions', $data);
+        $this->set_mapping('quest_challenge_question', $oldid, $newid, true);
+    }
+
+    /**
+     * Restore a challenge's question bank link using the new challenge and bank entry IDs.
+     *
+     * @param array $data Question reference from the backup.
+     */
+    public function process_question_reference($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $entryid = $this->get_mappingid('question_bank_entry', $data->questionbankentryid);
+        if (!$entryid && $this->task->is_samesite() &&
+                $DB->record_exists('question_bank_entries', ['id' => $data->questionbankentryid])) {
+            // Older Quest backups omitted the bank data but can still use it on the original site.
+            $entryid = $data->questionbankentryid;
+        }
+        if (!$entryid) {
+            throw new restore_step_exception('missing_question_bank_entry_mapping', $data->questionbankentryid);
+        }
+
+        unset($data->id);
+        $data->usingcontextid = $this->task->get_contextid();
+        if ($data->questionarea === 'challenge_question_slot') {
+            $data->itemid = $this->get_new_parentid('quest_challenge_question');
+        } else {
+            // Convert references from backups made before challenge question slots.
+            $challengeid = $this->get_new_parentid('quest_challenge');
+            $challenge = $DB->get_record('quest_submissions', ['id' => $challengeid], 'questid, pointsmax', MUST_EXIST);
+            $slot = (object)[
+                'questid' => $challenge->questid,
+                'submissionid' => $challengeid,
+                'slotnumber' => 1,
+                'maxmark' => max(0.01, (float)$challenge->pointsmax),
+            ];
+            $data->itemid = $DB->insert_record('quest_challenge_questions', $slot);
+            $data->questionarea = 'challenge_question_slot';
+        }
+        $data->questionbankentryid = $entryid;
+        $DB->insert_record('question_references', $data);
+    }
+
+    /**
+     * Restore a question reference attached to a composed challenge slot.
+     *
+     * @param array $data Backup reference data.
+     */
+    public function process_quest_slot_question_reference($data) {
+        $this->process_question_reference($data);
+    }
+
     /**
      * Process data for this level of the backup.
      * @param \stdClass $data
@@ -227,6 +274,8 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $data->submissionid = $this->get_new_parentid('quest_challenge');
         $data->userid = $this->get_mappingid('user', $data->userid);
         $data->date = $this->apply_date_offset($data->date);
+        // A usage ID from the source site is invalid until its usage is restored below.
+        $data->questionusageid = 0;
 
         $newitemid = $DB->insert_record('quest_answers', $data);
 
@@ -300,11 +349,24 @@ class restore_quest_activity_structure_step extends restore_activity_structure_s
         $this->set_mapping('quest_assessment', $oldid, $newitemid);
     }
     /**
+     * Inform the new usage id.
+     *
+     * @param int $newusageid
+     */
+    protected function inform_new_usage_id($newusageid) {
+        global $DB;
+
+        $DB->set_field('quest_answers', 'questionusageid', $newusageid,
+                ['id' => $this->get_new_parentid('quest_answer')]);
+    }
+
+    /**
      *
      * {@inheritDoc}
      * @see restore_structure_step::after_execute()
      */
     protected function after_execute() {
+        parent::after_execute();
         // Add quest related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_quest', 'intro', null);
         $this->add_related_files('mod_quest', 'introattachment', null);
