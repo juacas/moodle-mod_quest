@@ -32,6 +32,7 @@ final class autograde_restore_test extends advanced_testcase {
      * A manual override can be removed without deleting the submitted attempt.
      *
      * @param string $response Submitted answer.
+     * @dataProvider answer_cases
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('answer_cases')]
     public function test_restore_automatic_grade_removes_manual_assessment(string $response): void {

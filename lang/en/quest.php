@@ -1094,6 +1094,6 @@ $string['challengename'] = 'Challenge name';
 $string['questioncomposerinstructions'] = 'Drag questions to reorder them, set a maximum mark for each one, or remove a question. The final grade is weighted by the maximum marks.';
 $string['questionmark'] = 'Maximum mark';
 $string['noquestionsselected'] = 'Select at least one question for this challenge.';
-$string['invalidquestioncomposition'] = 'The selected questions or their maximum marks are invalid.';
+$string['invalidquestioncomposition'] = 'The selected questions, versions or maximum marks are invalid.';
 $string['createchallenge'] = 'Create challenge';
 $string['savechallenge'] = 'Save challenge';

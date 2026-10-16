@@ -78,6 +78,116 @@ final class question_bank_test extends advanced_testcase {
     }
 
     /**
+     * A pinned version is shown honestly and can be changed to follow future edits.
+     */
+    public function test_composer_can_switch_a_pinned_question_to_latest(): void {
+        global $DB, $PAGE, $USER;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        require_once(__DIR__ . '/../locallib.php');
+
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
+        $cm = get_coursemodule_from_instance('quest', $quest->id, $course->id, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+        $PAGE->set_url(new \moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'modif']));
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $generator->create_question_category(['contextid' => $context->id]);
+        $question = $generator->create_question('shortanswer', null, [
+            'category' => $category->id,
+            'name' => 'Question version one',
+        ]);
+        $updated = $generator->update_question($question, null, ['name' => 'Question version two']);
+        $entryid = (int)$DB->get_field('question_versions', 'questionbankentryid', ['questionid' => $question->id]);
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
+            'questid' => $quest->id,
+            'userid' => $USER->id,
+            'title' => 'Versioned challenge',
+            'description' => '',
+        ]);
+        question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, [[
+            'questionbankentryid' => $entryid,
+            'maxmark' => 1,
+            'version' => 1,
+        ]]);
+        $existing = question_reference_service::get_challenge_questions($challengeid);
+        $existing[0]->question->maxmark = 1;
+        $form = new \quest_print_upload_form(null, [
+            'submission' => $DB->get_record('quest_submissions', ['id' => $challengeid]),
+            'quest' => $quest,
+            'cm' => $cm,
+            'definitionoptions' => ['context' => $context, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes],
+            'attachmentoptions' => ['subdirs' => false, 'maxfiles' => 0, 'maxbytes' => $course->maxbytes],
+            'action' => 'modif',
+            'linkedquestion' => $existing[0]->question,
+            'composerquestions' => [$existing[0]->question],
+        ]);
+        ob_start();
+        $form->display();
+        $html = ob_get_clean();
+        $this->assertMatchesRegularExpression(
+            '~<select[^>]*name="question_version\[' . $question->id . '\]"[^>]*>.*?</select>~s', $html
+        );
+        preg_match('~<select[^>]*name="question_version\[' . $question->id . '\]"[^>]*>.*?</select>~s',
+            $html, $matches);
+        $this->assertStringNotContainsString('disabled=', $matches[0]);
+        $this->assertMatchesRegularExpression('~<option[^>]*value="1"[^>]*selected~', $matches[0]);
+        $this->assertStringContainsString('value="2"', $matches[0]);
+
+        $pinneditems = \quest_get_submitted_question_composition($existing, [$question->id], [$question->id => 1],
+            $context, [$question->id => 2]);
+        $this->assertSame(2, $pinneditems[0]['version']);
+        question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, $pinneditems);
+        $this->assertSame((int)$updated->id, (int)question_reference_service::get_question_for_challenge($challengeid)->id);
+
+        $existing = question_reference_service::get_challenge_questions($challengeid);
+        $items = \quest_get_submitted_question_composition($existing, [$updated->id], [$updated->id => 1],
+            $context, [$updated->id => 0]);
+        $this->assertNull($items[0]['version']);
+        question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, $items);
+        $this->assertNull(question_reference_service::get_challenge_question_reference($challengeid)->version);
+    }
+
+    /**
+     * The read-only preview must be rebuilt after an Always latest question changes version.
+     */
+    public function test_latest_question_preview_follows_a_new_version(): void {
+        global $DB, $USER;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
+        $context = \context_module::instance($quest->cmid);
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $generator->create_question_category(['contextid' => $context->id]);
+        $question = $generator->create_question('shortanswer', null, ['category' => $category->id]);
+        $entryid = (int)$DB->get_field('question_versions', 'questionbankentryid', ['questionid' => $question->id]);
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
+            'questid' => $quest->id,
+            'userid' => $USER->id,
+            'title' => 'Latest challenge',
+            'description' => '',
+        ]);
+        question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, [[
+            'questionbankentryid' => $entryid,
+            'maxmark' => 1,
+        ]]);
+        $submission = $DB->get_record('quest_submissions', ['id' => $challengeid]);
+        [$firstusage] = autograde_service::get_or_create_challenge_preview_usage($quest, $submission,
+            question_reference_service::get_challenge_questions($challengeid), $context);
+
+        $updated = $generator->update_question($question, null, ['name' => 'New preview version']);
+        [$secondusage] = autograde_service::get_or_create_challenge_preview_usage($quest, $submission,
+            question_reference_service::get_challenge_questions($challengeid), $context);
+
+        $this->assertNotSame($firstusage->get_id(), $secondusage->get_id());
+        $this->assertSame((int)$updated->id, (int)$secondusage->get_question($secondusage->get_slots()[0])->id);
+    }
+
+    /**
      * Saving a legacy challenge must not revalidate its existing activity-context question as a bank.
      */
     public function test_unchanged_legacy_composition_is_not_revalidated_or_rewritten(): void {
@@ -239,6 +349,7 @@ final class question_bank_test extends advanced_testcase {
         $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => $quest->id,
             'title' => 'Mixed challenge',
+            'description' => 'A short answer and an essay',
         ]);
         $automaticentry = (int)$DB->get_field('question_versions', 'questionbankentryid', [
             'questionid' => $automatic->id,
@@ -311,8 +422,17 @@ final class question_bank_test extends advanced_testcase {
 
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $category = $generator->create_question_category(['contextid' => $context->id]);
-        $question = $generator->create_question('essay', 'files', ['category' => $category->id]);
-        $file = get_file_storage()->get_file($context->id, 'question', 'questiontext', $question->id, '/', '1.png');
+        $question = $generator->create_question('essay', 'editorfilepicker', ['category' => $category->id]);
+        $DB->set_field('question', 'questiontext', '<p><img src="@@PLUGINFILE@@/1.png" alt="Example"></p>',
+            ['id' => $question->id]);
+        $file = get_file_storage()->create_file_from_string([
+            'contextid' => $context->id,
+            'component' => 'question',
+            'filearea' => 'questiontext',
+            'itemid' => $question->id,
+            'filepath' => '/',
+            'filename' => '1.png',
+        ], base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=='));
         $this->assertNotFalse($file);
 
         $form = new \quest_print_upload_form(null, [
@@ -467,7 +587,7 @@ final class question_bank_test extends advanced_testcase {
             'questionusageid' => $oldusageid,
         ]);
 
-        [$newquba, $newslot] = autograde_service::get_or_create_attempt(
+        [$newquba, $newslots] = autograde_service::get_or_create_attempt(
             $quest,
             $submission,
             $USER->id,
@@ -476,7 +596,7 @@ final class question_bank_test extends advanced_testcase {
 
         $this->assertNotSame((int)$oldusageid, (int)$newquba->get_id());
         $this->assertTrue($DB->record_exists('question_usages', ['id' => $oldusageid]));
-        $this->assertSame(1, $newslot);
+        $this->assertSame([1], $newslots);
         $this->assertSame(2, $DB->count_records('quest_answers', ['submissionid' => $submission->id]));
     }
 }

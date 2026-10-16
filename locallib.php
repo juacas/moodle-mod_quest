@@ -61,6 +61,35 @@ $questscales = [
 // Constants..
 define('QUEST_TYPE_GRADE_INDIVIDUAL', 0);
 define('QUEST_TYPE_GRADE_TEAM', 1);
+
+/**
+ * Build a composer URL with question IDs in Moodle's array parameter format.
+ *
+ * moodle_url only accepts scalar parameter values. Indexed questionids keys
+ * remain an array when the destination reads them with optional_param_array().
+ *
+ * @param int $cmid Course module ID.
+ * @param string $action Composer action.
+ * @param int[] $questionids Selected question IDs.
+ * @param int $submissionid Challenge ID when editing.
+ * @param bool $withsesskey Whether to include the current session key.
+ * @return moodle_url
+ */
+function quest_question_composer_url(int $cmid, string $action, array $questionids = [],
+        int $submissionid = 0, bool $withsesskey = false): moodle_url {
+    $params = ['id' => $cmid, 'action' => $action];
+    if ($submissionid > 0) {
+        $params['sid'] = $submissionid;
+    }
+    if ($withsesskey) {
+        $params['sesskey'] = sesskey();
+    }
+    foreach (array_values($questionids) as $index => $questionid) {
+        $params['questionids[' . $index . ']'] = (int)$questionid;
+    }
+    return new moodle_url('/mod/quest/challenges.php', $params);
+}
+
 $questeweights = [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25, 7 => 0.0, 8 => 0.25, 9 => 0.5,
                 10 => 0.75, 11 => 1.0, 12 => 1.5, 13 => 2.0, 14 => 4.0];
 $questfweights = [0 => 0, 1 => 0.1, 2 => 0.25, 3 => 0.5, 4 => 0.75, 5 => 1.0, 6 => 1.5, 7 => 2.0,
@@ -590,6 +619,12 @@ class quest_print_upload_form extends moodleform {
 
         require_once($CFG->libdir . '/questionlib.php');
         $context = \context_module::instance($cm->id);
+        $references = [];
+        if ($action === 'modif' && $submissionid > 0) {
+            foreach (\mod_quest\question\question_reference_service::get_challenge_questions($submissionid) as $slot) {
+                $references[(int)$slot->reference->questionbankentryid] = $slot->reference;
+            }
+        }
         $questions = array_map(static function($question) {
             $metadata = \mod_quest\question\bank_provider::get_question((int)$question->id);
             $metadata->maxmark = (float)($question->maxmark ?? 1);
@@ -607,15 +642,9 @@ class quest_print_upload_form extends moodleform {
         $usage->start_all_questions();
         \question_engine::save_questions_usage_by_activity($usage);
 
-        $returnparams = [
-            'id' => $cm->id,
-            'action' => $action === 'modif' ? 'modif' : 'addqchallenge',
-        ];
-        if ($action === 'modif') {
-            $returnparams['sid'] = $submissionid;
-        }
-        $returnparams['questionids'] = array_map(static fn($question) => (int)$question->id, $questions);
-        $returnurl = (new moodle_url('/mod/quest/challenges.php', $returnparams))->out_as_local_url(false);
+        $questionids = array_map(static fn($question) => (int)$question->id, $questions);
+        $returnurl = quest_question_composer_url($cm->id, $action === 'modif' ? 'modif' : 'addqchallenge',
+            $questionids, $action === 'modif' ? $submissionid : 0)->out_as_local_url(false);
 
         $html = html_writer::tag('h4', get_string('page') . ' 1', ['class' => 'h5 mb-2']);
         $html .= html_writer::start_tag('ul', [
@@ -638,7 +667,7 @@ class quest_print_upload_form extends moodleform {
             $html .= html_writer::link('#', $OUTPUT->pix_icon('i/dragdrop', get_string('move')), [
                 'class' => 'quest-question-composer-drag',
                 'data-drag-type' => 'move',
-                'aria-label' => get_string('movequestionnumber', 'quiz', $index + 1),
+                'aria-label' => get_string('move') . ' ' . ($index + 1),
             ]);
             $html .= html_writer::tag('span', (string)($index + 1), [
                 'class' => 'quest-question-composer-number',
@@ -674,10 +703,44 @@ class quest_print_upload_form extends moodleform {
                     'target' => '_blank',
                 ]);
             }
-            $html .= html_writer::tag('select', html_writer::tag('option', get_string('alwayslatest', 'quiz')), [
+            $selectedversion = $references[(int)$question->questionbankentryid]->version ?? null;
+            $versions = $DB->get_records_sql(
+                "SELECT version, questionid, status
+                   FROM {question_versions}
+                  WHERE questionbankentryid = :entryid AND status <> :draft
+               ORDER BY version DESC",
+                [
+                    'entryid' => $question->questionbankentryid,
+                    'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
+                ]
+            );
+            $versionoptions = html_writer::tag('option', get_string('alwayslatest', 'quiz'), [
+                'value' => 0,
+                'selected' => $selectedversion === null ? 'selected' : null,
+            ]);
+            $latestversion = 0;
+            foreach ($versions as $candidate) {
+                if ($candidate->status === \core_question\local\bank\question_version_status::QUESTION_STATUS_READY) {
+                    $latestversion = (int)$candidate->version;
+                    break;
+                }
+            }
+            if ($latestversion === 0 && $versions) {
+                $latestversion = (int)reset($versions)->version;
+            }
+            foreach ($versions as $version) {
+                $number = (int)$version->version;
+                $label = get_string($number === $latestversion ? 'questionversionlatest' : 'questionversion',
+                    'quiz', $number);
+                $versionoptions .= html_writer::tag('option', $label, [
+                    'value' => $number,
+                    'selected' => (int)$selectedversion === $number ? 'selected' : null,
+                ]);
+            }
+            $html .= html_writer::tag('select', $versionoptions, [
                 'class' => 'form-select quest-question-composer-version',
+                'name' => 'question_version[' . $question->id . ']',
                 'aria-label' => get_string('question_version', 'question'),
-                'disabled' => 'disabled',
             ]);
             $previewurl = \qbank_previewquestion\helper::question_preview_url(
                 $question->id, null, null, null, null, $context, $cm->id
@@ -777,18 +840,21 @@ class quest_print_upload_form extends moodleform {
  * @param array|null $submittedquestionorder Ordered question IDs from the composer.
  * @param array|null $submittedquestionmarks Maximum marks indexed by question ID.
  * @param context_module|null $localcontext Context of the Quest activity being edited.
+ * @param array|null $submittedversions Version numbers indexed by question ID; zero means always latest.
  * @return array Ordered question-bank references and their maximum marks.
  */
 function quest_get_submitted_question_composition(
     array $existingquestions = [],
     ?array $submittedquestionorder = null,
     ?array $submittedquestionmarks = null,
-    ?context_module $localcontext = null
+    ?context_module $localcontext = null,
+    ?array $submittedversions = null
 ): array {
-    global $CFG;
+    global $CFG, $DB;
 
     $questionorder = $submittedquestionorder ?? optional_param_array('question_order', [], PARAM_INT);
     $questionmarks = $submittedquestionmarks ?? optional_param_array('question_mark', [], PARAM_FLOAT);
+    $questionversions = $submittedversions ?? optional_param_array('question_version', [], PARAM_INT);
     if (!$questionorder) {
         throw new \moodle_exception('noquestionsselected', 'quest');
     }
@@ -817,6 +883,21 @@ function quest_get_submitted_question_composition(
             $question = \mod_quest\question\bank_provider::require_question($questionid, $localcontext);
             $entryid = (int)$question->questionbankentryid;
             $version = null;
+        }
+        if (array_key_exists($questionid, $questionversions)) {
+            $selectedversion = (int)$questionversions[$questionid];
+            if ($selectedversion < 0 || ($selectedversion > 0 && !$DB->record_exists_select(
+                'question_versions',
+                'questionbankentryid = :entryid AND version = :version AND status <> :draft',
+                [
+                    'entryid' => $entryid,
+                    'version' => $selectedversion,
+                    'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
+                ]
+            ))) {
+                throw new \moodle_exception('invalidquestioncomposition', 'quest');
+            }
+            $version = $selectedversion === 0 ? null : $selectedversion;
         }
         $maxmark = (float)($questionmarks[$questionid] ?? 0);
         if (!is_finite($maxmark) || $maxmark <= 0) {

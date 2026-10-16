@@ -21,6 +21,7 @@ use backup;
 use backup_controller;
 use backup_setting;
 use context_module;
+use context_course;
 use question_bank;
 use question_engine;
 use restore_controller;
@@ -127,9 +128,8 @@ final class question_bank_restore_test extends advanced_testcase {
             'course' => $course->id,
             'name' => 'Quest without user data',
         ]);
-        $bank = $this->getDataGenerator()->create_module('qbank', ['course' => $course->id]);
         $category = $this->getDataGenerator()->get_plugin_generator('core_question')
-            ->create_question_category(['contextid' => context_module::instance($bank->cmid)->id]);
+            ->create_question_category(['contextid' => context_course::instance($course->id)->id]);
         $question = $this->getDataGenerator()->get_plugin_generator('core_question')
             ->create_question('essay', null, ['category' => $category->id, 'name' => 'Essay for Quest']);
         $entryid = $DB->get_field('question_versions', 'questionbankentryid', ['questionid' => $question->id]);
@@ -191,9 +191,8 @@ final class question_bank_restore_test extends advanced_testcase {
             'name' => 'Question bank backup',
         ]);
         $context = context_module::instance($quest->cmid);
-        $bank = $this->getDataGenerator()->create_module('qbank', ['course' => $course->id]);
         $category = $this->getDataGenerator()->get_plugin_generator('core_question')
-            ->create_question_category(['contextid' => context_module::instance($bank->cmid)->id]);
+            ->create_question_category(['contextid' => context_course::instance($course->id)->id]);
         $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $question = $questiongenerator->create_question('shortanswer', null, [
                 'category' => $category->id,

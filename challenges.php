@@ -197,12 +197,7 @@ if ($action == 'confirmdelete') {
         $questionids[] = $lastchanged;
     }
     $questionids = array_values(array_unique(array_filter(array_map('intval', $questionids))));
-    $returnurl = new moodle_url('/mod/quest/challenges.php', [
-        'id' => $cm->id,
-        'action' => 'addqchallenge',
-        'sesskey' => sesskey(),
-        'questionids' => $questionids,
-    ]);
+    $returnurl = quest_question_composer_url($cm->id, 'addqchallenge', $questionids, 0, true);
     // Prepare the question-bank and create-question actions for the composer toolbar.
     $questionbankbutton = '';
     if ($canaddquestionbank && \mod_quest\question\bank_provider::has_bank_helper()) {
@@ -249,9 +244,15 @@ if ($action == 'confirmdelete') {
         require_once($CFG->libdir . '/questionlib.php');
         $selectedquestions = [];
         foreach ($questionids as $questionid) {
-            $question = \mod_quest\question\bank_provider::require_question($questionid, $context);
-            $selectedquestions[] = $question;
+            // Editing a question returns its new ID alongside the old ID. Both
+            // versions represent one bank entry and must occupy only one slot.
+            $metadata = \mod_quest\question\bank_provider::get_question($questionid);
+            $selectedquestions[(int)$metadata->questionbankentryid] = $questionid;
         }
+        $selectedquestions = array_map(
+            static fn($questionid) => \mod_quest\question\bank_provider::require_question($questionid, $context),
+            array_values($selectedquestions)
+        );
         $descriptionoptions = [
             'trusttext' => true,
             'subdirs' => false,
@@ -507,6 +508,7 @@ if ($action == 'confirmdelete') {
             $questionsbyentry[$entryid] = (object)[
                 'question' => $slot->question,
                 'maxmark' => (float)$slot->maxmark,
+                'fixedversion' => $slot->reference->version !== null,
             ];
         }
         $requestedquestionids = optional_param_array('questionids', [], PARAM_INT);
@@ -521,9 +523,18 @@ if ($action == 'confirmdelete') {
             }
         }
         require_once($CFG->libdir . '/questionlib.php');
+        $requestedbyentry = [];
         foreach (array_values(array_unique(array_filter(array_map('intval', $requestedquestionids)))) as $questionid) {
-            $question = \mod_quest\question\bank_provider::require_question((int)$questionid, $context);
-            $entryid = (int)$question->questionbankentryid;
+            $metadata = \mod_quest\question\bank_provider::get_question($questionid);
+            $entryid = (int)$metadata->questionbankentryid;
+            if (!empty($questionsbyentry[$entryid]->fixedversion)) {
+                // A pinned slot keeps its version until the user changes the selector.
+                continue;
+            }
+            $requestedbyentry[$entryid] = $questionid;
+        }
+        foreach ($requestedbyentry as $entryid => $questionid) {
+            $question = \mod_quest\question\bank_provider::require_question($questionid, $context);
             $questionsbyentry[$entryid] = (object)[
                 'question' => $question,
                 'maxmark' => $questionsbyentry[$entryid]->maxmark ?? 1.0,
@@ -590,12 +601,7 @@ if ($action == 'confirmdelete') {
                     $PAGE->requires->js_call_amd('mod_quest/modal_quest_question_bank_45', 'init',
                         [$context->id, (int)$cm->id, (int)$course->id]);
                 }
-                $returnparams = [
-                    'id' => $cm->id,
-                    'sid' => $submission->id,
-                    'action' => 'modif',
-                    'questionids' => $questionids,
-                ];
+                $returnurl = quest_question_composer_url($cm->id, 'modif', $questionids, $submission->id);
                 $category = \mod_quest\question\bank_provider::get_or_create_activity_category($context);
                 require_once($CFG->dirroot . '/question/editlib.php');
                 require_once($CFG->dirroot . '/question/bank/editquestion/classes/editquestion_helper.php');
@@ -605,7 +611,7 @@ if ($action == 'confirmdelete') {
                     (int)$category->id,
                     [
                         'cmid' => $cm->id,
-                        'returnurl' => (new moodle_url('/mod/quest/challenges.php', $returnparams))->out_as_local_url(false),
+                        'returnurl' => $returnurl->out_as_local_url(false),
                     ],
                     $cancreatequestion
                 ));

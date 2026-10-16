@@ -47,9 +47,16 @@ final class autograde_review_test extends advanced_testcase {
         $quba->set_preferred_behaviour('deferredfeedback');
         $slot = $quba->add_question(\question_bank::load_question($question->id), 1);
         $quba->start_all_questions();
-        $quba->process_all_actions(time(), $quba->prepare_simulated_post_data([$slot => ['answer' => '1']]));
+        $correctresponse = $quba->get_question($slot)->get_correct_response();
+        $prefix = $quba->get_field_prefix($slot);
+        $quba->process_all_actions(time(), [
+            'slots' => (string)$slot,
+            $prefix . ':sequencecheck' => $quba->get_question_attempt($slot)->get_sequence_check_count(),
+            $prefix . 'answer' => $correctresponse['answer'],
+        ]);
         $quba->finish_all_questions();
         \question_engine::save_questions_usage_by_activity($quba);
+        $this->assertEquals(1.0, $quba->get_question_fraction($slot));
 
         $during = autograde_service::render_question($quba, $slot, true, false);
         $this->assertStringContainsString('Which is the oddest number?', $during);

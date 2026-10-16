@@ -112,10 +112,10 @@ final class challenge_approval_display_test extends advanced_testcase {
         $this->assertStringContainsString('quest-question-composer-preview', $modifhtml);
         $this->assertStringContainsString('quest-question-composer-bank', $modifhtml);
 
-        [$quba, $slot] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
+        [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
             $quest, $submission, $linkedquestion, $context
         );
-        $preview = \mod_quest\service\autograde_service::render_question_preview($quba, $slot);
+        $preview = \mod_quest\service\autograde_service::render_question_preview($quba, $slots[0]);
         $this->assertStringContainsString('Name an amphibian', $preview);
 
         $submitted = (object)[
@@ -126,7 +126,7 @@ final class challenge_approval_display_test extends advanced_testcase {
             'descriptiontrust' => 1,
         ];
         $restored = quest_preserve_linked_challenge_content($submitted, (int)$quest->id);
-        $this->assertSame('Stored title', $restored->title);
+        $this->assertSame('Forged title', $restored->title);
         $this->assertSame('Stored question description', $restored->description);
         $this->assertEquals(FORMAT_HTML, $restored->descriptionformat);
         $this->assertEquals(0, $restored->descriptiontrust);

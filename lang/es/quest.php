@@ -1093,7 +1093,7 @@ $string['challengename'] = 'Nombre del desafío';
 $string['questioncomposerinstructions'] = 'Arrastra las preguntas para reordenarlas, define la puntuación máxima de cada una o elimina preguntas. La nota final se pondera según las puntuaciones máximas.';
 $string['questionmark'] = 'Puntuación máxima';
 $string['noquestionsselected'] = 'Selecciona al menos una pregunta para el desafío.';
-$string['invalidquestioncomposition'] = 'Las preguntas seleccionadas o sus puntuaciones máximas no son válidas.';
+$string['invalidquestioncomposition'] = 'Las preguntas, versiones o puntuaciones máximas seleccionadas no son válidas.';
 $string['createchallenge'] = 'Crear desafío';
 $string['savechallenge'] = 'Guardar desafío';
 

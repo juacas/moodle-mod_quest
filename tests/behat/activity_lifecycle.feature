@@ -31,11 +31,11 @@ Feature: Quest activity lifecycle and question-bank setting
 
   Scenario: A teacher can disable question-bank challenges from the activity settings
     Given I am on the "Quest 1" "quest activity editing" page logged in as teacher1
-    When I set the field "Allow students to add question bank challenges" to "No"
+    When I set the field "Challenge types students may create" to "Basic challenges only"
     And I press "Save and display"
     Then I should see "Quest activity description"
     When I navigate to "Settings" in current page administration
-    Then the field "Allow students to add question bank challenges" matches value "0"
+    Then the field "Challenge types students may create" matches value "0"
 
   Scenario: A teacher can open the Quest activity without student participation data
     When I am on the "Quest 1" "quest activity" page logged in as teacher1
@@ -44,13 +44,13 @@ Feature: Quest activity lifecycle and question-bank setting
 
   Scenario: A student sees only open challenge creation when the question bank is disabled
     When I am on the "Quest restricted" "quest activity" page logged in as student1
-    Then I should see "Add challenge"
-    And I should not see "Add challenge with question"
+    Then I should see "New plain challenge"
+    And I should not see "New challenge"
 
   Scenario: A teacher sees the restricted activity without student creation controls
     When I am on the "Quest restricted" "quest activity" page logged in as teacher1
     Then I should see "Quest restricted"
-    And I should not see "Add challenge with question"
+    And I should not see "New challenge"
 
   Scenario: A teacher sees both actionable states for a challenge awaiting approval
     Given a Quest essay challenge "Essay challenge" created by "student1" is awaiting approval in "Quest 1"
