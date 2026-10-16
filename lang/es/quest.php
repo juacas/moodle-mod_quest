@@ -49,10 +49,10 @@ $string['allowqbankquestions_help'] = 'Seleccione los tipos de desafíos que pue
 $string['allowresubmission'] = 'Permitir enviar de nuevo';
 $string['allowresubmit'] = 'Permitir reenvíos';
 $string['allowteams'] = 'Permitir Equipos';
-$string['allowteams_help'] = '<P align="justify">Este par&aacute;metro obliga a que cada uno de los alumnos que participe en este m&oacute;dulo QUESTOURnament pertenezca a un equipo. Cuando un alumno acceda por primera vez a un m&oacute;dulo que tenga esta opci&oacute;n habilitada, tendr&aacute; que introducir el nombre del equipo al que pertenece para poder entrar. </P>
-<P align="justify">Cuando esta opci&oacute;n est&eacute; habilitada aparecer&aacute; en el m&oacute;dulo, adem&aacute;s de la clasificaci&oacute;n individual de todos los alumnos, la clasificaci&oacute;n por equipos. </P>
-<P align="justify"> Cada equipo tendr&aacute; un n&uacute;mero de componentes, fijado por el par&aacute;mero <a href="help.php?component=quest&identifier=ncomponents"">N&uacute;mero de Componentes</a>, que podr&aacute; ser gestionado por los profesores. Los posibles errores que se poduzcan podr&aacute;n solucionarse atrav&eacute;s de la opci&oacute;n de
-<a href="help.php?component=quest&identifier=changeteamteacher"">Gesti&oacute;n de Equipos</a> a la que s&oacute;lo tienen acceso los profesores. </P>
+$string['allowteams_help'] = '<P align="justify">Este parámetro obliga a que cada uno de los alumnos que participe en este módulo QUESTOURnament pertenezca a un equipo. Cuando un alumno acceda por primera vez a un módulo que tenga esta opción habilitada, tendrá que introducir el nombre del equipo al que pertenece para poder entrar. </P>
+<P align="justify">Cuando esta opción esté habilitada aparecerá en el módulo, además de la clasificación individual de todos los alumnos, la clasificación por equipos. </P>
+<P align="justify"> Cada equipo tendrá un número de componentes, fijado por el parámero <a href="help.php?component=quest&identifier=ncomponents"">Número de Componentes</a>, que podrá ser gestionado por los profesores. Los posibles errores que se poduzcan podrán solucionarse através de la opción de
+<a href="help.php?component=quest&identifier=changeteamteacher"">Gestión de Equipos</a> a la que sólo tienen acceso los profesores. </P>
 ';
 $string['alreadyinphase'] = 'Ya en fase {$a}';
 $string['amendassessmentelements'] = 'Rectificar elementos de valoración';
@@ -69,43 +69,43 @@ $string['answernoauthorizedupdate'] = 'No estás autorizado a modificar la respu
 $string['answerpoints'] = 'Puntos de la respuesta';
 $string['answers'] = 'Resp.';
 $string['answersubmission'] = 'Responder Desafío';
-$string['answersubmission_help'] = '<P align="justify">Esta acci$ocute;n permite responder al desaf&iacute;o. </P>
+$string['answersubmission_help'] = '<P align="justify">Esta acción permite responder al desafío. </P>
 <P align="justify">Los campos que aparecen son los siguientes:</P>
 <ul>
-  <li><strong>T&iacute;tulo</strong>: nombre con el que se desea identificar la respuesta a enviar.</li>
-  <li><strong>Descripci&oacute;n</strong>: es el cuerpo de la respuesta al desafío. Deber&aacute; dar respuesta a todas cuestiones planteadas en el desaf&iacute;o.</li>
-  <li><strong>Anexos</strong>: en caso de haberse habilitado el env&iacute;o de anexos se podr&aacute;n incluir al final tras el cuerpo de la respuesta</li>
+  <li><strong>Título</strong>: nombre con el que se desea identificar la respuesta a enviar.</li>
+  <li><strong>Descripción</strong>: es el cuerpo de la respuesta al desafío. Deberá dar respuesta a todas cuestiones planteadas en el desafío.</li>
+  <li><strong>Anexos</strong>: en caso de haberse habilitado el envío de anexos se podrán incluir al final tras el cuerpo de la respuesta</li>
 </ul>
-<p>La pantalla aparecer&aacute; fragmentada en dos zonas, en la parte superior se muestra la sección que permite introducir la respuesta, además de pedirse a quién la envía que valore subjetivamente, es decir, según su propio criterio, el nivel de dificultad del desafío propuesto, escogiendo para ello una opción entre las propuestas, mientras que en la parte inferior se muestra el desaf&iacute;o a responder. </p>
-<p align="justify">Junto al texto Responder se muestra un icono con la imagen de una raiz cuadrada. Al pulsar este icono aparecer&aacute; una pantalla en la que se pueden comprobar las expresiones del filtro TEX de texto que proporciona Moodle. Este filtro TEX convierte expresiones introducidas con una sintaxis contreta en ecuaciones matem&aacute;ticas tal y como las muestra el editor de ecuaciones de Word. </p>
-<p align="justify">El botón Previsualizar permite acceder a una pantalla que muestra el aspecto de la respuesta introducida una vez que hayan aplicado los filtros de texto de que dispone Moodle. Esta pantalla es la <a href="help.php?component=quest&identifier=windowpreview"">Ventana de Previsualizaci&oacute;n de la respuesta </a>. El bot&oacute;n, Enviar Tarea permite guardar y enviar la respuesta que se ha introducido.</p>
+<p>La pantalla aparecerá fragmentada en dos zonas, en la parte superior se muestra la sección que permite introducir la respuesta, además de pedirse a quién la envía que valore subjetivamente, es decir, según su propio criterio, el nivel de dificultad del desafío propuesto, escogiendo para ello una opción entre las propuestas, mientras que en la parte inferior se muestra el desafío a responder. </p>
+<p align="justify">Junto al texto Responder se muestra un icono con la imagen de una raiz cuadrada. Al pulsar este icono aparecerá una pantalla en la que se pueden comprobar las expresiones del filtro TEX de texto que proporciona Moodle. Este filtro TEX convierte expresiones introducidas con una sintaxis contreta en ecuaciones matemáticas tal y como las muestra el editor de ecuaciones de Word. </p>
+<p align="justify">El botón Previsualizar permite acceder a una pantalla que muestra el aspecto de la respuesta introducida una vez que hayan aplicado los filtros de texto de que dispone Moodle. Esta pantalla es la <a href="help.php?component=quest&identifier=windowpreview"">Ventana de Previsualización de la respuesta </a>. El botón, Enviar Tarea permite guardar y enviar la respuesta que se ha introducido.</p>
 ';
 $string['apply'] = 'Aplicar';
 $string['approvalpending'] = 'Pendiente de aprobación';
 $string['approve'] = 'Aprobar';
 $string['approvechallenge'] = 'Aprobar o rechazar el desafío';
 $string['approvechallenge_help'] = 'Revisa el desafío propuesto por un estudiante. Al aprobarlo, estará disponible para los demás participantes cuando comience. Si guardas sin aprobar, el autor podrá introducir los cambios solicitados.';
-$string['approvesubmission'] = 'Aprobar/Rechazar Desaf&iacute;o';
-$string['approvesubmission_help'] = '<P align="justify">Esta página permite al profesor aprobar, guardar o borrar un desaf&iacute;o propuesto por un alumno. A continuación se describe cada una de las acciones que se pueden realizar:</P>
+$string['approvesubmission'] = 'Aprobar/Rechazar Desafío';
+$string['approvesubmission_help'] = '<P align="justify">Esta página permite al profesor aprobar, guardar o borrar un desafío propuesto por un alumno. A continuación se describe cada una de las acciones que se pueden realizar:</P>
 <ul>
-  <li><strong align="justify">Aprobar</strong>: al pulsar este bot&oacute;n se guardan todos los datos referentes al desaf&iacute;o, con las modificaciones realizadas por el profesor. A partir de este instante, el desafío será visible por el resto de los alumnos que podr&aacute;n enviar respuestas una vez se abra dicho desafío.</li>
-  <li><strong align="justify">Guardar</strong>: se almacenan todos los cambios realizados por el profesor en el desaf&iacute;o, sin que éste pase a estar visible para el resto de alumnos. Esto permite que el autor del desafío realice las modificaciones necesarias para que el profesor lo apruebe</li>
+  <li><strong align="justify">Aprobar</strong>: al pulsar este botón se guardan todos los datos referentes al desafío, con las modificaciones realizadas por el profesor. A partir de este instante, el desafío será visible por el resto de los alumnos que podrán enviar respuestas una vez se abra dicho desafío.</li>
+  <li><strong align="justify">Guardar</strong>: se almacenan todos los cambios realizados por el profesor en el desafío, sin que éste pase a estar visible para el resto de alumnos. Esto permite que el autor del desafío realice las modificaciones necesarias para que el profesor lo apruebe</li>
   <li><strong align="justify">Borrar</strong>: el profesor elimina el desafío por no considerarlo adecuado o interesante.</li>
 </ul>
-<P align="justify">Al realizar cualquiera de estas acciones se enviar&aacute; un mensaje al autor del desaf&iacute;o, bien interno, bien por correo electr&oacute;nico, dependiendo de las preferencias del usuario a este respecto fijadas por el mismo en su perfil. </P>
+<P align="justify">Al realizar cualquiera de estas acciones se enviará un mensaje al autor del desafío, bien interno, bien por correo electrónico, dependiendo de las preferencias del usuario a este respecto fijadas por el mismo en su perfil. </P>
 <P align="justify">La información que se presenta sobre el desafío y que puede modificarse es la siguiente:</P>
 <ul>
 
-    <li><strong>T&iacute;tulo</strong>: nombre con el se designa el desaf&iacute;o, se recomienda que no incluya el nombre del autor, para conservar el anonimato sobre la autoría del desaf&iacute;o, en caso contrario podr&aacute; ser rechazado o modificado por el profesor.</li>
-      <li><strong>Descripci&oacute;n</strong>: es el cuerpo del desaf&iacute;o, donde se explica la problem&aacute;tica y los aspectos que debe incluir la respuesta. Debe ser clara y completa. </li>
-      <li><strong>Puntuaci&oacute;n M&aacute;xima</strong>: es la m&aacute;xima puntuaci&oacute;n que podr&aacute; alcanzar el desaf&iacute;o, viene limitada por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> del m&oacute;dulo QUESTOURnament al que pertenece.</li>
-      <li><strong>Puntuaci&oacute;n Inicia</strong>l: es la puntuaci&oacute;n con la que parte el desaf&iacute;o en el instante de su comienzo, la cuál irá evolucionando a medida que se desarrolle el concurso.</li>
-      <li><strong>Fecha de Comienzo</strong>: establece la fecha en que se abre el desaf&iacute;o, este par&aacute;metro s&oacute;lo es configurable por parte de los profesores. Cuando el desafío lo crea un alumno, se toma como fecha de comienzo el instante de creaci&oacute;n del desaf&iacute;o.</li>
-      <li><strong>Fecha de Cierre</strong>: establece la fecha en la que se cierra el desaf&iacute;o, a partir de esta fecha no se podr&aacute; responder al desaf&iacute;o, aunque los autores del desaf&iacute;o y los profesores s&iacute; que podr&aacute;n evaluar las respuestas realizadas hasta la fecha. No puede ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> establecida para el m&oacute;dulo QUESTOURnament. </li>
-      <li><strong>Anexos</strong>: se especificarán los anexos correspondientes en caso de haberse habilitado el env&iacute;o de anexos al crear el módulo QUESTOURnament. También se permite eliminar los anexos inclu&iacute;dos en el desaf&iacute;o hasta este momento.</li>
+    <li><strong>Título</strong>: nombre con el se designa el desafío, se recomienda que no incluya el nombre del autor, para conservar el anonimato sobre la autoría del desafío, en caso contrario podrá ser rechazado o modificado por el profesor.</li>
+      <li><strong>Descripción</strong>: es el cuerpo del desafío, donde se explica la problemática y los aspectos que debe incluir la respuesta. Debe ser clara y completa. </li>
+      <li><strong>Puntuación Máxima</strong>: es la máxima puntuación que podrá alcanzar el desafío, viene limitada por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> del módulo QUESTOURnament al que pertenece.</li>
+      <li><strong>Puntuación Inicia</strong>l: es la puntuación con la que parte el desafío en el instante de su comienzo, la cuál irá evolucionando a medida que se desarrolle el concurso.</li>
+      <li><strong>Fecha de Comienzo</strong>: establece la fecha en que se abre el desafío, este parámetro sólo es configurable por parte de los profesores. Cuando el desafío lo crea un alumno, se toma como fecha de comienzo el instante de creación del desafío.</li>
+      <li><strong>Fecha de Cierre</strong>: establece la fecha en la que se cierra el desafío, a partir de esta fecha no se podrá responder al desafío, aunque los autores del desafío y los profesores sí que podrán evaluar las respuestas realizadas hasta la fecha. No puede ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> establecida para el módulo QUESTOURnament. </li>
+      <li><strong>Anexos</strong>: se especificarán los anexos correspondientes en caso de haberse habilitado el envío de anexos al crear el módulo QUESTOURnament. También se permite eliminar los anexos incluídos en el desafío hasta este momento.</li>
 
-  <li><strong>Comentarios para el Autor</strong>: en este campo se incluir&aacute;n las sugerencias o los comentarios que el profesor quiera realizar al alumno, los cuáles s&oacute;lo estarán visibles para el autor del desaf&iacute;o y para el resto de profesores.</li>
-  <li><strong>Comentarios para los Alumnos</strong>: en este campo se incluir&aacute;n los comentarios que el profesor quiera realizar a los alumnos acerca del desaf&iacute;o, estos comentarios estarán visibles para todos los participantes en el m&oacute;dulo QUESTOURnament. </li>
+  <li><strong>Comentarios para el Autor</strong>: en este campo se incluirán las sugerencias o los comentarios que el profesor quiera realizar al alumno, los cuáles sólo estarán visibles para el autor del desafío y para el resto de profesores.</li>
+  <li><strong>Comentarios para los Alumnos</strong>: en este campo se incluirán los comentarios que el profesor quiera realizar a los alumnos acerca del desafío, estos comentarios estarán visibles para todos los participantes en el módulo QUESTOURnament. </li>
 </ul>
 ';
 $string['assess'] = 'Evaluar';
@@ -130,19 +130,19 @@ $string['assessor'] = 'Evaluador';
 $string['assessthisanswer'] = 'Evaluar esta Respuesta';
 $string['assessthischallenge'] = 'Evaluar este desafío';
 $string['assessthischallenge_help'] = 'Evalúa el trabajo de quien propuso el desafío según la rúbrica, incluida su tarea como evaluador de respuestas. Justifica la puntuación y ofrece comentarios respetuosos y constructivos.';
-$string['assessthissubmission'] = 'Evaluar Desaf&iacute;o';
-$string['assessthissubmission_help'] = '<P align="justify">Esta página permite a los profesores evaluar la labor de los alumnos que propongan desaf&iacute;os en un m&oacute;dulo QUESTOURnament. La calificaci&oacute;n otorgada depender&aacute; tanto de la labor del autor como evaluador como del desaf&iacute;o propuesto.</P>
+$string['assessthissubmission'] = 'Evaluar Desafío';
+$string['assessthissubmission_help'] = '<P align="justify">Esta página permite a los profesores evaluar la labor de los alumnos que propongan desafíos en un módulo QUESTOURnament. La calificación otorgada dependerá tanto de la labor del autor como evaluador como del desafío propuesto.</P>
 
 <P align="justify">Para facilitar la valoración de la tarea se utilizarán una serie de elementos de evaluación de forma que cada uno cubra un aspecto particular a valorar en la tarea. Para cada elemento de evaluación será preciso:
 <div align="justify">
   <OL>
-<LI>Introducir una calificaci&oacute;n haciendo clic en el radio bot&oacute;n apropiado, seleccionando un n&uacute;mero en el men&uacute; desplegable que se presente, etc., lo cuál dependerá de la escala utilizada para ese elemento de evaluación.
-<LI>Introducir una explicaci&oacute;n de por qu&eacute; se asigna esa calificaci&oacute;n. Si se considera que la raz&oacute;n es obvia, se puede dejar esa casilla en blanco. No obstante, debe tenerse en cuenta que la persona cuyo trabajo est&aacute; evaluando puede efectuar una reclamación sobre la calificación asignada.
+<LI>Introducir una calificación haciendo clic en el radio botón apropiado, seleccionando un número en el menú desplegable que se presente, etc., lo cuál dependerá de la escala utilizada para ese elemento de evaluación.
+<LI>Introducir una explicación de por qué se asigna esa calificación. Si se considera que la razón es obvia, se puede dejar esa casilla en blanco. No obstante, debe tenerse en cuenta que la persona cuyo trabajo está evaluando puede efectuar una reclamación sobre la calificación asignada.
   </OL>
 </div>
 
-<P align="justify">Asimismo es posible realizar un comentario general sobre el trabajo valorado. &Eacute;ste comentario debe ser respetuoso y constructivo. Las calificaciones y comentarios realizados se mostrar&aacute; al autor del desafío. El profesor podrá modificar manualmente la calificación global, en caso de que desee hacer ajustes sobre la calculada de forma automática.
-<P align="justify">La m&aacute;xima calificaci&oacute;n posible para el autor del desafío será, siempre que se haya producido una respuesta correcta, la m&aacute;xima puntuaci&oacute;n alcanzada por el desaf&iacute;o durante su tiempo de vida. Si por el contrario, no se ha enviado ninguna respuesta correcta al desaf&iacute;o antes de que éste se cierre, se considerará como m&aacute;xima puntuaci&oacute;n su <a href="help.php?component=quest&identifier=initialpoints"">Puntuaci&oacute;n Inicial</a>.
+<P align="justify">Asimismo es posible realizar un comentario general sobre el trabajo valorado. Éste comentario debe ser respetuoso y constructivo. Las calificaciones y comentarios realizados se mostrará al autor del desafío. El profesor podrá modificar manualmente la calificación global, en caso de que desee hacer ajustes sobre la calculada de forma automática.
+<P align="justify">La máxima calificación posible para el autor del desafío será, siempre que se haya producido una respuesta correcta, la máxima puntuación alcanzada por el desafío durante su tiempo de vida. Si por el contrario, no se ha enviado ninguna respuesta correcta al desafío antes de que éste se cierre, se considerará como máxima puntuación su <a href="help.php?component=quest&identifier=initialpoints"">Puntuación Inicial</a>.
 ';
 $string['assignmentnotinthecorrectphase'] = 'La valoración no se ha hecho en la fase correcta';
 $string['attachment'] = 'Anexo';
@@ -190,18 +190,18 @@ $string['challengeadded'] = 'Desafío creado correctamente';
 $string['challengeclosed'] = 'Este desafío ya no admite respuestas.';
 $string['challengeconstruction'] = 'Construcción de desafíos';
 $string['challengeend'] = 'Fin del desafío.';
-$string['challengeend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desaf&iacute;o. A partir de esta fecha no será posible enviar más respuestas al desaf&iacute;o. Sin embargo, los profesores sí podr&aacute;n seguir evaluando al autor del desaf&iacute;o, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desaf&iacute;os podr&aacute;n continuar evaluando las respuestas enviadas por otros alumnos.</P>
-<P align="justify">Una vez se cierre el desafío, todos los participantes podr&aacute;n ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
-<P align="justify">Esta fecha no podr&aacute; ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del m&oacute;dulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desaf&iacute;o </a>. </P>';
+$string['challengeend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desafío. A partir de esta fecha no será posible enviar más respuestas al desafío. Sin embargo, los profesores sí podrán seguir evaluando al autor del desafío, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desafíos podrán continuar evaluando las respuestas enviadas por otros alumnos.</P>
+<P align="justify">Una vez se cierre el desafío, todos los participantes podrán ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
+<P align="justify">Esta fecha no podrá ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del módulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desafío </a>. </P>';
 $string['challengemodenotavailable'] = 'Este tipo de desafío no está permitido por la configuración general del sitio.';
 $string['challengename'] = 'Nombre del desafío';
 $string['challengenotstarted'] = 'Este desafío aún no ha comenzado.';
 $string['challenges'] = 'Desafíos';
 $string['challengestart'] = 'Inicio del desafío.';
-$string['challengestart_help'] = '<P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
-<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
-<P align="justify">A partir de esta fecha los alumnos podr&aacute;n visualizar el desaf&iacute;o y enviar sus respuestas. </P>
-<P align="justify">Este fecha deber&aacute; ser anterior a la Fecha de Cierre del Desaf&iacute;o </P>';
+$string['challengestart_help'] = '<P align="justify">Permite establecer la fecha en la que comenzará un desafío. Este parámetro sólo es configurable por un profesor.</P>
+<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creación del desafío, pudiendo los profesores modificar este valor al aprobar el desafío o al realizar alguna modificación sobre él.</P>
+<P align="justify">A partir de esta fecha los alumnos podrán visualizar el desafío y enviar sus respuestas. </P>
+<P align="justify">Este fecha deberá ser anterior a la Fecha de Cierre del Desafío </P>';
 $string['challengetype_both'] = 'Simples y cuestionarios';
 $string['challengetype_quiz'] = 'Solo cuestionarios';
 $string['challengetype_simple'] = 'Solo simples';
@@ -210,20 +210,20 @@ $string['changecalification'] = 'Cambiar Calificación';
 $string['changemanualcalification'] = 'Cambiar Calificación Manualmente';
 $string['changerubricforanswers'] = 'Cambiar rúbrica de respuestas';
 $string['changeteam'] = 'Gestión Equipos';
-$string['changeteamteacher'] = 'Gesti&oacute;n de Equipos';
+$string['changeteamteacher'] = 'Gestión de Equipos';
 $string['changeteamteacher_help'] = '
-<P align="justify">Esta opción permite realizar la gesti&oacute;n de los equipos del m&oacute;dulo QUESTOURnament así como cambiar a un alumno de equipo si resultara necesario.</P>
+<P align="justify">Esta opción permite realizar la gestión de los equipos del módulo QUESTOURnament así como cambiar a un alumno de equipo si resultara necesario.</P>
 <P align="justify">Se presenta la siguiente información:</P>
 <div align="justify">
   <ul>
     <li><strong>Nombre/Apellido</strong>: muestra el nombre y el apellido introducido por el alumno al registrarse en el sistema.</li>
       <li><strong>Nombre del Equipo</strong>: muestra el nombre del equipo al que pertenece el alumno.</li>
-      <li><strong>N&ordm; Componentes</strong>: indica el n&uacute;mero actual de componentes con que cuenta el equipo al que pertenece el alumno.</li>
-      <li><strong>Nuevo Equipo</strong>: es un campo de texto donde se puede introducir el nombre del nuevo equipo al que se desea asignar al alumno en cuesti&oacute;n.</li>
+      <li><strong>Nº Componentes</strong>: indica el número actual de componentes con que cuenta el equipo al que pertenece el alumno.</li>
+      <li><strong>Nuevo Equipo</strong>: es un campo de texto donde se puede introducir el nombre del nuevo equipo al que se desea asignar al alumno en cuestión.</li>
   </ul>
 </div>
-<p align="justify">Si en el m&oacute;dulo QUESTOURnament est&aacute;n habilitados los grupos, el profesor, al cambiar a un alumno de equipo deber&aacute; seleccionar el grupo al que pertenezca dicho alumno. Esto permite que pueda haber dos equipos con el mismo nombre siempre que pertenezcan a grupos distintos. </p>
-<p align="justify">Si al cambiar a un alumno de equipo, éste se quedase sin componentes, dicho equipo desaparecer&iacute;a.</p>
+<p align="justify">Si en el módulo QUESTOURnament están habilitados los grupos, el profesor, al cambiar a un alumno de equipo deberá seleccionar el grupo al que pertenezca dicho alumno. Esto permite que pueda haber dos equipos con el mismo nombre siempre que pertenezcan a grupos distintos. </p>
+<p align="justify">Si al cambiar a un alumno de equipo, éste se quedase sin componentes, dicho equipo desaparecería.</p>
 ';
 $string['checkthat'] = 'Compruebe que';
 $string['choosestrategy'] = 'Seleccionar método de secuenciación';
@@ -265,8 +265,8 @@ $string['dateanswer'] = 'Fecha';
 $string['dateassess'] = 'Fecha de Evaluación';
 $string['dateend'] = 'Fecha de Cierre';
 $string['dateend_help'] = '
-<P align="justify">Este par&aacute;metro establece la fecha de cierre de este m&oacute;dulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan a este m&oacute;dulo no podr&aacute;n realizar ninguna de las acciones asociadas al mismo. En este momento se tendr&aacute;n las calificaciones finales del concurso. </P>
-<P align="justify">Una vez cerrado el concurso, su contenido permanecer&aacute; visible para los alumnos y profesores del curso, siempre que así se hubiera definido al crear el módulo QUESTOURnament, de manera que se podr&aacute; acceder a los desaf&iacute;os y respuestas realizadas por todos los participantes, así como a las calificaciones por ellos obtenidas. </P>';
+<P align="justify">Este parámetro establece la fecha de cierre de este módulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan a este módulo no podrán realizar ninguna de las acciones asociadas al mismo. En este momento se tendrán las calificaciones finales del concurso. </P>
+<P align="justify">Una vez cerrado el concurso, su contenido permanecerá visible para los alumnos y profesores del curso, siempre que así se hubiera definido al crear el módulo QUESTOURnament, de manera que se podrá acceder a los desafíos y respuestas realizadas por todos los participantes, así como a las calificaciones por ellos obtenidas. </P>';
 $string['dateendchallengeevent'] = 'Cierre del desafío «{$a}»';
 $string['dateendevent'] = 'Finalización del QUESTOURnament "{$a}"';
 $string['dateendsubmissionevent'] = 'Finalización del Desafío: "{$a}"';
@@ -274,9 +274,9 @@ $string['dateofend'] = 'Fecha de cierre';
 $string['dateofend_help'] = 'Fecha de cierre del torneo. Después de esta fecha no se admiten nuevas participaciones y la clasificación queda fijada. El contenido podrá seguir consultándose según la configuración de visibilidad.';
 $string['dateofstart'] = 'Fecha de Comienzo';
 $string['datestart'] = 'Fecha de Comienzo';
-$string['datestart_help'] = '<P align="justify">Este par&aacute;metro establece la fecha de comienzo de este m&oacute;dulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan al m&oacute;dulo podr&aacute;n a&ntilde;adir desaf&iacute;os, responder a los ya plantedos o realizar cualquier otra actividad contemplada en este módulo QUESTOURnament. </P>
-<P align="justify">Esta fecha se comprobar&aacute; al crear el m&oacute;dulo, de manera que si fuese posterior a la <a href="help.php?component=quest&identifier=dateend"">
-Fecha de Cierre</a> establecida se mostrar&iacute;a un mensaje de error y no se a&ntilde;adir&iacute;a el m&oacute;dulo QUESTOURnament que se est&aacute; intentando crear. </P>';
+$string['datestart_help'] = '<P align="justify">Este parámetro establece la fecha de comienzo de este módulo QUESTOURnament. A partir de esta fecha los alumnos del curso que accedan al módulo podrán añadir desafíos, responder a los ya plantedos o realizar cualquier otra actividad contemplada en este módulo QUESTOURnament. </P>
+<P align="justify">Esta fecha se comprobará al crear el módulo, de manera que si fuese posterior a la <a href="help.php?component=quest&identifier=dateend"">
+Fecha de Cierre</a> establecida se mostraría un mensaje de error y no se añadiría el módulo QUESTOURnament que se está intentando crear. </P>';
 $string['datestartchallengeevent'] = 'Inicio del desafío «{$a}»';
 $string['datestartevent'] = 'Inicio del QUESTOURnament "{$a}"';
 $string['datestartsubmissionevent'] = 'Inicio del Desafío: "{$a}"';
@@ -311,7 +311,7 @@ $string['editingassessmentelements'] = 'Editando elementos de valoración';
 $string['editingassessmentelementsofautors'] = 'Editando Elementos de Valoración de Autores';
 $string['editquestion'] = 'Editar pregunta';
 $string['element'] = 'Elemento';
-$string['elements'] = 'Elementos de Calificaci&oacute;n';
+$string['elements'] = 'Elementos de Calificación';
 $string['elements_help'] = '
 <P align="justify">Para calificar una respuesta enviada a un desafío se utilizarán una serie de &quot;Elementos de evaluación&quot;. Cada elemento debe cubrir un aspecto particular a evaluar en las respuestas enviadas y su número dependerá del tamaño y complejidad del desafío propuesto. Los elementos tendrán las siguientes características:
 <div align="justify">
@@ -319,7 +319,7 @@ $string['elements_help'] = '
       <li>La DESCRIPCIÓN del elemento de evaluación. Debería establecer claramente qué aspecto de la tarea se está evaluando. Si la evaluación es cualitativa, será útil dar detalles de qué se considera excelente, promedio, etc.
       y pobre. </li>
       <li>La ESCALA del elemento de evaluación. Existen una serie de escalas predefinidas, que van desde una escala simple SÍ/NO, hasta una escala de porcentaje total. Cada elemento de evaluación tiene su propia escala, la cuál debería elegirse para que pudiera ajustarse a todas las variaciones posibles de ese elemento. No obstante, debe tenerse en cuenta que la escala NO determina la importancia del elemento cuando se calcula la calificación final: por ejemplo, un elemento con una escala de dos puntos tiene la misma &quot;influencia&quot; en la calificación final que otro elemento que use una escala de 100 puntos, siempre que los respectivos elementos tengan el mismo <i>peso</i> o factor de ponderación.</li>
-      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de una respuesta, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
+      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de una respuesta, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
       </li>
   </OL>
 <P align="justify">El sistema proporciona la posibilidad de que el conjunto de elementos de evaluación se personalice para cada desafío añadido en un mismo QUESTOURnament.
@@ -331,7 +331,7 @@ $string['elementsautor_help'] = '<P align="justify">Para evaluar un desafío se 
       <li>La DESCRIPCIÓN del elemento de evaluación. Debería establecer claramente qué aspecto de la tarea se está evaluando. Si la evaluación es cualitativa, será útil dar detalles de qué se considera excelente, promedio, etc.
       y pobre. </li>
       <li>La ESCALA del elemento de evaluación. Existen una serie de escalas predefinidas, que van desde una escala simple SÍ/NO, hasta una escala de porcentaje total. Cada elemento de evaluación tiene su propia escala, la cuál debería elegirse para que pudiera ajustarse a todas las variaciones posibles de ese elemento. No obstante, debe tenerse en cuenta que la escala NO determina la importancia del elemento cuando se calcula la calificación final: por ejemplo, un elemento con una escala de dos puntos tiene la misma &quot;influencia&quot; en la calificación final que otro elemento que use una escala de 100 puntos, siempre que los respectivos elementos tengan el mismo <i>peso</i> o factor de ponderación.</li>
-      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de un desafío, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
+      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de un desafío, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
       </li>
   </OL>
 </div>';
@@ -435,25 +435,25 @@ $string['fullactivitylisting'] = 'Listado completo de actividad';
 $string['generalcomment'] = 'Comentario General';
 $string['generalcomment_help'] = 'Escriba una valoración general, respetuosa y constructiva, del trabajo evaluado.';
 $string['gettechnicallogs'] = 'Obtener registros técnicos';
-$string['global'] = 'Ver Clasificaci&oacute;n Total';
-$string['global_help'] = '<P align="justify">Esta opción muestra la clasificaci&oacute;n de los participantes en el m&oacute;dulo QUESTOURnament que pertenezcan a un mismo grupo.</P>
-<P align="justify">Los par&aacute;metros que se muestran son los siguientes:</P>
+$string['global'] = 'Ver Clasificación Total';
+$string['global_help'] = '<P align="justify">Esta opción muestra la clasificación de los participantes en el módulo QUESTOURnament que pertenezcan a un mismo grupo.</P>
+<P align="justify">Los parámetros que se muestran son los siguientes:</P>
 <div align="justify">
   <ul>
     <li><strong>Foto</strong>: imagen del alumno introducida por él en su perfil. </li>
-      <li><strong>Nombre/Apellido</strong>: nombre y apellido del alumno introducidos por &eacute;l al registrarse en el sistema.</li>
-      <li><strong>N&ordm; Resp.</strong>: n&uacute;mero de respuestas realizadas por el alumno en este m&oacute;dulo QUESTOURnament.</li>
-      <li><strong>N&ordm; Resp. Eval.</strong>: n&uacute;mero de respuestas evaluadas de todas las enviadas por este alumno en este m&oacute;dulo QUESTOURnament.</li>
-      <li><strong>N&ordm; Desaf&iacute;os </strong>: n&uacute;mero de desaf&iacute;os propuestos en el m&oacute;dulo QUESTOURnament por el alumno.</li>
-      <li><strong>N&ordm; Desaf&iacute;os Eval.</strong>: n&uacute;mero de desaf&iacute;os evaluados de todos los propuestos por el alumno en este m&oacute;dulo QUESTOURnament.</li>
-      <li><strong>Punt. Desaf&iacute;os</strong>: indica la puntuación total obtenida por el alumno correspondiente a la evaluaci&oacute;n, por parte de los profesores, de los desaf&iacute;os propuestos por dicho alumno.</li>
-      <li><strong>Punt. Resp.</strong>: indica la puntuaci&oacute;n total obtenida por el alumno correspondiente a la evaluaci&oacute;n de las respuestas por &eacute;l enviadas.</li>
-      <li><strong>Punt. Equipos</strong>: este par&aacute;metro s&oacute;lo se muestra en caso de tener en el m&oacute;dulo QUESTOURnament habilitada la opci&oacute;n de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos</a>. Indica el porcentaje, fijado a trav&eacute;s de la opción <a href="help.php?component=quest&identifier=teamporcent"">Porcentaje en la Calificaci&oacute;n de los Equipos</a>, de la puntuaci&oacute;n total obtenida por el equipo al que pertenece el alumno, en su puntuación individual.</li>
-      <li><strong>Puntuaci&oacute;n</strong>: recoge la suma de las puntuaciones correspondientes a los desaf&iacute;os propuestos por los alumnos y a las respuestas enviadas por &eacute;stos. </li>
+      <li><strong>Nombre/Apellido</strong>: nombre y apellido del alumno introducidos por él al registrarse en el sistema.</li>
+      <li><strong>Nº Resp.</strong>: número de respuestas realizadas por el alumno en este módulo QUESTOURnament.</li>
+      <li><strong>Nº Resp. Eval.</strong>: número de respuestas evaluadas de todas las enviadas por este alumno en este módulo QUESTOURnament.</li>
+      <li><strong>Nº Desafíos </strong>: número de desafíos propuestos en el módulo QUESTOURnament por el alumno.</li>
+      <li><strong>Nº Desafíos Eval.</strong>: número de desafíos evaluados de todos los propuestos por el alumno en este módulo QUESTOURnament.</li>
+      <li><strong>Punt. Desafíos</strong>: indica la puntuación total obtenida por el alumno correspondiente a la evaluación, por parte de los profesores, de los desafíos propuestos por dicho alumno.</li>
+      <li><strong>Punt. Resp.</strong>: indica la puntuación total obtenida por el alumno correspondiente a la evaluación de las respuestas por él enviadas.</li>
+      <li><strong>Punt. Equipos</strong>: este parámetro sólo se muestra en caso de tener en el módulo QUESTOURnament habilitada la opción de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos</a>. Indica el porcentaje, fijado a través de la opción <a href="help.php?component=quest&identifier=teamporcent"">Porcentaje en la Calificación de los Equipos</a>, de la puntuación total obtenida por el equipo al que pertenece el alumno, en su puntuación individual.</li>
+      <li><strong>Puntuación</strong>: recoge la suma de las puntuaciones correspondientes a los desafíos propuestos por los alumnos y a las respuestas enviadas por éstos. </li>
   </ul>
     <p>Hay que puntualizar que los profesores tienen acceso a toda la información anterior, mientras que los alumnos sólo verán dicha información en cado de que el creador del QUESTOURnament haya seleccionado la opción <a href="help.php?component=quest&identifier=showauthoringdetails"">Mostrar a los Alumnos detalles de los Autores en la Clasificación</a>. En caso contrario, los alumnos no podrán visualizar los datos parciales relativos a los desafíos propuestos por sus compañeros.</p>
-  <p>Por defecto la clasificaci&oacute;n viene ordenada de acuerdo a la puntuaci&oacute;n total obtenida por cada alumno, aunque este orden podr&aacute; modificarse escogiendo otro par&aacute;metro de ordenaci&oacute;n pulsando sobre el nombre del mismo.</p>
-  <p>Se puede acceder a la clasificaci&oacute;n por equipos a trav&eacute;s de la opción <a href="help.php?component=quest&identifier=teams"">Ver Clasificaci&oacute;n por Equipos</a> que aparece en la parte inferior de la pantalla. </p>
+  <p>Por defecto la clasificación viene ordenada de acuerdo a la puntuación total obtenida por cada alumno, aunque este orden podrá modificarse escogiendo otro parámetro de ordenación pulsando sobre el nombre del mismo.</p>
+  <p>Se puede acceder a la clasificación por equipos a través de la opción <a href="help.php?component=quest&identifier=teams"">Ver Clasificación por Equipos</a> que aparece en la parte inferior de la pantalla. </p>
 </div>';
 $string['globalranking'] = 'Clasificación global';
 $string['globalranking_help'] = 'Muestra la clasificación individual. Puede ordenar la tabla por sus columnas. La visibilidad de los detalles de autoría para estudiantes depende de la configuración de la actividad.';
@@ -472,20 +472,20 @@ $string['gradeofchallenge'] = 'Calificación del desafío: {$a}';
 $string['gradeofsubmission'] = 'Calificación del envío: {$a}';
 $string['gradetable'] = 'Tabla de calificaciones';
 $string['grading'] = 'Evaluar Respuesta ';
-$string['grading_help'] = '<P align="justify">Esta página permite a los profesores evaluar una respuesta enviada. La calificaci&oacute;n asignada deberá depender de c&oacute;mo se ajuste la respuesta a lo exigido en el desaf&iacute;o correspondiente.</P>
+$string['grading_help'] = '<P align="justify">Esta página permite a los profesores evaluar una respuesta enviada. La calificación asignada deberá depender de cómo se ajuste la respuesta a lo exigido en el desafío correspondiente.</P>
 
 <P align="justify">Para facilitar la valoración de la respuesta se utilizarán una serie de elementos de evaluación de forma que cada uno cubra un aspecto particular a valorar en la respuesta. Para cada elemento de evaluación será preciso:
 <div align="justify">
   <OL>
-<LI>Introducir una calificaci&oacute;n haciendo clic en el radio bot&oacute;n apropiado o seleccionando un n&uacute;mero en el men&uacute; desplegable que se presente, etc., lo cuál dependerá de la escala utilizada para ese elemento de evaluación.
-<LI>Introducir una explicaci&oacute;n de por qu&eacute; se asigna esa calificaci&oacute;n. Si considera que la raz&oacute;n es obvia, puede dejar esa casilla en blanco. Tenga en cuenta, sin embargo, que la persona cuyo trabajo est&aacute; evaluando puede efectuar una reclamación sobre la calificación asignada.
+<LI>Introducir una calificación haciendo clic en el radio botón apropiado o seleccionando un número en el menú desplegable que se presente, etc., lo cuál dependerá de la escala utilizada para ese elemento de evaluación.
+<LI>Introducir una explicación de por qué se asigna esa calificación. Si considera que la razón es obvia, puede dejar esa casilla en blanco. Tenga en cuenta, sin embargo, que la persona cuyo trabajo está evaluando puede efectuar una reclamación sobre la calificación asignada.
   </OL>
 </div>
 
-<P align="justify">Asimismo es posible realizar un comentario general sobre el trabajo valorado. &Eacute;ste comentario debe ser respetuoso y constructivo. Las calificaciones y comentarios realizados se mostrar&aacute; al autor de la respuesta y a todos los alumnos una vez que el desaf&iacute;o se cierre.
+<P align="justify">Asimismo es posible realizar un comentario general sobre el trabajo valorado. Éste comentario debe ser respetuoso y constructivo. Las calificaciones y comentarios realizados se mostrará al autor de la respuesta y a todos los alumnos una vez que el desafío se cierre.
 
 <P align="justify">El profesor o el autor del desafío podrá modificar manualmente la calificación global, en caso de que desee hacer ajustes sobre la calculada de forma automática.
-<P align="justify">La m&aacute;xima calificaci&oacute;n posible para el autor de la respuesta correcta ser&aacute; la puntuaci&oacute;n alcanzada por el desaf&iacute;o en el instante en el que se envío dicha respuesta.';
+<P align="justify">La máxima calificación posible para el autor de la respuesta correcta será la puntuación alcanzada por el desafío en el instante en el que se envío dicha respuesta.';
 $string['gradingcharacteristics'] = 'Características de calificación';
 $string['gradingstrategy'] = 'Estrategia de Calificación';
 $string['gradingstrategy_help'] = '
@@ -497,7 +497,7 @@ $string['gradingstrategy_help'] = '
       <OL>
       <li>La DESCRIPCIÓN del elemento de evaluación. Debería establecer claramente qué aspecto de la tarea se está evaluando. Si la evaluación es cualitativa, será útil dar detalles de qué se considera excelente, promedio, etc. </li>
       <li>La ESCALA del elemento de evaluación. Existen una serie de escalas predefinidas, que van desde una escala simple SÍ/NO, hasta una escala de porcentaje total. Cada elemento de evaluación tiene su propia escala, la cuál debería elegirse para que pudiera ajustarse a todas las variaciones posibles de ese elemento. No obstante, debe tenerse en cuenta que la escala NO determina la importancia del elemento cuando se calcula la calificación final: por ejemplo, un elemento con una escala de dos puntos tiene la misma &quot;influencia&quot; en la calificación final que otro elemento que use una escala de 100 puntos, siempre que los respectivos elementos tengan el mismo <i>peso</i> o factor de ponderación.</li>
-      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de una respuesta, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
+      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de una respuesta, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
       </li>
       </OL>
     </div>
@@ -512,7 +512,7 @@ $string['gradingstrategyautor_help'] = '<P align="justify">La estrategia de eval
       <OL>
       <li>La DESCRIPCIÓN del elemento de evaluación. Debería establecer claramente qué aspecto de la tarea se está evaluando. Si la evaluación es cualitativa, será útil dar detalles de qué se considera excelente, promedio, etc. </li>
       <li>La ESCALA del elemento de evaluación. Existen una serie de escalas predefinidas, que van desde una escala simple SÍ/NO, hasta una escala de porcentaje total. Cada elemento de evaluación tiene su propia escala, la cuál debería elegirse para que pudiera ajustarse a todas las variaciones posibles de ese elemento. No obstante, debe tenerse en cuenta que la escala NO determina la importancia del elemento cuando se calcula la calificación final: por ejemplo, un elemento con una escala de dos puntos tiene la misma &quot;influencia&quot; en la calificación final que otro elemento que use una escala de 100 puntos, siempre que los respectivos elementos tengan el mismo <i>peso</i> o factor de ponderación.</li>
-      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de una respuesta, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
+      <li>El PESO del elemento de evaluación. Por defecto, todos los elementos tienen la misma importancia cuando se calcula la calificación final de la tarea. No obstante, este hecho puede alterarse dando a los elementos más importantes un peso superior a uno, y a los menos importantes un peso inferior a uno. Debe tenerse en cuenta que, modificar el peso NO afecta a la posible calificación máxima de una respuesta, puesto que ese valor queda determinado por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> establecida para el desafío para el cuál se envía la respuesta y por el instante en el que se envía dicha respuesta.
       </li>
       </OL>
     </div>';
@@ -541,11 +541,11 @@ $string['incorrect'] = 'Incorrecto';
 $string['individualcalification'] = 'Calificación Individual';
 $string['individualranking'] = 'Ver clasificación individual';
 $string['individualranking_help'] = 'Muestra la clasificación individual y los puntos obtenidos por desafíos y respuestas. La visibilidad de los detalles de otros participantes depende de la configuración de la actividad. Puede ordenar la tabla por sus columnas.';
-$string['initialpoints'] = 'Puntuaci&oacute;n Inicial';
-$string['initialpoints_help'] = '<P align="justify">Este par&aacute;metro permite establecer la puntuaci&oacute;n inicial del desaf&iacute;o que se va a añadir. </P>
-<P align="justify">No obstante, el profesor podr&aacute; modificar este valor desde la m$iacute;nima puntuaci&oacute;n hasta la m&aacute;xima puntuaci&oacute;n fijada para este m&oacute;dulo QUESTOURnament. </P>
-<P align="justify">Si al a&ntilde;adir o modificar un desafío en un m&oacute;dulo QUESTOURnament la puntuaci&oacute;n inicial fuese superior a la <a href="help.php?component=quest&identifier=maxcalification">M&aacute;xima Puntuaci&oacute;n</a> establecida para dicho módulo, se tomar&iacute;a como valor de la puntuaci&oacute;n inicial el de la m&aacute;xima puntuaci&oacute;n establecida.</P>
-<P align="justify">Finalmente destacar que el valor de este parámetro puede variar de un desaf&iacute;o a otro en un mismo módulo QUESTOURnament.</P>
+$string['initialpoints'] = 'Puntuación Inicial';
+$string['initialpoints_help'] = '<P align="justify">Este parámetro permite establecer la puntuación inicial del desafío que se va a añadir. </P>
+<P align="justify">No obstante, el profesor podrá modificar este valor desde la m$iacute;nima puntuación hasta la máxima puntuación fijada para este módulo QUESTOURnament. </P>
+<P align="justify">Si al añadir o modificar un desafío en un módulo QUESTOURnament la puntuación inicial fuese superior a la <a href="help.php?component=quest&identifier=maxcalification">Máxima Puntuación</a> establecida para dicho módulo, se tomaría como valor de la puntuación inicial el de la máxima puntuación establecida.</P>
+<P align="justify">Finalmente destacar que el valor de este parámetro puede variar de un desafío a otro en un mismo módulo QUESTOURnament.</P>
 ';
 $string['inserterror'] = 'No se ha podido insertar un registro en la tabla {$a} de la base de datos.';
 $string['introattachments'] = 'Ficheros adjuntos';
@@ -577,9 +577,9 @@ $string['mail6'] = 'Su evaluación de la tarea \'{$a}\' ha sido revisada';
 $string['mail7'] = 'Los comentarios realizados por \'{$a}\' pueden verse en su tarea de búsqueda';
 $string['managingassignment'] = 'Administrar tarea';
 $string['maxanswersreached'] = 'Se ha alcanzado el número máximo de respuestas permitidas para este desafío.';
-$string['maxcalification'] = 'M&aacute;xima Puntuaci&oacute;n';
-$string['maxcalification_help'] = '<P align="justify">Este par&aacute;metro permite fijar la m&aacute;xima puntuaci&oacute;n que podr&aacute; alcanzar cada uno de los desaf&iacute;os propuestos, y por lo tanto la m&aacute;xima calificaci&oacute;n que se podr&aacute; obtener en un respuesta enviada.</P>
-<P align="justify"> Este valor puede ser diferente para cada uno de los desaf&iacute;os, no pudiendo sin embargo superar la puntuación establecida como máxima para el módulo QUESTOURnament al que pertenezcan. </P>
+$string['maxcalification'] = 'Máxima Puntuación';
+$string['maxcalification_help'] = '<P align="justify">Este parámetro permite fijar la máxima puntuación que podrá alcanzar cada uno de los desafíos propuestos, y por lo tanto la máxima calificación que se podrá obtener en un respuesta enviada.</P>
+<P align="justify"> Este valor puede ser diferente para cada uno de los desafíos, no pudiendo sin embargo superar la puntuación establecida como máxima para el módulo QUESTOURnament al que pertenezcan. </P>
 ';
 $string['maximumgrade'] = 'Calificación máxima';
 $string['maximumsize'] = 'Tamaño máximo';
@@ -588,34 +588,34 @@ $string['messageprovider:challenge_update'] = 'Cambios en los desafios: nuevos d
 $string['messageprovider:challengestart'] = 'Notification of a challenge start';
 $string['messageprovider:evaluation_update'] = 'Cambios que influyen en tu calificación.';
 $string['mincalification'] = 'Mínima Puntuación';
-$string['mincalification_help'] = '<P align="justify">Este par&aacute;metro permite fijar la mínima puntuaci&oacute;n que podr&aacute; alcanzar cada uno de los desaf&iacute;os propuestos, y por lo tanto la mínima calificaci&oacute;n que se podr&aacute; obtener en un respuesta enviada.</P>
-<P align="justify"> Este valor puede ser diferente para cada uno de los desaf&iacute;os, no pudiendo sin embargo ser inferior de la puntuación establecida como mínima para el módulo QUESTOURnament al que pertenezcan. </P>';
+$string['mincalification_help'] = '<P align="justify">Este parámetro permite fijar la mínima puntuación que podrá alcanzar cada uno de los desafíos propuestos, y por lo tanto la mínima calificación que se podrá obtener en un respuesta enviada.</P>
+<P align="justify"> Este valor puede ser diferente para cada uno de los desafíos, no pudiendo sin embargo ser inferior de la puntuación establecida como mínima para el módulo QUESTOURnament al que pertenezcan. </P>';
 $string['mode'] = 'Modo';
 $string['modif'] = 'Modificar';
 $string['modifanswersubmission'] = 'Modificar Respuesta para desafío {$a}';
 $string['modified'] = 'modificada';
-$string['modifsubmission'] = 'Modificar Desaf&iacute;o';
-$string['modifsubmission_help'] = '<P align="justify">Esta opci&oacute;n permite a un profesor modificar un desaf&iacute;o propuesto por un alumno. Los alumnos podr&aacute;n modificar los desaf&iacute;os que hayan propuesto, siempre y cuando no hayan sido aprobados todav&iacute;a por el profesor. </P>
+$string['modifsubmission'] = 'Modificar Desafío';
+$string['modifsubmission_help'] = '<P align="justify">Esta opción permite a un profesor modificar un desafío propuesto por un alumno. Los alumnos podrán modificar los desafíos que hayan propuesto, siempre y cuando no hayan sido aprobados todavía por el profesor. </P>
 <P align="justify">La información que se presenta sobre el desafío y que puede modificarse es la siguiente:</P>
 <ul>
-   <li><strong>T&iacute;tulo</strong>: nombre con el se designa el desaf&iacute;o, se recomienda que no incluya el nombre del autor, para conservar el anonimato sobre la autoría del desaf&iacute;o, en caso contrario podr&aacute; ser rechazado o modificado por el profesor.</li>
-      <li><strong>Descripci&oacute;n</strong>: es el cuerpo del desaf&iacute;o, donde se explica la problem&aacute;tica y los aspectos que debe incluir la respuesta. Debe ser clara y completa. </li>
-      <li><strong>Puntuaci&oacute;n M&aacute;xima</strong>: es la m&aacute;xima puntuaci&oacute;n que podr&aacute; alcanzar el desaf&iacute;o, viene limitada por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> del m&oacute;dulo QUESTOURnament al que pertenece.</li>
-      <li><strong>Puntuaci&oacute;n Inicia</strong>l: es la puntuaci&oacute;n con la que parte el desaf&iacute;o en el instante de su comienzo, la cuál irá evolucionando a medida que se desarrolle el concurso.</li>
-      <li><strong>Fecha de Comienzo</strong>: establece la fecha en que se abre el desaf&iacute;o, este par&aacute;metro s&oacute;lo es configurable por parte de los profesores. Cuando el desafío lo crea un alumno, se toma como fecha de comienzo el instante de creaci&oacute;n del desaf&iacute;o.</li>
-      <li><strong>Fecha de Cierre</strong>: establece la fecha en la que se cierra el desaf&iacute;o, a partir de esta fecha no se podr&aacute; responder al desaf&iacute;o, aunque los autores del desaf&iacute;o y los profesores s&iacute; que podr&aacute;n evaluar las respuestas realizadas hasta la fecha. No puede ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> establecida para el m&oacute;dulo QUESTOURnament. </li>
-      <li><strong>Anexos</strong>: se especificarán los anexos correspondientes en caso de haberse habilitado el env&iacute;o de anexos al crear el módulo QUESTOURnament. También se permite eliminar los anexos inclu&iacute;dos en el desaf&iacute;o hasta este momento.</li>
+   <li><strong>Título</strong>: nombre con el se designa el desafío, se recomienda que no incluya el nombre del autor, para conservar el anonimato sobre la autoría del desafío, en caso contrario podrá ser rechazado o modificado por el profesor.</li>
+      <li><strong>Descripción</strong>: es el cuerpo del desafío, donde se explica la problemática y los aspectos que debe incluir la respuesta. Debe ser clara y completa. </li>
+      <li><strong>Puntuación Máxima</strong>: es la máxima puntuación que podrá alcanzar el desafío, viene limitada por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> del módulo QUESTOURnament al que pertenece.</li>
+      <li><strong>Puntuación Inicia</strong>l: es la puntuación con la que parte el desafío en el instante de su comienzo, la cuál irá evolucionando a medida que se desarrolle el concurso.</li>
+      <li><strong>Fecha de Comienzo</strong>: establece la fecha en que se abre el desafío, este parámetro sólo es configurable por parte de los profesores. Cuando el desafío lo crea un alumno, se toma como fecha de comienzo el instante de creación del desafío.</li>
+      <li><strong>Fecha de Cierre</strong>: establece la fecha en la que se cierra el desafío, a partir de esta fecha no se podrá responder al desafío, aunque los autores del desafío y los profesores sí que podrán evaluar las respuestas realizadas hasta la fecha. No puede ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> establecida para el módulo QUESTOURnament. </li>
+      <li><strong>Anexos</strong>: se especificarán los anexos correspondientes en caso de haberse habilitado el envío de anexos al crear el módulo QUESTOURnament. También se permite eliminar los anexos incluídos en el desafío hasta este momento.</li>
 
-  <li><strong>Comentarios para el Autor</strong>: en este campo se incluir&aacute;n las sugerencias o los comentarios que el profesor quiera realizar al alumno, los cuáles s&oacute;lo estarán visibles para el autor del desaf&iacute;o y para el resto de profesores.</li>
-  <li><strong>Comentarios para los Alumnos</strong>: en este campo se incluir&aacute;n los comentarios que el profesor quiera realizar a los alumnos acerca del desaf&iacute;o, estos comentarios estarán visibles para todos los participantes en el m&oacute;dulo QUESTOURnament. </li>
+  <li><strong>Comentarios para el Autor</strong>: en este campo se incluirán las sugerencias o los comentarios que el profesor quiera realizar al alumno, los cuáles sólo estarán visibles para el autor del desafío y para el resto de profesores.</li>
+  <li><strong>Comentarios para los Alumnos</strong>: en este campo se incluirán los comentarios que el profesor quiera realizar a los alumnos acerca del desafío, estos comentarios estarán visibles para todos los participantes en el módulo QUESTOURnament. </li>
 </ul>
 ';
 $string['modulehiddenerror'] = 'La actividad está oculta.';
 $string['modulename'] = 'QUESTOURnament';
 $string['modulename_help'] = '<UL>
 <p align="justify">El módulo QUESTOURnament incentiva el trabajo del alumno, tanto de manera individual como en equipo.</p>
-<p align="justify">Este m&oacute;dulo ofrece la posibilidad de responder a desaf&iacute;os o preguntas planteados por el profesor o los alumnos a lo largo de un periodo de tiempo predeterminado. Tanto las respuestas como los desaf&iacute;os enviados por los alumnos son evaluados. Estas evaluaciones podr&aacute;n ser realizadas tanto por los profesores como por los alumnos que hayan propuesto desafíos. De estas evaluaciones depender&aacute; la nota final de cada alumno. Esta nota final y su evoluci&oacute;n a medida que se desarrolla el concurso podr&aacute; ser visualizada en cualquier momento por los alumnos accediendo a la tabla de clasificación del concurso que se configura dinámicamente a partir de dichas notas finales. </p>
-<p align="justify">Para la evaluaci&oacute;n de los desafíos propuestos, así como de las respuestas enviadas se definen sendos formularios de evaluaci&oacute;n, con elmentos de evaluaci&oacute;n y sus correspondientes pesos, que permitir&aacute;n determinar la puntuaci&oacute;n obtenida. </p>
+<p align="justify">Este módulo ofrece la posibilidad de responder a desafíos o preguntas planteados por el profesor o los alumnos a lo largo de un periodo de tiempo predeterminado. Tanto las respuestas como los desafíos enviados por los alumnos son evaluados. Estas evaluaciones podrán ser realizadas tanto por los profesores como por los alumnos que hayan propuesto desafíos. De estas evaluaciones dependerá la nota final de cada alumno. Esta nota final y su evolución a medida que se desarrolla el concurso podrá ser visualizada en cualquier momento por los alumnos accediendo a la tabla de clasificación del concurso que se configura dinámicamente a partir de dichas notas finales. </p>
+<p align="justify">Para la evaluación de los desafíos propuestos, así como de las respuestas enviadas se definen sendos formularios de evaluación, con elmentos de evaluación y sus correspondientes pesos, que permitirán determinar la puntuación obtenida. </p>
 </UL>';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['movingtophase'] = 'Moviendo a la fase {$a}';
@@ -640,9 +640,9 @@ $string['nanswerscorrect'] = 'Número de Respuestas correctas';
 $string['nanswerscorrectshort'] = 'Correct';
 $string['nanswersshort'] = 'Nº Resp.';
 $string['nanswerswhithoutassess'] = 'Sin Eval.';
-$string['ncomponents'] = 'N&uacute;mero de Componentes';
-$string['ncomponents_help'] = '<P align="justify">Este par&aacute;metro fija el n&uacute;mero m&aacute;ximo de componentes que puede tener cada equipo. </P>
-<P align="justify">Si un alumno intenta inscribirse en un equipo que ya est&eacute; completo, se le avisar&aacute; de ello y tendr&aacute; que darse de alta en otro equipo. </P>
+$string['ncomponents'] = 'Número de Componentes';
+$string['ncomponents_help'] = '<P align="justify">Este parámetro fija el número máximo de componentes que puede tener cada equipo. </P>
+<P align="justify">Si un alumno intenta inscribirse en un equipo que ya esté completo, se le avisará de ello y tendrá que darse de alta en otro equipo. </P>
 ';
 $string['ncomponentsteam'] = 'Nº Máximo de Componentes por Equipo';
 $string['need_to_be_editor'] = '(Necesita ser un editor para añadir desafíos. Solicite los permisos al profesor.)';
@@ -658,9 +658,9 @@ $string['newgradings'] = 'Nuevas calificaciones';
 $string['newsubmissions'] = 'Nuevos envíos';
 $string['newteam'] = 'Nuevo Equipo';
 $string['nivel'] = 'Nivel de Exigencia';
-$string['nmaxanswers'] = 'N&uacute;mero M&aacute;ximo de Respuestas';
-$string['nmaxanswers_help'] = '<P>Este par&aacute;metro establece el n&uacute;mero m&aacute;ximo de respuestas correctas que se admiten en un desaf&iacute;o antes de que el mismo se cierre. </P>
-<P>Una vez alcanzado dicho n&uacute;mero de respuestas calificadas como correctas, el desaf&iacute;o se cerrar&aacute;, de manera que no se admitir&aacute;n m&aacute;s respuestas a dicho desaf&iacute;o independientemente de la puntuaci&oacute;n actual del desaf&iacute;o o de que haya llegado o no su <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a></P>
+$string['nmaxanswers'] = 'Número Máximo de Respuestas';
+$string['nmaxanswers_help'] = '<P>Este parámetro establece el número máximo de respuestas correctas que se admiten en un desafío antes de que el mismo se cierre. </P>
+<P>Una vez alcanzado dicho número de respuestas calificadas como correctas, el desafío se cerrará, de manera que no se admitirán más respuestas a dicho desafío independientemente de la puntuación actual del desafío o de que haya llegado o no su <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a></P>
 ';
 $string['noanswers'] = 'No hay Respuestas';
 $string['noassessments'] = 'No hay Evaluaciones';
@@ -707,7 +707,7 @@ $string['numberofassessments'] = 'Número de valoraciones';
 $string['numberofassessmentsofstudentsubmissions'] = 'Número de Valoraciones enviadas por los estudiantes';
 $string['numberofassessmentsofteachersexamples'] = 'Número de Valoraciones de Ejemplo dadas por el Profesor';
 $string['numberofattachments'] = 'Número de Anexos esperados en los Envíos';
-$string['numberofattachments_help'] = '<p align="justify">El número introducido aquí determina cuántas cajas para la de subida de archivos se mostrarán cuando un estudiante o profesor realice un env&iacute;o. Este número puede oscilar entre 0 y 5. Normalmente este número será 0 ó 1, pero en ciertos casos puede ser necesario permitir el env&iacute;o de más de un anexo. Si el valor especificado es 0, que es además el valor por defecto para este parámetro, esto indica que no se permite adjuntar anexos en los envíos.</p>
+$string['numberofattachments_help'] = '<p align="justify">El número introducido aquí determina cuántas cajas para la de subida de archivos se mostrarán cuando un estudiante o profesor realice un envío. Este número puede oscilar entre 0 y 5. Normalmente este número será 0 ó 1, pero en ciertos casos puede ser necesario permitir el envío de más de un anexo. Si el valor especificado es 0, que es además el valor por defecto para este parámetro, esto indica que no se permite adjuntar anexos en los envíos.</p>
 <p align="justify">Si, por ejemplo, el número especificado es 3, y sólo se adjuntan 2 archivos al envío, dicho envío se realiza sin que se muestre ningún mensaje de advertencia. Es decir que, cuando se envía un trabajo se puede adjuntar cualquier número de archivos hasta el máximo permitido.</p>';
 $string['numberofnegativeresponses'] = 'Número de respuestas incorrectas';
 $string['of'] = 'de';
@@ -721,7 +721,7 @@ $string['overallpeergrade'] = 'Calificación Total por los compañeros: {$a}';
 $string['overallteachergrade'] = 'Calificación Total del Profesor: {$a}';
 $string['ownwork'] = 'Trabajo propio';
 $string['password'] = 'Contraseña';
-$string['password_help'] = '<p align="justify">Este campo permite introducir la contraseña de acceso para este m&oacute;dulo QUESTOURnament. La contraseña puede tener una longitud máxima de 10 caracteres, y puede modificarse en cualquier momento a lo largo del tiempo de vida de este QUESTOURnament. Seleccionando la opción &quot; <a href="help.php?component=quest&identifier=usepassword"">Usar contraseña</a>&quot; se puede garantizar que los estudiantes deban escribir esta contraseña para acceder a este	m&oacute;dulo QUESTOURnament.</p>
+$string['password_help'] = '<p align="justify">Este campo permite introducir la contraseña de acceso para este módulo QUESTOURnament. La contraseña puede tener una longitud máxima de 10 caracteres, y puede modificarse en cualquier momento a lo largo del tiempo de vida de este QUESTOURnament. Seleccionando la opción &quot; <a href="help.php?component=quest&identifier=usepassword"">Usar contraseña</a>&quot; se puede garantizar que los estudiantes deban escribir esta contraseña para acceder a este	módulo QUESTOURnament.</p>
 ';
 $string['passwordprotectedquest'] = 'Módulo QUESTOURnament Protegido con Contraseña';
 $string['perceivedTeacherDifficultyLevel'] = 'Estimación del profesor de la dificultad';
@@ -729,9 +729,9 @@ $string['perceivedTeacherDifficultyLevel_help'] = 'Estimación del profesor de l
 $string['perceiveddifficultyLevel'] = 'Dificultad';
 $string['perceiveddifficultyLevelQuestion'] = '¿Qué dificultad le ha supuesto este desafío?';
 $string['permitsubmit'] = 'Permitir Reenvio';
-$string['permitviewautors'] = 'Mostrar a los Alumnos los Autores de los Desaf&iacute;os una vez cerrados';
-$string['permitviewautors_help'] = '<P align="justify">Si se habilita esta opci&oacute;n, deshabilitada por defecto, se mostrar&aacute;n los autores de los desaf&iacute;os de un m&oacute;dulo QUESTOURnament cuando dichos desaf&iacute;os se hayan cerrado y ya no sea posible enviar más respuestas. </P>
-<P align="justify">En caso contrario, los alumnos no conocer&aacute;n nunca la identidad de los autores de los desaf&iacute;os independientemente de cuál sea el estado de los mismos. </P>
+$string['permitviewautors'] = 'Mostrar a los Alumnos los Autores de los Desafíos una vez cerrados';
+$string['permitviewautors_help'] = '<P align="justify">Si se habilita esta opción, deshabilitada por defecto, se mostrarán los autores de los desafíos de un módulo QUESTOURnament cuando dichos desafíos se hayan cerrado y ya no sea posible enviar más respuestas. </P>
+<P align="justify">En caso contrario, los alumnos no conocerán nunca la identidad de los autores de los desafíos independientemente de cuál sea el estado de los mismos. </P>
 ';
 $string['phase'] = 'Fase';
 $string['phase1'] = 'Concurso No Comenzado';
@@ -978,15 +978,15 @@ $string['schedulelegend'] = 'Leyenda de la línea temporal';
 $string['schedulesaved'] = 'La programación de desafíos se ha guardado correctamente.';
 $string['schedulesavedcount'] = 'Programación guardada correctamente ({$a} desafíos actualizados).';
 $string['see'] = 'Ver';
-$string['seeassessment'] = 'Ver Evaluaci&oacute;n de la Respuesta';
-$string['seeassessment_help'] = '<P align="justify">Esta página muestra la evaluaci&oacute;n de una respuesta enviada, de esta forma, si no se est&aacute; de acuerdo con la misma se podr&aacute; reclamar al profesor o al autor del desaf&iacute;o para que la revise, siendo posible indicar el motivo del desacuerdo con la evaluación realizada.
-<P align="justify">Además de la calificaci&oacute;n obtenida por el autor de la respuesta, tambi&eacute;n se muestra la m&aacute;xima puntuaci&oacute;n posible por dicha respuesta, que ser&aacute; la puntuaci&oacute;n del desaf&iacute;o en el instante en que se envi&oacute; la repuesta sobre la que se efectúa la reclamación. </P>
-<P align="justify">Los profesores y autores de los desaf&iacute;os podr&aacute;n realizar una correcci&oacute;n manual de la calificaci&oacute;n otorgada para considerar aquellos aspectos que haya podido no tener en cuenta el formulario de evaluaci&oacute;n autom&aacute;tica. </P>
+$string['seeassessment'] = 'Ver Evaluación de la Respuesta';
+$string['seeassessment_help'] = '<P align="justify">Esta página muestra la evaluación de una respuesta enviada, de esta forma, si no se está de acuerdo con la misma se podrá reclamar al profesor o al autor del desafío para que la revise, siendo posible indicar el motivo del desacuerdo con la evaluación realizada.
+<P align="justify">Además de la calificación obtenida por el autor de la respuesta, también se muestra la máxima puntuación posible por dicha respuesta, que será la puntuación del desafío en el instante en que se envió la repuesta sobre la que se efectúa la reclamación. </P>
+<P align="justify">Los profesores y autores de los desafíos podrán realizar una corrección manual de la calificación otorgada para considerar aquellos aspectos que haya podido no tener en cuenta el formulario de evaluación automática. </P>
 ';
-$string['seeassessmentautor'] = 'Ver Evaluaci&oacute;n del Desaf&iacute;o';
-$string['seeassessmentautor_help'] = '<P align="justify">Esta página muestra la evaluaci&oacute;n de un desafío propuesto, de esta forma, si no se est&aacute; de acuerdo con la misma se podr&aacute; reclamar al profesor para que la revise, siendo posible indicar el motivo del desacuerdo con la evaluación realizada.
-Además de la calificaci&oacute;n asignada por el autor del desaf&iacute;o, tambi&eacute;n se muestra, entre par&eacute;ntesis, la m&aacute;xima puntuaci&oacute;n posible, siendo &eacute;sta la puntuaci&oacute;n que se alcanz&oacute; con la primera respuesta correcta, o en caso de no haberse respondido aún correctamente, la puntuaci&oacute;n inicial. </P>
-<P align="justify">Los profesores podr&aacute;n realizar una correcci&oacute;n manual de la calificaci&oacute;n asignada para cubrir aquellos aspectos que haya podido no tener en cuenta el formulario de evaluaci&oacute;n autom&aacute;tica. </P>';
+$string['seeassessmentautor'] = 'Ver Evaluación del Desafío';
+$string['seeassessmentautor_help'] = '<P align="justify">Esta página muestra la evaluación de un desafío propuesto, de esta forma, si no se está de acuerdo con la misma se podrá reclamar al profesor para que la revise, siendo posible indicar el motivo del desacuerdo con la evaluación realizada.
+Además de la calificación asignada por el autor del desafío, también se muestra, entre paréntesis, la máxima puntuación posible, siendo ésta la puntuación que se alcanzó con la primera respuesta correcta, o en caso de no haberse respondido aún correctamente, la puntuación inicial. </P>
+<P align="justify">Los profesores podrán realizar una corrección manual de la calificación asignada para cubrir aquellos aspectos que haya podido no tener en cuenta el formulario de evaluación automática. </P>';
 $string['seevaluate'] = 'Ver Evaluación';
 $string['select'] = 'Elegir';
 $string['selectquestion'] = 'Seleccionar pregunta';
@@ -998,15 +998,15 @@ $string['showanswers'] = 'Mostrar Respuestas';
 $string['showanswersteam'] = 'Mostrar Respuestas Equipo';
 $string['showanswersuser'] = 'Mostrar Respuestas Usuario';
 $string['showauthoringdetails'] = 'Mostrar a los alumons detalles de Autor en clasificación';
-$string['showauthoringdetails_help'] = '<P align="justify">Si se habilita esta opci&oacute;n, deshabilitada por defecto, la tabla de puntuaciones mostrar&aacute; los datos parciales relativos al número de desafíos propuestos y evaluados por cada alumno y por cada equipo, además de la puntuación obtenida por las respuestas enviadas a desafíos propuestos. Debe tenerse en cuenta que esto hace que no se respete el anonimato de los autores de los desafíos, sobre todo si se trata de grupos pequeños y con escasa participación. </P>';
+$string['showauthoringdetails_help'] = '<P align="justify">Si se habilita esta opción, deshabilitada por defecto, la tabla de puntuaciones mostrará los datos parciales relativos al número de desafíos propuestos y evaluados por cada alumno y por cada equipo, además de la puntuación obtenida por las respuestas enviadas a desafíos propuestos. Debe tenerse en cuenta que esto hace que no se respete el anonimato de los autores de los desafíos, sobre todo si se trata de grupos pequeños y con escasa participación. </P>';
 $string['showcalification'] = 'Ver Calificaciones';
 $string['showchallenge'] = 'Mostrar desafío';
 $string['showchallenges'] = 'Mostrar desafíos';
 $string['showchallengesteam'] = 'Mostrar desafíos por equipos';
 $string['showchallengesuser'] = 'Mostrar desafíos individuales';
-$string['showclasifindividual'] = 'Mostrar Clasificaci&oacute;n Individual';
-$string['showclasifindividual_help'] = '<P align="justify">Esta opción está habilitada por defecto y permite que se muestre tanto la clasificaci&oacute;n individual de los alumnos como la clasificaci&oacute;n por equipos en caso de tener habilitada la opci&oacute;n de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos.</a></P>
-<P align="justify">Si la opci&oacute;n de Permitir Equipos no est&aacute; habilitada, sólo tendría sentido el valor por defecto de esta opción que muestra la clasificación individual. </P>';
+$string['showclasifindividual'] = 'Mostrar Clasificación Individual';
+$string['showclasifindividual_help'] = '<P align="justify">Esta opción está habilitada por defecto y permite que se muestre tanto la clasificación individual de los alumnos como la clasificación por equipos en caso de tener habilitada la opción de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos.</a></P>
+<P align="justify">Si la opción de Permitir Equipos no está habilitada, sólo tendría sentido el valor por defecto de esta opción que muestra la clasificación individual. </P>';
 $string['showdescription'] = 'Mostrar Descripción';
 $string['showgrades'] = 'Mostrar Calificaciones';
 $string['showresultssection'] = 'Información a mostrar a los estudiantes';
@@ -1015,14 +1015,14 @@ $string['showsubmissions'] = 'Mostrar Desafíos';
 $string['showsubmissionsteam'] = 'Mostrar Desafíos Equipo';
 $string['showsubmissionsuser'] = 'Ver Desafíos Usuario';
 $string['simplechallengedisabled'] = 'No se pueden crear desafíos simples en esta actividad o en este sitio.';
-$string['specimenanswer'] = 'Formulario de Muestra de Evaluaci&oacute;n para las Respuestas';
-$string['specimenanswer_help'] = '<P align="justify">Esta página muestra el formulario de evaluaci&oacute;n que se emplea en la evaluaci&oacute;n de cada una de las respuestas enviadas a un desafío en un módulo QUESTOURnament. </P>';
+$string['specimenanswer'] = 'Formulario de Muestra de Evaluación para las Respuestas';
+$string['specimenanswer_help'] = '<P align="justify">Esta página muestra el formulario de evaluación que se emplea en la evaluación de cada una de las respuestas enviadas a un desafío en un módulo QUESTOURnament. </P>';
 $string['specimenassessmentform'] = 'Formulario de Muestra de Valoración';
 $string['specimenassessmentformanswer'] = 'Formulario de Muestra de Valoración para las Respuestas';
 $string['specimenassessmentformchallenge'] = 'Ejemplo de formulario de evaluación de desafíos';
 $string['specimenassessmentformsubmission'] = 'Formulario de Muestra de Valoración para los Desafíos';
-$string['specimensubmission'] = 'Formulario de Muestra de Evaluaci&oacute;n para los Desaf&iacute;os ';
-$string['specimensubmission_help'] = '<P align="justify">Esta página muestra el formulario de evaluaci&oacute;n que se emplea en la evaluaci&oacute;n de los desaf&iacute;os propuestos por alumnos en el m&oacute;dulo QUESTOURnament. </P>';
+$string['specimensubmission'] = 'Formulario de Muestra de Evaluación para los Desafíos ';
+$string['specimensubmission_help'] = '<P align="justify">Esta página muestra el formulario de evaluación que se emplea en la evaluación de los desafíos propuestos por alumnos en el módulo QUESTOURnament. </P>';
 $string['standarddeviation'] = 'Desviación estándar del Elemento {$a}:';
 $string['strategy_equal'] = 'Distribución equitativa';
 $string['strategy_equal_desc'] = 'Divide por igual el tiempo del torneo entre todos los desafíos en orden cronológico.';
@@ -1044,39 +1044,39 @@ $string['studentsubmissions'] = '{$a} Envíos';
 $string['studentsubmissionsforassessment'] = '{$a} Envíos de los estudiantes para valoración';
 $string['subject'] = 'Desafío: ';
 $string['submission'] = 'Desafío';
-$string['submissionend'] = 'Fecha de Cierre del Desaf&iacute;o';
-$string['submissionend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desaf&iacute;o. A partir de esta fecha no será posible enviar más respuestas al desaf&iacute;o. Sin embargo, los profesores sí podr&aacute;n seguir evaluando al autor del desaf&iacute;o, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desaf&iacute;os podr&aacute;n continuar evaluando las respuestas enviadas por otros alumnos.</P>
-<P align="justify">Una vez se cierre el desafío, todos los participantes podr&aacute;n ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
-<P align="justify">Esta fecha no podr&aacute; ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del m&oacute;dulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desaf&iacute;o </a>. </P>';
+$string['submissionend'] = 'Fecha de Cierre del Desafío';
+$string['submissionend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desafío. A partir de esta fecha no será posible enviar más respuestas al desafío. Sin embargo, los profesores sí podrán seguir evaluando al autor del desafío, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desafíos podrán continuar evaluando las respuestas enviadas por otros alumnos.</P>
+<P align="justify">Una vez se cierre el desafío, todos los participantes podrán ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>
+<P align="justify">Esta fecha no podrá ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> del módulo QUESTOURnament, ni anterior a la <a href="help.php?component=quest&identifier=submissionstart"">Fecha de Comienzo del Desafío </a>. </P>';
 $string['submissionexisty'] = 'Ya existe un Desafío con el mismo Nombre. Introducir otro título';
 $string['submissions'] = 'Desafíos';
 $string['submissionsnoauthorizedupdate'] = 'No puede modificar este desafío.';
 $string['submissionsnolongerallowed'] = 'No se permiten más envíos de desafíos';
-$string['submissionstart'] = 'Fecha de Comienzo del Desaf&iacute;o';
-$string['submissionstart_help'] = '<P ALIGN=CENTER><strong>Fecha de Comienzo del Desaf&iacute;o </strong></P>
-<P align="justify">Permite establecer la fecha en la que comenzará un desaf&iacute;o. Este par&aacute;metro s&oacute;lo es configurable por un profesor.</P>
-<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creaci&oacute;n del desaf&iacute;o, pudiendo los profesores modificar este valor al aprobar el desaf&iacute;o o al realizar alguna modificaci&oacute;n sobre él.</P>
-<P align="justify">A partir de esta fecha los alumnos podr&aacute;n visualizar el desaf&iacute;o y enviar sus respuestas. </P>
-<P align="justify">Este fecha deber&aacute; ser anterior a la <a href="help.php?component=quest&identifier=submissionend"">Fecha de Cierre del Desaf&iacute;o </a>. </P>
+$string['submissionstart'] = 'Fecha de Comienzo del Desafío';
+$string['submissionstart_help'] = '<P ALIGN=CENTER><strong>Fecha de Comienzo del Desafío </strong></P>
+<P align="justify">Permite establecer la fecha en la que comenzará un desafío. Este parámetro sólo es configurable por un profesor.</P>
+<P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creación del desafío, pudiendo los profesores modificar este valor al aprobar el desafío o al realizar alguna modificación sobre él.</P>
+<P align="justify">A partir de esta fecha los alumnos podrán visualizar el desafío y enviar sus respuestas. </P>
+<P align="justify">Este fecha deberá ser anterior a la <a href="help.php?component=quest&identifier=submissionend"">Fecha de Cierre del Desafío </a>. </P>
 ';
 $string['submitassignment'] = 'Enviar Tarea';
 $string['submitchallenge'] = 'Añadir Desafío';
 $string['submitchallengeassignment'] = 'Añadir desafío';
-$string['submitchallengeassignment_help'] = '<P align="justify">Esta página permite a&ntilde;adir un desaf&iacute;o en el m&oacute;dulo QUESTOURnament.</p>
+$string['submitchallengeassignment_help'] = '<P align="justify">Esta página permite añadir un desafío en el módulo QUESTOURnament.</p>
 		<p> Para que los alumnos puedan enviar desafíos deben tener el permiso mod/quest:addchallenge que probablemente su plataforma tenga asignado en un rol. Utilice la opción de menú "Roles asignados localmente" o "Permisos" para añadir a los alumnos que pueden ser autores de desafíos en este QUESTOURNAMENT.</p>
 		<p> Los siguientes campos son obligatorios:</P>
 <div align="justify">
   <ul>
-    <li><strong>T&iacute;tulo</strong>: nombre con el se designa el desaf&iacute;o, se recomienda que no incluya el nombre del autor, para conservar el anonimato sobre la autoría del desaf&iacute;o, en caso contrario podr&aacute; ser rechazado o modificado por el profesor.</li>
-      <li><strong>Descripci&oacute;n</strong>: es el cuerpo del desaf&iacute;o, donde se explica la problem&aacute;tica y los aspectos que debe incluir la respuesta. Debe ser clara y completa. </li>
-      <li><strong>Puntuaci&oacute;n M&aacute;xima</strong>: es la m&aacute;xima puntuaci&oacute;n que podr&aacute; alcanzar el desaf&iacute;o, viene limitada por la <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> del m&oacute;dulo QUESTOURnament al que pertenece.</li>
-      <li><strong>Puntuaci&oacute;n Inicia</strong>l: es la puntuaci&oacute;n con la que parte el desaf&iacute;o en el instante de su comienzo, la cuál irá evolucionando a medida que se desarrolle el concurso.</li>
-      <li><strong>Fecha de Comienzo</strong>: establece la fecha en que se abre el desaf&iacute;o, este par&aacute;metro s&oacute;lo es configurable por parte de los profesores. Cuando el desafío lo crea un alumno, se toma como fecha de comienzo el instante de creaci&oacute;n del desaf&iacute;o.</li>
-      <li><strong>Fecha de Cierre</strong>: establece la fecha en la que se cierra el desaf&iacute;o, a partir de esta fecha no se podr&aacute; responder al desaf&iacute;o, aunque los autores del desaf&iacute;o y los profesores s&iacute; que podr&aacute;n evaluar las respuestas realizadas hasta la fecha. No puede ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> establecida para el m&oacute;dulo QUESTOURnament. </li>
-      <li><strong>Anexos</strong>: permite especificar los anexos correspondientes en caso de haberse habilitado el env&iacute;o de anexos al crear el módulo QUESTOURnament. </li>
+    <li><strong>Título</strong>: nombre con el se designa el desafío, se recomienda que no incluya el nombre del autor, para conservar el anonimato sobre la autoría del desafío, en caso contrario podrá ser rechazado o modificado por el profesor.</li>
+      <li><strong>Descripción</strong>: es el cuerpo del desafío, donde se explica la problemática y los aspectos que debe incluir la respuesta. Debe ser clara y completa. </li>
+      <li><strong>Puntuación Máxima</strong>: es la máxima puntuación que podrá alcanzar el desafío, viene limitada por la <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> del módulo QUESTOURnament al que pertenece.</li>
+      <li><strong>Puntuación Inicia</strong>l: es la puntuación con la que parte el desafío en el instante de su comienzo, la cuál irá evolucionando a medida que se desarrolle el concurso.</li>
+      <li><strong>Fecha de Comienzo</strong>: establece la fecha en que se abre el desafío, este parámetro sólo es configurable por parte de los profesores. Cuando el desafío lo crea un alumno, se toma como fecha de comienzo el instante de creación del desafío.</li>
+      <li><strong>Fecha de Cierre</strong>: establece la fecha en la que se cierra el desafío, a partir de esta fecha no se podrá responder al desafío, aunque los autores del desafío y los profesores sí que podrán evaluar las respuestas realizadas hasta la fecha. No puede ser posterior a la <a href="help.php?component=quest&identifier=dateend"">Fecha de Cierre</a> establecida para el módulo QUESTOURnament. </li>
+      <li><strong>Anexos</strong>: permite especificar los anexos correspondientes en caso de haberse habilitado el envío de anexos al crear el módulo QUESTOURnament. </li>
   </ul>
-  <p>Se comprobar&aacute; que los campos de t&iacute;tulo y descripci&oacute;n del desaf&iacute;o no est&eacute;n vac&iacute;os, en caso de que lo est&eacute;n se presentará un mensaje de error y el desaf&iacute;o no se a&ntilde;adir&aacute;. Tambi&eacute;n se comprobar&aacute; si las fechas son correctas, en el caso de que la fecha de cierre del desaf&iacute;o sea posterior a la fecha de cierre del m&oacute;dulo QUESTOURnament al que pertence el desafío, se fijar&aacute; esta &uacute;ltima fecha como fecha de cierre del desaf&iacute;o.</p>
-  <p>Si la puntuaci&oacute;n inicial definida en el desaf&iacute;o fuese superior a la puntuaci&oacute;n m&aacute;xima definida para el desafío, se tomar&aacute; como puntuaci&oacute;n inicial la puntuaci&oacute;n m&aacute;xima establecida.</p>
+  <p>Se comprobará que los campos de título y descripción del desafío no estén vacíos, en caso de que lo estén se presentará un mensaje de error y el desafío no se añadirá. También se comprobará si las fechas son correctas, en el caso de que la fecha de cierre del desafío sea posterior a la fecha de cierre del módulo QUESTOURnament al que pertence el desafío, se fijará esta última fecha como fecha de cierre del desafío.</p>
+  <p>Si la puntuación inicial definida en el desafío fuese superior a la puntuación máxima definida para el desafío, se tomará como puntuación inicial la puntuación máxima establecida.</p>
 </div>
 <ul>
 </ul>
@@ -1096,27 +1096,27 @@ $string['team_help'] = 'Equipo al que pertenece el participante.';
 $string['teamcalification'] = 'Calificación por Equipos';
 $string['teamforquest'] = 'Equipo para QUESTOURnament {$a}';
 $string['teamname'] = 'Nombre del Equipo';
-$string['teamporcent'] = 'Porcentaje de Calificaci&oacute;n de los Equipos';
-$string['teamporcent_help'] = '<P align="justify">Este par&aacute;metro establece el tanto por ciento de la clasificaci&oacute;n de los equipos que se a&ntilde;adir&aacute; a la clasificaci&oacute;n individual, que es la que determina la nota final de un alumno en un m&oacute;dulo QUESTOURnament.</P>
-<P align="justify">El porcentaje, establecido por este par&aacute;metro, de la puntuación obtenida por un equipo, se suma a la puntuación individual total de cada alumno que pertenezca a dicho equipo. </P>
-<P align="justify">El objetivo es premiar el trabajo en equipo de forma que &eacute;ste repercuta en la clasificaci&oacute;n final de cada alumno. </P>
+$string['teamporcent'] = 'Porcentaje de Calificación de los Equipos';
+$string['teamporcent_help'] = '<P align="justify">Este parámetro establece el tanto por ciento de la clasificación de los equipos que se añadirá a la clasificación individual, que es la que determina la nota final de un alumno en un módulo QUESTOURnament.</P>
+<P align="justify">El porcentaje, establecido por este parámetro, de la puntuación obtenida por un equipo, se suma a la puntuación individual total de cada alumno que pertenezca a dicho equipo. </P>
+<P align="justify">El objetivo es premiar el trabajo en equipo de forma que éste repercuta en la clasificación final de cada alumno. </P>
 ';
-$string['teams'] = 'Ver Clasificaci&oacute;n por Equipos';
-$string['teams_help'] = '<P align="justify">Esta opción muestra la clasificaci&oacute;n obtenida por cada uno de los equipos formados en el m&oacute;dulo QUESTOURnament que pertenezcan al mismo grupo. Un porcentaje de esta clasificaci&oacute;n fijado al a&ntilde;adir el m&oacute;dulo QUESTOURnament (<a href="help.php?component=quest&identifier=teamporcent"">Porcentaje en la Calificaci&oacute;n de los Equipos</a>) contribuirá a la clasificaci&oacute;n indivual de cada componente del equipo.</P>
-<P align="justify">Los par&aacute;metros que se muestran son los siguientes:</P>
+$string['teams'] = 'Ver Clasificación por Equipos';
+$string['teams_help'] = '<P align="justify">Esta opción muestra la clasificación obtenida por cada uno de los equipos formados en el módulo QUESTOURnament que pertenezcan al mismo grupo. Un porcentaje de esta clasificación fijado al añadir el módulo QUESTOURnament (<a href="help.php?component=quest&identifier=teamporcent"">Porcentaje en la Calificación de los Equipos</a>) contribuirá a la clasificación indivual de cada componente del equipo.</P>
+<P align="justify">Los parámetros que se muestran son los siguientes:</P>
 <div align="justify">
   <ul>
     <li><strong>Equipo</strong>: nombre del equipo.</li>
-      <li><strong>N&ordm; Resp.</strong>: n&uacute;mero de respuestas realizadas por todos los componentes de un mismo equipo en este m&oacute;dulo QUESTOURnament.</li>
-      <li><strong>N&ordm; Resp. Eval.</strong>: n&uacute;mero de respuestas evaluadas de todas las enviadas por los componentes del equipo en este m&oacute;dulo QUESTOURnament.</li>
-      <li><strong>N&ordm; Desaf&iacute;os </strong>: n&uacute;mero de desaf&iacute;os propuestos en el m&oacute;dulo QUESTOURnament por los componentes del equipo.</li>
-      <li><strong>N&ordm; Desaf&iacute;os Eval.</strong>: n&uacute;mero de desaf&iacute;os evaluados de los propuestos por los componentes del equipo en este m&oacute;dulo QUESTOURnament.
-      <li><strong>Punt. Desaf&iacute;os:</strong> engloba todas las puntuaciones obtenidas por los miembros del equipo correspondientes a la evaluaci&oacute;n, por parte de los profesores, de los desaf&iacute;os propuestos por dichos alumnos.</li>
-      <li><strong>Punt. Resp.</strong>: engloba todas las puntuaciones obtenidas por los miembros del equipo correspondientes a la evaluaci&oacute;n de las respuestas enviadas por dichos alumnos.</li>
-      <li><strong>Puntuaci&oacute;n</strong>: recoge la suma de las puntuaciones correspondientes a los desaf&iacute;os a&ntilde;adidos por los alumnos de un mismo equipo y a las respuestas enviadas por &eacute;stos. </li>
+      <li><strong>Nº Resp.</strong>: número de respuestas realizadas por todos los componentes de un mismo equipo en este módulo QUESTOURnament.</li>
+      <li><strong>Nº Resp. Eval.</strong>: número de respuestas evaluadas de todas las enviadas por los componentes del equipo en este módulo QUESTOURnament.</li>
+      <li><strong>Nº Desafíos </strong>: número de desafíos propuestos en el módulo QUESTOURnament por los componentes del equipo.</li>
+      <li><strong>Nº Desafíos Eval.</strong>: número de desafíos evaluados de los propuestos por los componentes del equipo en este módulo QUESTOURnament.
+      <li><strong>Punt. Desafíos:</strong> engloba todas las puntuaciones obtenidas por los miembros del equipo correspondientes a la evaluación, por parte de los profesores, de los desafíos propuestos por dichos alumnos.</li>
+      <li><strong>Punt. Resp.</strong>: engloba todas las puntuaciones obtenidas por los miembros del equipo correspondientes a la evaluación de las respuestas enviadas por dichos alumnos.</li>
+      <li><strong>Puntuación</strong>: recoge la suma de las puntuaciones correspondientes a los desafíos añadidos por los alumnos de un mismo equipo y a las respuestas enviadas por éstos. </li>
   </ul>
-  <p>Por defecto la clasificaci&oacute;n viene ordenada de acuerdo a la puntuaci&oacute;n total obtenida por cada equipo, aunque este orden podr&aacute; modificarse escogiendo otro par&aacute;metro de ordenaci&oacute;n pulsando sobre el nombre del mismo.</p>
-  <p>Se puede acceder a la clasificaci&oacute;n individual de los alumnos a trav&eacute;s de la opción <a href="help.php?component=quest&identifier=global"">Ver Clasificaci&oacute;n Total</a> que aparece en la parte inferior de la pantalla.</p>
+  <p>Por defecto la clasificación viene ordenada de acuerdo a la puntuación total obtenida por cada equipo, aunque este orden podrá modificarse escogiendo otro parámetro de ordenación pulsando sobre el nombre del mismo.</p>
+  <p>Se puede acceder a la clasificación individual de los alumnos a través de la opción <a href="help.php?component=quest&identifier=global"">Ver Clasificación Total</a> que aparece en la parte inferior de la pantalla.</p>
 </div>
 ';
 $string['thegradeis'] = 'La calificación es';
@@ -1125,30 +1125,30 @@ $string['theseasessmentsaregradedbytheteacher'] = 'Estas Valoraciones están cal
 $string['timeassessed'] = 'Tiempo valorado';
 $string['timeassessment'] = 'Tiempo Eval.';
 $string['timemaxoflife'] = 'Tiempo de vida por defecto de los desafíos';
-$string['timemaxquestion'] = 'Tiempo M&aacute;ximo de Vida';
-$string['timemaxquestion_help'] = '<P align="justify">Este par&aacute;metro establece la duraci&oacute;n en d&iacute;as de los desaf&iacute;os a&ntilde;adidos en este m&oacute;dulo QUESTOURnament. </P>
-<P align="justify">Los alumnos no podr&aacute;n modificar la duraci&oacute;n de los desaf&iacute;os que a&ntilde;adan a este módulo. Sin embargo, los profesores sí podr&aacute;n modificar las fechas de comienzo y de cierre de todos los desaf&iacute;os del módulo, tanto de los planteados por los alumnos como de los planteados por ellos mismos.</P>
+$string['timemaxquestion'] = 'Tiempo Máximo de Vida';
+$string['timemaxquestion_help'] = '<P align="justify">Este parámetro establece la duración en días de los desafíos añadidos en este módulo QUESTOURnament. </P>
+<P align="justify">Los alumnos no podrán modificar la duración de los desafíos que añadan a este módulo. Sin embargo, los profesores sí podrán modificar las fechas de comienzo y de cierre de todos los desafíos del módulo, tanto de los planteados por los alumnos como de los planteados por ellos mismos.</P>
 ';
 $string['tinitial'] = 'Tiempo Inicial';
-$string['tinitial_help'] = '<P align="justify">Este par&aacute;metro establece el tiempo, en días, que transcurrirá desde la fecha de comienzo de un desaf&iacute;o durante el cuál su puntuaci&oacute;n no variará. Esto ser&aacute; as&iacute; siempre y cuando no se haya enviado y evaluado una respuesta correcta a dicho desaf&iacute;o, ya que si esto ocurre, la puntuaci&oacute;n comenzar&aacute; a descender. </P>
-<P align="justify">Se pretende de esta manera incentivar a los alumnos a que respondan lo antes posible para obtener la m&aacute;xima puntuaci&oacute;n posible.</P>';
+$string['tinitial_help'] = '<P align="justify">Este parámetro establece el tiempo, en días, que transcurrirá desde la fecha de comienzo de un desafío durante el cuál su puntuación no variará. Esto será así siempre y cuando no se haya enviado y evaluado una respuesta correcta a dicho desafío, ya que si esto ocurre, la puntuación comenzará a descender. </P>
+<P align="justify">Se pretende de esta manera incentivar a los alumnos a que respondan lo antes posible para obtener la máxima puntuación posible.</P>';
 $string['title'] = 'Título';
 $string['tocalification'] = 'Obtener Calificaciones Finales';
 $string['today'] = 'Hoy';
 $string['totalpoints'] = 'Puntos totales';
 $string['tothechallenge'] = 'al desafío ';
-$string['typecalification'] = 'Tipo de Variación de la Puntuaci&oacute;n';
-$string['typecalification_help'] = '<P align="justify">Este parámetro permite establecer la forma en que variará la puntuaci&oacute;n de un desaf&iacute;o. Cada desaf&iacute;o propuesto tendr&aacute; una puntuaci&oacute;n inicial fijada mediante el par&aacute;metro <a href="help.php?component=quest&identifier=initialpoints"">Puntuaci&oacute;n Inicial</a>, una calificaci&oacute;n máxima posible fijada mediante el par&aacute;metro <a href="help.php?component=quest&identifier=maxcalification"">M&aacute;xima Puntuaci&oacute;n</a> y un <a href="help.php?component=quest&identifier=tinitial"">Tiempo Inicial</a> que determina el tiempo, medido en días, desde la fecha de comienzo del desaf&iacute;o en el que su puntuaci&oacute;n no var&iacute;ará salvo que se envíe y califique una respuesta correcta. De esta forma y transcurrido el tiempo inicial establecido, o bien, a partir de que se envíe y califique una respuesta correcta, la puntuaci&oacute;n del desafío empezar&aacute; a variar a partir de la puntuaci&oacute;n inicial de dos formas posibles, seg&uacute;n el tipo de puntuaci&oacute;n escogido:</P>
-<P align="justify">LINEAL: la variaci&oacute;n de la puntuaci&oacute;n se produce linealmente, incrementándose hasta que llegue la fecha de finalizaci&oacute;n del desaf&iacute;o, alcanzando en este momento la m&aacute;xima puntuaci&oacute;n establecida, o bien hasta que se responda correctamente por vez primera y se califique dicha respuesta, momento a partir del cuál la puntuaci&oacute;n comenzar&aacute; a disminuir, de manera que se alcance el valor cero en la fecha de cierre del desaf&iacute;o, siempre y cuando antes no se hayan enviado y calificado el <a href="help.php?component=quest&identifier=nmaxanswers"">Número Máximo de Respuestas</a> admitidas para ese desafío.</P>
-<P align="justify">EXPONENCIAL: la variación de la puntuaci&oacute;n sigue las mismas pautas que en el tipo anterior, con la diferencia de que en este caso la variaci&oacute;n no es lineal, sino exponencial, por lo que la variación es mayor a medida que transcurre el tiempo.</P>
+$string['typecalification'] = 'Tipo de Variación de la Puntuación';
+$string['typecalification_help'] = '<P align="justify">Este parámetro permite establecer la forma en que variará la puntuación de un desafío. Cada desafío propuesto tendrá una puntuación inicial fijada mediante el parámetro <a href="help.php?component=quest&identifier=initialpoints"">Puntuación Inicial</a>, una calificación máxima posible fijada mediante el parámetro <a href="help.php?component=quest&identifier=maxcalification"">Máxima Puntuación</a> y un <a href="help.php?component=quest&identifier=tinitial"">Tiempo Inicial</a> que determina el tiempo, medido en días, desde la fecha de comienzo del desafío en el que su puntuación no varíará salvo que se envíe y califique una respuesta correcta. De esta forma y transcurrido el tiempo inicial establecido, o bien, a partir de que se envíe y califique una respuesta correcta, la puntuación del desafío empezará a variar a partir de la puntuación inicial de dos formas posibles, según el tipo de puntuación escogido:</P>
+<P align="justify">LINEAL: la variación de la puntuación se produce linealmente, incrementándose hasta que llegue la fecha de finalización del desafío, alcanzando en este momento la máxima puntuación establecida, o bien hasta que se responda correctamente por vez primera y se califique dicha respuesta, momento a partir del cuál la puntuación comenzará a disminuir, de manera que se alcance el valor cero en la fecha de cierre del desafío, siempre y cuando antes no se hayan enviado y calificado el <a href="help.php?component=quest&identifier=nmaxanswers"">Número Máximo de Respuestas</a> admitidas para ese desafío.</P>
+<P align="justify">EXPONENCIAL: la variación de la puntuación sigue las mismas pautas que en el tipo anterior, con la diferencia de que en este caso la variación no es lineal, sino exponencial, por lo que la variación es mayor a medida que transcurre el tiempo.</P>
 ';
 $string['typegrade'] = 'Obtener Notas de Alumnos o de Equipos';
-$string['typegrade_help'] = '<P align="justify">Este par&aacute;metro establece en funci&oacute;n de qu&eacute; clasificaci&oacute;n se va a calcular la nota final para cada uno de los alumnos. </P>
+$string['typegrade_help'] = '<P align="justify">Este parámetro establece en función de qué clasificación se va a calcular la nota final para cada uno de los alumnos. </P>
 <P align="justify">Existen dos posibilidades: </P>
 <div align="justify">
   <ul>
-    <li><strong>Alumnos</strong>: la nota que se calcula para cada alumno se obtiene a partir de la clasificaci&oacute;n individual. No obstante, si la opci&oacute;n de equipos est&aacute; habilitada la puntuaci&oacute;n del equipo de cada alumno contribuir&aacute; a su clasificaci&oacute;n individual.</li>
-      <li><strong>Equipos</strong>: para el c&aacute;lculo de las notas de cada alumno &uacute;nicamente se emplea la clasificaci&oacute;n de los equipos. De esta forma, los alumnos que pertenezcan a un mismo equipo obtendr&aacute;n la misma nota. Para que esta posibilidad tenga sentido, deber&aacute; estar habilitada la opci&oacute;n de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos</a>. </li>
+    <li><strong>Alumnos</strong>: la nota que se calcula para cada alumno se obtiene a partir de la clasificación individual. No obstante, si la opción de equipos está habilitada la puntuación del equipo de cada alumno contribuirá a su clasificación individual.</li>
+      <li><strong>Equipos</strong>: para el cálculo de las notas de cada alumno únicamente se emplea la clasificación de los equipos. De esta forma, los alumnos que pertenezcan a un mismo equipo obtendrán la misma nota. Para que esta posibilidad tenga sentido, deberá estar habilitada la opción de <a href="help.php?component=quest&identifier=allowteams"">Permitir Equipos</a>. </li>
   </ul>
 </div>';
 $string['typeindividual'] = 'Alumnos';
@@ -1168,13 +1168,13 @@ $string['uploaderror'] = 'Fallo al env�ar anexos';
 $string['uploadsuccess'] = 'Anexos Enviados';
 $string['useexistingquestion'] = 'Usar esta pregunta';
 $string['usepassword'] = 'Usar contraseña';
-$string['usepassword_help'] = '<p align="justify">Esta opción permite asociar una contraseña de acceso a este m&oacute;dulo QUESTOURnament. Proteger un módulo QUESTOURnament con contraseña puede resultar necesario, por ejemplo, cuando dicho m&oacute;dulo sea utilizado por varios grupos de estudiantes en un curso y se proponga a cada grupo en un periodo de tiempo diferente, en este caso, la contraseña de acceso impedirá que un grupo de estudiantes pueda acceder al m&oacute;dulo QUESTOURnament una vez que éste haya sido abierto para otro grupo de estudiantes diferente, pero no para ellos aún.</p>
+$string['usepassword_help'] = '<p align="justify">Esta opción permite asociar una contraseña de acceso a este módulo QUESTOURnament. Proteger un módulo QUESTOURnament con contraseña puede resultar necesario, por ejemplo, cuando dicho módulo sea utilizado por varios grupos de estudiantes en un curso y se proponga a cada grupo en un periodo de tiempo diferente, en este caso, la contraseña de acceso impedirá que un grupo de estudiantes pueda acceder al módulo QUESTOURnament una vez que éste haya sido abierto para otro grupo de estudiantes diferente, pero no para ellos aún.</p>
 ';
 $string['user'] = 'Usuario';
 $string['validateassessment'] = 'Validar Evaluaciones';
-$string['validateassessment_help'] = '<P align="justify">Si se habilita esta opción, el profesor tendr&aacute; que validar todas las calificaciones otorgadas por los alumnos para que éstas tengan valor. Estas calificaciones se refieren a las realizadas por los alumnos autores de los desaf&iacute;os planteados a las respuestas enviadas por otros alumnos a dichos desaf&iacute;os. </P>
-<P align="justify">Asimismo, la clasificaci&oacute;n de los alumnos no se modificar&aacute; hasta que el profesor haya validado las calificaciones otorgadas por los alumnos. El profesor podr&aacute; modificar el valor de dichas calificaciones, siendo la puntuación otorgada por el profesor, en caso de que sea diferente a la otorgada por el alumno autor del desafío, la que pase a formar parte de la nota final del alumno evaluado. </P>
-<P align="justify">Si esta opci&oacute;n no se habilita, el profesor no tendr&aacute; la obligaci&oacute;n de validar todas las calificaciones otorgadas por estudiantes, aunque s&iacute; podr&iacute;a hacerlo si así lo deseara. Igualmente, si el profesor modifica la calificación, será esta nueva puntuación la que pase a formar parte de la nota final del alumno. Si por el contrario, el profesor no realizase de nuevo la evaluaci&oacute;n de la respuesta, se utilizaría la puntuaci&oacute;n obtenida en la evaluaci&oacute;n realizada por el alumno autor del desaf&iacute;o. </P>
+$string['validateassessment_help'] = '<P align="justify">Si se habilita esta opción, el profesor tendrá que validar todas las calificaciones otorgadas por los alumnos para que éstas tengan valor. Estas calificaciones se refieren a las realizadas por los alumnos autores de los desafíos planteados a las respuestas enviadas por otros alumnos a dichos desafíos. </P>
+<P align="justify">Asimismo, la clasificación de los alumnos no se modificará hasta que el profesor haya validado las calificaciones otorgadas por los alumnos. El profesor podrá modificar el valor de dichas calificaciones, siendo la puntuación otorgada por el profesor, en caso de que sea diferente a la otorgada por el alumno autor del desafío, la que pase a formar parte de la nota final del alumno evaluado. </P>
+<P align="justify">Si esta opción no se habilita, el profesor no tendrá la obligación de validar todas las calificaciones otorgadas por estudiantes, aunque sí podría hacerlo si así lo deseara. Igualmente, si el profesor modifica la calificación, será esta nueva puntuación la que pase a formar parte de la nota final del alumno. Si por el contrario, el profesor no realizase de nuevo la evaluación de la respuesta, se utilizaría la puntuación obtenida en la evaluación realizada por el alumno autor del desafío. </P>
 ';
 $string['verypoor'] = 'Muy pobre';
 $string['view'] = 'Ver';
@@ -1196,13 +1196,13 @@ $string['weightforreliability'] = 'Peso por fiabilidad';
 $string['weights'] = 'Pesos';
 $string['weightsusedforfinalgrade'] = 'Pesos usados para la Calificación Final';
 $string['weightsusedforsubmissions'] = 'Pesos usados para los Envíos';
-$string['windowpreview'] = 'Ventana de Previsualizaci&oacute;n de la Respuesta';
-$string['windowpreview_help'] = '<p align="justify">Esta página muestra el aspecto que tiene el desaf&iacute;o que se está editando en el editor de Moodle después de aplicarse los distintos filtros que proporciona dicha plataforma.</p>
-<p align="justify">De esta manera se podr&aacute; comprobar el aspecto de un desaf&iacute;o antes de añadirlo. Esta posibilidad resulta sobre todo útil cuando se necesite introducir una ecuación matem&aacute;tica para lo cuál se tendr&aacute; que utilizar una expresión con el formato adecuado que transformar&aacute;n los filtros que proporciona Moodle y cuyo aspecto final no puede visualizarse en el editor de dicha plataforma.</p>
+$string['windowpreview'] = 'Ventana de Previsualización de la Respuesta';
+$string['windowpreview_help'] = '<p align="justify">Esta página muestra el aspecto que tiene el desafío que se está editando en el editor de Moodle después de aplicarse los distintos filtros que proporciona dicha plataforma.</p>
+<p align="justify">De esta manera se podrá comprobar el aspecto de un desafío antes de añadirlo. Esta posibilidad resulta sobre todo útil cuando se necesite introducir una ecuación matemática para lo cuál se tendrá que utilizar una expresión con el formato adecuado que transformarán los filtros que proporciona Moodle y cuyo aspecto final no puede visualizarse en el editor de dicha plataforma.</p>
 ';
-$string['windowpreviewsubmission'] = 'Ventana de Previsualizaci&oacute;n del Desaf&iacute;o';
-$string['windowpreviewsubmission_help'] = '<p align="justify">Esta página muestra el aspecto que tiene el desaf&iacute;o que se está editando en el editor de Moodle después de aplicarse los distintos filtros que proporciona dicha plataforma.</p>
-<p align="justify">De esta manera se podr&aacute; comprobar el aspecto de un desaf&iacute;o antes de añadirlo. Esta posibilidad resulta sobre todo útil cuando se necesite introducir una ecuación matem&aacute;tica para lo cuál se tendr&aacute; que utilizar una expresión con el formato adecuado que transformar&aacute;n los filtros que proporciona Moodle y cuyo aspecto final no puede visualizarse en el editor de dicha plataforma.</p>
+$string['windowpreviewsubmission'] = 'Ventana de Previsualización del Desafío';
+$string['windowpreviewsubmission_help'] = '<p align="justify">Esta página muestra el aspecto que tiene el desafío que se está editando en el editor de Moodle después de aplicarse los distintos filtros que proporciona dicha plataforma.</p>
+<p align="justify">De esta manera se podrá comprobar el aspecto de un desafío antes de añadirlo. Esta posibilidad resulta sobre todo útil cuando se necesite introducir una ecuación matemática para lo cuál se tendrá que utilizar una expresión con el formato adecuado que transformarán los filtros que proporciona Moodle y cuyo aspecto final no puede visualizarse en el editor de dicha plataforma.</p>
 ';
 $string['wrongpassword'] = 'Contraseña Errónea';
 $string['wrongteam'] = 'El equipo indicado no es válido.';
