@@ -39,50 +39,74 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated.
-        $quest = new backup_nested_element('quest', ['id'],
-                ['name', 'intro', 'introformat', 'nattachments', 'validateassessment', 'usepassword', 'password', 'maxbytes',
+        $quest = new backup_nested_element(
+            'quest',
+            ['id'],
+            ['name', 'intro', 'introformat', 'nattachments', 'validateassessment', 'usepassword', 'password', 'maxbytes',
                                 'datestart', 'dateend', 'gradingstrategy', 'nelements', 'timemaxquestion', 'nmaxanswers',
                                 'maxcalification', 'mincalification', 'typecalification', 'allowteams', 'ncomponents', 'phase',
                                 'format', 'visible',
                                 'tinitial', 'gradingstrategyautor', 'nelementsautor', 'initialpoints', 'teamporcent',
                                 'showclasifindividual', 'showauthoringdetails', 'typegrade', 'permitviewautors', 'completionpass',
-                                'allowqbankquestions', 'autoexportqbank']);
+            'allowqbankquestions',
+            'autoexportqbank']
+        );
         // Grading Elements for Submissions.
         $defaultelements = new backup_nested_element('elements');
-        $defaultelement = new backup_nested_element('element', null,
-                ['elementno', 'description', 'scale', 'maxscore', 'weight']);
+        $defaultelement = new backup_nested_element(
+            'element',
+            null,
+            ['elementno', 'description', 'scale', 'maxscore', 'weight']
+        );
         $particularelements = new backup_nested_element('particular_elements');
-        $particularelement = new backup_nested_element('particular_element', null,
-                ['elementno', 'description', 'scale', 'maxscore', 'weight']);
+        $particularelement = new backup_nested_element(
+            'particular_element',
+            null,
+            ['elementno', 'description', 'scale', 'maxscore', 'weight']
+        );
         // Grading Elements for autors.
         $elementsautor = new backup_nested_element('elements_autor');
-        $elementautor = new backup_nested_element('element_autor', null,
-                ['elementno', 'description', 'scale', 'maxscore', 'weight']);
+        $elementautor = new backup_nested_element(
+            'element_autor',
+            null,
+            ['elementno', 'description', 'scale', 'maxscore', 'weight']
+        );
         // Submissions (challenges).
 
         $challenges = new backup_nested_element('challenges');
-        $challenge = new backup_nested_element('challenge', ['id'],
-                ['userid', 'numelements', 'title', 'timecreated', 'description', 'descriptionformat', 'descriptiontrust',
+        $challenge = new backup_nested_element(
+            'challenge',
+            ['id'],
+            ['userid', 'numelements', 'title', 'timecreated', 'description', 'descriptionformat', 'descriptiontrust',
                                 'attachment', 'points', 'phase', 'commentteacherpupil', 'commentteacherauthor',
                                 'dateend', 'nanswers',
                                 'nanswerscorrect', 'state', 'datestart', 'pointsmax', 'pointsmin', 'dateanswercorrect',
                                 'initialpoints',
                                 'pointsanswercorrect', 'mailed', 'maileduser', 'predictedduration', 'perceiveddifficulty',
-                                'evaluated']);
+            'evaluated']
+        );
         $challengequestions = new backup_nested_element('challenge_questions');
         $challengequestion = new backup_nested_element('challenge_question', ['id'], ['slotnumber', 'maxmark']);
 
         $answers = new backup_nested_element('answers');
-        $answer = new backup_nested_element('answer', ['id'],
-                ['userid', 'title', 'description', 'descriptionformat', 'descriptiontrust',
+        $answer = new backup_nested_element(
+            'answer',
+            ['id'],
+            ['userid', 'title', 'description', 'descriptionformat', 'descriptiontrust',
                                 'attachment', 'date',
                                 'pointsmax', 'grade', 'commentforteacher', 'phase', 'state',
-                                'permitsubmit', 'perceiveddifficulty', 'questionusageid']);
+            'permitsubmit',
+            'perceiveddifficulty',
+            'questionusageid']
+        );
         $this->add_question_references($challenge, 'mod_quest', 'challenge_question');
         // Moodle's helper always names the child "question_reference". A second
         // child with that name below a challenge slot collides in the backup tree.
-        $slotreference = new backup_nested_element('slot_question_reference', ['id'],
-            ['usingcontextid', 'component', 'questionarea', 'questionbankentryid', 'version']);
+        $slotreference = new backup_nested_element(
+            'slot_question_reference',
+            ['id'],
+            ['usingcontextid', 'component', 'questionarea', 'questionbankentryid', 'version']
+        );
         $challengequestion->add_child($slotreference);
         $slotreference->set_source_table('question_references', [
             'usingcontextid' => backup::VAR_CONTEXTID,
@@ -92,32 +116,56 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
         ]);
         $slotreference->annotate_ids('question_bank_entry', 'questionbankentryid');
         $assessments = new backup_nested_element('assessments');
-        $assessment = new backup_nested_element('assessment', ['id'],
-                ['questid', 'userid', 'teacherid', 'pointsautor', 'pointsteacher', 'dateassessment', 'pointsmax',
-                                'commentsforteacher', 'commentsteacher', 'phase', 'state']);
+        $assessment = new backup_nested_element(
+            'assessment',
+            ['id'],
+            ['questid', 'userid', 'teacherid', 'pointsautor', 'pointsteacher', 'dateassessment', 'pointsmax',
+            'commentsforteacher',
+            'commentsteacher',
+            'phase',
+            'state']
+        );
         $elementassessments = new backup_nested_element('elements_assess');
-        $elementassessment = new backup_nested_element('element_assess', null,
-                ['questid', 'userid', 'elementno', 'answer', 'commentteacher', 'calification', 'phase']);
+        $elementassessment = new backup_nested_element(
+            'element_assess',
+            null,
+            ['questid', 'userid', 'elementno', 'answer', 'commentteacher', 'calification', 'phase']
+        );
 
         $assessmentsautor = new backup_nested_element('assessments_autor');
-        $assessmentautor = new backup_nested_element('assessment_autor', ['id'],
-                ['questid', 'submissionid', 'userid', 'points', 'dateassessment', 'pointsmax', 'commentsforteacher',
-                                'commentsteacher', 'phase', 'state']);
+        $assessmentautor = new backup_nested_element(
+            'assessment_autor',
+            ['id'],
+            ['questid', 'submissionid', 'userid', 'points', 'dateassessment', 'pointsmax', 'commentsforteacher',
+            'commentsteacher',
+            'phase',
+            'state']
+        );
         $elementassessmentsautor = new backup_nested_element('elements_assess_autor');
-        $elementassessmentautor = new backup_nested_element('element_assess_autor', ['id'],
-                ['questid', 'assessmentautorid', 'userid', 'elementno', 'answer', 'commentteacher', 'calification', 'phase']);
+        $elementassessmentautor = new backup_nested_element(
+            'element_assess_autor',
+            ['id'],
+            ['questid', 'assessmentautorid', 'userid', 'elementno', 'answer', 'commentteacher', 'calification', 'phase']
+        );
 
         $calificationsusers = new backup_nested_element('califications_users');
         // Teamid is an identification.
-        $calificationusers = new backup_nested_element('calification_user', ['id'],
-                ['userid', 'teamid', 'points', 'nanswers', 'nanswerassessment', 'nsubmissions', 'nsubmissionsassessment',
-                                'pointssubmission', 'pointsanswers']);
+        $calificationusers = new backup_nested_element(
+            'calification_user',
+            ['id'],
+            ['userid', 'teamid', 'points', 'nanswers', 'nanswerassessment', 'nsubmissions', 'nsubmissionsassessment',
+            'pointssubmission',
+            'pointsanswers']
+        );
         $teams = new backup_nested_element('teams');
         $team = new backup_nested_element('team', ['id'], ['name', 'ncomponents', 'currentgroup', 'phase']);
         $calificationsteams = new backup_nested_element('calification_teams');
-        $calificationteam = new backup_nested_element('calification_team', [],
-                ['points', 'nanswers', 'nanswerassessment', 'nsubmissions', 'nsubmissionsassessment', 'pointssubmission',
-                                'pointsanswers']);
+        $calificationteam = new backup_nested_element(
+            'calification_team',
+            [],
+            ['points', 'nanswers', 'nanswerassessment', 'nsubmissions', 'nsubmissionsassessment', 'pointssubmission',
+            'pointsanswers']
+        );
         // Build the tree.
         $quest->add_child($defaultelements);
         $defaultelements->add_child($defaultelement);
@@ -150,29 +198,43 @@ class backup_quest_activity_structure_step extends backup_questions_activity_str
         // Define sources.
         $quest->set_source_table('quest', ['id' => backup::VAR_ACTIVITYID]);
         // ...default element has submissionsid=0.
-        $defaultelement->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid=0',
-                [backup::VAR_PARENTID]);
-        $particularelement->set_source_sql('SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid= ?',
-                [backup::VAR_ACTIVITYID, backup::VAR_PARENTID]);
+        $defaultelement->set_source_sql(
+            'SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid=0',
+            [backup::VAR_PARENTID]
+        );
+        $particularelement->set_source_sql(
+            'SELECT * FROM {quest_elements} WHERE questid= ? and submissionsid= ?',
+            [backup::VAR_ACTIVITYID, backup::VAR_PARENTID]
+        );
         $elementautor->set_source_table('quest_elementsautor', ['questid' => backup::VAR_PARENTID]);
 
         $challenge->set_source_table('quest_submissions', ['questid' => backup::VAR_PARENTID]);
         $challengequestion->set_source_table('quest_challenge_questions', ['submissionid' => backup::VAR_PARENTID]);
         if ($userinfo) { // Include challenge data when user information is selected.
-
-            $assessmentautor->set_source_table('quest_assessments_autors',
-                    ['questid' => backup::VAR_ACTIVITYID, 'submissionid' => backup::VAR_PARENTID]);
-            $answer->set_source_table('quest_answers',
-                    ['questid' => backup::VAR_ACTIVITYID, 'submissionid' => backup::VAR_PARENTID]);
+            $assessmentautor->set_source_table(
+                'quest_assessments_autors',
+                ['questid' => backup::VAR_ACTIVITYID, 'submissionid' => backup::VAR_PARENTID]
+            );
+            $answer->set_source_table(
+                'quest_answers',
+                ['questid' => backup::VAR_ACTIVITYID, 'submissionid' => backup::VAR_PARENTID]
+            );
             $this->add_question_usages($answer, 'questionusageid');
-            $assessment->set_source_table('quest_assessments',
-                    ['questid' => backup::VAR_ACTIVITYID, 'answerid' => backup::VAR_PARENTID]);
-            $elementassessment->set_source_table('quest_elements_assessments',
-                    ['questid' => backup::VAR_ACTIVITYID, 'assessmentid' => backup::VAR_PARENTID], 'elementno');
+            $assessment->set_source_table(
+                'quest_assessments',
+                ['questid' => backup::VAR_ACTIVITYID, 'answerid' => backup::VAR_PARENTID]
+            );
+            $elementassessment->set_source_table(
+                'quest_elements_assessments',
+                ['questid' => backup::VAR_ACTIVITYID, 'assessmentid' => backup::VAR_PARENTID],
+                'elementno'
+            );
             $calificationusers->set_source_table('quest_calification_users', ['questid' => backup::VAR_ACTIVITYID]);
             $team->set_source_table('quest_teams', ['questid' => backup::VAR_ACTIVITYID], 'id');
-            $calificationteam->set_source_table('quest_calification_teams',
-                    ['questid' => backup::VAR_ACTIVITYID, 'teamid' => backup::VAR_PARENTID]);
+            $calificationteam->set_source_table(
+                'quest_calification_teams',
+                ['questid' => backup::VAR_ACTIVITYID, 'teamid' => backup::VAR_PARENTID]
+            );
         }
 
         // Define id annotations.

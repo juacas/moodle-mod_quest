@@ -30,7 +30,7 @@ $cmid = required_param('id', PARAM_INT); // Course Module ID.
 
 global $DB, $PAGE, $OUTPUT;
 $timenow = time();
-list($course, $cm) = get_course_and_cm_from_cmid($cmid, "quest");
+[$course, $cm] = get_course_and_cm_from_cmid($cmid, "quest");
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 // Print the page header and check login.
 require_login($course->id, false, $cm);
@@ -109,7 +109,6 @@ if ($submissions = quest_get_submissions($quest)) {
             quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir);
             echo '<br/>';
             foreach ($answers as $answer) {
-
                 $user = get_complete_user_data('id', $answer->userid);
                 echo '<table border="0"><tr><td>';
 

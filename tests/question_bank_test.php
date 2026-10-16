@@ -28,12 +28,13 @@ use mod_quest\service\autograde_service;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\question\question_reference_service
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\question\question_reference_service::class)]
 final class question_bank_test extends advanced_testcase {
-
     /**
      * Test constant definitions and question reference area identifiers.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_reference_constants(): void {
         $this->assertEquals('mod_quest', question_reference_service::COMPONENT);
@@ -42,6 +43,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * References created by older versions must follow the latest question version.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_reference_switches_from_fixed_version_to_latest(): void {
         global $DB;
@@ -79,6 +81,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * A pinned version is shown honestly and can be changed to follow future edits.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_composer_can_switch_a_pinned_question_to_latest(): void {
         global $DB, $PAGE, $USER;
@@ -128,23 +131,37 @@ final class question_bank_test extends advanced_testcase {
         $form->display();
         $html = ob_get_clean();
         $this->assertMatchesRegularExpression(
-            '~<select[^>]*name="question_version\[' . $question->id . '\]"[^>]*>.*?</select>~s', $html
+            '~<select[^>]*name="question_version\[' . $question->id . '\]"[^>]*>.*?</select>~s',
+            $html
         );
-        preg_match('~<select[^>]*name="question_version\[' . $question->id . '\]"[^>]*>.*?</select>~s',
-            $html, $matches);
+        preg_match(
+            '~<select[^>]*name="question_version\[' . $question->id . '\]"[^>]*>.*?</select>~s',
+            $html,
+            $matches
+        );
         $this->assertStringNotContainsString('disabled=', $matches[0]);
         $this->assertMatchesRegularExpression('~<option[^>]*value="1"[^>]*selected~', $matches[0]);
         $this->assertStringContainsString('value="2"', $matches[0]);
 
-        $pinneditems = \quest_get_submitted_question_composition($existing, [$question->id], [$question->id => 1],
-            $context, [$question->id => 2]);
+        $pinneditems = \quest_get_submitted_question_composition(
+            $existing,
+            [$question->id],
+            [$question->id => 1],
+            $context,
+            [$question->id => 2]
+        );
         $this->assertSame(2, $pinneditems[0]['version']);
         question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, $pinneditems);
         $this->assertSame((int)$updated->id, (int)question_reference_service::get_question_for_challenge($challengeid)->id);
 
         $existing = question_reference_service::get_challenge_questions($challengeid);
-        $items = \quest_get_submitted_question_composition($existing, [$updated->id], [$updated->id => 1],
-            $context, [$updated->id => 0]);
+        $items = \quest_get_submitted_question_composition(
+            $existing,
+            [$updated->id],
+            [$updated->id => 1],
+            $context,
+            [$updated->id => 0]
+        );
         $this->assertNull($items[0]['version']);
         question_reference_service::replace_challenge_questions($context->id, $quest->id, $challengeid, $items);
         $this->assertNull(question_reference_service::get_challenge_question_reference($challengeid)->version);
@@ -152,6 +169,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * The read-only preview must be rebuilt after an Always latest question changes version.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_latest_question_preview_follows_a_new_version(): void {
         global $DB, $USER;
@@ -176,12 +194,20 @@ final class question_bank_test extends advanced_testcase {
             'maxmark' => 1,
         ]]);
         $submission = $DB->get_record('quest_submissions', ['id' => $challengeid]);
-        [$firstusage] = autograde_service::get_or_create_challenge_preview_usage($quest, $submission,
-            question_reference_service::get_challenge_questions($challengeid), $context);
+        [$firstusage] = autograde_service::get_or_create_challenge_preview_usage(
+            $quest,
+            $submission,
+            question_reference_service::get_challenge_questions($challengeid),
+            $context
+        );
 
         $updated = $generator->update_question($question, null, ['name' => 'New preview version']);
-        [$secondusage] = autograde_service::get_or_create_challenge_preview_usage($quest, $submission,
-            question_reference_service::get_challenge_questions($challengeid), $context);
+        [$secondusage] = autograde_service::get_or_create_challenge_preview_usage(
+            $quest,
+            $submission,
+            question_reference_service::get_challenge_questions($challengeid),
+            $context
+        );
 
         $this->assertNotSame($firstusage->get_id(), $secondusage->get_id());
         $this->assertSame((int)$updated->id, (int)$secondusage->get_question($secondusage->get_slots()[0])->id);
@@ -189,6 +215,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * Saving a legacy challenge must not revalidate its existing activity-context question as a bank.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_unchanged_legacy_composition_is_not_revalidated_or_rewritten(): void {
         global $DB, $USER;
@@ -236,6 +263,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * The composer accepts questions which need the challenge rubric for grading.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_composer_accepts_an_essay_question(): void {
         global $DB;
@@ -258,6 +286,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * A composed challenge stores its editor text after the mandatory insert.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_composed_challenge_saves_description_and_question(): void {
         global $DB, $USER;
@@ -275,7 +304,10 @@ final class question_bank_test extends advanced_testcase {
         $question = $this->getDataGenerator()->get_plugin_generator('core_question')
             ->create_question('essay', null, ['category' => $category->id]);
         $questionitems = \quest_get_submitted_question_composition(
-            [], [(int)$question->id], [(int)$question->id => 1], $context
+            [],
+            [(int)$question->id],
+            [(int)$question->id => 1],
+            $context
         );
 
         $submitted = (object)[
@@ -299,15 +331,30 @@ final class question_bank_test extends advanced_testcase {
         $attachmentoptions = ['context' => $context, 'maxfiles' => 0, 'maxbytes' => $course->maxbytes];
 
         try {
-            \quest_upload_challenge($quest, $submitted, true, $cm, $descriptionoptions,
-                $attachmentoptions, $context, 'submitchallenge', $USER->id, false, $questionitems);
+            \quest_upload_challenge(
+                $quest,
+                $submitted,
+                true,
+                $cm,
+                $descriptionoptions,
+                $attachmentoptions,
+                $context,
+                'submitchallenge',
+                $USER->id,
+                false,
+                $questionitems
+            );
             $this->fail('Expected the CLI redirect after saving the challenge.');
         } catch (\moodle_exception $exception) {
             $this->assertSame('redirecterrordetected', $exception->errorcode);
         }
 
-        $saved = $DB->get_record('quest_submissions', ['questid' => $quest->id, 'title' => 'Composed challenge'],
-            '*', MUST_EXIST);
+        $saved = $DB->get_record(
+            'quest_submissions',
+            ['questid' => $quest->id, 'title' => 'Composed challenge'],
+            '*',
+            MUST_EXIST
+        );
         $this->assertSame('<p>Answer all questions</p>', $saved->description);
         $this->assertEquals(FORMAT_HTML, $saved->descriptionformat);
         $this->assertCount(1, question_reference_service::get_challenge_questions((int)$saved->id));
@@ -315,6 +362,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * The rubric grades only manual slots, weighted against the automatic slots.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_mixed_question_grades_are_weighted_by_composer_marks(): void {
         global $DB;
@@ -371,6 +419,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * Question previews keep configured attachment controls visible but disabled.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_question_preview_disables_attachment_controls(): void {
         global $PAGE;
@@ -406,6 +455,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * Composer images must use a preview usage that can serve question files.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_composer_embedded_image_uses_question_context_and_preview_usage(): void {
         global $DB, $PAGE;
@@ -423,8 +473,12 @@ final class question_bank_test extends advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $category = $generator->create_question_category(['contextid' => $context->id]);
         $question = $generator->create_question('essay', 'editorfilepicker', ['category' => $category->id]);
-        $DB->set_field('question', 'questiontext', '<p><img src="@@PLUGINFILE@@/1.png" alt="Example"></p>',
-            ['id' => $question->id]);
+        $DB->set_field(
+            'question',
+            'questiontext',
+            '<p><img src="@@PLUGINFILE@@/1.png" alt="Example"></p>',
+            ['id' => $question->id]
+        );
         $file = get_file_storage()->create_file_from_string([
             'contextid' => $context->id,
             'component' => 'question',
@@ -452,8 +506,11 @@ final class question_bank_test extends advanced_testcase {
             '~/' . $context->id . '/question/questiontext/(\d+)/(\d+)/' . $question->id . '/1\.png~',
             $html
         );
-        preg_match('~/' . $context->id . '/question/questiontext/(\d+)/(\d+)/' . $question->id . '/1\.png~',
-            $html, $matches);
+        preg_match(
+            '~/' . $context->id . '/question/questiontext/(\d+)/(\d+)/' . $question->id . '/1\.png~',
+            $html,
+            $matches
+        );
         $this->assertSame('core_question_preview', $DB->get_field('question_usages', 'component', [
             'id' => (int)$matches[1],
         ]));
@@ -461,6 +518,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * The challenge and author-assessment screens share one multi-question panel.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_challenge_question_panel_renders_all_slots_without_edit_links(): void {
         global $DB, $PAGE, $USER;
@@ -489,8 +547,13 @@ final class question_bank_test extends advanced_testcase {
             'title' => 'Two question challenge',
             'description' => '',
         ]);
-        $entryids = $DB->get_records_list('question_versions', 'questionid', [$first->id, $second->id],
-            '', 'questionid,questionbankentryid');
+        $entryids = $DB->get_records_list(
+            'question_versions',
+            'questionid',
+            [$first->id, $second->id],
+            '',
+            'questionid,questionbankentryid'
+        );
         question_reference_service::replace_challenge_questions($context->id, $quest->id, $submissionid, [
             ['questionbankentryid' => (int)$entryids[$first->id]->questionbankentryid, 'maxmark' => 2],
             ['questionbankentryid' => (int)$entryids[$second->id]->questionbankentryid, 'maxmark' => 3],
@@ -508,6 +571,7 @@ final class question_bank_test extends advanced_testcase {
 
     /**
      * Allowing a resubmission creates a new attempt and keeps the old one.
+     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_resubmission_starts_new_attempt_without_deleting_history(): void {
         global $DB, $USER;

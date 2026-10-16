@@ -25,11 +25,13 @@ use mod_quest\service\autograde_service;
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_quest\service\autograde_service
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(autograde_service::class)]
 final class autograde_review_test extends advanced_testcase {
     /**
      * Choice-level feedback and general feedback must also stay hidden.
+     * @covers     \mod_quest\service\autograde_service
      */
     public function test_multichoice_feedback_is_not_released_early(): void {
         global $PAGE;
@@ -73,6 +75,7 @@ final class autograde_review_test extends advanced_testcase {
 
     /**
      * The review shows the student's result, but releases the question solution only after closing.
+     * @covers     \mod_quest\service\autograde_service
      */
     public function test_solution_is_hidden_until_challenge_end(): void {
         global $DB, $PAGE, $USER;

@@ -34,6 +34,7 @@ require_once("$CFG->dirroot/mod/quest/lib.php");
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 require_once(__DIR__ . '/scores_lib.php');
+require_once(__DIR__ . '/answer_form.php');
 $repeatactionsbelow = false; // Repeat actions at the bottom of pages to easy the access on long.
                              // ...pages..
 $questtype = [0 => get_string('notgraded', 'quest'), 1 => get_string('accumulative', 'quest')];
@@ -75,8 +76,13 @@ define('QUEST_TYPE_GRADE_TEAM', 1);
  * @param bool $withsesskey Whether to include the current session key.
  * @return moodle_url
  */
-function quest_question_composer_url(int $cmid, string $action, array $questionids = [],
-        int $submissionid = 0, bool $withsesskey = false): moodle_url {
+function quest_question_composer_url(
+    int $cmid,
+    string $action,
+    array $questionids = [],
+    int $submissionid = 0,
+    bool $withsesskey = false
+): moodle_url {
     $params = ['id' => $cmid, 'action' => $action];
     if ($submissionid > 0) {
         $params['sid'] = $submissionid;
@@ -88,6 +94,65 @@ function quest_question_composer_url(int $cmid, string $action, array $questioni
         $params['questionids[' . $index . ']'] = (int)$questionid;
     }
     return new moodle_url('/mod/quest/challenges.php', $params);
+}
+
+/**
+ * Get the selectable, non-draft versions of a question bank entry.
+ *
+ * A version number is not a unique database key. Use the row ID for Moodle's
+ * get_records_sql(), then keep one option per version in the selector.
+ *
+ * @param int $entryid Question bank entry ID.
+ * @return stdClass[] Versions in descending order.
+ */
+function quest_get_question_versions(int $entryid): array {
+    global $DB;
+
+    $records = $DB->get_records_sql(
+        "SELECT id, version, questionid, status
+           FROM {question_versions}
+          WHERE questionbankentryid = :entryid AND status <> :draft
+       ORDER BY version DESC, id DESC",
+        [
+            'entryid' => $entryid,
+            'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
+        ]
+    );
+    $versions = [];
+    foreach ($records as $record) {
+        $number = (int)$record->version;
+        if (
+            !isset($versions[$number]) ||
+                ($versions[$number]->status !== \core_question\local\bank\question_version_status::QUESTION_STATUS_READY &&
+                $record->status === \core_question\local\bank\question_version_status::QUESTION_STATUS_READY)
+        ) {
+            $versions[$number] = $record;
+        }
+    }
+    return $versions;
+}
+
+/**
+ * Read the question IDs submitted by the composer.
+ *
+ * The registered hidden field also works when a browser omits the raw sortable
+ * inputs from the submitted form.
+ *
+ * @return int[] Question IDs in display order.
+ */
+function quest_get_submitted_question_order(): array {
+    $order = optional_param_array('question_order', [], PARAM_INT);
+    if ($order) {
+        return array_values($order);
+    }
+    $selected = optional_param('composer_questionids', '', PARAM_RAW_TRIMMED);
+    if ($selected === '') {
+        return [];
+    }
+    if (!preg_match('/^[1-9][0-9]*(,[1-9][0-9]*)*$/D', $selected)) {
+        throw new \moodle_exception('invalidquestioncomposition', 'quest');
+    }
+    return array_map('intval', explode(',', $selected));
 }
 
 $questeweights = [0 => -4.0, 1 => -2.0, 2 => -1.5, 3 => -1.0, 4 => -0.75, 5 => -0.5, 6 => -0.25, 7 => 0.0, 8 => 0.25, 9 => 0.5,
@@ -369,8 +434,12 @@ function quest_print_submission_title($quest, $submission) {
  * @param string|null $page Label for a form or assessment below the current item.
  * @return void
  */
-function quest_add_breadcrumbs(object $cm, ?stdClass $challenge = null,
-        ?stdClass $answer = null, ?string $page = null): void {
+function quest_add_breadcrumbs(
+    object $cm,
+    ?stdClass $challenge = null,
+    ?stdClass $answer = null,
+    ?string $page = null
+): void {
     global $PAGE;
 
     if ($answer && !$challenge) {
@@ -453,6 +522,13 @@ class quest_print_upload_form extends moodleform {
         $mform->setType('nosubmit', PARAM_BOOL);
 
         if ($composerquestions) {
+            $mform->addElement('hidden', 'composer_mode', 1);
+            $mform->setType('composer_mode', PARAM_BOOL);
+            $mform->addElement('hidden', 'composer_questionids', implode(',', array_map(
+                static fn($question) => (int)$question->id,
+                $composerquestions
+            )));
+            $mform->setType('composer_questionids', PARAM_RAW_TRIMMED);
             $mform->addElement('html', $this->render_question_composer(
                 $composerquestions,
                 $cm,
@@ -625,7 +701,7 @@ class quest_print_upload_form extends moodleform {
                 $references[(int)$slot->reference->questionbankentryid] = $slot->reference;
             }
         }
-        $questions = array_map(static function($question) {
+        $questions = array_map(static function ($question) {
             $metadata = \mod_quest\question\bank_provider::get_question((int)$question->id);
             $metadata->maxmark = (float)($question->maxmark ?? 1);
             return $metadata;
@@ -643,8 +719,12 @@ class quest_print_upload_form extends moodleform {
         \question_engine::save_questions_usage_by_activity($usage);
 
         $questionids = array_map(static fn($question) => (int)$question->id, $questions);
-        $returnurl = quest_question_composer_url($cm->id, $action === 'modif' ? 'modif' : 'addqchallenge',
-            $questionids, $action === 'modif' ? $submissionid : 0)->out_as_local_url(false);
+        $returnurl = quest_question_composer_url(
+            $cm->id,
+            $action === 'modif' ? 'modif' : 'addqchallenge',
+            $questionids,
+            $action === 'modif' ? $submissionid : 0
+        )->out_as_local_url(false);
 
         $html = html_writer::tag('h4', get_string('page') . ' 1', ['class' => 'h5 mb-2']);
         $html .= html_writer::start_tag('ul', [
@@ -704,16 +784,7 @@ class quest_print_upload_form extends moodleform {
                 ]);
             }
             $selectedversion = $references[(int)$question->questionbankentryid]->version ?? null;
-            $versions = $DB->get_records_sql(
-                "SELECT version, questionid, status
-                   FROM {question_versions}
-                  WHERE questionbankentryid = :entryid AND status <> :draft
-               ORDER BY version DESC",
-                [
-                    'entryid' => $question->questionbankentryid,
-                    'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
-                ]
-            );
+            $versions = quest_get_question_versions((int)$question->questionbankentryid);
             $versionoptions = html_writer::tag('option', get_string('alwayslatest', 'quiz'), [
                 'value' => 0,
                 'selected' => $selectedversion === null ? 'selected' : null,
@@ -730,8 +801,11 @@ class quest_print_upload_form extends moodleform {
             }
             foreach ($versions as $version) {
                 $number = (int)$version->version;
-                $label = get_string($number === $latestversion ? 'questionversionlatest' : 'questionversion',
-                    'quiz', $number);
+                $label = get_string(
+                    $number === $latestversion ? 'questionversionlatest' : 'questionversion',
+                    'quiz',
+                    $number
+                );
                 $versionoptions .= html_writer::tag('option', $label, [
                     'value' => $number,
                     'selected' => (int)$selectedversion === $number ? 'selected' : null,
@@ -743,7 +817,13 @@ class quest_print_upload_form extends moodleform {
                 'aria-label' => get_string('question_version', 'question'),
             ]);
             $previewurl = \qbank_previewquestion\helper::question_preview_url(
-                $question->id, null, null, null, null, $context, $cm->id
+                $question->id,
+                null,
+                null,
+                null,
+                null,
+                $context,
+                $cm->id
             );
             $html .= html_writer::link($previewurl, $OUTPUT->pix_icon('i/preview', get_string('preview')), [
                 'class' => 'btn btn-outline-primary quest-question-composer-action',
@@ -852,7 +932,7 @@ function quest_get_submitted_question_composition(
 ): array {
     global $CFG, $DB;
 
-    $questionorder = $submittedquestionorder ?? optional_param_array('question_order', [], PARAM_INT);
+    $questionorder = $submittedquestionorder ?? quest_get_submitted_question_order();
     $questionmarks = $submittedquestionmarks ?? optional_param_array('question_mark', [], PARAM_FLOAT);
     $questionversions = $submittedversions ?? optional_param_array('question_version', [], PARAM_INT);
     if (!$questionorder) {
@@ -886,15 +966,17 @@ function quest_get_submitted_question_composition(
         }
         if (array_key_exists($questionid, $questionversions)) {
             $selectedversion = (int)$questionversions[$questionid];
-            if ($selectedversion < 0 || ($selectedversion > 0 && !$DB->record_exists_select(
-                'question_versions',
-                'questionbankentryid = :entryid AND version = :version AND status <> :draft',
-                [
+            if (
+                $selectedversion < 0 || ($selectedversion > 0 && !$DB->record_exists_select(
+                    'question_versions',
+                    'questionbankentryid = :entryid AND version = :version AND status <> :draft',
+                    [
                     'entryid' => $entryid,
                     'version' => $selectedversion,
                     'draft' => \core_question\local\bank\question_version_status::QUESTION_STATUS_DRAFT,
-                ]
-            ))) {
+                    ]
+                ))
+            ) {
                 throw new \moodle_exception('invalidquestioncomposition', 'quest');
             }
             $version = $selectedversion === 0 ? null : $selectedversion;
@@ -914,10 +996,12 @@ function quest_get_submitted_question_composition(
     if (count($items) === count($existingquestions)) {
         $unchanged = true;
         foreach (array_values($existingquestions) as $index => $existingquestion) {
-            if ((int)$items[$index]['questionbankentryid'] !==
+            if (
+                (int)$items[$index]['questionbankentryid'] !==
                     (int)$existingquestion->reference->questionbankentryid ||
                     (float)$items[$index]['maxmark'] !== (float)$existingquestion->maxmark ||
-                    $items[$index]['version'] !== $existingquestion->reference->version) {
+                    $items[$index]['version'] !== $existingquestion->reference->version
+            ) {
                 $unchanged = false;
                 break;
             }
@@ -1535,18 +1619,24 @@ function quest_require_submission_ownership(\stdClass $submission, int $questid)
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_view_submission(\stdClass $quest, \stdClass $submission,
-        \context_module $context, ?int $userid = null): bool {
+function quest_user_can_view_submission(
+    \stdClass $quest,
+    \stdClass $submission,
+    \context_module $context,
+    ?int $userid = null
+): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
     if ((int)$submission->questid !== (int)$quest->id) {
         return false;
     }
-    if (has_capability('mod/quest:manage', $context, $userid) ||
+    if (
+        has_capability('mod/quest:manage', $context, $userid) ||
             has_capability('mod/quest:preview', $context, $userid) ||
             has_capability('mod/quest:grade', $context, $userid) ||
             has_capability('mod/quest:approvechallenge', $context, $userid) ||
-            (int)$submission->userid === $userid) {
+            (int)$submission->userid === $userid
+    ) {
         return true;
     }
     return (int)$submission->state === SUBMISSION_STATE_APROVED &&
@@ -1563,20 +1653,29 @@ function quest_user_can_view_submission(\stdClass $quest, \stdClass $submission,
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_view_answer(\stdClass $quest, \stdClass $submission, \stdClass $answer,
-        \context_module $context, ?int $userid = null): bool {
+function quest_user_can_view_answer(
+    \stdClass $quest,
+    \stdClass $submission,
+    \stdClass $answer,
+    \context_module $context,
+    ?int $userid = null
+): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
-    if ((int)$answer->questid !== (int)$quest->id ||
+    if (
+        (int)$answer->questid !== (int)$quest->id ||
             (int)$submission->questid !== (int)$quest->id ||
-            (int)$answer->submissionid !== (int)$submission->id) {
+            (int)$answer->submissionid !== (int)$submission->id
+    ) {
         return false;
     }
-    if (has_capability('mod/quest:manage', $context, $userid) ||
+    if (
+        has_capability('mod/quest:manage', $context, $userid) ||
             has_capability('mod/quest:preview', $context, $userid) ||
             has_capability('mod/quest:grade', $context, $userid) ||
             has_capability('mod/quest:approvechallenge', $context, $userid) ||
-            (int)$answer->userid === $userid || (int)$submission->userid === $userid) {
+            (int)$answer->userid === $userid || (int)$submission->userid === $userid
+    ) {
         return true;
     }
     return (int)$submission->dateend <= time() ||
@@ -1607,8 +1706,12 @@ function quest_user_passed_password(\stdClass $quest, \context_module $context, 
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_answer_submission(\stdClass $quest, \stdClass $submission,
-        \context_module $context, ?int $userid = null): bool {
+function quest_user_can_answer_submission(
+    \stdClass $quest,
+    \stdClass $submission,
+    \context_module $context,
+    ?int $userid = null
+): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
     if ((int)$submission->questid !== (int)$quest->id) {
@@ -1633,8 +1736,12 @@ function quest_user_can_answer_submission(\stdClass $quest, \stdClass $submissio
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_delete_submission(\stdClass $quest, \stdClass $submission,
-        \context_module $context, ?int $userid = null): bool {
+function quest_user_can_delete_submission(
+    \stdClass $quest,
+    \stdClass $submission,
+    \context_module $context,
+    ?int $userid = null
+): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
     if ((int)$submission->questid !== (int)$quest->id) {
@@ -1659,8 +1766,10 @@ function quest_user_can_delete_submission(\stdClass $quest, \stdClass $submissio
 function quest_get_challenge_attention_status($challenge, $cm, $context): array {
     $statuses = [];
 
-    if ((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING
-            && has_capability('mod/quest:approvechallenge', $context)) {
+    if (
+        (int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING
+            && has_capability('mod/quest:approvechallenge', $context)
+    ) {
         $statuses[] = [
             'label' => get_string('approvalpending', 'quest'),
             'url' => (new moodle_url('/mod/quest/challenges.php', [
@@ -1704,78 +1813,6 @@ function quest_should_show_challenge_phase_badge($challenge, array $attentionsta
     }
     return !((int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING &&
         in_array(get_string('approvalpending', 'quest'), $labels, true));
-}
-
-/**
- * Form for creating or editing an answer.
- *
- * @author juacas
- */
-class quest_print_answer_form extends moodleform {
-    /**
-     * Define the answer form fields.
-     *
-     * @return void
-     */
-    public function definition() {
-        $mform = & $this->_form;
-        $currententry = $this->_customdata['current'];
-        $quest = $this->_customdata['quest'];
-        $cm = $this->_customdata['cm'];
-        $definitionoptions = $this->_customdata['definitionoptions'];
-        $attachmentoptions = $this->_customdata['attachmentoptions'];
-        $action = $this->_customdata['action'];
-
-        $context = context_module::instance($cm->id);
-
-        $mform->addElement('text', 'title', get_string("title", "quest"), 'size="60" maxlength="100"');
-        $mform->setType('title', PARAM_TEXT);
-        $mform->addRule('title', null, 'required', null, 'client');
-
-        $mform->addElement('editor', 'description_editor', get_string("responsetochallenge", "quest"), null, $definitionoptions);
-        $mform->setType('description_editor', PARAM_RAW);
-        $mform->addRule('description_editor', null, 'required', null, 'client');
-
-        if ($quest->nattachments) {
-            $mform->addElement(
-                'filemanager',
-                'attachment_filemanager',
-                get_string("attachments", "quest"),
-                null,
-                $attachmentoptions
-            );
-        }
-        $difficultyscale = quest_get_difficulty_levels();
-        $radioarray = [];
-        foreach ($difficultyscale as $value => $item) {
-            $radioarray[] = & $mform->createElement('radio', 'perceiveddifficulty', '', $item, $value);
-        }
-        $mform->addGroup($radioarray, 'radioar', get_string("perceiveddifficultyLevelQuestion", "quest"), [' '], false);
-        $mform->addElement('hidden', 'aid', $currententry->id);
-        $mform->setType('aid', PARAM_INT);
-        $mform->addElement('hidden', 'id', $currententry->id);
-        $mform->setType('id', PARAM_INT);
-        $mform->addElement('hidden', 'sid', $currententry->submissionid);
-        $mform->setType('sid', PARAM_INT);
-        $mform->addElement('hidden', 'sesskey', sesskey());
-        $mform->setType('sesskey', PARAM_ALPHA);
-
-        $mform->addElement('hidden', 'submissionid', $currententry->submissionid);
-        $mform->setType('submissionid', PARAM_INT);
-
-        if ($action == 'delete') {
-            $mform->addElement('hidden', 'action', 'delete');
-            $mform->setType('action', PARAM_TEXT);
-        } else if ($action == 'modif') {
-            $mform->addElement('hidden', 'action', 'modif');
-            $mform->setType('action', PARAM_TEXT);
-        } else {
-            $mform->addElement('hidden', 'action', 'answer');
-            $mform->setType('action', PARAM_TEXT);
-        }
-        $this->add_action_buttons();
-        $this->set_data($currententry);
-    }
 }
 
 /**
@@ -1824,8 +1861,10 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
             'id' => $storedanswer->submissionid,
             'questid' => $quest->id,
         ], '*', MUST_EXIST);
-        if (!($ismanager || ((int)$USER->id === (int)$storedanswer->userid &&
-                (int)$submission->dateend > $timenow))) {
+        if (
+            !($ismanager || ((int)$USER->id === (int)$storedanswer->userid &&
+                (int)$submission->dateend > $timenow))
+        ) {
             throw new \moodle_exception(
                 'answernoauthorizedupdate',
                 'quest',
@@ -2319,8 +2358,10 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
         );
     }
 
-    if (($ismanager || ($submission->userid == $USER->id))
-            && $isassessed && $answer->permitsubmit == 0) {
+    if (
+        ($ismanager || ($submission->userid == $USER->id))
+            && $isassessed && $answer->permitsubmit == 0
+    ) {
         $permiturl = new moodle_url('/mod/quest/answer.php', [
             'sid' => $submission->id,
             'aid' => $answer->id,
@@ -2339,8 +2380,10 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     // The respondent can start a new attempt after the author or teacher has
     // explicitly allowed another submission. The previous attempt remains
     // available in the answer history.
-    if ((int)$answer->userid === (int)$USER->id
-            && (int)$answer->permitsubmit === ANSWER_PERMITSUBMIT_EDITABLE) {
+    if (
+        (int)$answer->userid === (int)$USER->id
+            && (int)$answer->permitsubmit === ANSWER_PERMITSUBMIT_EDITABLE
+    ) {
         $answeragainurl = new moodle_url('/mod/quest/answer.php', [
             'sid' => $submission->id,
             'uid' => $answer->userid,
@@ -2451,8 +2494,10 @@ function quest_answer_phase($answer, $course, $style = '') {
                 $badgeclass = 'bg-warning text-dark';
             }
         } else {
-            if (!empty($answer->questionusageid) &&
-                    in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)) {
+            if (
+                !empty($answer->questionusageid) &&
+                    in_array((int)$answer->phase, [ANSWER_PHASE_GRADED, ANSWER_PHASE_PASSED], true)
+            ) {
                 $string = get_string('gradedautomatically', 'quest');
                 $badgeclass = 'bg-success text-white';
             } else if ($answer->phase == ANSWER_PHASE_GRADED) {
@@ -3992,9 +4037,11 @@ function quest_update_grade_for_answer($answeractual, $submission, $quest, $cour
 function quest_restore_automatic_assessment($quest, $answer, $assessment): float {
     global $DB;
 
-    if ((int)$answer->questid !== (int)$quest->id || (int)$assessment->questid !== (int)$quest->id ||
+    if (
+        (int)$answer->questid !== (int)$quest->id || (int)$assessment->questid !== (int)$quest->id ||
             (int)$assessment->answerid !== (int)$answer->id ||
-            (int)$assessment->state === ASSESSMENT_STATE_UNDONE) {
+            (int)$assessment->state === ASSESSMENT_STATE_UNDONE
+    ) {
         throw new \moodle_exception('autograde_restorenotavailable', 'quest');
     }
     $grade = \mod_quest\service\autograde_service::get_automatic_grade($answer);
@@ -4238,12 +4285,14 @@ function quest_calculate_user_challenges_score($questid, $userid) {
             $submissions[] = $s->id;
         }
         [$insql2, $inparams2] = $DB->get_in_or_equal($submissions);
-        if ($query = $DB->get_record_select(
-            "quest_assessments_autors",
-            "submissionid $insql2",
-            $inparams2,
-            "sum(points) as points"
-        )) {
+        if (
+            $query = $DB->get_record_select(
+                "quest_assessments_autors",
+                "submissionid $insql2",
+                $inparams2,
+                "sum(points) as points"
+            )
+        ) {
             if ($query->points) {
                 $points = $query->points;
             }

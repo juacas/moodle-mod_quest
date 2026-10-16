@@ -33,7 +33,6 @@ require_once($CFG->dirroot . '/mod/quest/backup/moodle2/backup_quest_settingslib
  * @copyright (c) 2014, INTUITEL Consortium
  * @package mod_quest */
 class backup_quest_activity_task extends backup_activity_task {
-
     /**
      * Define particular settings for this activity.
      *

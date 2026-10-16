@@ -81,8 +81,10 @@ class custom_view extends \core_question\local\bank\view {
      */
     protected function get_question_bank_plugins(): array {
         $columns = [];
-        foreach ([checkbox_column::class, 'qbank_viewquestiontype\\question_type_column',
-                name_column::class, action_column::class] as $class) {
+        foreach (
+            [checkbox_column::class, 'qbank_viewquestiontype\\question_type_column',
+                name_column::class, action_column::class] as $class
+        ) {
             $name = substr($class, strrpos($class, '\\') + 1);
             $id = $class . \core_question\local\bank\column_base::ID_SEPARATOR . $name;
             $columns[$id] = $class::from_column_name($this, $name);

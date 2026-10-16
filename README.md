@@ -431,6 +431,16 @@ Run the PHPUnit test suite for `mod_quest`:
 vendor/bin/phpunit --testsuite mod_quest_testsuite
 ```
 
+### PHP coding style
+From the Moodle root, check the entire plugin with the Moodle CodeSniffer standard:
+```bash
+vendor/bin/phpcs --standard=moodle mod/quest
+```
+To apply safe mechanical formatting, run `vendor/bin/phpcbf --standard=moodle mod/quest`,
+then run PHPCS again and review the diff. The GitHub workflow runs
+`moodle-plugin-ci phpcs --max-warnings 0 ./plugin` in its own checkout. PHP syntax
+checks, PHPUnit, and JavaScript compilation do not check PHP coding style.
+
 ---
 
 ## 7. Changelog & Version History

@@ -36,7 +36,7 @@ global $DB, $OUTPUT, $PAGE, $USER;
 $answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
 $submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
-list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
+[$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 
@@ -72,9 +72,11 @@ $strassess = get_string("assess", "quest");
 
 $strsubmission = "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\">$submission->title</a>";
 
-$url = new moodle_url('/mod/quest/assess.php',
-        ['aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
-                        'sesskey' => sesskey()]);
+$url = new moodle_url(
+    '/mod/quest/assess.php',
+    ['aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
+    'sesskey' => sesskey()]
+);
 $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
@@ -84,7 +86,6 @@ echo $OUTPUT->header();
 
 // ...there can be an assessment record , if there isn't...
 if (!$assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id, "questid" => $quest->id])) {
-
     $now = time();
     // ...create one and set timecreated way in the future, this is reset when record is updated.
     $assessment = new stdClass();
@@ -174,8 +175,10 @@ echo '</div></div></div>';
 if (($ismanager || $cangrade) && (int)$assessment->state !== ASSESSMENT_STATE_UNDONE) {
     $automaticgrade = \mod_quest\service\autograde_service::get_automatic_grade($answer);
     if ($automaticgrade !== null) {
-        $confirmation = json_encode(get_string('autograde_restoreconfirm', 'quest'),
-            JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
+        $confirmation = json_encode(
+            get_string('autograde_restoreconfirm', 'quest'),
+            JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP
+        );
         echo html_writer::start_tag('form', [
             'method' => 'post',
             'action' => new moodle_url('/mod/quest/assess.php'),
@@ -187,7 +190,8 @@ if (($ismanager || $cangrade) && (int)$assessment->state !== ASSESSMENT_STATE_UN
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'aid', 'value' => $answer->id]);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'restoreautograde']);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
-        echo html_writer::tag('button',
+        echo html_writer::tag(
+            'button',
             get_string('autograde_restorebutton', 'quest', format_float($automaticgrade, 2)),
             ['type' => 'submit', 'class' => 'btn btn-outline-warning']
         );
@@ -201,7 +205,7 @@ if ($cangrade) {
     // ... else redirect to answers list.
     $nextanswer = null;
 }
-if ($nextanswer !== null ) {
+if ($nextanswer !== null) {
     $returnto = new moodle_url('assess.php', [
         'id' => $cm->id,
         'sid' => $submission->id,

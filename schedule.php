@@ -29,7 +29,7 @@ require_once('locallib.php');
 $id = required_param('id', PARAM_INT); // Course module ID.
 $action = optional_param('action', 'view', PARAM_ALPHA);
 
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 $quest = $DB->get_record('quest', ['id' => $cm->instance], '*', MUST_EXIST);
 
 require_login($course->id, false, $cm);

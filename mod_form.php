@@ -255,8 +255,12 @@ class mod_quest_mod_form extends moodleform_mod {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        if (!isset($data['allowqbankquestions']) || !array_key_exists((int)$data['allowqbankquestions'],
-                \mod_quest\challenge_type_policy::mode_options(true))) {
+        if (
+            !isset($data['allowqbankquestions']) || !array_key_exists(
+                (int)$data['allowqbankquestions'],
+                \mod_quest\challenge_type_policy::mode_options(true)
+            )
+        ) {
             $errors['allowqbankquestions'] = get_string('challengemodenotavailable', 'quest');
         }
 

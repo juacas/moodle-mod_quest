@@ -33,7 +33,7 @@ global $DB, $USER;
 
 $submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
 $quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
-list($course, $cm) = quest_get_course_and_cm_from_quest($quest);
+[$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 
 if (!$redirect) {
     $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
@@ -56,8 +56,10 @@ $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
-$url = new moodle_url('/mod/quest/assess_autors.php',
-                ['sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]);
+$url = new moodle_url(
+    '/mod/quest/assess_autors.php',
+    ['sid' => $sid, 'allowcomments' => $allowcomments, 'redirect' => $redirect]
+);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_activity_record($quest);
@@ -101,7 +103,11 @@ if ($anylinkedq) {
         (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING;
     echo $OUTPUT->heading(get_string('description', 'quest'));
     echo \mod_quest\service\autograde_service::render_challenge_questions_preview(
-        $quest, $submission, $context, (int)$cm->id, $ismanager || $isownpending
+        $quest,
+        $submission,
+        $context,
+        (int)$cm->id,
+        $ismanager || $isownpending
     );
 }
 

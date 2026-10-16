@@ -37,7 +37,6 @@ use moodle_exception;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class bank_provider {
-
     /** Capabilities accepted when selecting a question bank. */
     public const CAPS = ['moodle/question:useall', 'moodle/question:usemine'];
 
@@ -204,8 +203,10 @@ class bank_provider {
             if (!in_array($cm->modname, $helper::get_activity_types_with_shareable_questions(), true)) {
                 throw new moodle_exception('banknotavailable', 'quest');
             }
-            if ($cm->modname === 'qbank' &&
-                    $DB->get_field('qbank', 'type', ['id' => $cm->instance]) === $helper::TYPE_PREVIEW) {
+            if (
+                $cm->modname === 'qbank' &&
+                    $DB->get_field('qbank', 'type', ['id' => $cm->instance]) === $helper::TYPE_PREVIEW
+            ) {
                 throw new moodle_exception('banknotavailable', 'quest');
             }
         } else {

@@ -33,7 +33,6 @@ require_once($CFG->dirroot . '/mod/quest/locallib.php');
  * Scheduled task that sends Quest digests and challenge notifications.
  */
 class notify_task extends \core\task\scheduled_task {
-
     /**
      * Return the task name shown in Moodle administration.
      *
@@ -62,7 +61,6 @@ class notify_task extends \core\task\scheduled_task {
         $userfrom = null;
 
         if ($quests = $DB->get_records("quest")) {
-
             $urlinfo = parse_url($CFG->wwwroot);
             $hostname = $urlinfo['host'];
             // Daily actions Day brief of QUESTs activities.
@@ -79,7 +77,6 @@ class notify_task extends \core\task\scheduled_task {
                 mtrace('Sending QUEST digests: ' . userdate($timenow, '', $sitetimezone));
 
                 foreach ($quests as $quest) {
-
                     if (!$course = $DB->get_record("course", ["id" => $quest->course])) {
                         mtrace("Course is misconfigured");
                         continue;
@@ -105,9 +102,7 @@ class notify_task extends \core\task\scheduled_task {
                     }
 
                     foreach ($users as $userto) {
-
                         if (has_capability('mod/quest:manage', $context, $userto->id)) {
-
                             $indice = 0;
 
                             $postsubject = get_string('resumequest', 'quest', $quest);
@@ -123,12 +118,10 @@ class notify_task extends \core\task\scheduled_task {
                             $posthtml .= "<br>-------------------------------------------------------------<br>";
 
                             if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
-
                                 // Imprimir cabecera del m�dulo QUEST en mensaje.
                                 foreach ($submissions as $submission) {
                                     // Challenge unnotified and recently created.
                                     if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
-
                                         $indice++;
                                         $user = get_complete_user_data('id', $submission->userid);
 
@@ -149,26 +142,40 @@ class notify_task extends \core\task\scheduled_task {
                                         $USER->lang = $userto->lang;
                                         $USER->timezone = $userto->timezone;
 
-                                        $posttext .= quest_make_mail_text($course, $quest, $submission, $userfrom, $userto, $user,
-                                                $cm);
+                                        $posttext .= quest_make_mail_text(
+                                            $course,
+                                            $quest,
+                                            $submission,
+                                            $userfrom,
+                                            $userto,
+                                            $user,
+                                            $cm
+                                        );
 
-                                        $posthtml .= quest_make_mail_html($course, $quest, $submission, $userfrom, $userto, $user,
-                                                $cm);
+                                        $posthtml .= quest_make_mail_html(
+                                            $course,
+                                            $quest,
+                                            $submission,
+                                            $userfrom,
+                                            $userto,
+                                            $user,
+                                            $cm
+                                        );
                                     } // ...if teacher.
                                 } // ...for submissions.
                             }
 
                             // ...count of messages to send.
                             if ($indice > 0) {
-
                                 $posthtml .= "</body>";
                                 $posttext = format_text($posttext, 1);
                                 mtrace("Mailing Daily briefing to user $userto->id .");
 
                                 if (!$mailresult = email_to_user($userto, $userfrom, $postsubject, $posttext, $posthtml)) {
                                     mtrace(
-                                            "Error: notify_task.php: Could not send out mail to user $userto->id" .
-                                                     " ($userto->email) .. not trying again.");
+                                        "Error: notify_task.php: Could not send out mail to user $userto->id" .
+                                        " ($userto->email) .. not trying again."
+                                    );
                                 } else if ($mailresult === 'emailstop') {
                                     mtrace("Error: notify_task.php: Error 'emailstop' when mailing to user $userto->id" .
                                             " ($userto->email) .. not trying again.");
@@ -235,10 +242,12 @@ class notify_task extends \core\task\scheduled_task {
                     foreach ($submissions as $submission) {
                         // The challenge has started and is approved and is not emailed yet to
                         // users.
-                        if (($submission->datestart <= time())
+                        if (
+                            ($submission->datestart <= time())
                                 && ($submission->dateend >= time())
                                 && ($submission->maileduser == 0)
-                                && ($submission->state != SUBMISSION_STATE_APPROVAL_PENDING)) {
+                                && ($submission->state != SUBMISSION_STATE_APPROVAL_PENDING)
+                        ) {
                             $submissionscount++;
                             $submissionsmailed[] = $submission;
                             $userscount = 0;
@@ -247,13 +256,18 @@ class notify_task extends \core\task\scheduled_task {
                                 if (!has_capability('mod/quest:manage', $context, $user)) { // Only to non-teachers.
                                     $userscount++;
 
-                                    $msgdata = quest_compose_message_data($user,
-                                            "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge",
-                                            'challenge_start', $quest, $submission, '', $userfrom);
+                                    $msgdata = quest_compose_message_data(
+                                        $user,
+                                        "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge",
+                                        'challenge_start',
+                                        $quest,
+                                        $submission,
+                                        '',
+                                        $userfrom
+                                    );
                                     $usermessages[$user->id][] = $msgdata;
                                 }
                             }
-
                         }
                     } // ...for submissions.
                     // Collect and send messages to users.

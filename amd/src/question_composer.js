@@ -26,6 +26,11 @@ const updateQuestionNumbers = list => {
     list.querySelectorAll(SELECTORS.slot).forEach((slot, index) => {
         slot.querySelector(SELECTORS.number).textContent = index + 1;
     });
+    const selected = list.closest(SELECTORS.form)?.querySelector('input[name="composer_questionids"]');
+    if (selected) {
+        selected.value = Array.from(list.querySelectorAll(SELECTORS.slot))
+            .map(slot => slot.dataset.questionid).join(',');
+    }
 };
 
 /**
@@ -100,5 +105,6 @@ export const init = () => {
                 orderfield.value = slot.dataset.questionid;
             }
         });
+        updateQuestionNumbers(list);
     });
 };

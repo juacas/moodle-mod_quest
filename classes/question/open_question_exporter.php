@@ -34,7 +34,6 @@ use core_question\local\bank\question_version_status;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class open_question_exporter {
-
     /**
      * Get or create the default question category for the quest activity instance.
      *
@@ -124,24 +123,24 @@ class open_question_exporter {
             // Prepare draft area so embedded files and images in challenge description are preserved.
             $draftid = 0;
             $descriptiontext = file_prepare_draft_area(
-            $draftid,
-            $context->id,
-            'mod_quest',
-            'submission',
-            (int)$submission->id,
-            ['subdirs' => true],
-            $submission->description
+                $draftid,
+                $context->id,
+                'mod_quest',
+                'submission',
+                (int)$submission->id,
+                ['subdirs' => true],
+                $submission->description
             );
 
             // Also copy any challenge attachment files into draft area and link them if present.
             $fs = get_file_storage();
             $attachments = $fs->get_area_files(
-            $context->id,
-            'mod_quest',
-            'attachment',
-            (int)$submission->id,
-            'filename',
-            false
+                $context->id,
+                'mod_quest',
+                'attachment',
+                (int)$submission->id,
+                'filename',
+                false
             );
             if (!empty($attachments)) {
                 $usercontext = context_user::instance($USER->id);
@@ -156,14 +155,16 @@ class open_question_exporter {
                     'filepath' => '/',
                     'filename' => $attfile->get_filename(),
                     ];
-                    if (!$fs->file_exists(
-                    $filerecord['contextid'],
-                    $filerecord['component'],
-                    $filerecord['filearea'],
-                    $filerecord['itemid'],
-                    $filerecord['filepath'],
-                    $filerecord['filename']
-                    )) {
+                    if (
+                        !$fs->file_exists(
+                            $filerecord['contextid'],
+                            $filerecord['component'],
+                            $filerecord['filearea'],
+                            $filerecord['itemid'],
+                            $filerecord['filepath'],
+                            $filerecord['filename']
+                        )
+                    ) {
                         $fs->create_file_from_storedfile($filerecord, $attfile);
                     }
                     $attachmenthtml .= '<li><a href="@@PLUGINFILE@@/' . rawurlencode($attfile->get_filename()) . '">' .
@@ -235,18 +236,18 @@ class open_question_exporter {
 
             // Fetch question_bank_entry ID for question reference.
             $entryid = $DB->get_field_sql(
-            "SELECT qv.questionbankentryid
+                "SELECT qv.questionbankentryid
                FROM {question_versions} qv
               WHERE qv.questionid = :qid",
-            ['qid' => $savedquestion->id]
+                ['qid' => $savedquestion->id]
             );
 
             if ($entryid) {
                 question_reference_service::set_challenge_question(
-                $context->id,
-                (int)$submission->id,
-                (int)$entryid,
-                null // Follow the latest version after future edits.
+                    $context->id,
+                    (int)$submission->id,
+                    (int)$entryid,
+                    null // Follow the latest version after future edits.
                 );
             }
 

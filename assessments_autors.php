@@ -37,7 +37,7 @@ if (!is_array($questeweights)) {
     $questeweights = quest_get_default_weights();
 }
 // Get some useful stuff...
-list($course, $cm) = quest_get_course_and_cm($id);
+[$course, $cm] = quest_get_course_and_cm($id);
 $quest = $DB->get_record("quest", ["id" => $cm->instance], '*', MUST_EXIST);
 $url = new moodle_url('/mod/quest/assessments_autors.php', ['action' => $action, 'id' => $id]);
 $context = context_module::instance($cm->id);
@@ -181,7 +181,6 @@ if ($action == 'displaygradingform') {
     echo '</form>';
     echo '</div>'; // Quest assessment container.
     echo $OUTPUT->footer();
-
 } else if ($action == 'insertelements') {
     // Insert/update assignment elements (for teachers).
     if (!$ismanager) {
@@ -394,7 +393,6 @@ if ($action == 'displaygradingform') {
         $message .= get_string("thegradeis", "quest") . ": " . number_format($grade, 4) . " (Activity ignores this grading.)";
     }
     redirect($returnto, $message);
-
 } else {
     throw new \moodle_exception('unknownactionerror', 'quest', '', $action);
 }
