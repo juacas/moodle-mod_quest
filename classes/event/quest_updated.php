@@ -46,18 +46,17 @@ require_once('base.php');
 class quest_updated extends base {
     /**
      * Populate event from arguments
-     * @param int $courseid
-     * @param int $userid
-     * @param int $cmid
-     * @param int $activityid
-     * @param string $url
-     * @param string $info
+     * @param \stdClass $user
+     * @param \stdClass $quest
+     * @param \cm_info|\stdClass $cm
      * @return \mod_quest\event\quest_updated
      */
-    public static function create_from_parts($courseid, $userid, $cmid, $activityid, $url, $info) {
-        $data = ['relateduserid' => $userid, 'context' => \context_course::instance($courseid), 'userid' => $userid,
-                        'courseid' => $courseid,
-                        'other' => ['info' => $info, 'cmid' => $cmid, 'activityid' => $activityid, 'url' => $url]];
+    public static function create_from_parts(\stdClass $user, \stdClass $quest, $cm) {
+        $url = "/mod/quest/view.php?id=$cm->id";
+        $data = ['relateduserid' => $user->id, 'context' => \context_module::instance($cm->id),
+                        'userid' => $user->id, 'objectid' => $quest->id, 'objecttable' => 'quest',
+                        'courseid' => $cm->course,
+                        'other' => ['info' => $quest->name, 'cmid' => $cm->id, 'activityid' => $quest->id, 'url' => $url]];
         /** @var quest_updated $event */
         $event = self::create($data);
         return $event;
@@ -82,7 +81,7 @@ class quest_updated extends base {
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' modified the Quest activity '" . $this->data['other']['activityid'] .
+        return "The user with id '$this->userid' updated the Quest activity '" . $this->data['other']['activityid'] .
                  "in the course '$this->courseid'. " . $this->data['other']['info'];
     }
 

@@ -87,7 +87,7 @@ if ($action === 'saveschedule') {
         exit;
     }
 
-    $result = \mod_quest\service\tournament_manager::update_challenge_schedule(
+    $result = \mod_quest\service\tournament_manager::update_challenge_schedules(
         $quest,
         $cm,
         $schedules,

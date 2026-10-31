@@ -223,7 +223,7 @@ class tournament_manager {
      * @param bool $autoexpand Whether to automatically expand tournament dates if challenges extend beyond.
      * @return array Result array with status, updated count, errors, and updated quest boundaries.
      */
-    public static function update_challenge_schedule(
+    public static function update_challenge_schedules(
         stdClass $quest,
         object $cm,
         array $schedules,

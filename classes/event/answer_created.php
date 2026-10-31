@@ -68,7 +68,7 @@ class answer_created extends base {
      * Init method.
      */
     protected function init() {
-        $this->data['crud'] = 'u';
+        $this->data['crud'] = 'c';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
 

@@ -85,7 +85,7 @@ class answer_viewed extends base {
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' view the answer '" . $this->data['other']['info'] . "' in Questournament " .
+        return "The user with id '$this->userid' viewed the answer '" . $this->data['other']['info'] . "' in Questournament " .
                  $this->data['other']['activityid'] . "in the course '$this->courseid'. ";
     }
 

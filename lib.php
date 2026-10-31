@@ -183,7 +183,7 @@ function quest_update_instance($quest, $form) {
     // Given an object containing all the necessary data,
     // (defined by the form in mod_.ht_form.php) this function
     // will update an existing instance with new data.
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
 
     $quest->timemodified = time();
 
@@ -212,6 +212,10 @@ function quest_update_instance($quest, $form) {
         quest_update_quest_calendar($quest, $quest);
         $ctx = context_module::instance($quest->coursemodule);
         quest_save_intro_draft_files($quest, $ctx);
+        $cm = get_coursemodule_from_instance('quest', $quest->id);
+        if ($cm) {
+            \mod_quest\event\quest_updated::create_from_parts($USER, $quest, $cm)->trigger();
+        }
     }
 
     quest_update_grades($quest);

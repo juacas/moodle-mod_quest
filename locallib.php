@@ -4085,15 +4085,6 @@ function quest_update_challenge($challenge) {
 }
 
 /**
- * Legacy wrapper for quest_update_challenge.
- *
- * @param \stdClass $submission
- */
-function quest_update_submission($submission) {
-    quest_update_challenge($submission);
-}
-
-/**
  *
  * @param \stdClass $cm
  * @param \stdClass $quest
@@ -4822,7 +4813,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 
     $DB->update_record('quest_answers', $answer);
     quest_update_assessment($assessment);
-    quest_update_submission($submission);
+    quest_update_challenge($submission);
     quest_update_submission_counts($submission->id);
     // Recalculate points and report to gradebook..
     quest_grade_updated($quest, $submission->userid);
@@ -4844,7 +4835,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
     }
 
     $cm = get_coursemodule_from_instance('quest', $quest->id);
-    mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm);
+    mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
 }
 /**
  *

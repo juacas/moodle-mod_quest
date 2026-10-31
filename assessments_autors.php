@@ -366,8 +366,7 @@ if ($action == 'displaygradingform') {
     if (!empty($generalteachercomment)) {
         $assessment->commentsforteacher = $generalteachercomment;
     }
-    quest_update_submission($submission); // Weird bug with number precission and decimal point in
-                                          // Moodle 2.5+.
+    quest_update_challenge($submission); // Avoid decimal precision issues in Moodle's database layer.
     quest_update_assessment_author($assessment); // Weird bug with number precission and decimal
                                                  // point in Moodle 2.5+.
     quest_update_submission_counts($submission->id);

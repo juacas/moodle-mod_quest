@@ -76,7 +76,7 @@ class challenge_deleted extends base {
      *
      * @return string */
     public static function get_name() {
-        return "Chellenge deleted.";
+        return "Challenge deleted.";
     }
 
     /** Returns description of what happened.

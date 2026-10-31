@@ -67,7 +67,7 @@ class challenge_approved extends base {
      *  Init method.
      */
     protected function init() {
-        $this->data['crud'] = 'c';
+        $this->data['crud'] = 'u';
         $this->data['level'] = $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }
 
@@ -75,14 +75,14 @@ class challenge_approved extends base {
      *
      * @return string */
     public static function get_name() {
-        return "New challenge created.";
+        return "Challenge approved.";
     }
 
     /** Returns description of what happened.
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' created a new Challenge in the Quest activity '" .
+        return "The user with id '$this->userid' approved a Challenge in the Quest activity '" .
         $this->data['other']['activityid'] .
                  "in the course '$this->courseid'. " . $this->data['other']['info'];
     }

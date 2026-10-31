@@ -639,7 +639,7 @@ if ($action == 'displaygradingform') {
     }
 
     $DB->update_record('quest_answers', $answer);
-    quest_update_submission($submission);
+    quest_update_challenge($submission);
     quest_update_assessment($assessment);
     quest_update_submission_counts($submission->id);
     // ...points recalculation..

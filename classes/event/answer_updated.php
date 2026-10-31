@@ -76,14 +76,14 @@ class answer_updated extends base {
      *
      * @return string */
     public static function get_name() {
-        return "New Answer created.";
+        return "Answer updated.";
     }
 
     /** Returns description of what happened.
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' created a new Answer in the Quest activity '" .
+        return "The user with id '$this->userid' updated an Answer in the Quest activity '" .
         $this->data['other']['activityid'] .
                  "in the course '$this->courseid'. " . $this->data['other']['info'];
     }
