@@ -535,7 +535,7 @@ sequenceDiagram
     Mgr->>DB: rebuild_course_cache($cm->course, true)
     end
 
-    Mgr-->>Endpoint: {success: true, quest_updated: bool}
+    Mgr-->>Endpoint: {success: true, parent_dates_updated: bool}
     Endpoint-->>UI: JSON {success: true}
     UI-->>Instructor: Notification: Timeline updated successfully
 ```

@@ -43,13 +43,13 @@ class behat_mod_quest extends behat_base {
             throw new coding_exception('Unrecognised Quest page type "' . $type . '".');
         }
 
-        $submission = $DB->get_record('quest_submissions', ['title' => $identifier], '*', MUST_EXIST);
-        $quest = $DB->get_record('quest', ['id' => $submission->questid], '*', MUST_EXIST);
+        $challenge = $DB->get_record('quest_submissions', ['title' => $identifier], '*', MUST_EXIST);
+        $quest = $DB->get_record('quest', ['id' => $challenge->questid], '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('quest', $quest->id, $quest->course, null, MUST_EXIST);
 
         return new moodle_url('/mod/quest/challenges.php', [
             'id' => $cm->id,
-            'cid' => $submission->id,
+            'cid' => $challenge->id,
             'action' => 'showchallenge',
         ]);
     }
@@ -74,7 +74,7 @@ class behat_mod_quest extends behat_base {
         }
 
         $now = time();
-        $submission = (object) [
+        $challenge = (object) [
             'questid' => $quest->id,
             'userid' => $user->id,
             'numelements' => 0,
@@ -106,7 +106,7 @@ class behat_mod_quest extends behat_base {
             'questionusageid' => 0,
         ];
 
-        $DB->insert_record('quest_submissions', $submission);
+        $DB->insert_record('quest_submissions', $challenge);
     }
 
     /**
@@ -120,21 +120,21 @@ class behat_mod_quest extends behat_base {
         global $DB;
 
         require_once(__DIR__ . '/../../locallib.php');
-        $submission = $DB->get_record('quest_submissions', ['title' => $title], '*', MUST_EXIST);
+        $challenge = $DB->get_record('quest_submissions', ['title' => $title], '*', MUST_EXIST);
         $teacher = $this->get_user_by_identifier($username);
         if (!$teacher) {
             throw new coding_exception('Unknown Behat user "' . $username . '".');
         }
 
-        $DB->set_field('quest_submissions', 'state', SUBMISSION_STATE_APROVED, ['id' => $submission->id]);
-        $DB->set_field('quest_submissions', 'evaluated', 1, ['id' => $submission->id]);
+        $DB->set_field('quest_submissions', 'state', SUBMISSION_STATE_APROVED, ['id' => $challenge->id]);
+        $DB->set_field('quest_submissions', 'evaluated', 1, ['id' => $challenge->id]);
         $assessment = (object) [
-            'questid' => $submission->questid,
-            'submissionid' => $submission->id,
+            'questid' => $challenge->questid,
+            'submissionid' => $challenge->id,
             'userid' => $teacher->id,
             'points' => 80,
             'dateassessment' => time(),
-            'pointsmax' => $submission->pointsmax,
+            'pointsmax' => $challenge->pointsmax,
             'commentsforteacher' => '',
             'commentsteacher' => 'The challenge is clear and ready for participation.',
             'phase' => ASSESSMENT_PHASE_APPROVED,
@@ -154,13 +154,13 @@ class behat_mod_quest extends behat_base {
         global $DB;
 
         require_once(__DIR__ . '/../../locallib.php');
-        $submission = $DB->get_record('quest_submissions', ['title' => $title], '*', MUST_EXIST);
+        $challenge = $DB->get_record('quest_submissions', ['title' => $title], '*', MUST_EXIST);
         $answeruser = $this->get_user_by_identifier($username);
-        $author = $DB->get_record('user', ['id' => $submission->userid], '*', MUST_EXIST);
+        $author = $DB->get_record('user', ['id' => $challenge->userid], '*', MUST_EXIST);
 
         $answer = (object) [
-            'questid' => $submission->questid,
-            'submissionid' => $submission->id,
+            'questid' => $challenge->questid,
+            'submissionid' => $challenge->id,
             'userid' => $answeruser->id,
             'title' => 'Essay answer',
             'description' => 'This is the student answer to the essay challenge.',
@@ -168,7 +168,7 @@ class behat_mod_quest extends behat_base {
             'descriptiontrust' => 0,
             'attachment' => '',
             'date' => time(),
-            'pointsmax' => $submission->pointsmax,
+            'pointsmax' => $challenge->pointsmax,
             'grade' => 80,
             'commentforteacher' => '',
             'phase' => ANSWER_PHASE_GRADED,
@@ -178,17 +178,17 @@ class behat_mod_quest extends behat_base {
             'questionusageid' => 0,
         ];
         $answerid = $DB->insert_record('quest_answers', $answer);
-        $DB->set_field('quest_submissions', 'nanswers', 1, ['id' => $submission->id]);
+        $DB->set_field('quest_submissions', 'nanswers', 1, ['id' => $challenge->id]);
 
         $assessment = (object) [
-            'questid' => $submission->questid,
+            'questid' => $challenge->questid,
             'answerid' => $answerid,
             'userid' => $author->id,
             'teacherid' => 0,
             'pointsautor' => 80,
             'pointsteacher' => 0,
             'dateassessment' => time(),
-            'pointsmax' => $submission->pointsmax,
+            'pointsmax' => $challenge->pointsmax,
             'commentsforteacher' => '',
             'commentsteacher' => '',
             'phase' => ANSWER_PHASE_GRADED,

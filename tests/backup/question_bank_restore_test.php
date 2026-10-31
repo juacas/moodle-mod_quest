@@ -39,14 +39,12 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\question\question_reference_service
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\backup_quest_activity_structure_step::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_quest_activity_structure_step::class)]
 final class question_bank_restore_test extends advanced_testcase {
     /**
      * Same-course duplication keeps every composed question in order.
-     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_duplicate_keeps_two_question_slots_and_marks(): void {
         global $DB, $USER;
@@ -134,7 +132,6 @@ final class question_bank_restore_test extends advanced_testcase {
 
     /**
      * Challenge links and their bank questions are kept even without user data.
-     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_linked_question_survives_restore_without_user_data(): void {
         global $DB, $USER;
@@ -215,7 +212,6 @@ final class question_bank_restore_test extends advanced_testcase {
 
     /**
      * Back up a challenge linked to an external bank and restore it in another course.
-     * @covers     \mod_quest\question\question_reference_service
      */
     public function test_linked_question_and_answer_usage_survive_restore(): void {
         global $DB, $USER;

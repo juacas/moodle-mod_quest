@@ -268,38 +268,38 @@ class provider implements core_userlist_provider, metadata_provider, plugin_prov
             $writer = writer::with_context($context);
 
             // 1. Export user submissions (challenges).
-            $submissions = $DB->get_records('quest_submissions', [
+            $challenges = $DB->get_records('quest_submissions', [
                 'questid' => $quest->id,
                 'userid' => $user->id,
             ]);
 
-            foreach ($submissions as $sub) {
+            foreach ($challenges as $challenge) {
                 $subcontext = [
                     get_string('challenges', 'mod_quest'),
-                    $sub->id,
+                    $challenge->id,
                 ];
 
                 $description = $writer->rewrite_pluginfile_urls(
                     $subcontext,
                     'mod_quest',
                     'attachment',
-                    $sub->id,
-                    $sub->description
+                    $challenge->id,
+                    $challenge->description
                 );
 
                 $data = (object) [
-                    'title' => $sub->title,
+                    'title' => $challenge->title,
                     'description' => $description,
-                    'timecreated' => transform::datetime($sub->timecreated),
-                    'points' => $sub->points,
-                    'pointsmax' => $sub->pointsmax,
-                    'phase' => $sub->phase,
-                    'state' => $sub->state,
+                    'timecreated' => transform::datetime($challenge->timecreated),
+                    'points' => $challenge->points,
+                    'pointsmax' => $challenge->pointsmax,
+                    'phase' => $challenge->phase,
+                    'state' => $challenge->state,
                 ];
 
                 $writer->export_data($subcontext, $data);
-                $writer->export_area_files($subcontext, 'mod_quest', 'attachment', $sub->id);
-                $writer->export_area_files($subcontext, 'mod_quest', 'submission', $sub->id);
+                $writer->export_area_files($subcontext, 'mod_quest', 'attachment', $challenge->id);
+                $writer->export_area_files($subcontext, 'mod_quest', 'submission', $challenge->id);
             }
 
             // 2. Export user answers.
@@ -586,20 +586,20 @@ class provider implements core_userlist_provider, metadata_provider, plugin_prov
         }
 
         // 4. Handle submissions (challenges) created by the user.
-        $submissions = $DB->get_records('quest_submissions', [
+        $challenges = $DB->get_records('quest_submissions', [
             'questid' => $questid,
             'userid' => $userid,
         ]);
 
-        foreach ($submissions as $sub) {
-            $fs->delete_area_files($contextid, 'mod_quest', 'attachment', $sub->id);
-            $fs->delete_area_files($contextid, 'mod_quest', 'submission', $sub->id);
+        foreach ($challenges as $challenge) {
+            $fs->delete_area_files($contextid, 'mod_quest', 'attachment', $challenge->id);
+            $fs->delete_area_files($contextid, 'mod_quest', 'submission', $challenge->id);
 
             // Check if others have submitted answers to this challenge.
-            $hasanswers = $DB->record_exists('quest_answers', ['submissionid' => $sub->id]);
+            $hasanswers = $DB->record_exists('quest_answers', ['submissionid' => $challenge->id]);
 
             // Remove evaluations of the challenge being deleted/anonymized, including criteria.
-            $authorevaluations = $DB->get_records('quest_assessments_autors', ['submissionid' => $sub->id]);
+            $authorevaluations = $DB->get_records('quest_assessments_autors', ['submissionid' => $challenge->id]);
             foreach ($authorevaluations as $evaluation) {
                 $DB->delete_records('quest_items_assesments_autor', ['assessmentautorid' => $evaluation->id]);
                 $DB->delete_records('quest_assessments_autors', ['id' => $evaluation->id]);
@@ -607,11 +607,11 @@ class provider implements core_userlist_provider, metadata_provider, plugin_prov
 
             if ($hasanswers) {
                 // Anonymize challenge content to preserve attempt history and grades for other participants.
-                if (!empty($sub->questionusageid)) {
-                    \question_engine::delete_questions_usage_by_activity($sub->questionusageid);
+                if (!empty($challenge->questionusageid)) {
+                    \question_engine::delete_questions_usage_by_activity($challenge->questionusageid);
                 }
                 $DB->update_record('quest_submissions', (object) [
-                    'id' => $sub->id,
+                    'id' => $challenge->id,
                     'userid' => 0,
                     'title' => get_string('privacy:request:deleted:title', 'mod_quest'),
                     'description' => get_string('privacy:request:deleted:content', 'mod_quest'),
@@ -624,10 +624,10 @@ class provider implements core_userlist_provider, metadata_provider, plugin_prov
                 ]);
             } else {
                 // If nobody answered it, remove completely.
-                if (!empty($sub->questionusageid)) {
-                    \question_engine::delete_questions_usage_by_activity($sub->questionusageid);
+                if (!empty($challenge->questionusageid)) {
+                    \question_engine::delete_questions_usage_by_activity($challenge->questionusageid);
                 }
-                $DB->delete_records('quest_submissions', ['id' => $sub->id]);
+                $DB->delete_records('quest_submissions', ['id' => $challenge->id]);
             }
         }
     }

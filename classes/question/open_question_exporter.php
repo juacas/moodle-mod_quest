@@ -86,13 +86,13 @@ class open_question_exporter {
      * to Moodle 4.5 / 5.x Question Bank requirements.
      *
      * @param stdClass $quest
-     * @param stdClass $submission Challenge object
+     * @param stdClass $challenge Challenge object
      * @param context_module $context
      * @return stdClass The created question record
      */
     public static function export_challenge(
         stdClass $quest,
-        stdClass $submission,
+        stdClass $challenge,
         context_module $context
     ): stdClass {
         global $CFG, $DB, $USER;
@@ -100,7 +100,7 @@ class open_question_exporter {
         require_once($CFG->libdir . '/filelib.php');
 
         // Check if already linked to a question bank question.
-        $existing = question_reference_service::get_question_for_challenge((int)$submission->id);
+        $existing = question_reference_service::get_question_for_challenge((int)$challenge->id);
         if ($existing) {
             return $existing;
         }
@@ -127,9 +127,9 @@ class open_question_exporter {
                 $context->id,
                 'mod_quest',
                 'submission',
-                (int)$submission->id,
+                (int)$challenge->id,
                 ['subdirs' => true],
-                $submission->description
+                $challenge->description
             );
 
             // Also copy any challenge attachment files into draft area and link them if present.
@@ -138,7 +138,7 @@ class open_question_exporter {
                 $context->id,
                 'mod_quest',
                 'attachment',
-                (int)$submission->id,
+                (int)$challenge->id,
                 'filename',
                 false
             );
@@ -174,11 +174,11 @@ class open_question_exporter {
                 $descriptiontext .= $attachmenthtml;
             }
 
-            $name = clean_param($submission->title, PARAM_TEXT);
+            $name = clean_param($challenge->title, PARAM_TEXT);
             if (trim($name) === '') {
-                $name = shorten_text(strip_tags($submission->description), 50);
+                $name = shorten_text(strip_tags($challenge->description), 50);
                 if (trim($name) === '') {
-                    $name = get_string('submission', 'quest') . ' ' . $submission->id;
+                    $name = get_string('submission', 'quest') . ' ' . $challenge->id;
                 }
             }
 
@@ -189,16 +189,16 @@ class open_question_exporter {
             $formdata->name = $name;
             $formdata->questiontext = [
             'text' => $descriptiontext,
-            'format' => $submission->descriptionformat ?: FORMAT_HTML,
+            'format' => $challenge->descriptionformat ?: FORMAT_HTML,
             'itemid' => $draftid,
             ];
             $formdata->generalfeedback = [
             'text' => '',
             'format' => FORMAT_HTML,
             ];
-            $formdata->defaultmark = (float)$submission->pointsmax;
+            $formdata->defaultmark = (float)$challenge->pointsmax;
             $formdata->penalty = 0.0;
-            $formdata->idnumber = 'quest_' . $submission->id;
+            $formdata->idnumber = 'quest_' . $challenge->id;
             $formdata->status = question_version_status::QUESTION_STATUS_READY;
 
             // Essay specific options.
@@ -213,10 +213,10 @@ class open_question_exporter {
             $formdata->filetypeslist = '';
 
             $graderinfo = '';
-            if (!empty($submission->commentteacherpupil)) {
-                $graderinfo = $submission->commentteacherpupil;
-            } else if (!empty($submission->commentteacherauthor)) {
-                $graderinfo = $submission->commentteacherauthor;
+            if (!empty($challenge->commentteacherpupil)) {
+                $graderinfo = $challenge->commentteacherpupil;
+            } else if (!empty($challenge->commentteacherauthor)) {
+                $graderinfo = $challenge->commentteacherauthor;
             }
 
             $formdata->graderinfo = [
@@ -245,13 +245,13 @@ class open_question_exporter {
             if ($entryid) {
                 question_reference_service::set_challenge_question(
                     $context->id,
-                    (int)$submission->id,
+                    (int)$challenge->id,
                     (int)$entryid,
                     null // Follow the latest version after future edits.
                 );
             }
 
-            if (isset($submission->state) && (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING) {
+            if (isset($challenge->state) && (int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING) {
                 question_reference_service::tag_approval_pending((int)$savedquestion->id, $context);
             }
 

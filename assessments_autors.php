@@ -252,11 +252,11 @@ if ($action == 'displaygradingform') {
     if ((int)$assessment->questid !== (int)$quest->id) {
         throw new \moodle_exception('notpermissionsubmission', 'quest');
     }
-    $submission = $DB->get_record("quest_submissions", [
+    $challenge = $DB->get_record("quest_submissions", [
         "id" => $assessment->submissionid,
         "questid" => $quest->id,
     ], '*', MUST_EXIST);
-    if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+    if (!$ismanager && !$cangrade && (int)$challenge->userid !== (int)$USER->id) {
         throw new \moodle_exception('nopermissions', 'error', '', 'update this assessment');
     }
     // First get the assignment elements for maxscores and weights...
@@ -271,7 +271,7 @@ if ($action == 'displaygradingform') {
     }
     $timenow = time();
     $manualgrade = optional_param('manualcalification', null, PARAM_ALPHANUM);
-    $points = $submission->initialpoints;
+    $points = $challenge->initialpoints;
     if ($manualgrade !== null && $manualgrade !== '') {
         if (!$ismanager && !$cangrade) {
             throw new \moodle_exception('nopermissions', 'error', '', 'override this assessment grade');
@@ -356,7 +356,7 @@ if ($action == 'displaygradingform') {
     $assessment->state = ASSESSMENT_STATE_BY_AUTOR;
     $assessment->points = $grade;
     $assessment->dateassessment = $timenow;
-    $submission->evaluated = 1;
+    $challenge->evaluated = 1;
     // Any comment?
     $generalcomment = optional_param('generalcomment', null, PARAM_TEXT);
     if (!empty($generalcomment)) {
@@ -366,20 +366,20 @@ if ($action == 'displaygradingform') {
     if (!empty($generalteachercomment)) {
         $assessment->commentsforteacher = $generalteachercomment;
     }
-    quest_update_challenge($submission); // Avoid decimal precision issues in Moodle's database layer.
+    quest_update_challenge($challenge); // Avoid decimal precision issues in Moodle's database layer.
     quest_update_assessment_author($assessment); // Weird bug with number precission and decimal
                                                  // point in Moodle 2.5+.
-    quest_update_submission_counts($submission->id);
+    quest_update_challenge_counts($challenge->id);
     // Recalculate points and report to gradebook.
-    quest_grade_updated($quest, $submission->userid);
+    quest_grade_updated($quest, $challenge->userid);
 
     if ($cangrade) {
-        if ($user = get_complete_user_data('id', $submission->userid)) {
-            quest_send_message($user, "viewassessmentautor.php?aid=$aid", 'assessmentautor', $quest, $submission);
+        if ($user = get_complete_user_data('id', $challenge->userid)) {
+            quest_send_message($user, "viewassessmentautor.php?aid=$aid", 'assessmentautor', $quest, $challenge);
         }
     }
     // Log the event.
-    \mod_quest\event\challenge_assessed::create_from_parts($submission, $assessment, $cm)->trigger();
+    \mod_quest\event\challenge_assessed::create_from_parts($challenge, $assessment, $cm)->trigger();
     $returnto = new moodle_url('/mod/quest/view.php', ['id' => $cm->id]);
     // ...show grade if grading strategy is not zero.
     if ($quest->gradingstrategyautor) {

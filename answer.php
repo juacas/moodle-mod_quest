@@ -35,21 +35,21 @@ $redirect = optional_param('redirect', '', PARAM_LOCALURL);
 $aid = optional_param('aid', null, PARAM_INT); // Answer ID..
 if ($aid) {
     $answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
-    $submission = $DB->get_record('quest_submissions', [
+    $challenge = $DB->get_record('quest_submissions', [
         'id' => $answer->submissionid,
         'questid' => $answer->questid,
     ], '*', MUST_EXIST);
-    quest_require_answer_ownership($answer, (int)$submission->questid);
-    $sid = $submission->id;
+    quest_require_answer_ownership($answer, (int)$challenge->questid);
+    $sid = $challenge->id;
 } else {
     $sid = required_param('sid', PARAM_INT); // Submission ID.
-    $submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
+    $challenge = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
 }
-$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $challenge->questid], '*', MUST_EXIST);
 [$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 
 if (!$redirect && isset($_SERVER["HTTP_REFERER"])) {
-    $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
+    $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $challenge->id);
 }
 
 require_login($course->id, false, $cm);
@@ -67,36 +67,36 @@ $url = new moodle_url(
 );
 $PAGE->set_url($url);
 if ($action === 'answer') {
-    quest_add_breadcrumbs($cm, $submission, null, get_string('answer', 'quest'));
+    quest_add_breadcrumbs($cm, $challenge, null, get_string('answer', 'quest'));
 } else if ($aid) {
     $breadcrumppage = $action === 'confirmdelete' ? get_string('delete') : null;
-    quest_add_breadcrumbs($cm, $submission, $answer, $breadcrumppage);
+    quest_add_breadcrumbs($cm, $challenge, $answer, $breadcrumppage);
 } else {
-    quest_add_breadcrumbs($cm, $submission);
+    quest_add_breadcrumbs($cm, $challenge);
 }
 $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 
-$submissionurl = "challenges.php?id=$cm->id&amp;sid=$submission->id&amp;action=showchallenge";
+$challengeurl = "challenges.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showchallenge";
 
 // Now check whether we need to display a frameset..
 if ($action == "answer") {
-    if (!quest_user_can_answer_submission($quest, $submission, $context)) {
+    if (!quest_user_can_answer_challenge($quest, $challenge, $context)) {
         throw new \moodle_exception('nopermissions', 'error', '', 'answer this challenge');
     }
     if (!quest_user_passed_password($quest, $context)) {
         quest_require_password($quest, $course, optional_param('userpassword', '', PARAM_RAW_TRIMMED));
     }
     // Check if challenge is linked to a Question Bank question.
-    $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+    $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$challenge->id);
     if ($linkedquestion) {
-        [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_attempt($quest, $submission, $USER->id, $context);
+        [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_attempt($quest, $challenge, $USER->id, $context);
 
         if (data_submitted() && confirm_sesskey() && optional_param('submitqbankanswer', 0, PARAM_BOOL)) {
-            $result = \mod_quest\service\autograde_service::process_submission($quest, $submission, $USER->id, $quba);
+            $result = \mod_quest\service\autograde_service::process_submission($quest, $challenge, $USER->id, $quba);
             $returnurl = new moodle_url('/mod/quest/challenges.php', [
                 'id' => $cm->id,
-                'cid' => $submission->id,
+                'cid' => $challenge->id,
                 'action' => 'showchallenge',
             ]);
             $notificationtype = $result['passed']
@@ -107,8 +107,8 @@ if ($action == "answer") {
             $PAGE->set_title(format_string($quest->name));
             $PAGE->set_heading($course->fullname);
             echo $OUTPUT->header();
-            echo $OUTPUT->heading(format_string($submission->title));
-            quest_print_submission($quest, $submission);
+            echo $OUTPUT->heading(format_string($challenge->title));
+            quest_print_challenge($quest, $challenge);
             echo $OUTPUT->heading(get_string('answer', 'quest'));
 
             echo '<form method="post" action="' . $url->out() . '" class="m-3">';
@@ -168,7 +168,7 @@ if ($action == "answer") {
         redirect(
             new moodle_url('/mod/quest/challenges.php', [
             'id' => $cm->id,
-            'cid' => $submission->id,
+            'cid' => $challenge->id,
             'action' => 'showchallenge',
             ]),
             get_string('submittedanswer', 'quest') . " " . get_string('ok'),
@@ -176,19 +176,19 @@ if ($action == "answer") {
             \core\output\notification::NOTIFY_SUCCESS
         );
     } else {
-        $title = '"' . $submission->title . '" ';
+        $title = '"' . $challenge->title . '" ';
         if ($ismanager || has_capability('mod/quest:viewotherattemptsowners', $context)) {
-            $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
+            $title .= get_string('by', 'quest') . ' ' . quest_fullname($challenge->userid, $course->id);
         }
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading($title);
-        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" .
+        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$challenge->id&amp;action=displaygradingform\">" .
                  get_string("specimenassessmentform", "quest") . "</a>" . $OUTPUT->help_icon('specimensubmission', 'quest') .
                  "</b></center>");
 
-        quest_print_submission($quest, $submission);
+        quest_print_challenge($quest, $challenge);
         echo $OUTPUT->heading_with_help(get_string("answersubmission", "quest"), "answersubmission", "quest");
 
         $mform->display();
@@ -201,22 +201,22 @@ if ($action == "answer") {
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", ["id" => $aid]);
     if (!$answer) {
-        throw new \moodle_exception('answer_not_found', 'quest', $submissionurl, $aid);
+        throw new \moodle_exception('answer_not_found', 'quest', $challengeurl, $aid);
     }
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid]);
+    $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid]);
     quest_require_answer_ownership($answer, (int)$quest->id);
 
     if (
-        (!$isteacher) && ($submission->userid != $USER->id) && ($answer->userid != $USER->id) && ($submission->dateend > time()) &&
-             ($submission->nanswerscorrect < $quest->nmaxanswers)
+        (!$isteacher) && ($challenge->userid != $USER->id) && ($answer->userid != $USER->id) && ($challenge->dateend > time()) &&
+             ($challenge->nanswerscorrect < $quest->nmaxanswers)
     ) {
         throw new \moodle_exception('notpermissionanswer', 'quest');
     }
 
     $title = get_string('answername', 'quest', $answer);
     $subject = get_string('tothechallenge', 'quest');
-    $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'action' => 'showchallenge', 'cid' => $submission->id]))->out();
-    $subject .= "<a name=\"sid_$submission->id\" href=\"$url\">$submission->title</a>";
+    $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'action' => 'showchallenge', 'cid' => $challenge->id]))->out();
+    $subject .= "<a name=\"sid_$challenge->id\" href=\"$url\">$challenge->title</a>";
 
     if (($isteacher) || ($answer->userid == $USER->id)) {
         $title .= ' ' . get_string('by', 'quest') . ' ' . quest_fullname($answer->userid, $course->id);
@@ -251,27 +251,27 @@ if ($action == "answer") {
     $timenow = time();
 
     if (
-        ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-             ($submission->nanswerscorrect < $quest->nmaxanswers)
+        ($challenge->datestart < $timenow) && ($challenge->dateend > $timenow) &&
+             ($challenge->nanswerscorrect < $quest->nmaxanswers)
     ) {
-        $submission->phase = SUBMISSION_PHASE_ACTIVE;
+        $challenge->phase = SUBMISSION_PHASE_ACTIVE;
     }
 
     $string = '';
     if ($ismanager) {
         if ($assessment = $DB->get_record('quest_assessments', ['answerid' => $answer->id, 'questid' => $quest->id])) {
-            $string = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
+            $string = quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment);
         }
-    } else if (($submission->userid == $USER->id)) {
+    } else if (($challenge->userid == $USER->id)) {
         if ($assessment = $DB->get_record("quest_assessments", ['answerid' => $answer->id, 'questid' => $quest->id])) {
-            $string = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
+            $string = quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment);
         }
     }
     echo html_writer::div($string, "text-center quest-answer-page-actions my-3");
     echo "<br><br>";
 
     // Log the event.
-    \mod_quest\event\answer_viewed::create_from_parts($USER, $submission, $answer, $cm)->trigger();
+    \mod_quest\event\answer_viewed::create_from_parts($USER, $challenge, $answer, $cm)->trigger();
 
     if (isset($_SERVER['HTTP_REFERER'])) {
         echo $OUTPUT->continue_button($_SERVER['HTTP_REFERER']);
@@ -284,17 +284,17 @@ if ($action == "answer") {
 
     $answer = $DB->get_record("quest_answers", ["id" => $aid], '*', MUST_EXIST);
     quest_require_answer_ownership($answer, (int)$quest->id);
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+    $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     if (!$ismanager && (int)$answer->userid !== (int)$USER->id) {
         throw new \moodle_exception('nopermissions', 'error');
     }
     $answer->commentforteacher = optional_param('teachercomment', null, PARAM_RAW);
     $DB->set_field("quest_answers", "commentforteacher", $answer->commentforteacher, ["id" => $answer->id]);
     $requestedsid = required_param('sid', PARAM_INT);
-    if ((int)$requestedsid !== (int)$submission->id) {
+    if ((int)$requestedsid !== (int)$challenge->id) {
         throw new \moodle_exception('answer_not_found', 'quest');
     }
-    $sid = $submission->id;
+    $sid = $challenge->id;
 
     if (!empty($answer->commentforteacher)) {
         if (!$users = quest_get_course_members($course->id, "u.lastname, u.firstname")) {
@@ -310,17 +310,17 @@ if ($action == "answer") {
                     "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer#Claims",
                     'evaluatecomment',
                     $quest,
-                    $submission,
+                    $challenge,
                     $answer,
                     $USER
                 );
-            } else if ($user->id == $submission->userid) {
+            } else if ($user->id == $challenge->userid) {
                 quest_send_message(
                     $user,
                     "answer.php?sid=$sid&amp;aid=$answer->id&amp;action=showanswer#Claims",
                     'evaluatecomment',
                     $quest,
-                    $submission,
+                    $challenge,
                     $answer,
                     null
                 ); // Write in name of.
@@ -361,17 +361,17 @@ if ($action == "answer") {
     $aid = required_param('aid', PARAM_INT); // Answer ID..
 
     if (!$answer = $DB->get_record("quest_answers", ["id" => $aid])) {
-        throw new \moodle_exception('answer_not_found', 'quest', $submissionurl, $aid);
+        throw new \moodle_exception('answer_not_found', 'quest', $challengeurl, $aid);
     }
     quest_require_answer_ownership($answer, (int)$quest->id);
     $sid = $answer->submissionid;
 
-    if (!$submission = $DB->get_record("quest_submissions", ["id" => $sid])) {
+    if (!$challenge = $DB->get_record("quest_submissions", ["id" => $sid])) {
         throw new \moodle_exception("cannotgetsubmissionrecord", 'quest');
     }
     $timenow = time();
 
-    if (!($ismanager || (($USER->id == $answer->userid) && ($timenow < $quest->dateend) && ($timenow < $submission->dateend)))) {
+    if (!($ismanager || (($USER->id == $answer->userid) && ($timenow < $quest->dateend) && ($timenow < $challenge->dateend)))) {
         throw new \moodle_exception("notauthorizedtodeleteanswer", 'quest');
     }
 
@@ -391,7 +391,7 @@ if ($action == "answer") {
     $fs->delete_area_files($context->id, 'mod_quest', 'answer', $answer->id);
     $fs->delete_area_files($context->id, 'mod_quest', 'answer_attachment', $answer->id);
 
-    $submission = quest_update_submission_counts($submission->id);
+    $challenge = quest_update_challenge_counts($challenge->id);
     // Update scores and statistics..
     // Update current User and team scores..
     // ...recalculate points and report to gradebook..
@@ -402,23 +402,23 @@ if ($action == "answer") {
         if (has_capability('mod/quest:manage', $context, $user->id)) {
             quest_send_message(
                 $user,
-                "challenges.php?id=$cm->id&amp;sid=$submission->id&amp;action=showchallenge",
+                "challenges.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showchallenge",
                 'answerdelete',
                 $quest,
-                $submission,
+                $challenge,
                 $answer
             );
         }
     }
-    if (!has_capability('mod/quest:manage', $context, $submission->userid)) {
-        $user = get_complete_user_data('id', $submission->userid);
+    if (!has_capability('mod/quest:manage', $context, $challenge->userid)) {
+        $user = get_complete_user_data('id', $challenge->userid);
         if ($user) {
             quest_send_message(
                 $user,
-                "challenges.php?id=$cm->id&amp;sid=$submission->id&amp;action=showchallenge",
+                "challenges.php?id=$cm->id&amp;sid=$challenge->id&amp;action=showchallenge",
                 'answerdelete',
                 $quest,
-                $submission,
+                $challenge,
                 $answer
             );
         }
@@ -426,7 +426,7 @@ if ($action == "answer") {
 
     redirect(new moodle_url('/mod/quest/challenges.php', [
         'id' => $cm->id,
-        'sid' => $submission->id,
+        'sid' => $challenge->id,
         'action' => 'showchallenge',
     ]), get_string('emailanswerdeletesubject', 'quest'), null, \core\output\notification::NOTIFY_SUCCESS);
 } else if ($action == 'modif') {
@@ -434,10 +434,10 @@ if ($action == "answer") {
     $answer = $DB->get_record("quest_answers", ["id" => $aid], '*', MUST_EXIST);
     quest_require_answer_ownership($answer, (int)$quest->id);
     $answerautor = $answer->userid;
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+    $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     if (
         !$ismanager && ((int)$answer->userid !== (int)$USER->id
-            || time() >= (int)$quest->dateend || time() >= (int)$submission->dateend)
+            || time() >= (int)$quest->dateend || time() >= (int)$challenge->dateend)
     ) {
         throw new \moodle_exception('nopermissions', 'error');
     }
@@ -487,7 +487,7 @@ if ($action == "answer") {
         redirect(
             new moodle_url('/mod/quest/challenges.php', [
             'id' => $cm->id,
-            'cid' => $submission->id,
+            'cid' => $challenge->id,
             'action' => 'showchallenge',
             ]),
             get_string('submittedanswer', 'quest') . " " . get_string('ok'),
@@ -498,14 +498,14 @@ if ($action == "answer") {
         $PAGE->set_title(format_string($quest->name));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        $title = '"' . $submission->title . '" ';
+        $title = '"' . $challenge->title . '" ';
         echo $OUTPUT->heading(get_string("modifanswersubmission", "quest", $title));
         // Print information about the submission..
         echo $OUTPUT->box_start('block');
         echo $OUTPUT->heading($title);
-        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$submission->id&amp;action=displaygradingform\">" .
+        echo ("<center><b><a href=\"assessments.php?id=$cm->id&amp;sid=$challenge->id&amp;action=displaygradingform\">" .
                 get_string("specimenassessmentform", "quest") . "</a></b></center>");
-        quest_print_submission($quest, $submission);
+        quest_print_challenge($quest, $challenge);
         echo $OUTPUT->box_end();
         echo $OUTPUT->heading_with_help(get_string("answersubmission", "quest"), "answersubmission", "quest");
         $mform->display();
@@ -516,11 +516,11 @@ if ($action == "answer") {
     $aid = required_param('aid', PARAM_INT); // Answer ID..
     $answer = $DB->get_record("quest_answers", ["id" => $aid], '*', MUST_EXIST);
     quest_require_answer_ownership($answer, (int)$quest->id);
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
-    if (!$ismanager && (int)$submission->userid !== (int)$USER->id) {
+    $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+    if (!$ismanager && (int)$challenge->userid !== (int)$USER->id) {
         throw new \moodle_exception('nopermissions', 'error');
     }
     $answer->permitsubmit = 1;
     $DB->set_field("quest_answers", "permitsubmit", $answer->permitsubmit, ["id" => $answer->id]);
-    redirect("answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer");
+    redirect("answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer");
 }

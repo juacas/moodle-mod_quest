@@ -99,7 +99,7 @@ if ($action == 'displaygradingform') {
             'questid' => $quest->id,
         ], 'id, questid, userid, title, state, datestart', MUST_EXIST);
     }
-    $visiblechallenge = $rubricchallenge && quest_user_can_view_submission($quest, $rubricchallenge, $context)
+    $visiblechallenge = $rubricchallenge && quest_user_can_view_challenge($quest, $rubricchallenge, $context)
         ? $rubricchallenge : null;
     quest_add_breadcrumbs($cm, $visiblechallenge, null, get_string('specimenassessmentformanswer', 'quest'));
     echo $OUTPUT->header();
@@ -166,7 +166,7 @@ if ($action == 'displaygradingform') {
     // ...set up heading, form and table..
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string("editingassessmentelements", "quest"), "elements", "quest");
-    if (quest_count_submission_assessments($sid) > 0) {
+    if (quest_count_challenge_assessments($sid) > 0) {
         echo $OUTPUT->notification(get_string("warningonamendingelements", "quest"));
     }
     echo '<form name="form" method="post" action="assessments.php">';
@@ -201,9 +201,9 @@ if ($action == 'displaygradingform') {
         $num = $numelemswhenchange;
     }
     if ($sid) {
-        $submissionnumelements = $DB->get_field("quest_submissions", "numelements", ["id" => $sid]);
-        if (($submissionnumelements != 0) && ($changeform == 0) && ($newform == 1)) {
-            $num = $submissionnumelements;
+        $challengenumelements = $DB->get_field("quest_submissions", "numelements", ["id" => $sid]);
+        if (($challengenumelements != 0) && ($changeform == 0) && ($newform == 1)) {
+            $num = $challengenumelements;
         }
     }
 
@@ -458,12 +458,12 @@ if ($action == 'displaygradingform') {
         "answerid" => $answer->id,
         "questid" => $quest->id,
     ], '*', MUST_EXIST);
-    $submission = $DB->get_record("quest_submissions", [
+    $challenge = $DB->get_record("quest_submissions", [
         "id" => $answer->submissionid,
         "questid" => $quest->id,
     ], '*', MUST_EXIST);
     // Check access.
-    if (!$isteacher && $USER->id != $submission->userid) {
+    if (!$isteacher && $USER->id != $challenge->userid) {
         throw new \moodle_exception('nopermissionassessment', 'quest');
     }
     $timenow = time();
@@ -520,7 +520,7 @@ if ($action == 'displaygradingform') {
         );
     }
     $percent = \mod_quest\service\autograde_service::combine_with_rubric_grade($answer, $percent);
-    $points = quest_get_points($submission, $quest, $answer);
+    $points = quest_get_points($challenge, $quest, $answer);
     $grade = $points * $percent;
     /*
      * Process the grade
@@ -532,38 +532,38 @@ if ($action == 'displaygradingform') {
         $answer->phase = ANSWER_PHASE_PASSED;
         // ...hay respuestas correctas posteriores o no hay ninguna.
         // ...la actual es la nueva correcta y hay que recalificar el resto..
-        if ($submission->nanswerscorrect > 0) {
-            if ($answer->date < $submission->dateanswercorrect) {
+        if ($challenge->nanswerscorrect > 0) {
+            if ($answer->date < $challenge->dateanswercorrect) {
                 $recalification = true;
-                $submission->nanswerscorrect = 0;
-                $submission->dateanswercorrect = $answer->date;
+                $challenge->nanswerscorrect = 0;
+                $challenge->dateanswercorrect = $answer->date;
             }
-        } else if ($submission->nanswerscorrect == 0) {
+        } else if ($challenge->nanswerscorrect == 0) {
             $recalification = true;
-            $submission->dateanswercorrect = $answer->date;
+            $challenge->dateanswercorrect = $answer->date;
         }
         // FIN comprobación respuestas correctas..
-        $submission->points = $grade;
+        $challenge->points = $grade;
         // ...no hay resp.correctas y la evaluacion esta aprobada..
-        if (($submission->nanswerscorrect == 0) && ($assessment->phase == ASSESSMENT_PHASE_APPROVED)) {
-            $submission->dateanswercorrect = $answer->date;
-            $submission->pointsanswercorrect = $points;
+        if (($challenge->nanswerscorrect == 0) && ($assessment->phase == ASSESSMENT_PHASE_APPROVED)) {
+            $challenge->dateanswercorrect = $answer->date;
+            $challenge->pointsanswercorrect = $points;
         }
         if (($answer->phase != ANSWER_PHASE_PASSED) && ($assessment->phase == ASSESSMENT_PHASE_APPROVED)) {
-            $submission->nanswerscorrect++;
+            $challenge->nanswerscorrect++;
             $answer->phase = ANSWER_PHASE_PASSED;
         }
     } else { // La respuesta no ha aprobado..
-        $submission->points = $grade;
+        $challenge->points = $grade;
         if ($answer->phase == 2) { // ...ya estaba calificada por lo que es una recalificacion..
-            $submission->nanswerscorrect--;
+            $challenge->nanswerscorrect--;
         }
         $answer->phase = 1;
 
-        if ($answer->date == $submission->dateanswercorrect) { // ...si es la primera correcta hay.
+        if ($answer->date == $challenge->dateanswercorrect) { // ...si es la primera correcta hay.
                                                                // ...que recalificar todas..
-            $submission->nanswerscorrect = 0;
-            $submission->dateanswercorrect = 0;
+            $challenge->nanswerscorrect = 0;
+            $challenge->dateanswercorrect = 0;
             $recalification = true; // ...recalifica todas..
         }
     }
@@ -588,16 +588,16 @@ if ($action == 'displaygradingform') {
         $query = $DB->get_record_select(
             "quest_answers",
             "submissionid=? and grade>=50",
-            [$submission->id],
+            [$challenge->id],
             "date,pointsmax",
             IGNORE_MULTIPLE
         )
     ) {
-        $submission->dateanswercorrect = $query->date;
-        $submission->pointsanswercorrect = number_format($query->pointsmax, 4);
+        $challenge->dateanswercorrect = $query->date;
+        $challenge->pointsanswercorrect = number_format($query->pointsmax, 4);
     } else {
-        $submission->dateanswercorrect = 0;
-        $submission->pointsanswercorrect = 0;
+        $challenge->dateanswercorrect = 0;
+        $challenge->pointsanswercorrect = 0;
     }
     $answer->permitsubmit = 0;
     /*
@@ -639,16 +639,16 @@ if ($action == 'displaygradingform') {
     }
 
     $DB->update_record('quest_answers', $answer);
-    quest_update_challenge($submission);
+    quest_update_challenge($challenge);
     quest_update_assessment($assessment);
-    quest_update_submission_counts($submission->id);
+    quest_update_challenge_counts($challenge->id);
     // ...points recalculation..
     $recalification = true; // ...To disable this optimization it's not worth as evaluation is not
                             // a.
                             // ...frequent action..
                             // ...Recalcula los puntos de las respuestas del quest..
     if ($recalification) {
-        quest_update_grade_for_answer($answer, $submission, $quest, $course);
+        quest_update_grade_for_answer($answer, $challenge, $quest, $course);
     }
     $userid = $answer->userid;
     // ...recalculate points and report to gradebook..
@@ -656,18 +656,18 @@ if ($action == 'displaygradingform') {
     // NOTIFICATIONS..
     if ($isteacher) {
         if ($user = get_complete_user_data('id', $answer->userid)) {
-            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
+            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $challenge, $answer);
         }
         if ($user = get_complete_user_data('id', $assessment->userid)) {
-            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
+            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $challenge, $answer);
         }
     } else {
         if ($user = get_complete_user_data('id', $answer->userid)) {
-            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
+            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $challenge, $answer);
         }
     }
     // Log the event.
-    \mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
+    \mod_quest\event\answer_assessed::create_from_parts($challenge, $answer, $assessment, $cm)->trigger();
     // ...set up return address..
     $returnto = optional_param('returnto', "view.php?id=$cm->id", PARAM_URL);
     // ...show grade if grading strategy is not zero..

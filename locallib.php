@@ -72,7 +72,7 @@ define('QUEST_TYPE_GRADE_TEAM', 1);
  * @param int $cmid Course module ID.
  * @param string $action Composer action.
  * @param int[] $questionids Selected question IDs.
- * @param int $submissionid Challenge ID when editing.
+ * @param int $challengeid Challenge ID when editing.
  * @param bool $withsesskey Whether to include the current session key.
  * @return moodle_url
  */
@@ -80,12 +80,12 @@ function quest_question_composer_url(
     int $cmid,
     string $action,
     array $questionids = [],
-    int $submissionid = 0,
+    int $challengeid = 0,
     bool $withsesskey = false
 ): moodle_url {
     $params = ['id' => $cmid, 'action' => $action];
-    if ($submissionid > 0) {
-        $params['sid'] = $submissionid;
+    if ($challengeid > 0) {
+        $params['sid'] = $challengeid;
     }
     if ($withsesskey) {
         $params['sesskey'] = sesskey();
@@ -238,7 +238,7 @@ define('ANSWER_PHASE_PASSED', 2);
 define('ANSWER_PERMITSUBMIT_NO_EDITABLE', 0);
 define('ANSWER_PERMITSUBMIT_EDITABLE', 1);
 
-/** submission->state
+/** challenge->state
  * 2 teacher, approved statte
  * 1 approval pending state */
 define('SUBMISSION_STATE_APROVED', 2);
@@ -407,22 +407,11 @@ function quest_print_challenge_title($quest, $challenge) {
     // Arguments are objects.
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
 
-    if (!$challenge->timecreated) { // ...a "no submission".
+    if (!$challenge->timecreated) { // ...a placeholder challenge.
         return $challenge->title;
     }
     $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $challenge->id, 'action' => 'showchallenge']))->out();
     return "<a name=\"cid_$challenge->id\" href=\"$url\">$challenge->title</a>";
-}
-
-/**
- * Legacy wrapper for quest_print_challenge_title.
- *
- * @param \stdClass $quest
- * @param \stdClass $submission
- * @return string
- */
-function quest_print_submission_title($quest, $submission) {
-    return quest_print_challenge_title($quest, $submission);
 }
 
 /**
@@ -498,7 +487,7 @@ class quest_print_upload_form extends moodleform {
      */
     public function definition() {
         $mform = & $this->_form;
-        $submission = $this->_customdata['submission'];
+        $challenge = $this->_customdata['challenge'];
         $quest = $this->_customdata['quest'];
         $cm = $this->_customdata['cm'];
         $definitionoptions = $this->_customdata['definitionoptions'];
@@ -514,7 +503,7 @@ class quest_print_upload_form extends moodleform {
         $mform->addElement('hidden', 'id', $cm->id);
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('hidden', 'sid', $submission->id);
+        $mform->addElement('hidden', 'sid', $challenge->id);
         $mform->setType('sid', PARAM_INT);
         $mform->addElement('hidden', 'nosubmit', 0); // ...!!!!evp esto tiene sentido si usamos el
                                                      // js.
@@ -533,7 +522,7 @@ class quest_print_upload_form extends moodleform {
                 $composerquestions,
                 $cm,
                 $action,
-                (int)$submission->id
+                (int)$challenge->id
             ));
         }
 
@@ -677,8 +666,8 @@ class quest_print_upload_form extends moodleform {
             $this->add_action_buttons(true, $submitlabel);
         }
         // In the form the id hidden element is used to hold the cmid of the quest.
-        $formdata = clone $submission;
-        $formdata->sid = $submission->id;
+        $formdata = clone $challenge;
+        $formdata->sid = $challenge->id;
         $formdata->id = $cm->id;
         $this->set_data($formdata);
     }
@@ -690,14 +679,14 @@ class quest_print_upload_form extends moodleform {
      * @param object $cm Activity course module.
      * @return string
      */
-    private function render_question_composer(array $questions, object $cm, string $action, int $submissionid): string {
+    private function render_question_composer(array $questions, object $cm, string $action, int $challengeid): string {
         global $CFG, $DB, $OUTPUT, $USER;
 
         require_once($CFG->libdir . '/questionlib.php');
         $context = \context_module::instance($cm->id);
         $references = [];
-        if ($action === 'modif' && $submissionid > 0) {
-            foreach (\mod_quest\question\question_reference_service::get_challenge_questions($submissionid) as $slot) {
+        if ($action === 'modif' && $challengeid > 0) {
+            foreach (\mod_quest\question\question_reference_service::get_challenge_questions($challengeid) as $slot) {
                 $references[(int)$slot->reference->questionbankentryid] = $slot->reference;
             }
         }
@@ -723,7 +712,7 @@ class quest_print_upload_form extends moodleform {
             $cm->id,
             $action === 'modif' ? 'modif' : 'addqchallenge',
             $questionids,
-            $action === 'modif' ? $submissionid : 0
+            $action === 'modif' ? $challengeid : 0
         )->out_as_local_url(false);
 
         $html = html_writer::tag('h4', get_string('page') . ' 1', ['class' => 'h5 mb-2']);
@@ -1017,20 +1006,20 @@ function quest_get_submitted_question_composition(
 /** Receive and store a challenge for the quest.
  *
  * @param stdClass $quest
- * @param stdClass $newsubmission
+ * @param stdClass $newchallenge
  * @param boolean $ismanager
  * @param \stdClass $cm
  * @param array $definitionoptions
  * @param array $attachmentoptions
  * @param \stdClass $context
  * @param string $action
- * @param int $authorid Author of the submission; overrides $newsubmission->userid.
+ * @param int $authorid Challenge author; overrides $newchallenge->userid.
  * @param bool $preservequestioncontent Keep stored title and description for a linked question approval.
  * @param array $questionitems Question-bank slots for a composed challenge.
  */
 function quest_upload_challenge(
     stdClass $quest,
-    stdClass $newsubmission,
+    stdClass $newchallenge,
     $ismanager,
     $cm,
     $definitionoptions,
@@ -1044,69 +1033,69 @@ function quest_upload_challenge(
     global $USER, $DB, $CFG, $OUTPUT, $COURSE, $PAGE;
 
     // ...get the current set of submissions.
-    // ...add new submission record.
-    $newsubmission->questid = $quest->id;
-    $newsubmission->userid = $authorid;
-    $newsubmission->id = $newsubmission->sid; // ...id is overused in the form but must be named id.
+    // ...add new challenge record.
+    $newchallenge->questid = $quest->id;
+    $newchallenge->userid = $authorid;
+    $newchallenge->id = $newchallenge->sid; // ...id is overused in the form but must be named id.
                                               // ...for the database..
     if ($preservequestioncontent) {
-        $newsubmission = quest_preserve_linked_challenge_content($newsubmission, (int)$quest->id);
+        $newchallenge = quest_preserve_linked_challenge_content($newchallenge, (int)$quest->id);
     } else {
         // The editor content is saved after insertion, when the challenge has
         // an ID to use as the file area item ID.
-        $newsubmission->description = '';
-        $newsubmission->descriptionformat = FORMAT_HTML;
-        $newsubmission->descriptiontrust = 0;
+        $newchallenge->description = '';
+        $newchallenge->descriptionformat = FORMAT_HTML;
+        $newchallenge->descriptiontrust = 0;
     }
-    $newsubmission->timecreated = time();
+    $newchallenge->timecreated = time();
     $canapprove = has_capability('mod/quest:approvechallenge', $context);
     if ($ismanager) {
-        if (!isset($newsubmission->perceiveddifficulty)) {
-            $newsubmission->perceiveddifficulty = -1;
+        if (!isset($newchallenge->perceiveddifficulty)) {
+            $newchallenge->perceiveddifficulty = -1;
         }
     }
-    if ($newsubmission->dateend > $quest->dateend) {
-        $newsubmission->dateend = $quest->dateend;
+    if ($newchallenge->dateend > $quest->dateend) {
+        $newchallenge->dateend = $quest->dateend;
     }
-    if ($newsubmission->initialpoints > $newsubmission->pointsmax) {
-        $newsubmission->initialpoints = $newsubmission->pointsmax;
+    if ($newchallenge->initialpoints > $newchallenge->pointsmax) {
+        $newchallenge->initialpoints = $newchallenge->pointsmax;
     }
-    if (empty($newsubmission->id)) { // ...$newsubmission->sid is not defined or empty if this is a
-                                     // new submission.
+    if (empty($newchallenge->id)) { // ...$newchallenge->sid is not defined or empty if this is a
+                                     // new challenge.
         $isnew = true;
         if ($canapprove) {
-            $newsubmission->state = SUBMISSION_STATE_APROVED; // ...if teacher, approved state..
+            $newchallenge->state = SUBMISSION_STATE_APROVED; // ...if teacher, approved state..
         } else {
-            $newsubmission->state = SUBMISSION_STATE_APPROVAL_PENDING; // ...if student approval
+            $newchallenge->state = SUBMISSION_STATE_APPROVAL_PENDING; // ...if student approval
                                                                        // pending state..
         }
-        if (!$newsubmission->id = $DB->insert_record("quest_submissions", $newsubmission)) {
+        if (!$newchallenge->id = $DB->insert_record("quest_submissions", $newchallenge)) {
             throw new \moodle_exception('inserterror', 'quest', '', "quest_submissions");
         }
         if ($questionitems) {
             \mod_quest\question\question_reference_service::replace_challenge_questions(
                 (int)$context->id,
                 (int)$quest->id,
-                (int)$newsubmission->id,
+                (int)$newchallenge->id,
                 $questionitems
             );
         }
     } else {
         $isnew = false;
         if ($canapprove && $action === 'approve') { // ...the challenge is approved by the teacher..
-            $newsubmission->state = SUBMISSION_STATE_APROVED;
-            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$newsubmission->id);
+            $newchallenge->state = SUBMISSION_STATE_APROVED;
+            $linkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$newchallenge->id);
             if ($linkedq) {
                 \mod_quest\question\question_reference_service::mark_as_approved((int)$linkedq->id, $context);
             }
         } else { // The challenge is modified, the status does not change.
-            $newsubmission->state = $DB->get_field('quest_submissions', 'state', ['id' => $newsubmission->id]);
+            $newchallenge->state = $DB->get_field('quest_submissions', 'state', ['id' => $newchallenge->id]);
         }
         if ($questionitems && $action === 'modif') {
             \mod_quest\question\question_reference_service::replace_challenge_questions(
                 (int)$context->id,
                 (int)$quest->id,
-                (int)$newsubmission->id,
+                (int)$newchallenge->id,
                 $questionitems
             );
         }
@@ -1114,28 +1103,28 @@ function quest_upload_challenge(
 
     // ...management of files: save embedded images and attachments..
     if (!$preservequestioncontent) {
-        $newsubmission = file_postupdate_standard_editor(
-            $newsubmission,
+        $newchallenge = file_postupdate_standard_editor(
+            $newchallenge,
             'description',
             $definitionoptions,
             $context,
             'mod_quest',
             'submission',
-            $newsubmission->id
+            $newchallenge->id
         );
     }
-    $newsubmission = file_postupdate_standard_filemanager(
-        $newsubmission,
+    $newchallenge = file_postupdate_standard_filemanager(
+        $newchallenge,
         'attachment',
         $attachmentoptions,
         $context,
         'mod_quest',
         'attachment',
-        $newsubmission->id
+        $newchallenge->id
     );
 
     // ...store the updated values in table..
-    $DB->update_record('quest_submissions', $newsubmission);
+    $DB->update_record('quest_submissions', $newchallenge);
 
     if ($action == 'submitchallenge') {
         /*
@@ -1144,23 +1133,23 @@ function quest_upload_challenge(
         quest_grade_updated($quest, $USER->id);
     }
 
-    quest_update_challenge_calendar($cm, $quest, $newsubmission);
-    $redirecturl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'cid' => $newsubmission->id,
+    quest_update_challenge_calendar($cm, $quest, $newchallenge);
+    $redirecturl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'cid' => $newchallenge->id,
                     'action' => 'showchallenge']);
     if ($action == 'submitchallenge') {
         require_once('classes/event/challenge_created.php');
-        mod_quest\event\challenge_created::create_from_parts($newsubmission, $cm)->trigger();
+        mod_quest\event\challenge_created::create_from_parts($newchallenge, $cm)->trigger();
     } else if ($action == 'modif') {
-        \mod_quest\event\challenge_updated::create_from_parts($USER, $newsubmission, $cm)->trigger();
+        \mod_quest\event\challenge_updated::create_from_parts($USER, $newchallenge, $cm)->trigger();
     } else if ($action == 'approve') {
         require_once('classes/event/challenge_approved.php');
-        \mod_quest\event\challenge_approved::create_from_parts($USER, $newsubmission, $cm)->trigger();
+        \mod_quest\event\challenge_approved::create_from_parts($USER, $newchallenge, $cm)->trigger();
 
         if (!empty($quest->autoexportqbank)) {
-            \mod_quest\question\open_question_exporter::export_challenge($quest, $newsubmission, $context);
+            \mod_quest\question\open_question_exporter::export_challenge($quest, $newchallenge, $context);
         }
         // Get next url: assess_autor or approve.
-        $redirecturl = quest_next_submission_url($newsubmission, $cm);
+        $redirecturl = quest_next_challenge_url($newchallenge, $cm);
     }
     redirect(
         $redirecturl,
@@ -1173,24 +1162,24 @@ function quest_upload_challenge(
 /**
  * Restore text fields omitted from the approval form for a linked question.
  *
- * @param \stdClass $submission Submitted challenge data.
+ * @param \stdClass $challenge Submitted challenge data.
  * @param int $questid Quest instance ID.
  * @return \stdClass Submitted data with the stored text fields restored.
  */
-function quest_preserve_linked_challenge_content(\stdClass $submission, int $questid): \stdClass {
+function quest_preserve_linked_challenge_content(\stdClass $challenge, int $questid): \stdClass {
     global $DB;
 
     $stored = $DB->get_record('quest_submissions', [
-        'id' => $submission->id,
+        'id' => $challenge->id,
         'questid' => $questid,
     ], 'id, title, description, descriptionformat, descriptiontrust', MUST_EXIST);
-    if (!isset($submission->title)) {
-        $submission->title = $stored->title;
+    if (!isset($challenge->title)) {
+        $challenge->title = $stored->title;
     }
-    $submission->description = $stored->description;
-    $submission->descriptionformat = $stored->descriptionformat;
-    $submission->descriptiontrust = $stored->descriptiontrust;
-    return $submission;
+    $challenge->description = $stored->description;
+    $challenge->descriptionformat = $stored->descriptionformat;
+    $challenge->descriptiontrust = $stored->descriptiontrust;
+    return $challenge;
 }
 /**
  *
@@ -1318,15 +1307,6 @@ function quest_challenge_comment_html($challenge, \context_module $context, ?int
     return $html;
 }
 
-/**
- * Legacy wrapper for quest_print_challenge.
- *
- * @param \stdClass $quest
- * @param \stdClass $submission
- */
-function quest_print_submission($quest, $submission) {
-    return quest_print_challenge($quest, $submission);
-}
 /**
  *
  * @param \stdClass $context
@@ -1497,16 +1477,6 @@ function quest_print_challenge_info($quest, $challenge) {
 }
 
 /**
- * Legacy wrapper for quest_print_challenge_info.
- *
- * @param \stdClass $quest
- * @param \stdClass $submission
- */
-function quest_print_submission_info($quest, $submission) {
-    return quest_print_challenge_info($quest, $submission);
-}
-
-/**
  * Determines the current phase of a challenge.
  *
  * @param \stdClass $challenge
@@ -1569,19 +1539,6 @@ function quest_challenge_phase($challenge, $quest, $course, $style = '') {
 }
 
 /**
- * Legacy wrapper for quest_challenge_phase.
- *
- * @param \stdClass $submission
- * @param \stdClass $quest
- * @param \stdClass $course
- * @param string $style
- * @return string
- */
-function quest_submission_phase($submission, $quest, $course, $style = '') {
-    return quest_challenge_phase($submission, $quest, $course, $style);
-}
-
-/**
  * Validate that an answer and its challenge belong to the current Quest.
  *
  * @param stdClass $answer Answer record.
@@ -1591,21 +1548,21 @@ function quest_submission_phase($submission, $quest, $course, $style = '') {
 function quest_require_answer_ownership($answer, int $questid): void {
     global $DB;
 
-    $submissionquestid = $DB->get_field('quest_submissions', 'questid', ['id' => $answer->submissionid]);
-    if ((int)($answer->questid ?? 0) !== $questid || (int)$submissionquestid !== $questid) {
+    $challengequestid = $DB->get_field('quest_submissions', 'questid', ['id' => $answer->submissionid]);
+    if ((int)($answer->questid ?? 0) !== $questid || (int)$challengequestid !== $questid) {
         throw new \moodle_exception('answer_not_found', 'quest');
     }
 }
 
 /**
- * Require a submission to belong to the current Quest activity.
+ * Require a challenge to belong to the current Quest activity.
  *
- * @param \stdClass $submission Challenge/submission record.
+ * @param \stdClass $challenge Challenge record.
  * @param int $questid Quest instance ID.
  * @throws \moodle_exception If the record belongs to another activity.
  */
-function quest_require_submission_ownership(\stdClass $submission, int $questid): void {
-    if ((int)$submission->questid !== $questid) {
+function quest_require_challenge_ownership(\stdClass $challenge, int $questid): void {
+    if ((int)$challenge->questid !== $questid) {
         throw new \moodle_exception('notpermissionsubmission', 'quest');
     }
 }
@@ -1614,20 +1571,20 @@ function quest_require_submission_ownership(\stdClass $submission, int $questid)
  * Check whether the current user may view a challenge's content and files.
  *
  * @param \stdClass $quest Quest activity record.
- * @param \stdClass $submission Challenge/submission record.
+ * @param \stdClass $challenge Challenge record.
  * @param \context_module $context Activity context.
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_view_submission(
+function quest_user_can_view_challenge(
     \stdClass $quest,
-    \stdClass $submission,
+    \stdClass $challenge,
     \context_module $context,
     ?int $userid = null
 ): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
-    if ((int)$submission->questid !== (int)$quest->id) {
+    if ((int)$challenge->questid !== (int)$quest->id) {
         return false;
     }
     if (
@@ -1635,19 +1592,19 @@ function quest_user_can_view_submission(
             has_capability('mod/quest:preview', $context, $userid) ||
             has_capability('mod/quest:grade', $context, $userid) ||
             has_capability('mod/quest:approvechallenge', $context, $userid) ||
-            (int)$submission->userid === $userid
+            (int)$challenge->userid === $userid
     ) {
         return true;
     }
-    return (int)$submission->state === SUBMISSION_STATE_APROVED &&
-        (int)$submission->datestart <= time();
+    return (int)$challenge->state === SUBMISSION_STATE_APROVED &&
+        (int)$challenge->datestart <= time();
 }
 
 /**
  * Check whether the current user may view an answer and its files.
  *
  * @param \stdClass $quest Quest activity record.
- * @param \stdClass $submission Parent challenge.
+ * @param \stdClass $challenge Parent challenge.
  * @param \stdClass $answer Answer record.
  * @param \context_module $context Activity context.
  * @param int|null $userid User ID, defaults to the current user.
@@ -1655,7 +1612,7 @@ function quest_user_can_view_submission(
  */
 function quest_user_can_view_answer(
     \stdClass $quest,
-    \stdClass $submission,
+    \stdClass $challenge,
     \stdClass $answer,
     \context_module $context,
     ?int $userid = null
@@ -1664,8 +1621,8 @@ function quest_user_can_view_answer(
     $userid = $userid ?? (int)$USER->id;
     if (
         (int)$answer->questid !== (int)$quest->id ||
-            (int)$submission->questid !== (int)$quest->id ||
-            (int)$answer->submissionid !== (int)$submission->id
+            (int)$challenge->questid !== (int)$quest->id ||
+            (int)$answer->submissionid !== (int)$challenge->id
     ) {
         return false;
     }
@@ -1674,12 +1631,12 @@ function quest_user_can_view_answer(
             has_capability('mod/quest:preview', $context, $userid) ||
             has_capability('mod/quest:grade', $context, $userid) ||
             has_capability('mod/quest:approvechallenge', $context, $userid) ||
-            (int)$answer->userid === $userid || (int)$submission->userid === $userid
+            (int)$answer->userid === $userid || (int)$challenge->userid === $userid
     ) {
         return true;
     }
-    return (int)$submission->dateend <= time() ||
-        (int)$submission->nanswerscorrect >= (int)$quest->nmaxanswers;
+    return (int)$challenge->dateend <= time() ||
+        (int)$challenge->nanswerscorrect >= (int)$quest->nmaxanswers;
 }
 
 /**
@@ -1701,64 +1658,64 @@ function quest_user_passed_password(\stdClass $quest, \context_module $context, 
  * Check whether a user may submit an answer to a challenge in its current state.
  *
  * @param \stdClass $quest Quest activity record.
- * @param \stdClass $submission Challenge record.
+ * @param \stdClass $challenge Challenge record.
  * @param \context_module $context Activity context.
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_answer_submission(
+function quest_user_can_answer_challenge(
     \stdClass $quest,
-    \stdClass $submission,
+    \stdClass $challenge,
     \context_module $context,
     ?int $userid = null
 ): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
-    if ((int)$submission->questid !== (int)$quest->id) {
+    if ((int)$challenge->questid !== (int)$quest->id) {
         return false;
     }
     if (has_capability('mod/quest:manage', $context, $userid)) {
         return true;
     }
     return has_capability('mod/quest:attempt', $context, $userid) &&
-        (int)$submission->userid !== $userid &&
-        (int)$submission->state === SUBMISSION_STATE_APROVED &&
-        (int)$submission->datestart <= time() && (int)$submission->dateend > time() &&
-        (int)$submission->nanswerscorrect < (int)$quest->nmaxanswers;
+        (int)$challenge->userid !== $userid &&
+        (int)$challenge->state === SUBMISSION_STATE_APROVED &&
+        (int)$challenge->datestart <= time() && (int)$challenge->dateend > time() &&
+        (int)$challenge->nanswerscorrect < (int)$quest->nmaxanswers;
 }
 
 /**
  * Check whether the current user may delete a challenge in this activity.
  *
  * @param \stdClass $quest Quest activity record.
- * @param \stdClass $submission Challenge record.
+ * @param \stdClass $challenge Challenge record.
  * @param \context_module $context Activity context.
  * @param int|null $userid User ID, defaults to the current user.
  * @return bool
  */
-function quest_user_can_delete_submission(
+function quest_user_can_delete_challenge(
     \stdClass $quest,
-    \stdClass $submission,
+    \stdClass $challenge,
     \context_module $context,
     ?int $userid = null
 ): bool {
     global $USER;
     $userid = $userid ?? (int)$USER->id;
-    if ((int)$submission->questid !== (int)$quest->id) {
+    if ((int)$challenge->questid !== (int)$quest->id) {
         return false;
     }
     if (has_capability('mod/quest:deletechallengeall', $context, $userid)) {
         return true;
     }
     return has_capability('mod/quest:deletechallengemine', $context, $userid) &&
-        (int)$submission->userid === $userid && time() < (int)$quest->dateend &&
-        (int)$submission->nanswers === 0 && time() < (int)$submission->dateend;
+        (int)$challenge->userid === $userid && time() < (int)$quest->dateend &&
+        (int)$challenge->nanswers === 0 && time() < (int)$challenge->dateend;
 }
 
 /**
  * Get an actionable status for a challenge that needs staff attention.
  *
- * @param \stdClass $challenge Challenge submission.
+ * @param \stdClass $challenge Challenge record.
  * @param \stdClass $cm Course module.
  * @param \context_module $context Activity context.
  * @return array List of actionable badge data, possibly empty.
@@ -1832,24 +1789,24 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     // ...variable $modif to check if the answer is new of is being modified.
     if (empty($answer->id)) {
         $modif = false;
-        $submissionid = (int)($answer->sid ?? $answer->submissionid ?? 0);
-        $submission = $DB->get_record('quest_submissions', [
-            'id' => $submissionid,
+        $challengeid = (int)($answer->sid ?? $answer->submissionid ?? 0);
+        $challenge = $DB->get_record('quest_submissions', [
+            'id' => $challengeid,
             'questid' => $quest->id,
         ], '*', MUST_EXIST);
-        if (!quest_user_can_answer_submission($quest, $submission, $context)) {
+        if (!quest_user_can_answer_challenge($quest, $challenge, $context)) {
             throw new \moodle_exception('nopermissiontoanswer', 'quest');
         }
-        if (!$validate = quest_validate_user_answer($quest, $submission)) {
+        if (!$validate = quest_validate_user_answer($quest, $challenge)) {
             throw new \moodle_exception(
                 'answerexisty',
                 'quest',
-                "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge"
+                "challenges.php?id=$cm->id&amp;cid=$challenge->id&amp;action=showchallenge"
             );
         }
         $answer->questid = $quest->id;
         $answer->userid = $USER->id;
-        $answer->submissionid = $submission->id;
+        $answer->submissionid = $challenge->id;
     } else {
         $modif = true;
         $storedanswer = $DB->get_record('quest_answers', [
@@ -1857,18 +1814,18 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
             'questid' => $quest->id,
         ], '*', MUST_EXIST);
         quest_require_answer_ownership($storedanswer, (int)$quest->id);
-        $submission = $DB->get_record('quest_submissions', [
+        $challenge = $DB->get_record('quest_submissions', [
             'id' => $storedanswer->submissionid,
             'questid' => $quest->id,
         ], '*', MUST_EXIST);
         if (
             !($ismanager || ((int)$USER->id === (int)$storedanswer->userid &&
-                (int)$submission->dateend > $timenow))
+                (int)$challenge->dateend > $timenow))
         ) {
             throw new \moodle_exception(
                 'answernoauthorizedupdate',
                 'quest',
-                "challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id"
+                "challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$challenge->id"
             );
         }
         $answer->id = $storedanswer->id;
@@ -1882,7 +1839,7 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     $answer->descriptiontrust = 0; // ...updated later.
     $answer->commentforteacher = ''; // ...field defined in table as no null and no default value is indicated.
 
-    $points = quest_get_points($submission, $quest, $answer);
+    $points = quest_get_points($challenge, $quest, $answer);
     $answer->pointsmax = $points;
 
     if ($modif == false) {
@@ -1929,29 +1886,29 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
     // Update scores and statistics.
     // Update current User scores.
     require_once('scores_lib.php');
-    $submission->nanswers = quest_count_submission_answers($submission->id);
-    $DB->update_record('quest_submissions', $submission);
+    $challenge->nanswers = quest_count_challenge_answers($challenge->id);
+    $DB->update_record('quest_submissions', $challenge);
     quest_update_user_scores($quest, $answer->userid);
     // Update answer current team totals.
     if ($quest->allowteams) {
         quest_update_team_scores($quest->id, quest_get_user_team($quest->id, $answer->userid));
     }
-    $user = get_complete_user_data('id', $submission->userid);
+    $user = get_complete_user_data('id', $challenge->userid);
     if ($user) {
         quest_send_message(
             $user,
-            "answer.php?sid=$submission->id&amp;aid=$answer->id&amp;action=showanswer",
+            "answer.php?sid=$challenge->id&amp;aid=$answer->id&amp;action=showanswer",
             'answeradd',
             $quest,
-            $submission,
+            $challenge,
             $answer
         );
     }
 
     if ($modif == false) {
-        \mod_quest\event\answer_created::create_from_parts($submission, $answer, $cm)->trigger();
+        \mod_quest\event\answer_created::create_from_parts($challenge, $answer, $cm)->trigger();
     } else {
-        \mod_quest\event\answer_updated::create_from_parts($submission, $answer, $cm)->trigger();
+        \mod_quest\event\answer_updated::create_from_parts($challenge, $answer, $cm)->trigger();
     }
 }
 
@@ -1959,12 +1916,12 @@ function quest_uploadanswer($quest, $answer, $ismanager, $cm, $definitionoptions
  *
  * Enter description here ...
  * @param \stdClass $quest
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  * @param \stdClass $course
  * @param \stdClass $cm
  * @param string $sort
  * @param string $dir */
-function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir) {
+function quest_print_table_answers($quest, $challenge, $course, $cm, $sort, $dir) {
     global $CFG, $USER, $DB, $OUTPUT;
     $groupmode = false;
     $currentgroup = 0;
@@ -1986,7 +1943,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
 
     $ismanageruser = has_capability('mod/quest:manage', $context, $USER->id);
 
-    if ($answers = quest_get_submission_answers($submission)) {
+    if ($answers = quest_get_challenge_answers($challenge)) {
         foreach ($answers as $answer) {
             $data = [];
             $sortdata = [];
@@ -2002,30 +1959,30 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
 
             if (
                 ($ismanager) || // ...admin.
-                ($submission->userid == $USER->id) || // ...challenge owner.
+                ($challenge->userid == $USER->id) || // ...challenge owner.
                 ($answer->userid == $USER->id) || // ...answer owner.
-                ($submission->dateend < $timenow) || ($submission->nanswerscorrect >= $quest->nmaxanswers)
+                ($challenge->dateend < $timenow) || ($challenge->nanswerscorrect >= $quest->nmaxanswers)
             ) {
                 // Challenge closed....
                 $editicon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
                 $mineicon = $answer->userid == $USER->id && !$ismanager ? $OUTPUT->user_picture($USER) : '';
-                $answertitle = $mineicon . quest_print_answer_title($quest, $answer, $submission);
+                $answertitle = $mineicon . quest_print_answer_title($quest, $answer, $challenge);
                 $sesskey = sesskey();
-                $editlink = " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+                $editlink = " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$challenge->id\">" .
                          $editicon . '</a>';
-                $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'confirmdelete',
+                $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $challenge->id, 'action' => 'confirmdelete',
                                          'aid' => $answer->id]))->out();
                 $deletelink = " <a href=\"$url\">$deleteicon</a>";
                 if ($ismanager) {
                     $data[] = $answertitle . $editlink . $deletelink;
                 } else if (
-                    ($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase == 0) &&
-                         $submission->nanswerscorrect < $quest->nmaxanswers
+                    ($answer->userid == $USER->id) && ($challenge->dateend > $timenow) && ($answer->phase == 0) &&
+                         $challenge->nanswerscorrect < $quest->nmaxanswers
                 ) {
                     $data[] = $answertitle . $editlink . $deletelink;
                 } else if (
-                    ($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase > 0) &&
+                    ($answer->userid == $USER->id) && ($challenge->dateend > $timenow) && ($answer->phase > 0) &&
                          ($answer->permitsubmit == 1)
                 ) {
                     $data[] = $answertitle . $editlink;
@@ -2066,15 +2023,15 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
                             $data[] = '----';
                             $sortdata['tassmnt'] = 1;
                         } else {
-                            $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
+                            $data[] = quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment);
                             $sortdata['tassmnt'] = 1;
                         }
                     } else {
-                        $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
+                        $data[] = quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment);
                         $sortdata['tassmnt'] = 1;
                     }
                 } else {
-                    $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
+                    $data[] = quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment);
                     $sortdata['tassmnt'] = 1;
                 }
 
@@ -2135,7 +2092,7 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
             }
             $columnicon = $OUTPUT->pix_icon("t/$columnicon", $columnicon);
         }
-        $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge',
+        $url = (new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $challenge->id, 'action' => 'showchallenge',
                                                     'sort' => $column, 'dir' => $columndir]))->out();
 
         $$column = "<a href=\"$url\">" . $string[$column] . "</a>$columnicon";
@@ -2157,17 +2114,17 @@ function quest_print_table_answers($quest, $submission, $course, $cm, $sort, $di
  *
  * @param \stdClass $quest
  * @param \stdClass $answer
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  * @return string
  */
-function quest_print_answer_title($quest, $answer, $submission) {
+function quest_print_answer_title($quest, $answer, $challenge) {
     // Arguments are objects..
     $cm = get_coursemodule_from_instance("quest", $quest->id, $quest->course, null, MUST_EXIST);
 
     if (!$answer->date) { // A "no submission".....
-        return $submission->title;
+        return $challenge->title;
     }
-    $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showanswer',
+    $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $challenge->id, 'action' => 'showanswer',
                                         'aid' => $answer->id]))->out();
     return "<a name=\"sid_$answer->id\" href=\"$url\">$answer->title</a>";
 }
@@ -2203,12 +2160,12 @@ function quest_answer_action_button(
  *
  * @param \stdClass $cm
  * @param \stdClass $answer
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  * @param \stdClass $course
  * @param \stdClass $assessment
  * @return string
  */
-function quest_print_actions_answers($cm, $answer, $submission, $course, $assessment) {
+function quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment) {
     global $USER;
 
     $context = context_module::instance($cm->id);
@@ -2217,14 +2174,14 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     $buttons = [];
 
     $answerurl = new moodle_url('/mod/quest/answer.php', [
-        'sid' => $submission->id,
+        'sid' => $challenge->id,
         'aid' => $answer->id,
         'action' => 'showanswer',
         'sesskey' => sesskey(),
     ]);
     $assessurl = new moodle_url('/mod/quest/assess.php', [
         'id' => $cm->id,
-        'sid' => $submission->id,
+        'sid' => $challenge->id,
         'aid' => $answer->id,
         'action' => 'evaluate',
         'sesskey' => sesskey(),
@@ -2233,7 +2190,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     if (!$ismanager && ($answer->userid == $USER->id)) {
         if ($isassessed && $assessment) {
             $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
-                'sid' => $submission->id,
+                'sid' => $challenge->id,
                 'asid' => $assessment->id,
                 'aid' => $answer->id,
                 'sesskey' => sesskey(),
@@ -2265,7 +2222,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
             );
             if ($assessment) {
                 $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
-                    'sid' => $submission->id,
+                    'sid' => $challenge->id,
                     'asid' => $assessment->id,
                     'aid' => $answer->id,
                     'sesskey' => sesskey(),
@@ -2295,7 +2252,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
                 'sid_' . $answer->id
             );
         }
-    } else if ($submission->userid == $USER->id) {
+    } else if ($challenge->userid == $USER->id) {
         if ($isassessed && $assessment && $assessment->state == ASSESSMENT_STATE_BY_AUTOR) {
             $buttons[] = quest_answer_action_button(
                 $assessurl,
@@ -2305,7 +2262,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
                 'sid_' . $answer->id
             );
             $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
-                'sid' => $submission->id,
+                'sid' => $challenge->id,
                 'asid' => $assessment->id,
                 'aid' => $answer->id,
                 'sesskey' => sesskey(),
@@ -2319,7 +2276,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
             );
         } else if ($isassessed && $assessment && $assessment->state == ASSESSMENT_STATE_BY_TEACHER) {
             $viewurl = new moodle_url('/mod/quest/viewassessment.php', [
-                'sid' => $submission->id,
+                'sid' => $challenge->id,
                 'asid' => $assessment->id,
                 'aid' => $answer->id,
                 'sesskey' => sesskey(),
@@ -2359,11 +2316,11 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
     }
 
     if (
-        ($ismanager || ($submission->userid == $USER->id))
+        ($ismanager || ($challenge->userid == $USER->id))
             && $isassessed && $answer->permitsubmit == 0
     ) {
         $permiturl = new moodle_url('/mod/quest/answer.php', [
-            'sid' => $submission->id,
+            'sid' => $challenge->id,
             'aid' => $answer->id,
             'action' => 'permitsubmit',
             'sesskey' => sesskey(),
@@ -2385,7 +2342,7 @@ function quest_print_actions_answers($cm, $answer, $submission, $course, $assess
             && (int)$answer->permitsubmit === ANSWER_PERMITSUBMIT_EDITABLE
     ) {
         $answeragainurl = new moodle_url('/mod/quest/answer.php', [
-            'sid' => $submission->id,
+            'sid' => $challenge->id,
             'uid' => $answer->userid,
             'action' => 'answer',
             'sesskey' => sesskey(),
@@ -2553,12 +2510,12 @@ function quest_print_answer($quest, $answer) {
 
     if (!empty($answer->questionusageid)) {
         require_once($CFG->libdir . '/questionlib.php');
-        $submission = $DB->get_record('quest_submissions', [
+        $challenge = $DB->get_record('quest_submissions', [
             'id' => $answer->submissionid,
             'questid' => $quest->id,
         ], 'id, dateend', MUST_EXIST);
         $quba = question_engine::load_questions_usage_by_activity($answer->questionusageid);
-        $showcorrectanswer = (int)$submission->dateend <= time();
+        $showcorrectanswer = (int)$challenge->dateend <= time();
 
         echo '<div class="card border-0 shadow-sm mb-4">';
         echo '  <div class="card-body p-4">';
@@ -2693,9 +2650,9 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
 
     if ($assessment) {
         $answer = $DB->get_record("quest_answers", ["id" => $assessment->answerid], '*', MUST_EXIST);
-        $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+        $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
 
-        $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $submission->id, 'action' => 'showanswer',
+        $url = (new moodle_url('answer.php', ['id' => $cm->id, 'sid' => $challenge->id, 'action' => 'showanswer',
                         'aid' => $answer->id]))->out();
         echo $OUTPUT->heading(
             get_string('assessmentof', 'quest', "<a href=\"$url\" target=\"submission\">$answer->title</a>")
@@ -2776,11 +2733,11 @@ function quest_print_assessment($quest, $sid, $assessment, $allowchanges = false
         $nelements = $quest->nelements;
     } else {
         $condition = $sid;
-        if (!isset($submission) && $sid) {
-            $submission = $DB->get_record("quest_submissions", ["id" => $sid]);
+        if (!isset($challenge) && $sid) {
+            $challenge = $DB->get_record("quest_submissions", ["id" => $sid]);
         }
-        if (isset($submission->numelements)) {
-            $nelements = $submission->numelements;
+        if (isset($challenge->numelements)) {
+            $nelements = $challenge->numelements;
         }
     }
 
@@ -3085,13 +3042,13 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
     if (!is_array($questeweights)) {
         $questeweights = quest_get_default_weights();
     }
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+    $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     $assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->id], '*', MUST_EXIST);
     // Has personalized elements?
-    if ($DB->count_records("quest_elements", ["submissionsid" => $submission->id, "questid" => $quest->id]) == 0) {
+    if ($DB->count_records("quest_elements", ["submissionsid" => $challenge->id, "questid" => $quest->id]) == 0) {
         $customizedsid = 0;
     } else {
-        $customizedsid = $submission->id;
+        $customizedsid = $challenge->id;
     }
 
     // ...first get the assignment elements for maxscores and weights....
@@ -3187,12 +3144,12 @@ function quest_get_answer_grade($quest, $answer, $grades, $feedbacks) {
 }
 /**
  *
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  * @param \stdClass $quest
  * @param string $answer
  * @return number
  */
-function quest_get_points($submission, $quest, $answer = '') {
+function quest_get_points($challenge, $quest, $answer = '') {
     if (empty($answer)) {
         $timenow = time();
     } else {
@@ -3200,19 +3157,19 @@ function quest_get_points($submission, $quest, $answer = '') {
     }
     $grade = 0;
 
-    $initialpoints = $submission->initialpoints;
-    $nanswerscorrect = $submission->nanswerscorrect;
-    $datestart = $submission->datestart;
-    $dateend = $submission->dateend;
-    $dateanswercorrect = $submission->dateanswercorrect;
-    $pointsmax = $submission->pointsmax;
-    $pointsmin = $submission->pointsmin;
+    $initialpoints = $challenge->initialpoints;
+    $nanswerscorrect = $challenge->nanswerscorrect;
+    $datestart = $challenge->datestart;
+    $dateend = $challenge->dateend;
+    $dateanswercorrect = $challenge->dateanswercorrect;
+    $pointsmax = $challenge->pointsmax;
+    $pointsmin = $challenge->pointsmin;
 
     $tinitial = $quest->tinitial * 86400;
     $type = $quest->typecalification;
     $nmaxanswers = $quest->nmaxanswers;
-    $pointsnmaxanswers = $submission->points;
-    $state = $submission->state;
+    $pointsnmaxanswers = $challenge->points;
+    $state = $challenge->state;
 
     if ($state < 2) {
         $grade = $initialpoints;
@@ -3298,13 +3255,13 @@ function quest_print_assessment_autor(
     $cangrade = has_capability('mod/quest:grade', $context);
 
     if ($assessment) {
-        $submission = $DB->get_record("quest_submissions", ["id" => $assessment->submissionid], '*', MUST_EXIST);
+        $challenge = $DB->get_record("quest_submissions", ["id" => $assessment->submissionid], '*', MUST_EXIST);
         echo $OUTPUT->heading(
             get_string(
                 'assessmentof',
                 'quest',
-                "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\" " .
-                "target=\"submission\">$submission->title</a>"
+                "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$challenge->id\" " .
+                "target=\"submission\">$challenge->title</a>"
             )
         );
     }
@@ -3558,7 +3515,7 @@ function quest_print_assessment_autor(
             echo '<span class="text-muted small d-block mb-1">' . get_string('grade', 'quest') . '</span>';
             echo '<span class="badge bg-success fs-5 py-2 px-4">' . number_format($assessment->points, 4)
                     . ' ' . get_string('of', 'quest') . ' ' . get_string('initialpoints', 'quest')
-                    . ' ' . number_format($submission->initialpoints, 2) . '</span>';
+                    . ' ' . number_format($challenge->initialpoints, 2) . '</span>';
             echo '</div>';
         }
         echo '</div></div></div>';
@@ -3615,41 +3572,41 @@ function quest_sortfunction_calification($a, $b) {
 }
 
 /**
- * Render the scoring graph for a submission.
+ * Render the scoring graph for a challenge.
  *
  * @param stdClass $quest Quest record.
- * @param stdClass $submission Submission record.
+ * @param stdClass $challenge Submission record.
  * @return void
  */
-function quest_print_score_graph($quest, $submission) {
+function quest_print_score_graph($quest, $challenge) {
     global $DB, $OUTPUT;
-    $datefirstanswer = $DB->get_field("quest_answers", "min(date)", ["submissionid" => $submission->id]);
+    $datefirstanswer = $DB->get_field("quest_answers", "min(date)", ["submissionid" => $challenge->id]);
     $tinit = (int)($quest->tinitial * 86400);
 
     $chartdata = \mod_quest\service\scoring_calculator::get_chart_data(
-        (int)$submission->datestart,
-        (int)$submission->dateend,
+        (int)$challenge->datestart,
+        (int)$challenge->dateend,
         $tinit,
-        !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : null,
+        !empty($challenge->dateanswercorrect) ? (int)$challenge->dateanswercorrect : null,
         !empty($datefirstanswer) ? (int)$datefirstanswer : null,
-        (float)$submission->initialpoints,
-        (float)$submission->pointsmax,
-        (float)$submission->pointsmin
+        (float)$challenge->initialpoints,
+        (float)$challenge->pointsmax,
+        (float)$challenge->pointsmin
     );
 
-    $containerid = 'quest_score_chart_' . $submission->id . '_' . uniqid();
+    $containerid = 'quest_score_chart_' . $challenge->id . '_' . uniqid();
     $templatedata = [
         'containerid' => $containerid,
         'chartdatajson' => json_encode($chartdata),
         'currentpoints' => number_format((float)$chartdata['currentpoints'], 4),
         'currentphase' => $chartdata['currentphase'],
-        'datestart' => (int)$submission->datestart,
-        'dateend' => (int)$submission->dateend,
+        'datestart' => (int)$challenge->datestart,
+        'dateend' => (int)$challenge->dateend,
         'tinitial' => $tinit,
-        'dateanswercorrect' => !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : 0,
-        'initialpoints' => (float)$submission->initialpoints,
-        'pointsmax' => (float)$submission->pointsmax,
-        'pointsmin' => (float)$submission->pointsmin,
+        'dateanswercorrect' => !empty($challenge->dateanswercorrect) ? (int)$challenge->dateanswercorrect : 0,
+        'initialpoints' => (float)$challenge->initialpoints,
+        'pointsmax' => (float)$challenge->pointsmax,
+        'pointsmin' => (float)$challenge->pointsmin,
         'type' => (int)$quest->typecalification,
         'servertime' => time(),
     ];
@@ -3868,7 +3825,7 @@ function quest_sortfunction($a, $b) {
 
 /**
  * @param \stdClass $course
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  * @param \stdClass $quest
  * @param \stdClass $cm
  */
@@ -3972,30 +3929,16 @@ function quest_actions_challenge($course, $challenge, $quest, $cm, $options = nu
 }
 
 /**
- * Legacy wrapper for quest_actions_challenge.
- *
- * @param \stdClass $course
- * @param \stdClass $submission
- * @param \stdClass $quest
- * @param \stdClass $cm
- * @param array $options
- * @return string
- */
-function quest_actions_submission($course, $submission, $quest, $cm, $options = null) {
-    return quest_actions_challenge($course, $submission, $quest, $cm, $options);
-}
-
-/**
  * Check whether a user may submit another answer.
  *
  * @param stdClass $quest
- * @param stdClass $submission
+ * @param stdClass $challenge
  * @return boolean */
-function quest_validate_user_answer(stdClass $quest, stdClass $submission) {
+function quest_validate_user_answer(stdClass $quest, stdClass $challenge) {
     global $USER, $DB;
 
     $validate = true;
-    if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $submission->id])) {
+    if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $challenge->id])) {
         foreach ($answers as $answer) {
             if ($answer->userid == $USER->id) {
                 $validate = false;
@@ -4008,14 +3951,14 @@ function quest_validate_user_answer(stdClass $quest, stdClass $submission) {
 /** Update quest points and scores of the answers older than $answer_actual
  * Don't aply marking elements, just update answer->pointsmax
  * Update users and teams scores */
-function quest_update_grade_for_answer($answeractual, $submission, $quest, $course) {
+function quest_update_grade_for_answer($answeractual, $challenge, $quest, $course) {
     global $DB;
-    // ...all answers to this submission.
-    $answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $submission->id]);
+    // ...all answers to this challenge.
+    $answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $challenge->id]);
 
     if ($answers) {
         foreach ($answers as $answer) {
-            $points = quest_get_points($submission, $quest, $answer);
+            $points = quest_get_points($challenge, $quest, $answer);
             $answer->pointsmax = number_format($points, 6);
             $DB->update_record("quest_answers", $answer);
             quest_update_user_scores($quest, $answer->userid);
@@ -4049,7 +3992,7 @@ function quest_restore_automatic_assessment($quest, $answer, $assessment): float
         throw new \moodle_exception('autograde_restorenotavailable', 'quest');
     }
 
-    $submission = $DB->get_record('quest_submissions', [
+    $challenge = $DB->get_record('quest_submissions', [
         'id' => $answer->submissionid,
         'questid' => $quest->id,
     ], '*', MUST_EXIST);
@@ -4063,12 +4006,12 @@ function quest_restore_automatic_assessment($quest, $answer, $assessment): float
     $answer->state = ANSWER_STATE_EDITTED;
     $DB->update_record('quest_answers', $answer);
 
-    $submission = \mod_quest\service\tournament_manager::update_submission_counts((int)$submission->id);
-    quest_update_grade_for_answer($answer, $submission, $quest, $course);
-    \mod_quest\service\tournament_manager::update_submission_counts((int)$submission->id);
+    $challenge = \mod_quest\service\tournament_manager::update_challenge_counts((int)$challenge->id);
+    quest_update_grade_for_answer($answer, $challenge, $quest, $course);
+    \mod_quest\service\tournament_manager::update_challenge_counts((int)$challenge->id);
     quest_grade_updated($quest, (int)$answer->userid);
-    if ((int)$submission->userid !== (int)$answer->userid) {
-        \mod_quest\service\leaderboard_service::update_user_scores($quest, (int)$submission->userid);
+    if ((int)$challenge->userid !== (int)$answer->userid) {
+        \mod_quest\service\leaderboard_service::update_user_scores($quest, (int)$challenge->userid);
     }
 
     $transaction->allow_commit();
@@ -4179,7 +4122,7 @@ function quest_update_quest_calendar($quest, $cm = null) {
 /** Update a assessment details in the database.
  * Trucate numeric values to workaround weird database truncation errors and decimal points with
  * Moodle 2.5
- * @param \stdClass $submission */
+ * @param \stdClass $challenge */
 function quest_update_assessment($assessment) {
     global $DB;
     $assessment->pointsautor = number_format($assessment->pointsautor, 4);
@@ -4190,7 +4133,7 @@ function quest_update_assessment($assessment) {
 /** Update a assessment_autor details in the database.
  * Trucate numeric values to workaround weird database truncation errors and decimal points with
  * Moodle 2.5
- * @param \stdClass $submission */
+ * @param \stdClass $challenge */
 function quest_update_assessment_author($assessment) {
     global $DB;
     $assessment->points = number_format($assessment->points, 4);
@@ -4201,7 +4144,7 @@ function quest_update_assessment_author($assessment) {
 /** Update a $calificationuser details in the database.
  * Trucate numeric values to workaround weird database truncation errors and decimal points with
  * Moodle 2.5
- * @param \stdClass $submission */
+ * @param \stdClass $challenge */
 function quest_update_calification_user($calificationuser) {
     global $DB;
     $calificationuser->points = number_format($calificationuser->points, 4, '.', '');
@@ -4271,11 +4214,11 @@ function quest_calculate_user_challenges_score($questid, $userid) {
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
     $allparams = array_merge([$questid], $inparams);
     if ($query = $DB->get_records_select("quest_submissions", "questid=? and userid $insql", $allparams)) {
-        $submissions = [];
+        $challenges = [];
         foreach ($query as $s) {
-            $submissions[] = $s->id;
+            $challenges[] = $s->id;
         }
-        [$insql2, $inparams2] = $DB->get_in_or_equal($submissions);
+        [$insql2, $inparams2] = $DB->get_in_or_equal($challenges);
         if (
             $query = $DB->get_record_select(
                 "quest_assessments_autors",
@@ -4293,30 +4236,19 @@ function quest_calculate_user_challenges_score($questid, $userid) {
 }
 
 /**
- * Legacy wrapper for quest_calculate_user_challenges_score.
- *
- * @param integer $questid
- * @param integer|array $userid
- * @return number
- */
-function quest_calculate_user_submissions_score($questid, $userid) {
-    return quest_calculate_user_challenges_score($questid, $userid);
-}
-
-/**
  * Count assessed challenges for a user.
  *
  * @param integer $questid
  * @param int|array $userid array de identificadores */
-function quest_count_user_challenges_assesed($questid, $userid) {
+function quest_count_user_challenges_assessed($questid, $userid) {
     global $DB;
     [$insql, $inparams] = $DB->get_in_or_equal($userid);
     $allparams = array_merge([$questid], $inparams);
     if ($query = $DB->get_records_select("quest_submissions", "questid=? and userid $insql", $allparams)) {
         foreach ($query as $s) {
-            $submissions[] = $s->id;
+            $challenges[] = $s->id;
         }
-        [$insql, $inparams] = $DB->get_in_or_equal($submissions);
+        [$insql, $inparams] = $DB->get_in_or_equal($challenges);
         if (
             $query = $DB->get_record_select(
                 "quest_assessments_autors",
@@ -4335,17 +4267,6 @@ function quest_count_user_challenges_assesed($questid, $userid) {
 }
 
 /**
- * Legacy wrapper for quest_count_user_challenges_assesed.
- *
- * @param integer $questid
- * @param int|array $userid
- * @return int
- */
-function quest_count_user_submissions_assesed($questid, $userid) {
-    return quest_count_user_challenges_assesed($questid, $userid);
-}
-
-/**
  * Count challenges attempted by a user.
  *
  * @param integer $questid
@@ -4359,17 +4280,6 @@ function quest_count_user_challenges($questid, $userid) {
     } else {
         return 0;
     }
-}
-
-/**
- * Legacy wrapper for quest_count_user_challenges.
- *
- * @param integer $questid
- * @param int|array $userid
- * @return int
- */
-function quest_count_user_submissions($questid, $userid) {
-    return quest_count_user_challenges($questid, $userid);
 }
 
 /**
@@ -4428,16 +4338,6 @@ function quest_count_challenge_assessments($cid) {
 }
 
 /**
- * Legacy wrapper for quest_count_challenge_assessments.
- *
- * @param int $sid
- * @return int
- */
-function quest_count_submission_assessments($sid) {
-    return quest_count_challenge_assessments($sid);
-}
-
-/**
  * Recalculate scores, statistics and gradebook data for a user and team.
  *
  * @param \stdClass $quest record
@@ -4483,9 +4383,9 @@ function quest_update_user_scores($quest, $userid) {
     $calificationuser->pointsanswers = quest_calculate_user_score($questid, $userid);
     $calificationuser->nanswers = quest_count_user_answers($questid, $userid);
     $calificationuser->nanswersassessment = quest_count_user_answers_assesed($questid, $userid);
-    $calificationuser->pointssubmission = quest_calculate_user_submissions_score($questid, $userid);
-    $calificationuser->nsubmissionsassessment = quest_count_user_submissions_assesed($questid, $userid);
-    $calificationuser->nsubmissions = quest_count_user_submissions($questid, $userid);
+    $calificationuser->pointssubmission = quest_calculate_user_challenges_score($questid, $userid);
+    $calificationuser->nsubmissionsassessment = quest_count_user_challenges_assessed($questid, $userid);
+    $calificationuser->nsubmissions = quest_count_user_challenges($questid, $userid);
     $calificationuser->points = $calificationuser->pointssubmission + $calificationuser->pointsanswers;
     quest_update_calification_user($calificationuser);
 }
@@ -4499,9 +4399,9 @@ function quest_update_user_scores($quest, $userid) {
  *        $calificationteam->nanswerassessment=$nanswersassessed;
  *        $calificationteam->points=$points;
  *        $calificationteam->pointsanswers=$pointsanswers;
- *        $calificationteam->pointssubmission=$submissionpoints;
- *        $calificationteam->nsubmissionsassessment=$nsubmissionassessed;
- *        $calificationteam->nsubmissions=$nsubmissions;
+ *        $calificationteam->pointssubmission=$challengepoints;
+ *        $calificationteam->nsubmissionsassessment=$nchallengeassessed;
+ *        $calificationteam->nsubmissions=$nchallenges;
  *        updates team->ncomponents */
 function quest_update_team_scores($quest, $teamid) {
     global $DB;
@@ -4525,11 +4425,11 @@ function quest_update_team_scores($quest, $teamid) {
 
     $nanswers = quest_count_user_answers($questid, $members);
     $nanswersassessed = quest_count_user_answers_assesed($questid, $members);
-    $submissionpoints = quest_calculate_user_submissions_score($questid, $members);
-    $nsubmissions = quest_count_user_submissions($questid, $members);
-    $nsubmissionassessed = quest_count_user_submissions_assesed($questid, $members);
+    $challengepoints = quest_calculate_user_challenges_score($questid, $members);
+    $nchallenges = quest_count_user_challenges($questid, $members);
+    $nchallengeassessed = quest_count_user_challenges_assessed($questid, $members);
 
-    $points = $submissionpoints + $pointsanswers;
+    $points = $challengepoints + $pointsanswers;
     $calificationteam = $DB->get_record("quest_calification_teams", ["questid" => $questid, "teamid" => $teamid], '*');
 
     if (!$calificationteam) {
@@ -4542,9 +4442,9 @@ function quest_update_team_scores($quest, $teamid) {
     $calificationteam->nanswerassessment = $nanswersassessed;
     $calificationteam->points = '' . $points;
     $calificationteam->pointsanswers = "$pointsanswers";
-    $calificationteam->pointssubmission = "$submissionpoints";
-    $calificationteam->nsubmissionsassessment = $nsubmissionassessed;
-    $calificationteam->nsubmissions = $nsubmissions;
+    $calificationteam->pointssubmission = "$challengepoints";
+    $calificationteam->nsubmissionsassessment = $nchallengeassessed;
+    $calificationteam->nsubmissions = $nchallenges;
     $DB->update_record('quest_calification_teams', $calificationteam);
 
     $DB->set_field("quest_teams", "ncomponents", count($members), ["questid" => $questid, "id" => $teamid]);
@@ -4612,7 +4512,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
     $context = context_course::instance($course->id);
     $ismanager = has_capability('mod/quest:manage', $context);
 
-    $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
+    $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid], '*', MUST_EXIST);
     if (!has_capability('mod/quest:manage', $context, $answer->userid)) {
         $calificationuser = $DB->get_record(
             "quest_calification_users",
@@ -4682,26 +4582,26 @@ function quest_recalification($answer, $quest, $assessment, $course) {
     switch ($quest->gradingstrategy) {
         case 0: // ...no grading.
                 // Insert all the elements that contain something.
-            $points = quest_get_points($submission, $quest, $answer);
+            $points = quest_get_points($challenge, $quest, $answer);
             // There are no criterion marks to reconstruct a rubric grade. Keep
             // the percentage saved when the answer was assessed.
             $percent = (float)$answer->grade / 100;
             $grade = $points * $percent;
             if ((100.0 * $percent) >= 50.0000) {
-                $submission->points = $grade;
+                $challenge->points = $grade;
 
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
+                if (($challenge->nanswerscorrect == 0) && ($assessment->phase == 1)) {
+                    $challenge->dateanswercorrect = $answer->date;
+                    $challenge->pointsanswercorrect = $points;
                 }
                 if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
+                    $challenge->nanswerscorrect++;
                     $answer->phase = 2;
                 }
             } else {
-                $submission->points = $grade;
+                $challenge->points = $grade;
                 if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
+                    $challenge->nanswerscorrect--;
                 }
                 $answer->phase = 1;
             }
@@ -4755,7 +4655,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
                 }
                 $rawgrade += $maxscore > 0 ? ($grade / $maxscore) * $weight : 0;
             }
-            $points = quest_get_points($submission, $quest, $answer);
+            $points = quest_get_points($challenge, $quest, $answer);
             if ($grades) {
                 $rubricfraction = $totalweight > 0 ? ($rawgrade / $totalweight) : 0;
                 $percent = \mod_quest\service\autograde_service::combine_with_rubric_grade($answer, $rubricfraction);
@@ -4766,20 +4666,20 @@ function quest_recalification($answer, $quest, $assessment, $course) {
             }
             $grade = $points * $percent;
             if ((100.0 * $percent) >= 50.0000) {
-                $submission->points = $grade;
+                $challenge->points = $grade;
 
-                if (($submission->nanswerscorrect == 0) && ($assessment->phase == 1)) {
-                    $submission->dateanswercorrect = $answer->date;
-                    $submission->pointsanswercorrect = $points;
+                if (($challenge->nanswerscorrect == 0) && ($assessment->phase == 1)) {
+                    $challenge->dateanswercorrect = $answer->date;
+                    $challenge->pointsanswercorrect = $points;
                 }
                 if (($answer->phase != 2) && ($assessment->phase == 1)) {
-                    $submission->nanswerscorrect++;
+                    $challenge->nanswerscorrect++;
                     $answer->phase = 2;
                 }
             } else {
-                $submission->points = $grade;
+                $challenge->points = $grade;
                 if ($answer->phase == 2) {
-                    $submission->nanswerscorrect--;
+                    $challenge->nanswerscorrect--;
                 }
                 $answer->phase = 1;
             }
@@ -4793,7 +4693,7 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 
     // ...update the time of the assessment record (may be re-edited)....
     $assessment->dateassessment = $timenow;
-    $firstdatecorrect = $submission->dateanswercorrect;
+    $firstdatecorrect = $challenge->dateanswercorrect;
 
     if (!empty($assessment->teacherid)) {
         if (has_capability('mod/quest:manage', $context, $assessment->teacherid)) {
@@ -4813,29 +4713,29 @@ function quest_recalification($answer, $quest, $assessment, $course) {
 
     $DB->update_record('quest_answers', $answer);
     quest_update_assessment($assessment);
-    quest_update_challenge($submission);
-    quest_update_submission_counts($submission->id);
+    quest_update_challenge($challenge);
+    quest_update_challenge_counts($challenge->id);
     // Recalculate points and report to gradebook..
-    quest_grade_updated($quest, $submission->userid);
+    quest_grade_updated($quest, $challenge->userid);
 
     $aid = $assessment->id;
     if (!empty($assessment->teacherid)) {
         if (has_capability('mod/quest:manage', $context, $assessment->teacherid)) {
             if ($user = get_complete_user_data('id', $answer->userid)) {
-                quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
+                quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $challenge, $answer);
             }
             if ($user = get_complete_user_data('id', $assessment->userid)) {
-                quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
+                quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $challenge, $answer);
             }
         }
     } else {
         if ($user = get_complete_user_data('id', $answer->userid)) {
-            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $submission, $answer);
+            quest_send_message($user, "viewassessment.php?asid=$assessment->id", 'assessment', $quest, $challenge, $answer);
         }
     }
 
     $cm = get_coursemodule_from_instance('quest', $quest->id);
-    mod_quest\event\answer_assessed::create_from_parts($submission, $answer, $assessment, $cm)->trigger();
+    mod_quest\event\answer_assessed::create_from_parts($challenge, $answer, $assessment, $cm)->trigger();
 }
 /**
  *
@@ -4973,18 +4873,18 @@ function quest_print_table_teams($quest, $course, $cm, $sortteam, $dirteam) {
 }
 /**
  *
- * @param \stdClass $submission
+ * @param \stdClass $challenge
  * @param \stdClass $quest
  * @param \stdClass $course
  */
-function quest_recalification_all($submission, $quest, $course) {
+function quest_recalification_all($challenge, $quest, $course) {
     global $DB;
-    if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $submission->id])) {
-        $submission->nanswerscorrect = 0;
-        $DB->set_field("quest_submissions", "nanswerscorrect", $submission->nanswerscorrect, ["id" => $submission->id]);
+    if ($answers = $DB->get_records_select("quest_answers", "questid=? AND submissionid=?", [$quest->id, $challenge->id])) {
+        $challenge->nanswerscorrect = 0;
+        $DB->set_field("quest_submissions", "nanswerscorrect", $challenge->nanswerscorrect, ["id" => $challenge->id]);
 
         foreach ($answers as $answer) {
-            $points = quest_get_points($submission, $quest, $answer);
+            $points = quest_get_points($challenge, $quest, $answer);
             $answer->pointsmax = $points;
             $DB->set_field("quest_answers", "pointsmax", $answer->pointsmax, ["id" => $answer->id]);
 
@@ -5140,30 +5040,20 @@ SQL;
  * @param stdClass $challenge
  * @return NULL | stdClass $challenge next in the queue
  */
-function quest_next_unassesed_challenge($challenge) {
+function quest_next_unassessed_challenge($challenge) {
     global $DB;
     $sql = <<<SQL
-SELECT submission.id, assess.id assid
-FROM {quest_submissions} submission
-LEFT JOIN {quest_assessments_autors} assess ON (submission.id = assess.submissionid)
-WHERE submission.questid = ? and  (assess.id IS NULL OR assess.state = 0) and submission.id <> ? order by dateassessment
+SELECT challenge.id, assess.id assid
+FROM {quest_submissions} challenge
+LEFT JOIN {quest_assessments_autors} assess ON (challenge.id = assess.submissionid)
+WHERE challenge.questid = ? and  (assess.id IS NULL OR assess.state = 0) and challenge.id <> ? order by dateassessment
 SQL;
-    $submissions = $DB->get_records_sql($sql, [$challenge->questid, $challenge->id]);
-    if (count($submissions) == 0) {
+    $challenges = $DB->get_records_sql($sql, [$challenge->questid, $challenge->id]);
+    if (count($challenges) == 0) {
         return null;
     } else {
-        return reset($submissions);
+        return reset($challenges);
     }
-}
-
-/**
- * Legacy wrapper for quest_next_unassesed_challenge.
- *
- * @param stdClass $submission
- * @return NULL | stdClass
- */
-function quest_next_unassesed_submission($submission) {
-    return quest_next_unassesed_challenge($submission);
 }
 
 /**
@@ -5174,26 +5064,16 @@ function quest_next_unassesed_submission($submission) {
 function quest_next_unapproved_challenge($challenge) {
     global $DB;
     // APPROVED_PENDING is 0.
-    $submissions = $DB->get_records(
+    $challenges = $DB->get_records(
         'quest_submissions',
         ['questid' => $challenge->questid, 'state' => SUBMISSION_STATE_APPROVAL_PENDING],
         'dateend ASC'
     );
-    if (count($submissions) == 0) {
+    if (count($challenges) == 0) {
         return null;
     } else {
-        return reset($submissions);
+        return reset($challenges);
     }
-}
-
-/**
- * Legacy wrapper for quest_next_unapproved_challenge.
- *
- * @param stdClass $submission
- * @return NULL | stdClass
- */
-function quest_next_unapproved_submission($submission) {
-    return quest_next_unapproved_challenge($submission);
 }
 
 /**
@@ -5206,9 +5086,9 @@ function quest_next_challenge_url($challenge, $cm) {
     $context = context_module::instance($cm->id);
     $nextunapproved = null;
     $nextunassessed = null;
-    $submissionassessment = quest_get_challenge_assessment($challenge);
+    $challengeassessment = quest_get_challenge_assessment($challenge);
     // First own assesment. Then other approvals.
-    if (!$submissionassessment) {
+    if (!$challengeassessment) {
         $nextunassessed = $challenge;
     } else {
         if (has_capability('mod/quest:approvechallenge', $context)) {
@@ -5217,7 +5097,7 @@ function quest_next_challenge_url($challenge, $cm) {
             $nextunapproved = null;
         }
         if (has_capability('mod/quest:grade', $context) && $nextunapproved === null) {
-            $nextunassessed = quest_next_unassesed_challenge($challenge);
+            $nextunassessed = quest_next_unassessed_challenge($challenge);
         } else {
             // ... else redirect to answers list.
             $nextunassessed = null;
@@ -5240,16 +5120,6 @@ function quest_next_challenge_url($challenge, $cm) {
     return $nexturl;
 }
 
-/**
- * Legacy wrapper for quest_next_challenge_url.
- *
- * @param \stdClass $submission
- * @param \stdClass $cm
- * @return moodle_url
- */
-function quest_next_submission_url($submission, $cm) {
-    return quest_next_challenge_url($submission, $cm);
-}
 /** Get all users that act as student (i.e.
  * can 'mod/quest:attempt')
  * @param int $courseid
@@ -5314,34 +5184,34 @@ function quest_print_recent_activity($course, $viewfullnames, $timestart) {
                AND q.course = :course
           ORDER BY s.timecreated ASC";
 
-    $submissions = $DB->get_records_sql($sql, ['timestart' => $timestart, 'course' => $course->id]);
+    $challenges = $DB->get_records_sql($sql, ['timestart' => $timestart, 'course' => $course->id]);
 
-    if (!empty($submissions)) {
-        $visiblesubmissions = [];
-        foreach ($submissions as $sub) {
-            if (!isset($modinfo->instances['quest'][$sub->questid])) {
+    if (!empty($challenges)) {
+        $visiblechallenges = [];
+        foreach ($challenges as $challenge) {
+            if (!isset($modinfo->instances['quest'][$challenge->questid])) {
                 continue;
             }
-            $cm = $modinfo->instances['quest'][$sub->questid];
+            $cm = $modinfo->instances['quest'][$challenge->questid];
             if (!$cm->uservisible) {
                 continue;
             }
-            $sub->cmid = $cm->id;
-            $visiblesubmissions[] = $sub;
+            $challenge->cmid = $cm->id;
+            $visiblechallenges[] = $challenge;
         }
 
-        if (!empty($visiblesubmissions)) {
+        if (!empty($visiblechallenges)) {
             echo $OUTPUT->heading(get_string("questsubmitchallenge", "quest") . ":", 6);
-            foreach ($visiblesubmissions as $sub) {
+            foreach ($visiblechallenges as $challenge) {
                 $link = new moodle_url('/mod/quest/challenges.php', [
-                    'id' => $sub->cmid,
-                    'cid' => $sub->id,
+                    'id' => $challenge->cmid,
+                    'cid' => $challenge->id,
                     'action' => 'showchallenge',
                 ]);
                 print_recent_activity_note(
-                    $sub->timecreated,
-                    $sub,
-                    $sub->title,
+                    $challenge->timecreated,
+                    $challenge,
+                    $challenge->title,
                     $link->out(),
                     false,
                     $viewfullnames
@@ -5709,16 +5579,6 @@ function quest_get_challenges($quest) {
 }
 
 /**
- * Legacy wrapper for quest_get_challenges.
- *
- * @param \stdClass $quest
- * @return array
- */
-function quest_get_submissions($quest) {
-    return quest_get_challenges($quest);
-}
-
-/**
  * Gets all challenges submitted by a user.
  *
  * @param \stdClass $quest
@@ -5733,17 +5593,6 @@ function quest_get_user_challenges($quest, $user) {
 }
 
 /**
- * Legacy wrapper for quest_get_user_challenges.
- *
- * @param \stdClass $quest
- * @param \stdClass $user
- * @return array
- */
-function quest_get_user_submissions($quest, $user) {
-    return quest_get_user_challenges($quest, $user);
-}
-
-/**
  * Gets the student challenge.
  *
  * @param \stdClass $quest
@@ -5753,22 +5602,11 @@ function quest_get_user_submissions($quest, $user) {
 function quest_get_student_challenge($quest, $user) {
     global $CFG, $DB;
 
-    $submission = $DB->get_record("quest_submissions", ["questid" => $quest->id, "userid" => $user->id]);
-    if (!empty($submission->timecreated)) {
-        return $submission;
+    $challenge = $DB->get_record("quest_submissions", ["questid" => $quest->id, "userid" => $user->id]);
+    if (!empty($challenge->timecreated)) {
+        return $challenge;
     }
     return null;
-}
-
-/**
- * Legacy wrapper for quest_get_student_challenge.
- *
- * @param \stdClass $quest
- * @param \stdClass $user
- * @return mixed|stdClass|false|NULL
- */
-function quest_get_student_submission($quest, $user) {
-    return quest_get_student_challenge($quest, $user);
 }
 
 /**
@@ -5779,7 +5617,7 @@ function quest_get_student_submission($quest, $user) {
  * @return array
  */
 function quest_get_assessments($answer, $all = '', $order = '') {
-    // Return assessments for this submission ordered oldest first, newest last.
+    // Return assessments for this answer ordered oldest first, newest last.
     // ...new assessments made within the editing time are NOT returned unless they.
     // ...belong to the user or the second argument is set to ALL.
     global $CFG, $USER, $DB;
@@ -5819,15 +5657,6 @@ function quest_get_challenge_assessment($challenge) {
     );
 }
 
-/**
- * Legacy wrapper for quest_get_challenge_assessment.
- *
- * @param \stdClass $submission
- * @return mixed|stdClass|false
- */
-function quest_get_submission_assessment($submission) {
-    return quest_get_challenge_assessment($submission);
-}
 /**
  *
  * @param array $records
@@ -5893,14 +5722,14 @@ function quest_fullname($userid, $courseid) {
  * @param \stdClass $course
  * @param integer $timestart
  * @return boolean */
-function quest_get_submitsubmission_logs($course, $timestart) {
+function quest_get_challenge_creation_logs($course, $timestart) {
     global $CFG, $USER, $DB;
     if (empty($USER->id)) {
         return false;
     }
 
     $timethen = time() - $CFG->maxeditingtime;
-    $submissions = $DB->get_records_sql(
+    $challenges = $DB->get_records_sql(
         "SELECT s.*
               FROM {quest} q,{quest_submissions} s
               WHERE s.timecreated > :timestart AND s.timecreated < :timethen
@@ -5908,7 +5737,7 @@ function quest_get_submitsubmission_logs($course, $timestart) {
                    AND s.questid = q.id",
         ['timestart' => $timestart, 'timethen' => $timethen, 'course' => $course->id]
     );
-    return $submissions;
+    return $challenges;
 }
 
 /**
@@ -5917,14 +5746,14 @@ function quest_get_submitsubmission_logs($course, $timestart) {
  * @param \stdClass $course
  * @param integer $timestart
  * @return boolean */
-function quest_get_submitsubmissionuser_logs($course, $timestart) {
+function quest_get_user_challenge_creation_logs($course, $timestart) {
     global $CFG, $USER, $DB;
     if (empty($USER->id)) {
         return false;
     }
 
     $timethen = time() - $CFG->maxeditingtime;
-    $submissions = $DB->get_records_sql(
+    $challenges = $DB->get_records_sql(
         "SELECT s.*
               FROM {quest} q,{quest_submissions} s
               WHERE s.timecreated > :timestart AND s.timecreated < :timethen
@@ -5933,7 +5762,7 @@ function quest_get_submitsubmissionuser_logs($course, $timestart) {
                    AND s.userid = :userid",
         ['timestart' => $timestart, 'timethen' => $timethen, 'course' => $course->id, 'userid' => $USER->id]
     );
-    return $submissions;
+    return $challenges;
 }
 /**
  *
@@ -5941,7 +5770,7 @@ function quest_get_submitsubmissionuser_logs($course, $timestart) {
  * @param integer $timestart
  * @return boolean|array
  */
-function quest_get_approvesubmission_logs($course, $timestart) {
+function quest_get_approved_challenge_logs($course, $timestart) {
     global $CFG, $USER, $DB;
     if (empty($USER->id)) {
         return false;

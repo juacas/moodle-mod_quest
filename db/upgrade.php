@@ -142,10 +142,10 @@ function xmldb_quest_upgrade($oldversion = 0) {
 
     if ($oldversion < 2026091801) {
         // Add questionusageid field to quest_submissions table.
-        $submissionstable = new xmldb_table('quest_submissions');
+        $challengestable = new xmldb_table('quest_submissions');
         $field = new xmldb_field('questionusageid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'evaluated');
-        if (!$dbman->field_exists($submissionstable, $field)) {
-            $dbman->add_field($submissionstable, $field);
+        if (!$dbman->field_exists($challengestable, $field)) {
+            $dbman->add_field($challengestable, $field);
         }
 
         upgrade_mod_savepoint(true, 2026091801, 'quest');
@@ -211,13 +211,13 @@ function xmldb_quest_upgrade($oldversion = 0) {
             'questionarea' => 'challenge_question',
         ]);
         foreach ($references as $reference) {
-            $submission = $DB->get_record('quest_submissions', ['id' => $reference->itemid], 'id, questid');
-            if (!$submission) {
+            $challenge = $DB->get_record('quest_submissions', ['id' => $reference->itemid], 'id, questid');
+            if (!$challenge) {
                 continue;
             }
             $slot = (object)[
-                'questid' => $submission->questid,
-                'submissionid' => $submission->id,
+                'questid' => $challenge->questid,
+                'submissionid' => $challenge->id,
                 'slotnumber' => 1,
                 'maxmark' => 1,
             ];

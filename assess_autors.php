@@ -31,12 +31,12 @@ $allowcomments = optional_param('allowcomments', false, PARAM_BOOL);
 $redirect = optional_param('redirect', '', PARAM_ALPHA);
 global $DB, $USER;
 
-$submission = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
-$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
+$challenge = $DB->get_record('quest_submissions', ['id' => $sid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $challenge->questid], '*', MUST_EXIST);
 [$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 
 if (!$redirect) {
-    $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $submission->id);
+    $redirect = urlencode($_SERVER["HTTP_REFERER"] . '#sid=' . $challenge->id);
 }
 
 require_login($course->id, false, $cm);
@@ -48,7 +48,7 @@ if (!quest_user_passed_password($quest, $context)) {
 }
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
-if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+if (!$ismanager && !$cangrade && (int)$challenge->userid !== (int)$USER->id) {
     throw new \moodle_exception('nopermissions', 'error', '', 'assess this challenge');
 }
 
@@ -68,16 +68,16 @@ $PAGE->activityheader->set_attrs([
 ]);
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-quest_add_breadcrumbs($cm, $submission, null, get_string('evaluate', 'quest'));
+quest_add_breadcrumbs($cm, $challenge, null, get_string('evaluate', 'quest'));
 
 echo $OUTPUT->header();
 
-$title = '"' . $submission->title . '" ';
+$title = '"' . $challenge->title . '" ';
 if (has_capability('mod/quest:preview', $context)) {
-    $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
+    $title .= get_string('by', 'quest') . ' ' . quest_fullname($challenge->userid, $course->id);
 }
 echo $OUTPUT->heading($title);
-quest_print_submission_info($quest, $submission);
+quest_print_challenge_info($quest, $challenge);
 
 echo '<div class="text-center my-3">';
 echo '<a class="btn btn-outline-secondary btn-sm" href="assessments_autors.php?id=' . $cm->id . '&amp;action=displaygradingform">';
@@ -85,7 +85,7 @@ echo '<i class="fa fa-external-link me-1" aria-hidden="true"></i>' . get_string(
 echo '</a>';
 echo '</div>';
 
-$anylinkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$submission->id);
+$anylinkedq = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$challenge->id);
 
 if (!$anylinkedq) {
     echo '<div class="quest-assessment-container my-4">';
@@ -94,24 +94,24 @@ if (!$anylinkedq) {
     echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('description', 'quest');
     echo '</div>';
     echo '<div class="card-body p-4">';
-    quest_print_submission($quest, $submission);
+    quest_print_challenge($quest, $challenge);
     echo '</div></div></div>';
 }
 
 if ($anylinkedq) {
-    $isownpending = (int)$submission->userid === (int)$USER->id &&
-        (int)$submission->state === SUBMISSION_STATE_APPROVAL_PENDING;
+    $isownpending = (int)$challenge->userid === (int)$USER->id &&
+        (int)$challenge->state === SUBMISSION_STATE_APPROVAL_PENDING;
     echo $OUTPUT->heading(get_string('description', 'quest'));
     echo \mod_quest\service\autograde_service::render_challenge_questions_preview(
         $quest,
-        $submission,
+        $challenge,
         $context,
         (int)$cm->id,
         $ismanager || $isownpending
     );
 }
 
-$assessment = $DB->get_record("quest_assessments_autors", ["submissionid" => $submission->id]);
+$assessment = $DB->get_record("quest_assessments_autors", ["submissionid" => $challenge->id]);
 $now = time();
 if (!$assessment) {
     // ...create one and set timecreated way in the future, this is reset when record is updated.
@@ -120,7 +120,7 @@ if (!$assessment) {
     if ($cangrade) {
         $assessment->userid = $USER->id;
     }
-    $assessment->submissionid = $submission->id;
+    $assessment->submissionid = $challenge->id;
     $assessment->state = 0;
     $assessment->commentsforteacher = '';
     $assessment->commentsteacher = '';

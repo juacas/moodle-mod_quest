@@ -27,13 +27,11 @@ use mod_quest\service\tournament_manager;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\service\tournament_manager
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\tournament_manager::class)]
 final class tournament_manager_test extends advanced_testcase {
     /**
      * Test validation of user answer submissions.
-     * @covers     \mod_quest\service\tournament_manager
      */
     public function test_can_submit_answer(): void {
         $timenow = time();
@@ -42,38 +40,37 @@ final class tournament_manager_test extends advanced_testcase {
         $quest->id = 1;
         $quest->nmaxanswers = 2;
 
-        $submission = new stdClass();
-        $submission->id = 10;
-        $submission->userid = 100; // Author is user 100.
-        $submission->datestart = $timenow - 3600;
-        $submission->dateend = $timenow + 3600;
+        $challenge = new stdClass();
+        $challenge->id = 10;
+        $challenge->userid = 100; // Author is user 100.
+        $challenge->datestart = $timenow - 3600;
+        $challenge->dateend = $timenow + 3600;
 
         // Author cannot answer own challenge.
-        [$allowedauthor, $reasonauthor] = tournament_manager::can_submit_answer($quest, $submission, 100);
+        [$allowedauthor, $reasonauthor] = tournament_manager::can_submit_answer($quest, $challenge, 100);
         $this->assertFalse($allowedauthor);
 
         // Another student can answer active challenge.
-        [$allowedstudent, $reasonstudent] = tournament_manager::can_submit_answer($quest, $submission, 200);
+        [$allowedstudent, $reasonstudent] = tournament_manager::can_submit_answer($quest, $challenge, 200);
         $this->assertTrue($allowedstudent);
 
         // Challenge not yet started.
-        $futuresubmission = clone $submission;
-        $futuresubmission->datestart = $timenow + 1000;
-        $futuresubmission->dateend = $timenow + 5000;
-        [$allowedfuture, ] = tournament_manager::can_submit_answer($quest, $futuresubmission, 200);
+        $futurechallenge = clone $challenge;
+        $futurechallenge->datestart = $timenow + 1000;
+        $futurechallenge->dateend = $timenow + 5000;
+        [$allowedfuture, ] = tournament_manager::can_submit_answer($quest, $futurechallenge, 200);
         $this->assertFalse($allowedfuture);
 
         // Challenge closed.
-        $closedsubmission = clone $submission;
-        $closedsubmission->datestart = $timenow - 5000;
-        $closedsubmission->dateend = $timenow - 1000;
-        [$allowedclosed, ] = tournament_manager::can_submit_answer($quest, $closedsubmission, 200);
+        $closedchallenge = clone $challenge;
+        $closedchallenge->datestart = $timenow - 5000;
+        $closedchallenge->dateend = $timenow - 1000;
+        [$allowedclosed, ] = tournament_manager::can_submit_answer($quest, $closedchallenge, 200);
         $this->assertFalse($allowedclosed);
     }
 
     /**
      * Test that the per-user answer limit is enforced.
-     * @covers     \mod_quest\service\tournament_manager
      */
     public function test_can_submit_answer_respects_maximum(): void {
         global $DB;
@@ -83,15 +80,15 @@ final class tournament_manager_test extends advanced_testcase {
         $quest = new stdClass();
         $quest->nmaxanswers = 1;
 
-        $submission = new stdClass();
-        $submission->id = 10;
-        $submission->userid = 100;
-        $submission->datestart = time() - 3600;
-        $submission->dateend = time() + 3600;
+        $challenge = new stdClass();
+        $challenge->id = 10;
+        $challenge->userid = 100;
+        $challenge->datestart = time() - 3600;
+        $challenge->dateend = time() + 3600;
 
         $DB->insert_record('quest_answers', (object)[
             'questid' => 1,
-            'submissionid' => $submission->id,
+            'submissionid' => $challenge->id,
             'userid' => 200,
             'title' => 'Previous answer',
             'description' => 'Already submitted',
@@ -101,7 +98,7 @@ final class tournament_manager_test extends advanced_testcase {
             'commentforteacher' => '',
         ]);
 
-        [$allowed, $reason] = tournament_manager::can_submit_answer($quest, $submission, 200);
+        [$allowed, $reason] = tournament_manager::can_submit_answer($quest, $challenge, 200);
 
         $this->assertFalse($allowed);
         $this->assertNotEmpty($reason);
@@ -109,14 +106,13 @@ final class tournament_manager_test extends advanced_testcase {
 
     /**
      * Test answer aggregation and selection of the earliest correct answer.
-     * @covers     \mod_quest\service\tournament_manager
      */
-    public function test_update_submission_counts(): void {
+    public function test_update_challenge_counts(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => 1,
             'userid' => 100,
             'title' => 'Challenge',
@@ -135,7 +131,7 @@ final class tournament_manager_test extends advanced_testcase {
         foreach ($answerdata as $data) {
             $DB->insert_record('quest_answers', (object)[
                 'questid' => 1,
-                'submissionid' => $submissionid,
+                'submissionid' => $challengeid,
                 'userid' => $data['userid'],
                 'title' => 'Answer',
                 'description' => 'Description',
@@ -147,28 +143,27 @@ final class tournament_manager_test extends advanced_testcase {
             ]);
         }
 
-        $updated = tournament_manager::update_submission_counts($submissionid);
+        $updated = tournament_manager::update_challenge_counts($challengeid);
 
         $this->assertSame(4, (int)$updated->nanswers);
         $this->assertSame(2, (int)$updated->nanswerscorrect);
         $this->assertSame(100, (int)$updated->dateanswercorrect);
         $this->assertEquals(60.0, (float)$updated->pointsanswercorrect);
 
-        $stored = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
+        $stored = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
         $this->assertSame(2, (int)$stored->nanswerscorrect);
         $this->assertSame(100, (int)$stored->dateanswercorrect);
     }
 
     /**
      * Test recording an answer also creates the user's initial score record.
-     * @covers     \mod_quest\service\tournament_manager
      */
-    public function test_record_answer_updates_submission_and_user_scores(): void {
+    public function test_record_answer_updates_challenge_and_user_scores(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => 1,
             'userid' => 100,
             'title' => 'Challenge',
@@ -185,11 +180,11 @@ final class tournament_manager_test extends advanced_testcase {
             'tinitial' => 0,
             'allowteams' => 0,
         ];
-        $submission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
+        $challenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
 
         $answer = tournament_manager::record_answer(
             $quest,
-            $submission,
+            $challenge,
             200,
             'Answer title',
             'Answer body',
@@ -199,12 +194,12 @@ final class tournament_manager_test extends advanced_testcase {
         );
 
         $this->assertGreaterThan(0, $answer->id);
-        $this->assertSame($submissionid, (int)$answer->submissionid);
+        $this->assertSame($challengeid, (int)$answer->submissionid);
         $this->assertGreaterThanOrEqual(25.0, (float)$answer->pointsmax);
 
-        $updatedsubmission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
-        $this->assertSame(1, (int)$updatedsubmission->nanswers);
-        $this->assertSame(0, (int)$updatedsubmission->nanswerscorrect);
+        $updatedchallenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
+        $this->assertSame(1, (int)$updatedchallenge->nanswers);
+        $this->assertSame(0, (int)$updatedchallenge->nanswerscorrect);
 
         $calification = $DB->get_record('quest_calification_users', [
             'questid' => 1,

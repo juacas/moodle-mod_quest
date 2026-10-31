@@ -64,12 +64,12 @@ quest_print_quest_heading($quest);
 echo '<br/>';
 // ...iterate through submissions..
 
-if ($submissions = quest_get_submissions($quest)) {
-    foreach ($submissions as $submission) {
-        echo $OUTPUT->heading("Challenge: " . $submission->title, 1);
+if ($challenges = quest_get_challenges($quest)) {
+    foreach ($challenges as $challenge) {
+        echo $OUTPUT->heading("Challenge: " . $challenge->title, 1);
         echo $OUTPUT->box_start();
-        // Output a submission.
-        $user = get_complete_user_data('id', $submission->userid);
+        // Output a challenge.
+        $user = get_complete_user_data('id', $challenge->userid);
         echo '<div class="d-flex align-items-center mb-3"><b>Author:</b>&nbsp;';
         if ($user) {
             // User Name Surname.
@@ -77,36 +77,36 @@ if ($submissions = quest_get_submissions($quest)) {
             echo "<a name=\"userid->id\" href=\"{$CFG->wwwroot}/user/view.php?id=$user->id&amp;course=$course->id\">" .
                      fullname($user) . '</a>';
         } else {
-            echo "Unknown ($submission->userid)";
+            echo "Unknown ($challenge->userid)";
         }
         echo '</div>';
 
         echo '<div class="row g-4 align-items-start mb-4">';
         echo '<div class="col-lg-8 col-md-7">';
-        quest_print_submission_info($quest, $submission);
+        quest_print_challenge_info($quest, $challenge);
         echo '</div>';
         echo '<div class="col-lg-4 col-md-5 d-flex justify-content-center justify-content-md-end">';
         /*
          * INCRUSTA GRÁFICO DE EVOLUCION DE PUNTOS
          */
-        quest_print_score_graph($quest, $submission);
+        quest_print_score_graph($quest, $challenge);
         echo '</div>';
         echo '</div>';
 
-        echo $OUTPUT->heading($submission->title);
+        echo $OUTPUT->heading($challenge->title);
         /*
          * Wording of the challenge
          */
-        quest_print_submission($quest, $submission);
+        quest_print_challenge($quest, $challenge);
         echo $OUTPUT->box_end();
         echo '<br/>';
         // ...list answers..
         $sort = optional_param('sort', 'dateanswer', PARAM_ALPHA);
         $dir = optional_param('dir', "ASC", PARAM_ALPHA);
-        if ($answers = quest_get_submission_answers($submission)) {
-            echo $OUTPUT->heading("Answers of challenge: $submission->title", 2);
+        if ($answers = quest_get_challenge_answers($challenge)) {
+            echo $OUTPUT->heading("Answers of challenge: $challenge->title", 2);
             echo $OUTPUT->box_start();
-            quest_print_table_answers($quest, $submission, $course, $cm, $sort, $dir);
+            quest_print_table_answers($quest, $challenge, $course, $cm, $sort, $dir);
             echo '<br/>';
             foreach ($answers as $answer) {
                 $user = get_complete_user_data('id', $answer->userid);

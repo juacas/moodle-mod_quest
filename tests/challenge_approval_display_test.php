@@ -24,7 +24,6 @@ use advanced_testcase;
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\question\question_reference_service
  */
 final class challenge_approval_display_test extends advanced_testcase {
     /**
@@ -50,7 +49,7 @@ final class challenge_approval_display_test extends advanced_testcase {
         $PAGE->set_url(new \moodle_url('/mod/quest/challenges.php', [
             'id' => $cm->id, 'action' => 'approve',
         ]));
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => $quest->id,
             'userid' => $USER->id,
             'title' => 'Stored title',
@@ -58,7 +57,7 @@ final class challenge_approval_display_test extends advanced_testcase {
             'descriptionformat' => FORMAT_HTML,
             'descriptiontrust' => 0,
         ]);
-        $submission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
+        $challenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
         $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
         $category = $questiongenerator->create_question_category();
         $question = $questiongenerator->create_question('shortanswer', 'frogtoad', [
@@ -67,14 +66,14 @@ final class challenge_approval_display_test extends advanced_testcase {
         $entryid = $DB->get_field('question_versions', 'questionbankentryid', ['questionid' => $question->id]);
         \mod_quest\question\question_reference_service::set_challenge_question(
             $context->id,
-            $submissionid,
+            $challengeid,
             (int)$entryid
         );
-        $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge($submissionid);
+        $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge($challengeid);
         $descriptionoptions = ['context' => $context, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes];
         $attachmentoptions = ['subdirs' => false, 'maxfiles' => 0, 'maxbytes' => $course->maxbytes];
         $form = new \quest_print_upload_form(null, [
-            'submission' => $submission,
+            'challenge' => $challenge,
             'quest' => $quest,
             'cm' => $cm,
             'definitionoptions' => $descriptionoptions,
@@ -82,7 +81,7 @@ final class challenge_approval_display_test extends advanced_testcase {
             'action' => 'approve',
             'linkedquestion' => $linkedquestion,
         ]);
-        $this->assertEquals($submissionid, $submission->id);
+        $this->assertEquals($challengeid, $challenge->id);
 
         ob_start();
         $form->display();
@@ -91,9 +90,9 @@ final class challenge_approval_display_test extends advanced_testcase {
         $this->assertStringNotContainsString('name="description_editor[text]"', $html);
         $this->assertStringContainsString('name="datestart', $html);
 
-        $modifsubmission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
+        $modifchallenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
         $modifform = new \quest_print_upload_form(null, [
-            'submission' => $modifsubmission,
+            'challenge' => $modifchallenge,
             'quest' => $quest,
             'cm' => $cm,
             'definitionoptions' => $descriptionoptions,
@@ -103,9 +102,9 @@ final class challenge_approval_display_test extends advanced_testcase {
             'composerquestions' => array_map(static function ($slot) {
                 $slot->question->maxmark = (float)$slot->maxmark;
                 return $slot->question;
-            }, \mod_quest\question\question_reference_service::get_challenge_questions($submissionid)),
+            }, \mod_quest\question\question_reference_service::get_challenge_questions($challengeid)),
         ]);
-        $this->assertEquals($submissionid, $modifsubmission->id);
+        $this->assertEquals($challengeid, $modifchallenge->id);
         ob_start();
         $modifform->display();
         $modifhtml = ob_get_clean();
@@ -117,7 +116,7 @@ final class challenge_approval_display_test extends advanced_testcase {
 
         [$quba, $slots] = \mod_quest\service\autograde_service::get_or_create_challenge_preview_usage(
             $quest,
-            $submission,
+            $challenge,
             $linkedquestion,
             $context
         );
@@ -125,7 +124,7 @@ final class challenge_approval_display_test extends advanced_testcase {
         $this->assertStringContainsString('Name an amphibian', $preview);
 
         $submitted = (object)[
-            'id' => $submissionid,
+            'id' => $challengeid,
             'title' => 'Forged title',
             'description' => 'Forged description',
             'descriptionformat' => FORMAT_PLAIN,
@@ -236,7 +235,7 @@ final class challenge_approval_display_test extends advanced_testcase {
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => $quest->id,
             'userid' => $USER->id,
             'title' => 'Essay challenge',
@@ -244,7 +243,7 @@ final class challenge_approval_display_test extends advanced_testcase {
         ]);
         $answer = (object)[
             'questid' => $quest->id,
-            'submissionid' => $submissionid,
+            'submissionid' => $challengeid,
             'userid' => $USER->id,
             'title' => 'Essay answer',
             'description' => 'Response',

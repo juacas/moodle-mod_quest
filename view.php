@@ -97,20 +97,20 @@ if (($quest->usepassword) && (!$ismanager)) {
 if (has_capability('mod/quest:manage', $context)) {
     if (empty($action)) { // No action specified, either go straight to elements page else the admin
                           // page has the assignment any elements.
-        $elementsforthissubmission = $DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]);
+        $elementsforthischallenge = $DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]);
 
         if (isset($sid)) {
-            $submissions = $DB->get_record("quest_submissions", ['id' => $sid]);
-            $numelementsexpectedinsubmission = $submissions == false ? 0 : $submissions->numelements;
+            $challenges = $DB->get_record("quest_submissions", ['id' => $sid]);
+            $numelementsexpectedinchallenge = $challenges == false ? 0 : $challenges->numelements;
         } else {
-            $numelementsexpectedinsubmission = 0;
+            $numelementsexpectedinchallenge = 0;
         }
 
         if (
             $quest->gradingstrategy == 0 ||
                  ($DB->count_records("quest_elements", ["questid" => $quest->id, "submissionsid" => 0]) >= $quest->nelements)
                  ||
-                 (($elementsforthissubmission >= $numelementsexpectedinsubmission) && ($elementsforthissubmission != 0))
+                 (($elementsforthischallenge >= $numelementsexpectedinchallenge) && ($elementsforthischallenge != 0))
         ) {
             $numelements = $DB->count_records("quest_elementsautor", ["questid" => $quest->id]);
 
@@ -349,13 +349,13 @@ if ($action == 'notavailable') {
     $state = [];
     $pointsnmaxanswers = [];
     $forms = [];
-    if ($submissions = quest_get_submissions($quest)) {
-        foreach ($submissions as $submission) {
+    if ($challenges = quest_get_challenges($quest)) {
+        foreach ($challenges as $challenge) {
             // Get the author of this submission.
-            if ($submission->userid == 0) { // Anonymous user.
+            if ($challenge->userid == 0) { // Anonymous user.
                 $user = false;
             } else { // Guest user.
-                $user = $DB->get_record('user', ['id' => $submission->userid]);
+                $user = $DB->get_record('user', ['id' => $challenge->userid]);
             }
             // Skip if student not in group.
             if (!has_capability('mod/quest:manage', $context)) {
@@ -370,52 +370,52 @@ if ($action == 'notavailable') {
             $sortdata = [];
 
             if (
-                ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-                     ($submission->nanswerscorrect < $quest->nmaxanswers) && $submission->phase != SUBMISSION_PHASE_ACTIVE
+                ($challenge->datestart < $timenow) && ($challenge->dateend > $timenow) &&
+                     ($challenge->nanswerscorrect < $quest->nmaxanswers) && $challenge->phase != SUBMISSION_PHASE_ACTIVE
             ) {
-                $submission->phase = SUBMISSION_PHASE_ACTIVE; // Running...
-                $DB->update_record('quest_submissions', $submission);
+                $challenge->phase = SUBMISSION_PHASE_ACTIVE; // Running...
+                $DB->update_record('quest_submissions', $challenge);
             }
 
             // Skip a submission not viewable by this user...
             if (
-                $submission->state == SUBMISSION_STATE_APPROVAL_PENDING &&
+                $challenge->state == SUBMISSION_STATE_APPROVAL_PENDING &&
                     !has_capability('mod/quest:approvechallenge', $context) &&
-                    !has_capability('mod/quest:manage', $context) && $submission->userid != $USER->id
+                    !has_capability('mod/quest:manage', $context) && $challenge->userid != $USER->id
             ) {
                 continue;
             }
             // Skip challenge for student if the challenge is not started...
             if (
                 !has_capability('mod/quest:manage', $context) && // Manage permission.
-                $submission->datestart > $timenow && // Challenge is pending start.
-                $submission->userid != $USER->id
+                $challenge->datestart > $timenow && // Challenge is pending start.
+                $challenge->userid != $USER->id
             ) { // User is not the author.
                 continue; // Omit it.
             }
-            $mineicon = $submission->userid == $USER->id && !$canviewauthors ? $OUTPUT->user_picture($USER) : '';
-            $titletext = $mineicon . quest_print_submission_title($quest, $submission);
+            $mineicon = $challenge->userid == $USER->id && !$canviewauthors ? $OUTPUT->user_picture($USER) : '';
+            $titletext = $mineicon . quest_print_challenge_title($quest, $challenge);
 
             // Show or not the edit controls.
             if (
-                ((has_capability('mod/quest:editchallengeall', $context) || ($submission->userid == $USER->id)) &&
-                    ($submission->nanswers == 0) && ($timenow < $submission->dateend) &&
-                     ($submission->state != SUBMISSION_STATE_APROVED)) || ($ismanager)
+                ((has_capability('mod/quest:editchallengeall', $context) || ($challenge->userid == $USER->id)) &&
+                    ($challenge->nanswers == 0) && ($timenow < $challenge->dateend) &&
+                     ($challenge->state != SUBMISSION_STATE_APROVED)) || ($ismanager)
             ) {
                 $editicon = $OUTPUT->pix_icon('t/edit', get_string('modif', 'quest'));
                 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete', 'quest'));
-                $titletext .= "<a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . $editicon .
+                $titletext .= "<a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$challenge->id\">" . $editicon .
                         '</a>' .
-                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" . $deleteicon .
+                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$challenge->id\">" . $deleteicon .
                          '</a>';
             }
 
             $data[] = $titletext;
-            $sortdata['title'] = strtolower($submission->title);
+            $sortdata['title'] = strtolower($challenge->title);
             if ($canviewauthors) {
                 if ($user === false) { // Sometimes the author is no longer in the system.
                     $data[] = "?";
-                    $data[] = "Unknown author ($submission->userid)";
+                    $data[] = "Unknown author ($challenge->userid)";
                     $sortdata['firstname'] = "Unknown";
                     $sortdata['lastname'] = "Unknown";
                 } else {
@@ -427,7 +427,7 @@ if ($action == 'notavailable') {
                     $sortdata['lastname'] = strtolower($user->lastname);
                 }
             }
-            $attentionstatuses = quest_get_challenge_attention_status($submission, $cm, $context);
+            $attentionstatuses = quest_get_challenge_attention_status($challenge, $cm, $context);
             $phaseparts = [];
             $statuslabels = [];
             foreach ($attentionstatuses as $attentionstatus) {
@@ -447,8 +447,8 @@ if ($action == 'notavailable') {
                 );
                 $statuslabels[] = $attentionstatus['label'];
             }
-            $phaselabel = quest_submission_phase($submission, $quest, $course);
-            if (quest_should_show_challenge_phase_badge($submission, $attentionstatuses, $phaselabel)) {
+            $phaselabel = quest_challenge_phase($challenge, $quest, $course);
+            if (quest_should_show_challenge_phase_badge($challenge, $attentionstatuses, $phaselabel)) {
                 $phaseparts[] = html_writer::span(
                     $phaselabel,
                     'badge quest-phase-badge quest-challenge-phase-badge'
@@ -466,7 +466,7 @@ if ($action == 'notavailable') {
                 $answers = $DB->get_records_select(
                     "quest_answers",
                     "questid=? AND submissionid=?",
-                    [$quest->id, $submission->id]
+                    [$quest->id, $challenge->id]
                 )
             ) {
                 foreach ($answers as $answer) {
@@ -475,29 +475,29 @@ if ($action == 'notavailable') {
                     }
                 }
             }
-            $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
+            $nanswerswhithoutassess = $challenge->nanswers - $nanswersassess;
             $image = '';
             if (
                 $answer = $DB->get_record(
                     "quest_answers",
-                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id]
+                    ["questid" => $quest->id, "submissionid" => $challenge->id, "userid" => $USER->id]
                 )
             ) {
                 $image = $OUTPUT->pix_icon('t/check', 'ok');
             }
 
-            $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' . $nanswerswhithoutassess . ']' .
+            $data[] = "<b>" . $challenge->nanswers . ' (' . $challenge->nanswerscorrect . ') [' . $nanswerswhithoutassess . ']' .
                      $image . '</b>';
-            $sortdata['nanswersshort'] = $submission->nanswers;
-            $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
+            $sortdata['nanswersshort'] = $challenge->nanswers;
+            $sortdata['nanswerscorrectshort'] = $challenge->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-            $datestarttext = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
+            $datestarttext = userdate($challenge->datestart, get_string('strftimedatetimeshort', 'langconfig'));
             if ($ismanager) {
                 $datefield = html_writer::span($datestarttext, 'quest-view-date-field', [
-                    'data-cid' => $submission->id,
+                    'data-cid' => $challenge->id,
                     'data-field' => 'start',
-                    'data-date' => $submission->datestart,
+                    'data-date' => $challenge->datestart,
                     'role' => 'button',
                     'tabindex' => '0',
                     'title' => get_string('clicktoeditdate', 'quest'),
@@ -505,21 +505,21 @@ if ($action == 'notavailable') {
                 $datecell = new html_table_cell($datefield);
                 $datecell->attributes = [
                     'class' => 'quest-view-date-cell',
-                    'data-cid' => $submission->id,
+                    'data-cid' => $challenge->id,
                     'data-field' => 'start',
                 ];
                 $data[] = $datecell;
             } else {
                 $data[] = $datestarttext;
             }
-            $sortdata['datestart'] = $submission->datestart;
+            $sortdata['datestart'] = $challenge->datestart;
 
-            $dateendtext = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
+            $dateendtext = userdate($challenge->dateend, get_string('strftimedatetimeshort', 'langconfig'));
             if ($ismanager) {
                 $datefield = html_writer::span($dateendtext, 'quest-view-date-field', [
-                    'data-cid' => $submission->id,
+                    'data-cid' => $challenge->id,
                     'data-field' => 'end',
-                    'data-date' => $submission->dateend,
+                    'data-date' => $challenge->dateend,
                     'role' => 'button',
                     'tabindex' => '0',
                     'title' => get_string('clicktoeditdate', 'quest'),
@@ -527,27 +527,27 @@ if ($action == 'notavailable') {
                 $datecell = new html_table_cell($datefield);
                 $datecell->attributes = [
                     'class' => 'quest-view-date-cell',
-                    'data-cid' => $submission->id,
+                    'data-cid' => $challenge->id,
                     'data-field' => 'end',
                 ];
                 $data[] = $datecell;
             } else {
                 $data[] = $dateendtext;
             }
-            $sortdata['dateend'] = $submission->dateend;
+            $sortdata['dateend'] = $challenge->dateend;
 
             $tinitialval = (int)$quest->tinitial * 86400;
-            $currentpoints = quest_get_points($submission, $quest, '');
+            $currentpoints = quest_get_points($challenge, $quest, '');
             $currentformatted = number_format($currentpoints, 4);
             $grade = "<form class=\"d-inline\"><input id=\"formscore$indice\" class=\"quest-score-counter\" " .
                     "name=\"calificacion\" type=\"text\" value=\"$currentformatted\" size=\"10\" readonly=\"1\" " .
-                    "data-datestart=\"{$submission->datestart}\" " .
-                    "data-dateend=\"{$submission->dateend}\" " .
+                    "data-datestart=\"{$challenge->datestart}\" " .
+                    "data-dateend=\"{$challenge->dateend}\" " .
                     "data-tinitial=\"{$tinitialval}\" " .
-                    "data-dateanswercorrect=\"{$submission->dateanswercorrect}\" " .
-                    "data-initialpoints=\"{$submission->initialpoints}\" " .
-                    "data-pointsmax=\"{$submission->pointsmax}\" " .
-                    "data-pointsmin=\"{$submission->pointsmin}\" " .
+                    "data-dateanswercorrect=\"{$challenge->dateanswercorrect}\" " .
+                    "data-initialpoints=\"{$challenge->initialpoints}\" " .
+                    "data-pointsmax=\"{$challenge->pointsmax}\" " .
+                    "data-pointsmin=\"{$challenge->pointsmin}\" " .
                     "data-type=\"{$quest->typecalification}\" " .
                     "style=\"background-color : White; border : 1px solid #ced4da; border-radius: 4px; color : Black; " .
                     "font-size : 12pt; text-align : center; font-weight: bold;\"></form>";

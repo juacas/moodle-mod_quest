@@ -78,12 +78,12 @@ class leaderboard_service {
                   FROM {quest_submissions} s
                  WHERE s.questid = ? AND s.userid $insql";
 
-        $submissions = $DB->get_fieldset_sql($sql, $params);
-        if (empty($submissions)) {
+        $challenges = $DB->get_fieldset_sql($sql, $params);
+        if (empty($challenges)) {
             return 0.0;
         }
 
-        [$sinsql, $sinparams] = $DB->get_in_or_equal($submissions);
+        [$sinsql, $sinparams] = $DB->get_in_or_equal($challenges);
         $records = $DB->get_record_sql(
             "SELECT SUM(points) AS points FROM {quest_assessments_autors} WHERE submissionid $sinsql",
             $sinparams
@@ -166,7 +166,7 @@ class leaderboard_service {
         }
 
         $pointsanswers = self::calculate_user_answer_score($questid, $members);
-        $pointssubmission = self::calculate_user_author_score($questid, $members);
+        $pointschallenge = self::calculate_user_author_score($questid, $members);
 
         [$minsql, $minparams] = $DB->get_in_or_equal($members);
         $params = array_merge([$questid], $minparams);
@@ -177,8 +177,8 @@ class leaderboard_service {
             "questid = ? AND userid $minsql AND phase > 0",
             $params
         );
-        $nsubmissions = (int)$DB->count_records_select('quest_submissions', "questid = ? AND userid $minsql", $params);
-        $nsubmissionsassessment = (int)$DB->count_records_select(
+        $nchallenges = (int)$DB->count_records_select('quest_submissions', "questid = ? AND userid $minsql", $params);
+        $nchallengesassessment = (int)$DB->count_records_select(
             'quest_submissions',
             "questid = ? AND userid $minsql AND evaluated = 1",
             $params
@@ -192,13 +192,13 @@ class leaderboard_service {
             $calteam->id = $DB->insert_record('quest_calification_teams', $calteam);
         }
 
-        $calteam->points = $pointssubmission + $pointsanswers;
+        $calteam->points = $pointschallenge + $pointsanswers;
         $calteam->pointsanswers = $pointsanswers;
-        $calteam->pointssubmission = $pointssubmission;
+        $calteam->pointssubmission = $pointschallenge;
         $calteam->nanswers = $nanswers;
         $calteam->nanswerassessment = $nanswerassessment;
-        $calteam->nsubmissions = $nsubmissions;
-        $calteam->nsubmissionsassessment = $nsubmissionsassessment;
+        $calteam->nsubmissions = $nchallenges;
+        $calteam->nsubmissionsassessment = $nchallengesassessment;
 
         $DB->update_record('quest_calification_teams', $calteam);
         return $calteam;

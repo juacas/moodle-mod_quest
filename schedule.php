@@ -111,7 +111,7 @@ $sql = "SELECT s.*, u.email $namefields
           JOIN {user} u ON u.id = s.userid
          WHERE s.questid = :questid
       ORDER BY s.datestart ASC, s.id ASC";
-$submissions = $DB->get_records_sql($sql, ['questid' => $quest->id]);
+$challenges = $DB->get_records_sql($sql, ['questid' => $quest->id]);
 
 $challengesdata = [];
 $tabledateformat = get_string('strftimedatetimeshort', 'langconfig');
@@ -120,7 +120,7 @@ $queststart = (int)$quest->datestart;
 $questend = (int)$quest->dateend;
 $hourlyscale = ($questend - $queststart) <= (7 * 86400);
 
-foreach ($submissions as $s) {
+foreach ($challenges as $s) {
     $datestart = (int)$s->datestart;
     $dateend = (int)$s->dateend;
     $diffsec = max(0, $dateend - $datestart);

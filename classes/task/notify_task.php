@@ -117,13 +117,13 @@ class notify_task extends \core\task\scheduled_task {
                             $posthtml .= get_string('resume24hours', 'quest', $quest);
                             $posthtml .= "<br>-------------------------------------------------------------<br>";
 
-                            if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
+                            if ($challenges = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
                                 // Imprimir cabecera del m�dulo QUEST en mensaje.
-                                foreach ($submissions as $submission) {
+                                foreach ($challenges as $challenge) {
                                     // Challenge unnotified and recently created.
-                                    if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
+                                    if (($challenge->timecreated > $timeref) && ($challenge->mailed == 0)) {
                                         $indice++;
-                                        $user = get_complete_user_data('id', $submission->userid);
+                                        $user = get_complete_user_data('id', $challenge->userid);
 
                                         $cleanquestname = str_replace('"', "'", strip_tags($quest->name));
                                         $userfrom->customheaders = [ // Headers to make emails
@@ -145,7 +145,7 @@ class notify_task extends \core\task\scheduled_task {
                                         $posttext .= quest_make_mail_text(
                                             $course,
                                             $quest,
-                                            $submission,
+                                            $challenge,
                                             $userfrom,
                                             $userto,
                                             $user,
@@ -155,7 +155,7 @@ class notify_task extends \core\task\scheduled_task {
                                         $posthtml .= quest_make_mail_html(
                                             $course,
                                             $quest,
-                                            $submission,
+                                            $challenge,
                                             $userfrom,
                                             $userto,
                                             $user,
@@ -187,12 +187,12 @@ class notify_task extends \core\task\scheduled_task {
                     } // ...foreach user.
 
                     // Mark submissions as mailed...
-                    if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
+                    if ($challenges = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
                         // Imprimir cabecera del m�dulo QUEST en mensaje.
-                        foreach ($submissions as $submission) {
-                            if (($submission->timecreated > $timeref) && ($submission->mailed == 0)) {
-                                $submission->mailed = 1;
-                                $DB->set_field("quest_submissions", "mailed", $submission->mailed, ["id" => $submission->id]);
+                        foreach ($challenges as $challenge) {
+                            if (($challenge->timecreated > $timeref) && ($challenge->mailed == 0)) {
+                                $challenge->mailed = 1;
+                                $DB->set_field("quest_submissions", "mailed", $challenge->mailed, ["id" => $challenge->id]);
                             }
                         }
                     }
@@ -230,38 +230,38 @@ class notify_task extends \core\task\scheduled_task {
                     continue;
                 }
                 $context = \context_course::instance($course->id);
-                $submissionscount = 0;
+                $challengescount = 0;
                 $userscount = 0;
                 $userfrom = class_exists('core_user') ? \core_user::get_noreply_user() : quest_get_teacher($course->id);
                 // For each quest group messages to avoid avalanches.
-                if ($submissions = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
-                    mtrace("Processing " . count($submissions) . " challenges for quest: $quest->id.");
-                    $submissionsmailed = [];
+                if ($challenges = $DB->get_records("quest_submissions", ["questid" => $quest->id])) {
+                    mtrace("Processing " . count($challenges) . " challenges for quest: $quest->id.");
+                    $challengesmailed = [];
                     $usermessages = []; // Users and their messages to send.
                     // Imprimir cabecera del modulo QUEST en mensaje.
-                    foreach ($submissions as $submission) {
+                    foreach ($challenges as $challenge) {
                         // The challenge has started and is approved and is not emailed yet to
                         // users.
                         if (
-                            ($submission->datestart <= time())
-                                && ($submission->dateend >= time())
-                                && ($submission->maileduser == 0)
-                                && ($submission->state != SUBMISSION_STATE_APPROVAL_PENDING)
+                            ($challenge->datestart <= time())
+                                && ($challenge->dateend >= time())
+                                && ($challenge->maileduser == 0)
+                                && ($challenge->state != SUBMISSION_STATE_APPROVAL_PENDING)
                         ) {
-                            $submissionscount++;
-                            $submissionsmailed[] = $submission;
+                            $challengescount++;
+                            $challengesmailed[] = $challenge;
                             $userscount = 0;
-                            mtrace("Challenge $submission->id has started. Messaging advice" . " to " . count($users) . " users.");
+                            mtrace("Challenge $challenge->id has started. Messaging advice" . " to " . count($users) . " users.");
                             foreach ($users as $user) {
                                 if (!has_capability('mod/quest:manage', $context, $user)) { // Only to non-teachers.
                                     $userscount++;
 
                                     $msgdata = quest_compose_message_data(
                                         $user,
-                                        "challenges.php?id=$cm->id&amp;cid=$submission->id&amp;action=showchallenge",
+                                        "challenges.php?id=$cm->id&amp;cid=$challenge->id&amp;action=showchallenge",
                                         'challenge_start',
                                         $quest,
-                                        $submission,
+                                        $challenge,
                                         '',
                                         $userfrom
                                     );
@@ -279,21 +279,21 @@ class notify_task extends \core\task\scheduled_task {
                         $template = reset($usermsglist);
                         $template->messagehtml = $messagehtml;
                         mtrace("Sending message (" . count($usermsglist) . " challenges: "
-                                . implode(',', array_keys($submissions)) . ") to user "
+                                . implode(',', array_keys($challenges)) . ") to user "
                                 . $template->userto->username . " in name of "
                                 . $template->userfrom->username . "\n");
                         quest_send_message_data($template);
                     }
                     // Mark challenges as mailed.
-                    foreach ($submissionsmailed as $submission) {
-                        $DB->set_field("quest_submissions", "maileduser", 1, ['id' => $submission->id]);
+                    foreach ($challengesmailed as $challenge) {
+                        $DB->set_field("quest_submissions", "maileduser", 1, ['id' => $challenge->id]);
                         // Update Calendar Events.
-                        quest_update_challenge_calendar($cm, $quest, $submission);
+                        quest_update_challenge_calendar($cm, $quest, $challenge);
                     }
                 } else {
                     mtrace("Quest id: $quest->id has no challenges.");
                 }
-                mtrace("Quest id: $quest->id : $submissionscount submissions mailed to $userscount users.\n");
+                mtrace("Quest id: $quest->id : $challengescount submissions mailed to $userscount users.\n");
             }
         }
         mtrace("QUESTOURnament processed (" . (time() - $timestart) . " s)");

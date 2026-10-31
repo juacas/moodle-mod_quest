@@ -35,11 +35,11 @@ $dir = optional_param('dir', 'ASC', PARAM_ALPHA);
 global $DB, $PAGE, $OUTPUT, $USER;
 
 $assessment = $DB->get_record("quest_assessments_autors", ["id" => $aid], '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', [
+$challenge = $DB->get_record('quest_submissions', [
     'id' => $assessment->submissionid,
     'questid' => $assessment->questid,
 ], '*', MUST_EXIST);
-$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $challenge->questid], '*', MUST_EXIST);
 [$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 
 require_login($course->id, false, $cm);
@@ -63,16 +63,16 @@ quest_check_visibility($course, $cm);
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
 $canviewotherauthors = has_capability('mod/quest:viewotherattemptsowners', $context);
-$isclosed = (int)$submission->dateend <= time() ||
-    (int)$submission->nanswerscorrect >= (int)$quest->nmaxanswers;
+$isclosed = (int)$challenge->dateend <= time() ||
+    (int)$challenge->nanswerscorrect >= (int)$quest->nmaxanswers;
 if (
-    !$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id &&
+    !$ismanager && !$cangrade && (int)$challenge->userid !== (int)$USER->id &&
         !($quest->permitviewautors && $isclosed && $canviewotherauthors)
 ) {
     throw new \moodle_exception('nopermissions', 'error', '', 'view this assessment');
 }
 
-quest_add_breadcrumbs($cm, $submission, null, get_string('seeassessmentautor', 'quest'));
+quest_add_breadcrumbs($cm, $challenge, null, get_string('seeassessmentautor', 'quest'));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -85,7 +85,7 @@ if (isset($newcalification)) {
     require_sesskey();
     if (
         !is_finite($newcalification) || $newcalification < 0 ||
-            $newcalification > (float)$submission->initialpoints
+            $newcalification > (float)$challenge->initialpoints
     ) {
         throw new \moodle_exception('invaliddata', 'error');
     }
@@ -93,7 +93,7 @@ if (isset($newcalification)) {
     if (($ismanager || $cangrade) && ($assessment->state != 0)) {
         if (
             $calificationuser = $DB->get_record("quest_calification_users", [
-            "userid" => $submission->userid,
+            "userid" => $challenge->userid,
             "questid" => $quest->id,
             ])
         ) {
@@ -143,15 +143,15 @@ if (isset($newcalification)) {
 
 // Show assessment but don't allow changes.
 quest_print_assessment_autor($quest, $assessment, false, $allowcomments);
-$submission = $DB->get_record("quest_submissions", ["id" => $submission->id]);
-$title = '"' . $submission->title . '" ';
-if (($ismanager || ($submission->userid == $USER->id))) {
-    $title .= get_string('by', 'quest') . ' ' . quest_fullname($submission->userid, $course->id);
+$challenge = $DB->get_record("quest_submissions", ["id" => $challenge->id]);
+$title = '"' . $challenge->title . '" ';
+if (($ismanager || ($challenge->userid == $USER->id))) {
+    $title .= get_string('by', 'quest') . ' ' . quest_fullname($challenge->userid, $course->id);
 }
 
 echo $OUTPUT->heading($title);
 
-quest_print_submission_info($quest, $submission);
+quest_print_challenge_info($quest, $challenge);
 
 echo '<div class="text-center my-3">';
 echo '<a class="btn btn-outline-secondary btn-sm" href="assessments_autors.php?id=' . $cm->id . '&amp;action=displaygradingform">';
@@ -165,22 +165,22 @@ echo '<div class="card-header bg-light fw-bold py-2 px-3 text-dark">';
 echo '<i class="fa fa-file-text-o text-primary me-2" aria-hidden="true"></i>' . get_string('description', 'quest');
 echo '</div>';
 echo '<div class="card-body p-4">';
-quest_print_submission($quest, $submission);
+quest_print_challenge($quest, $challenge);
 echo '</div></div></div>';
 
 $timenow = time();
 if (
-    ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-    ($submission->nanswerscorrect < $quest->nmaxanswers)
+    ($challenge->datestart < $timenow) && ($challenge->dateend > $timenow) &&
+    ($challenge->nanswerscorrect < $quest->nmaxanswers)
 ) {
-    $submission->phase = SUBMISSION_PHASE_ACTIVE;
+    $challenge->phase = SUBMISSION_PHASE_ACTIVE;
 }
 echo '<div class="text-center my-4">';
 $returl = !empty($_SERVER['HTTP_REFERER'])
     ? $_SERVER['HTTP_REFERER']
     : (new moodle_url('/mod/quest/challenges.php', [
         'id' => $cm->id,
-        'cid' => $submission->id,
+        'cid' => $challenge->id,
         'action' => 'showchallenge',
     ]))->out();
 echo $OUTPUT->continue_button($returl);

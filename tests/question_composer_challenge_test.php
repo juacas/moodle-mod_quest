@@ -25,9 +25,8 @@ use advanced_testcase;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \quest_print_upload_form
  */
-final class question_composer_submission_test extends advanced_testcase {
+final class question_composer_challenge_test extends advanced_testcase {
     /**
      * The generated form includes a registered copy of its two selected IDs.
      */
@@ -48,7 +47,7 @@ final class question_composer_submission_test extends advanced_testcase {
         $first = $generator->create_question('essay', null, ['category' => $category->id]);
         $second = $generator->create_question('essay', null, ['category' => $category->id]);
         $form = new \quest_print_upload_form(null, [
-            'submission' => (object)['id' => 0],
+            'challenge' => (object)['id' => 0],
             'quest' => $quest,
             'cm' => $cm,
             'definitionoptions' => ['context' => $context, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes],

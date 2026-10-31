@@ -181,51 +181,51 @@ $columns = ['title', 'phase', 'nanswersshort', 'nanswerscorrectshort',
 
 $indice = 0;
 
-if ($submissions = quest_get_user_submissions($quest, $USER)) {
-    foreach ($submissions as $submission) {
+if ($challenges = quest_get_user_challenges($quest, $USER)) {
+    foreach ($challenges as $challenge) {
         $data = [];
         $sortdata = [];
 
-        if ($submission->userid == $USER->id) {
+        if ($challenge->userid == $USER->id) {
             if (
-                ($submission->datestart < $timenow) && ($submission->dateend > $timenow) &&
-                     ($submission->nanswerscorrect < $quest->nmaxanswers)
+                ($challenge->datestart < $timenow) && ($challenge->dateend > $timenow) &&
+                     ($challenge->nanswerscorrect < $quest->nmaxanswers)
             ) {
-                $submission->phase = SUBMISSION_PHASE_ACTIVE;
+                $challenge->phase = SUBMISSION_PHASE_ACTIVE;
             }
 
             if ($canpreview) {
-                $data[] = quest_print_submission_title($quest, $submission) .
-                         " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . "<img src=\"" .
+                $data[] = quest_print_challenge_title($quest, $challenge) .
+                         " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$challenge->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" .
+                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$challenge->id\">" .
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
-                $sortdata['title'] = strtolower($submission->title);
-            } else if (($submission->nanswers == 0) && ($timenow < $submission->dateend) && ($submission->state < 2)) {
-                $data[] = quest_print_submission_title($quest, $submission) .
-                         " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$submission->id\">" . "<img src=\"" .
+                $sortdata['title'] = strtolower($challenge->title);
+            } else if (($challenge->nanswers == 0) && ($timenow < $challenge->dateend) && ($challenge->state < 2)) {
+                $data[] = quest_print_challenge_title($quest, $challenge) .
+                         " <a href=\"challenges.php?action=modif&amp;id=$cm->id&amp;cid=$challenge->id\">" . "<img src=\"" .
                          $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>' .
-                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$submission->id\">" .
+                         " <a href=\"challenges.php?action=confirmdelete&amp;id=$cm->id&amp;cid=$challenge->id\">" .
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('delete', 'quest') . '" /></a>';
-                $sortdata['title'] = strtolower($submission->title);
+                $sortdata['title'] = strtolower($challenge->title);
             } else {
-                $data[] = quest_print_submission_title($quest, $submission);
-                $sortdata['title'] = strtolower($submission->title);
+                $data[] = quest_print_challenge_title($quest, $challenge);
+                $sortdata['title'] = strtolower($challenge->title);
             }
 
-            $data[] = quest_submission_phase($submission, $quest, $course);
-            $sortdata['phase'] = quest_submission_phase($submission, $quest, $course);
+            $data[] = quest_challenge_phase($challenge, $quest, $course);
+            $sortdata['phase'] = quest_challenge_phase($challenge, $quest, $course);
 
             $nanswersassess = 0;
             if (
                 $answers = $DB->get_records_select(
                     "quest_answers",
                     "questid=? AND submissionid=?",
-                    [$quest->id, $submission->id]
+                    [$quest->id, $challenge->id]
                 )
             ) {
                 foreach ($answers as $answer) {
@@ -234,61 +234,61 @@ if ($submissions = quest_get_user_submissions($quest, $USER)) {
                     }
                 }
             }
-            $nanswerswhithoutassess = $submission->nanswers - $nanswersassess;
+            $nanswerswhithoutassess = $challenge->nanswers - $nanswersassess;
             $image = '';
             if (
                 $answer = $DB->get_record(
                     "quest_answers",
-                    ["questid" => $quest->id, "submissionid" => $submission->id, "userid" => $USER->id]
+                    ["questid" => $quest->id, "submissionid" => $challenge->id, "userid" => $USER->id]
                 )
             ) {
                 $image = " <img src=\"" . $CFG->wwwroot . "/pix/t/clear.png\" />";
             }
 
-            $data[] = "<b>" . $submission->nanswers . ' (' . $submission->nanswerscorrect . ') [' . $nanswerswhithoutassess . ']' .
+            $data[] = "<b>" . $challenge->nanswers . ' (' . $challenge->nanswerscorrect . ') [' . $nanswerswhithoutassess . ']' .
                      $image . '</b>';
-            $sortdata['nanswersshort'] = $submission->nanswers;
-            $sortdata['nanswerscorrectshort'] = $submission->nanswerscorrect;
+            $sortdata['nanswersshort'] = $challenge->nanswers;
+            $sortdata['nanswerscorrectshort'] = $challenge->nanswerscorrect;
             $sortdata['nanswerswhithoutassess'] = $nanswerswhithoutassess;
 
-            $data[] = userdate($submission->datestart, get_string('strftimedatetimeshort', 'langconfig'));
-            $sortdata['datestart'] = $submission->datestart;
+            $data[] = userdate($challenge->datestart, get_string('strftimedatetimeshort', 'langconfig'));
+            $sortdata['datestart'] = $challenge->datestart;
 
-            $data[] = userdate($submission->dateend, get_string('strftimedatetimeshort', 'langconfig'));
-            $sortdata['dateend'] = $submission->dateend;
+            $data[] = userdate($challenge->dateend, get_string('strftimedatetimeshort', 'langconfig'));
+            $sortdata['dateend'] = $challenge->dateend;
 
             $grade = "<form><input name=\"calificacion\" id=\"formscore$indice\" type=\"text\" value=\"\" " .
                     "size=\"10\" readonly=\"1\" " .
                     "class=\"quest-score-counter\" " .
-                    "data-datestart=\"" . (int)$submission->datestart . "\" " .
-                    "data-dateend=\"" . (int)$submission->dateend . "\" " .
+                    "data-datestart=\"" . (int)$challenge->datestart . "\" " .
+                    "data-dateend=\"" . (int)$challenge->dateend . "\" " .
                     "data-tinitial=\"" . ((int)$quest->tinitial * 86400) . "\" " .
-                    "data-dateanswercorrect=\"" . (int)$submission->dateanswercorrect . "\" " .
-                    "data-initialpoints=\"" . (float)$submission->initialpoints . "\" " .
-                    "data-pointsmax=\"" . (float)$submission->pointsmax . "\" " .
-                    "data-pointsmin=\"" . (float)$submission->pointsmin . "\" " .
+                    "data-dateanswercorrect=\"" . (int)$challenge->dateanswercorrect . "\" " .
+                    "data-initialpoints=\"" . (float)$challenge->initialpoints . "\" " .
+                    "data-pointsmax=\"" . (float)$challenge->pointsmax . "\" " .
+                    "data-pointsmin=\"" . (float)$challenge->pointsmin . "\" " .
                     "data-type=\"" . (int)$quest->typecalification . "\" " .
                     "style=\"background-color : White; border : Black; color : Black; font-size : 14pt; " .
                     "text-align : center;\" ></form>";
 
             $data[] = $grade;
-            $sortdata['calification'] = quest_get_points($submission, $quest, '');
+            $sortdata['calification'] = quest_get_points($challenge, $quest, '');
 
             $columns[] = 'grade';
             $table->align[] = 'center';
             if (
-                $submission->evaluated != 0 && $assessment = $DB->get_record(
+                $challenge->evaluated != 0 && $assessment = $DB->get_record(
                     "quest_assessments_autors",
-                    ["questid" => $quest->id, "submissionid" => $submission->id]
+                    ["questid" => $quest->id, "submissionid" => $challenge->id]
                 )
             ) {
-                if ($submission->pointsanswercorrect > 0) {
-                    $data[] = number_format($assessment->points * 100 / $submission->pointsanswercorrect, 1) . '% (' .
+                if ($challenge->pointsanswercorrect > 0) {
+                    $data[] = number_format($assessment->points * 100 / $challenge->pointsanswercorrect, 1) . '% (' .
                               number_format($assessment->points, 4) . ')';
                 } else {
                     $data[] = '';
                 }
-                $sortdata['grade'] = $submission->points;
+                $sortdata['grade'] = $challenge->points;
             } else {
                 $data[] = get_string("evaluation_pending", "quest");
             }
@@ -361,40 +361,40 @@ if ($answers) {
     foreach ($answers as $answer) {
         $data = [];
         $sortdata = [];
-        $submission = $DB->get_record("quest_submissions", ["id" => $answer->submissionid]);
+        $challenge = $DB->get_record("quest_submissions", ["id" => $answer->submissionid]);
         if ($answer->userid == $USER->id) {
             if ($canpreview) {
-                $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+                $data[] = quest_print_answer_title($quest, $answer, $challenge) .
+                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$challenge->id\">" .
                      "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                      get_string('modif', 'quest') . '" /></a>' .
-                     " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
+                     " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$challenge->id&amp;aid=$answer->id\">" .
                      "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                      get_string('delete', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
-            } else if (($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase == 0)) {
-                $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+            } else if (($answer->userid == $USER->id) && ($challenge->dateend > $timenow) && ($answer->phase == 0)) {
+                $data[] = quest_print_answer_title($quest, $answer, $challenge) .
+                     " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$challenge->id\">" .
                      "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                      get_string('modif', 'quest') . '" /></a>' .
-                     " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$submission->id&amp;aid=$answer->id\">" .
+                     " <a href=\"answer.php?action=confirmdelete&amp;id=$cm->id&amp;sid=$challenge->id&amp;aid=$answer->id\">" .
                      "<img src=\"" . $CFG->wwwroot . "/pix/t/delete.svg\" " . 'height="11" width="11" border="0" alt="' .
                      get_string('delete', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
             } else if (
-                ($answer->userid == $USER->id) && ($submission->dateend > $timenow) && ($answer->phase > 0) &&
+                ($answer->userid == $USER->id) && ($challenge->dateend > $timenow) && ($answer->phase > 0) &&
                              ($answer->permitsubmit == 1)
             ) {
-                        $data[] = quest_print_answer_title($quest, $answer, $submission) .
-                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$submission->id\">" .
+                        $data[] = quest_print_answer_title($quest, $answer, $challenge) .
+                         " <a href=\"answer.php?action=modif&amp;id=$cm->id&amp;aid=$answer->id&amp;sid=$challenge->id\">" .
                          "<img src=\"" . $CFG->wwwroot . "/pix/t/edit.svg\" " . 'height="11" width="11" border="0" alt="' .
                          get_string('modif', 'quest') . '" /></a>';
 
                 $sortdata['title'] = strtolower($answer->title);
             } else {
-                $data[] = quest_print_answer_title($quest, $answer, $submission);
+                $data[] = quest_print_answer_title($quest, $answer, $challenge);
                 $sortdata['title'] = strtolower($answer->title);
             }
 
@@ -407,7 +407,7 @@ if ($answers) {
                 $assessment = null;
             }
 
-            $data[] = quest_print_actions_answers($cm, $answer, $submission, $course, $assessment);
+            $data[] = quest_print_actions_answers($cm, $answer, $challenge, $course, $assessment);
             $sortdata['tassmnt'] = 1;
 
             $grade = number_format(quest_answer_grade($quest, $answer, 'ALL'), 4) .

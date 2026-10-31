@@ -58,26 +58,26 @@ class tournament_manager {
     /**
      * Count submission answers and update aggregated counts.
      *
-     * @param int $submissionid
+     * @param int $challengeid
      * @return stdClass Updated submission object.
      */
-    public static function update_submission_counts(int $submissionid): stdClass {
+    public static function update_challenge_counts(int $challengeid): stdClass {
         global $DB;
 
-        $submission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
+        $challenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
 
-        $na = $DB->count_records('quest_answers', ['submissionid' => $submissionid]);
-        $naa = $DB->count_records_select('quest_answers', 'submissionid = :sid AND phase > 0', ['sid' => $submissionid]);
-        $nac = $DB->count_records_select('quest_answers', 'submissionid = :sid AND grade >= 50', ['sid' => $submissionid]);
+        $na = $DB->count_records('quest_answers', ['submissionid' => $challengeid]);
+        $naa = $DB->count_records_select('quest_answers', 'submissionid = :sid AND phase > 0', ['sid' => $challengeid]);
+        $nac = $DB->count_records_select('quest_answers', 'submissionid = :sid AND grade >= 50', ['sid' => $challengeid]);
 
-        $submission->nanswers = $na;
-        $submission->nanswerscorrect = $nac;
+        $challenge->nanswers = $na;
+        $challenge->nanswerscorrect = $nac;
 
         // Check first correct answer date and points.
         $correctanswers = $DB->get_records_select(
             'quest_answers',
             'submissionid = :sid AND grade >= 50',
-            ['sid' => $submissionid],
+            ['sid' => $challengeid],
             'date ASC',
             'id, date, pointsmax',
             0,
@@ -86,48 +86,48 @@ class tournament_manager {
 
         if (!empty($correctanswers)) {
             $firstcorrect = reset($correctanswers);
-            $submission->dateanswercorrect = (int)$firstcorrect->date;
-            $submission->pointsanswercorrect = (float)$firstcorrect->pointsmax;
+            $challenge->dateanswercorrect = (int)$firstcorrect->date;
+            $challenge->pointsanswercorrect = (float)$firstcorrect->pointsmax;
         } else {
-            $submission->dateanswercorrect = 0;
-            $submission->pointsanswercorrect = 0.0;
+            $challenge->dateanswercorrect = 0;
+            $challenge->pointsanswercorrect = 0.0;
         }
 
-        $DB->update_record('quest_submissions', $submission);
-        return $submission;
+        $DB->update_record('quest_submissions', $challenge);
+        return $challenge;
     }
 
     /**
      * Validate whether a user can submit an answer to a challenge.
      *
      * @param stdClass $quest
-     * @param stdClass $submission
+     * @param stdClass $challenge
      * @param int $userid
      * @return array [bool $allowed, string $reason]
      */
-    public static function can_submit_answer(stdClass $quest, stdClass $submission, int $userid): array {
+    public static function can_submit_answer(stdClass $quest, stdClass $challenge, int $userid): array {
         global $DB;
 
         $timenow = time();
 
         // Author cannot answer own challenge.
-        if ($submission->userid == $userid) {
+        if ($challenge->userid == $userid) {
             return [false, get_string('cannotanswerownchallenge', 'quest')];
         }
 
         // Must be active.
-        if ($timenow < $submission->datestart) {
+        if ($timenow < $challenge->datestart) {
             return [false, get_string('challengenotstarted', 'quest')];
         }
 
-        if ($timenow > $submission->dateend) {
+        if ($timenow > $challenge->dateend) {
             return [false, get_string('challengeclosed', 'quest')];
         }
 
         // Check user answer count.
         if ($quest->nmaxanswers > 0) {
             $useranswercount = $DB->count_records('quest_answers', [
-                'submissionid' => $submission->id,
+                'submissionid' => $challenge->id,
                 'userid' => $userid,
             ]);
             if ($useranswercount >= $quest->nmaxanswers) {
@@ -142,7 +142,7 @@ class tournament_manager {
      * Record a new answer and update scoring.
      *
      * @param stdClass $quest
-     * @param stdClass $submission
+     * @param stdClass $challenge
      * @param int $userid
      * @param string $title
      * @param string $description
@@ -154,7 +154,7 @@ class tournament_manager {
      */
     public static function record_answer(
         stdClass $quest,
-        stdClass $submission,
+        stdClass $challenge,
         int $userid,
         string $title,
         string $description,
@@ -171,18 +171,18 @@ class tournament_manager {
         // Calculate maximum points available at this moment.
         $pointsmax = scoring_calculator::calculate_points(
             $timenow,
-            (int)$submission->datestart,
-            (int)$submission->dateend,
+            (int)$challenge->datestart,
+            (int)$challenge->dateend,
             $tinitial,
-            !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : null,
-            (float)$submission->initialpoints,
-            (float)$submission->pointsmax,
-            (float)$submission->pointsmin
+            !empty($challenge->dateanswercorrect) ? (int)$challenge->dateanswercorrect : null,
+            (float)$challenge->initialpoints,
+            (float)$challenge->pointsmax,
+            (float)$challenge->pointsmin
         );
 
         $answer = new stdClass();
         $answer->questid = (int)$quest->id;
-        $answer->submissionid = (int)$submission->id;
+        $answer->submissionid = (int)$challenge->id;
         $answer->userid = $userid;
         $answer->title = $title;
         $answer->description = $description;
@@ -202,12 +202,12 @@ class tournament_manager {
         $answer->id = $DB->insert_record('quest_answers', $answer);
 
         // Update submission aggregations and inflection points.
-        self::update_submission_counts($submission->id);
+        self::update_challenge_counts($challenge->id);
 
         // Update user achievement points.
         leaderboard_service::update_user_scores($quest, $userid);
-        if ($submission->userid != $userid) {
-            leaderboard_service::update_user_scores($quest, $submission->userid);
+        if ($challenge->userid != $userid) {
+            leaderboard_service::update_user_scores($quest, $challenge->userid);
         }
 
         return $answer;
@@ -252,18 +252,18 @@ class tournament_manager {
                 continue;
             }
 
-            $submission = $DB->get_record('quest_submissions', ['id' => $id, 'questid' => $quest->id]);
-            if (!$submission) {
+            $challenge = $DB->get_record('quest_submissions', ['id' => $id, 'questid' => $quest->id]);
+            if (!$challenge) {
                 $errors[] = get_string('scheduleerrornotfound', 'quest', $id);
                 continue;
             }
 
             // Ignore unchanged dates so no database, calendar or event update is generated.
-            if ((int)$submission->datestart === $datestart && (int)$submission->dateend === $dateend) {
+            if ((int)$challenge->datestart === $datestart && (int)$challenge->dateend === $dateend) {
                 continue;
             }
 
-            $chtitle = format_string($submission->title);
+            $chtitle = format_string($challenge->title);
 
             // 1. Positive timestamps and order coherence check.
             if ($datestart <= 0 || $dateend <= 0 || $datestart >= $dateend) {
@@ -307,8 +307,8 @@ class tournament_manager {
             }
 
             // 3. Dependency check with correct answer inflection point.
-            if (!empty($submission->dateanswercorrect) && (int)$submission->dateanswercorrect > 0) {
-                $inflection = (int)$submission->dateanswercorrect;
+            if (!empty($challenge->dateanswercorrect) && (int)$challenge->dateanswercorrect > 0) {
+                $inflection = (int)$challenge->dateanswercorrect;
                 if ($datestart > $inflection || $dateend < $inflection) {
                     $errors[] = get_string('scheduleerroranswercorrect', 'quest', (object)[
                         'title' => $chtitle,
@@ -326,7 +326,7 @@ class tournament_manager {
             }
 
             $validateditems[] = [
-                'submission' => $submission,
+                'challenge' => $challenge,
                 'datestart' => $datestart,
                 'dateend' => $dateend,
             ];
@@ -347,7 +347,7 @@ class tournament_manager {
                 'success' => true,
                 'message' => get_string('schedulesavedcount', 'quest', 0),
                 'updated' => 0,
-                'quest_updated' => false,
+                'parent_dates_updated' => false,
                 'quest_datestart' => $queststart,
                 'quest_dateend' => $questend,
                 'errors' => [],
@@ -380,18 +380,18 @@ class tournament_manager {
             $eventuser = (!empty($USER) && !empty($USER->id)) ? $USER : get_admin();
 
             foreach ($validateditems as $item) {
-                /** @var stdClass $sub */
-                $sub = $item['submission'];
-                $sub->datestart = $item['datestart'];
-                $sub->dateend = $item['dateend'];
+                /** @var stdClass $challenge */
+                $challenge = $item['challenge'];
+                $challenge->datestart = $item['datestart'];
+                $challenge->dateend = $item['dateend'];
 
-                if (!$DB->update_record('quest_submissions', $sub)) {
+                if (!$DB->update_record('quest_submissions', $challenge)) {
                     throw new \dml_exception('dmlwriteexception');
                 }
-                $stored = $DB->get_record('quest_submissions', ['id' => $sub->id], 'id, datestart, dateend', MUST_EXIST);
+                $stored = $DB->get_record('quest_submissions', ['id' => $challenge->id], 'id, datestart, dateend', MUST_EXIST);
                 if (
-                    (int)$stored->datestart !== (int)$sub->datestart ||
-                        (int)$stored->dateend !== (int)$sub->dateend
+                    (int)$stored->datestart !== (int)$challenge->datestart ||
+                        (int)$stored->dateend !== (int)$challenge->dateend
                 ) {
                     throw new \dml_exception('dmlwriteexception');
                 }
@@ -403,12 +403,12 @@ class tournament_manager {
 
                 // Update challenge calendar events in {event} (openchallenge and closechallenge).
                 if (function_exists('quest_update_challenge_calendar')) {
-                    quest_update_challenge_calendar($cm, $quest, $sub);
+                    quest_update_challenge_calendar($cm, $quest, $challenge);
                 }
 
                 // Trigger challenge updated event.
                 if (class_exists('\mod_quest\event\challenge_updated') && $eventuser) {
-                    \mod_quest\event\challenge_updated::create_from_parts($eventuser, $sub, $cm)->trigger();
+                    \mod_quest\event\challenge_updated::create_from_parts($eventuser, $challenge, $cm)->trigger();
                 }
 
                 $updated++;
@@ -460,7 +460,7 @@ class tournament_manager {
             'success' => true,
             'message' => $msg,
             'updated' => $updated,
-            'quest_updated' => $questneedsupdate,
+            'parent_dates_updated' => $questneedsupdate,
             'quest_datestart' => $newqueststart,
             'quest_dateend' => $newquestend,
             'errors' => [],

@@ -37,14 +37,14 @@ $answer = $DB->get_record('quest_answers', [
     'id' => $assessment->answerid,
     'questid' => $assessment->questid,
 ], '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', [
+$challenge = $DB->get_record('quest_submissions', [
     'id' => $answer->submissionid,
     'questid' => $assessment->questid,
 ], '*', MUST_EXIST);
-$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $challenge->questid], '*', MUST_EXIST);
 $course = get_course($quest->course);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
-$sid = $submission->id;
+$sid = $challenge->id;
 require_login($course->id, false, $cm);
 
 quest_check_visibility($course, $cm);
@@ -64,7 +64,7 @@ $PAGE->set_url($url);
 if (!$ismanager && !$cangrade && $answer->userid != $USER->id && $assessment->userid != $USER->id) {
     throw new \moodle_exception('nopermissions', 'error', '', "Unauthorized access!");
 }
-quest_add_breadcrumbs($cm, $submission, $answer, get_string('seeassessment', 'quest'));
+quest_add_breadcrumbs($cm, $challenge, $answer, get_string('seeassessment', 'quest'));
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
@@ -128,8 +128,8 @@ if ($ismanager) {
 }
 
 $answer = $DB->get_record('quest_answers', ['id' => $assessment->answerid], '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
-$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
+$challenge = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $challenge->questid], '*', MUST_EXIST);
 $cm = get_coursemodule_from_instance("quest", $quest->id, $course->id, null, MUST_EXIST);
 $title = get_string('answername', 'quest', $answer);
 
@@ -139,7 +139,7 @@ if (($ismanager || ($answer->userid == $USER->id))) {
 
 $title .= " " . get_string('tothechallenge', 'quest') .
          "<a name=\"cid_$sid\" href=\"challenges.php?" .
-        "id=$cm->id&amp;action=showchallenge&amp;cid=$sid\">$submission->title</a>";
+        "id=$cm->id&amp;action=showchallenge&amp;cid=$sid\">$challenge->title</a>";
 
 echo $OUTPUT->heading($title);
 

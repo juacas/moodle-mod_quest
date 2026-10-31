@@ -959,7 +959,7 @@ $string['studentgrades'] = '{$a} Grades';
 $string['studentsubmissions'] = '{$a} Submissions';
 $string['studentsubmissionsforassessment'] = '{$a} Student Submissions for Assessment';
 $string['subject'] = 'Subject: ';
-$string['submission'] = 'Challenge';
+$string['challenge'] = 'Challenge';
 $string['submissionend'] = 'Closing date of the Challenge';
 $string['submissionend_help'] = '<P align="justify">It allows to set the date in which a challenge will be closed. After this date it will not be able to submit any more answers to the challenge. However, the teachers will still be able to assess the author of the challenge attending to both the challenge proposed and the assessments made. Moreover, the authors of the challenges will still be able to assess the answers submitted to them.</P>
 <P align="justify">Once a challenge is closed, all the participants will be able to see all the answers submitted, as well as the assessments made and the scores obtained.</P>

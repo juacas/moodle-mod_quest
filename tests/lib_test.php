@@ -26,7 +26,6 @@ use stdClass;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \quest_answer_phase
  */
 final class lib_test extends advanced_testcase {
     /**
@@ -53,7 +52,7 @@ final class lib_test extends advanced_testcase {
     /**
      * Challenge dates must remain inside a valid Quest window.
      */
-    public function test_challenge_date_validation_and_legacy_wrapper(): void {
+    public function test_challenge_date_validation(): void {
         $valid = (object)[
             'questdatestart' => 100,
             'questdateend' => 500,
@@ -61,7 +60,6 @@ final class lib_test extends advanced_testcase {
             'dateend' => 450,
         ];
         $this->assertTrue(quest_check_challenge_dates($valid));
-        $this->assertTrue(quest_check_submission_dates($valid));
 
         $invalid = clone $valid;
         $invalid->datestart = 50;
@@ -69,7 +67,7 @@ final class lib_test extends advanced_testcase {
 
         $invalid = clone $valid;
         $invalid->dateend = 600;
-        $this->assertFalse(quest_check_submission_dates($invalid));
+        $this->assertFalse(quest_check_challenge_dates($invalid));
 
         $invalid = clone $valid;
         $invalid->questdateend = 100;
@@ -79,16 +77,14 @@ final class lib_test extends advanced_testcase {
     /**
      * Titles and descriptions are both required for open challenges.
      */
-    public function test_challenge_text_validation_and_legacy_wrapper(): void {
+    public function test_challenge_text_validation(): void {
         $valid = (object)['title' => 'A challenge', 'description' => 'Some work'];
         $this->assertTrue(quest_check_challenge_text($valid));
-        $this->assertTrue(quest_check_submission_text($valid));
 
         foreach (['title', 'description'] as $missing) {
             $invalid = clone $valid;
             $invalid->{$missing} = '';
             $this->assertFalse(quest_check_challenge_text($invalid));
-            $this->assertFalse(quest_check_submission_text($invalid));
         }
     }
 
@@ -164,7 +160,7 @@ final class lib_test extends advanced_testcase {
     /**
      * The respondent gets a direct action to start the next attempt.
      */
-    public function test_answer_actions_show_answer_again_for_permitted_submission(): void {
+    public function test_answer_actions_show_answer_again_for_permitted_challenge(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -175,7 +171,7 @@ final class lib_test extends advanced_testcase {
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $this->setUser($student);
 
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => $quest->id,
             'userid' => $student->id,
             'title' => 'Challenge',
@@ -184,7 +180,7 @@ final class lib_test extends advanced_testcase {
         $answer = (object)[
             'id' => 1,
             'questid' => $quest->id,
-            'submissionid' => $submissionid,
+            'submissionid' => $challengeid,
             'userid' => $student->id,
             'phase' => ANSWER_PHASE_GRADED,
             'permitsubmit' => ANSWER_PERMITSUBMIT_EDITABLE,
@@ -193,7 +189,7 @@ final class lib_test extends advanced_testcase {
         $html = quest_print_actions_answers(
             get_coursemodule_from_instance('quest', $quest->id, $course->id, null, MUST_EXIST),
             $answer,
-            (object)['id' => $submissionid, 'userid' => $student->id],
+            (object)['id' => $challengeid, 'userid' => $student->id],
             $course,
             null
         );
@@ -260,19 +256,19 @@ final class lib_test extends advanced_testcase {
         $otheruser = $this->getDataGenerator()->create_user();
         $this->setUser($user);
 
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => 10,
             'userid' => $otheruser->id,
             'title' => 'Challenge',
             'description' => 'Description',
         ]);
         $quest = (object)['id' => 10];
-        $submission = (object)['id' => $submissionid];
+        $challenge = (object)['id' => $challengeid];
 
-        $this->assertTrue(quest_validate_user_answer($quest, $submission));
+        $this->assertTrue(quest_validate_user_answer($quest, $challenge));
         $DB->insert_record('quest_answers', (object)[
             'questid' => 10,
-            'submissionid' => $submissionid,
+            'submissionid' => $challengeid,
             'userid' => $user->id,
             'title' => 'Answer',
             'description' => 'Answer text',
@@ -282,9 +278,9 @@ final class lib_test extends advanced_testcase {
             'commentforteacher' => '',
         ]);
 
-        $this->assertFalse(quest_validate_user_answer($quest, $submission));
+        $this->assertFalse(quest_validate_user_answer($quest, $challenge));
         $this->setUser($otheruser);
-        $this->assertTrue(quest_validate_user_answer($quest, $submission));
+        $this->assertTrue(quest_validate_user_answer($quest, $challenge));
     }
 
     /**
@@ -294,7 +290,7 @@ final class lib_test extends advanced_testcase {
         global $DB;
 
         $this->resetAfterTest(true);
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => 20,
             'userid' => 2,
             'title' => 'Challenge',
@@ -302,7 +298,7 @@ final class lib_test extends advanced_testcase {
         ]);
         $answer = (object)[
             'questid' => 20,
-            'submissionid' => $submissionid,
+            'submissionid' => $challengeid,
         ];
 
         quest_require_answer_ownership($answer, 20);

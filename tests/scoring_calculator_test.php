@@ -26,13 +26,11 @@ use mod_quest\service\scoring_calculator;
  * @category   test
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\service\scoring_calculator
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\service\scoring_calculator::class)]
 final class scoring_calculator_test extends advanced_testcase {
     /**
      * Test stationary scoring phase (before inflation begins).
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_stationary_phase(): void {
         $start = 1000;
@@ -57,7 +55,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test phase transitions at their exact temporal boundaries.
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_phase_boundaries(): void {
         $start = 1000;
@@ -103,7 +100,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test inflationary phase (points increase over time until answered).
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_inflationary_phase(): void {
         $start = 1000;
@@ -124,7 +120,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test deflationary phase (points decrease after first correct answer).
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_deflationary_phase(): void {
         $start = 1000;
@@ -150,7 +145,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test answers recorded before the challenge start are clamped safely.
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_answer_before_start_is_clamped(): void {
         $start = 1000;
@@ -181,7 +175,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test challenge conclusion at or after end date.
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_ended_phase(): void {
         $start = 1000;
@@ -205,7 +198,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test edge case where min and max points are equal.
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_equal_min_max_points(): void {
         $start = 1000;
@@ -219,7 +211,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test get_chart_data returns valid trajectory structure.
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_chart_data_generation(): void {
         $start = 1000;
@@ -252,7 +243,6 @@ final class scoring_calculator_test extends advanced_testcase {
 
     /**
      * Test chart data without an answer or inflection point.
-     * @covers     \mod_quest\service\scoring_calculator
      */
     public function test_chart_data_without_inflection(): void {
         $data = scoring_calculator::get_chart_data(

@@ -65,15 +65,15 @@ function updateallusers($questid) {
 /**
  * Update and calculate inflection date and points for first correct answer.
  *
- * @param stdClass $submission
- * @return stdClass Updated submission
+ * @param stdClass $challenge
+ * @return stdClass Updated challenge
  */
-function quest_calculate_pointsanswercorrect_and_date($submission) {
+function quest_calculate_pointsanswercorrect_and_date($challenge) {
     global $DB;
     $query = $DB->get_records_select(
         'quest_answers',
         'submissionid = ? AND grade >= 50',
-        [$submission->id],
+        [$challenge->id],
         'date ASC',
         'id, date, pointsmax',
         0,
@@ -81,13 +81,13 @@ function quest_calculate_pointsanswercorrect_and_date($submission) {
     );
     if (!empty($query)) {
         $first = reset($query);
-        $submission->dateanswercorrect = $first->date;
-        $submission->pointsanswercorrect = $first->pointsmax;
+        $challenge->dateanswercorrect = $first->date;
+        $challenge->pointsanswercorrect = $first->pointsmax;
     } else {
-        $submission->dateanswercorrect = 0;
-        $submission->pointsanswercorrect = 0;
+        $challenge->dateanswercorrect = 0;
+        $challenge->pointsanswercorrect = 0;
     }
-    return $submission;
+    return $challenge;
 }
 
 /**
@@ -97,17 +97,7 @@ function quest_calculate_pointsanswercorrect_and_date($submission) {
  * @return stdClass
  */
 function quest_update_challenge_counts($cid) {
-    return tournament_manager::update_submission_counts($cid);
-}
-
-/**
- * Counts and updates aggregated counts for a submission (legacy wrapper).
- *
- * @param int $sid Submission ID
- * @return stdClass
- */
-function quest_update_submission_counts($sid) {
-    return quest_update_challenge_counts($sid);
+    return tournament_manager::update_challenge_counts($cid);
 }
 
 /**
@@ -122,34 +112,14 @@ function quest_count_challenge_answers($cid) {
 }
 
 /**
- * Count total answers for a submission (legacy wrapper).
- *
- * @param int $sid
- * @return int
- */
-function quest_count_submission_answers($sid) {
-    return quest_count_challenge_answers($sid);
-}
-
-/**
  * Count assessed answers for a challenge.
  *
  * @param int $cid
  * @return int
  */
-function quest_count_challenge_answers_assesed($cid) {
+function quest_count_challenge_answers_assessed($cid) {
     global $DB;
     return (int)$DB->count_records_select('quest_answers', 'submissionid = ? AND phase > 0', [$cid]);
-}
-
-/**
- * Count assessed answers for a submission (legacy wrapper).
- *
- * @param int $sid
- * @return int
- */
-function quest_count_submission_answers_assesed($sid) {
-    return quest_count_challenge_answers_assesed($sid);
 }
 
 /**
@@ -161,14 +131,4 @@ function quest_count_submission_answers_assesed($sid) {
 function quest_count_challenge_answers_correct($cid) {
     global $DB;
     return (int)$DB->count_records_select('quest_answers', 'submissionid = ? AND grade >= 50', [$cid]);
-}
-
-/**
- * Count correct answers for a submission (legacy wrapper).
- *
- * @param int $sid
- * @return int
- */
-function quest_count_submission_answers_correct($sid) {
-    return quest_count_challenge_answers_correct($sid);
 }

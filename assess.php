@@ -34,8 +34,8 @@ require_sesskey();
 global $DB, $OUTPUT, $PAGE, $USER;
 
 $answer = $DB->get_record('quest_answers', ['id' => $aid], '*', MUST_EXIST);
-$submission = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
-$quest = $DB->get_record("quest", ["id" => $submission->questid], '*', MUST_EXIST);
+$challenge = $DB->get_record('quest_submissions', ['id' => $answer->submissionid], '*', MUST_EXIST);
+$quest = $DB->get_record("quest", ["id" => $challenge->questid], '*', MUST_EXIST);
 [$course, $cm] = quest_get_course_and_cm_from_quest($quest);
 require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
@@ -46,7 +46,7 @@ if (!quest_user_passed_password($quest, $context)) {
 }
 $ismanager = has_capability('mod/quest:manage', $context);
 $cangrade = has_capability('mod/quest:grade', $context);
-if (!$ismanager && !$cangrade && (int)$submission->userid !== (int)$USER->id) {
+if (!$ismanager && !$cangrade && (int)$challenge->userid !== (int)$USER->id) {
     throw new \moodle_exception('nopermissions', 'error', '', 'assess this answer');
 }
 if ($action === 'restoreautograde') {
@@ -60,7 +60,7 @@ if ($action === 'restoreautograde') {
     quest_restore_automatic_assessment($quest, $answer, $manualassessment);
     redirect(new moodle_url('/mod/quest/answer.php', [
         'id' => $cm->id,
-        'sid' => $submission->id,
+        'sid' => $challenge->id,
         'aid' => $answer->id,
         'action' => 'showanswer',
     ]), get_string('autograde_restored', 'quest'));
@@ -70,18 +70,18 @@ $strquests = get_string("modulenameplural", "quest");
 $strquest = get_string("modulename", "quest");
 $strassess = get_string("assess", "quest");
 
-$strsubmission = "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\">$submission->title</a>";
+$strchallenge = "<a href=\"challenges.php?id=$cm->id&amp;action=showchallenge&amp;cid=$challenge->id\">$challenge->title</a>";
 
 $url = new moodle_url(
     '/mod/quest/assess.php',
-    ['aid' => $aid, 'sid' => $submission->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
+    ['aid' => $aid, 'sid' => $challenge->id, 'allowcomments' => $allowcomments, 'redirect' => $redirect,
     'sesskey' => sesskey()]
 );
 $PAGE->set_url($url);
 
 $PAGE->set_title(format_string($quest->name));
 $PAGE->set_heading($course->fullname);
-quest_add_breadcrumbs($cm, $submission, $answer, get_string('evaluate', 'quest'));
+quest_add_breadcrumbs($cm, $challenge, $answer, get_string('evaluate', 'quest'));
 echo $OUTPUT->header();
 
 // ...there can be an assessment record , if there isn't...
@@ -92,7 +92,7 @@ if (!$assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->
     $assessment->questid = $quest->id;
     if ($cangrade) {
         $assessment->teacherid = $USER->id;
-    } else if (($submission->userid == $USER->id) && (!$cangrade)) {
+    } else if (($challenge->userid == $USER->id) && (!$cangrade)) {
         $assessment->userid = $USER->id;
     } else {
         throw new \moodle_exception('assess_forbidden', 'quest');
@@ -108,10 +108,10 @@ if (!$assessment = $DB->get_record("quest_assessments", ["answerid" => $answer->
     }
     // ...if it's the teacher and the quest is error banded set all the elements to Yes.
     if ($cangrade && ($quest->gradingstrategy == 2)) {
-        if ($DB->get_field("quest_submissions", "numelements", ["id" => $submission->id]) == 0) {
+        if ($DB->get_field("quest_submissions", "numelements", ["id" => $challenge->id]) == 0) {
             $num = $DB->get_field("quest", "nelements", ["id" => $quest->id]);
         } else {
-            $num = $DB->get_field("quest_submissions", "numelements", ["id" => $submission->id]);
+            $num = $DB->get_field("quest_submissions", "numelements", ["id" => $challenge->id]);
         }
         for ($i = 0; $i < $num; $i++) {
             $element = new stdClass();
@@ -150,8 +150,8 @@ if (has_capability('mod/quest:preview', $context)) {
 }
 
 $title .= " " . get_string('tothechallenge', 'quest') .
-         "<a name=\"cid_$submission->id\" href=\"challenges.php?" .
-        "id=$cm->id&amp;action=showchallenge&amp;cid=$submission->id\">$submission->title</a>";
+         "<a name=\"cid_$challenge->id\" href=\"challenges.php?" .
+        "id=$cm->id&amp;action=showchallenge&amp;cid=$challenge->id\">$challenge->title</a>";
 
 echo $OUTPUT->heading($title);
 
@@ -186,7 +186,7 @@ if (($ismanager || $cangrade) && (int)$assessment->state !== ASSESSMENT_STATE_UN
             'onsubmit' => 'return confirm(' . $confirmation . ');',
         ]);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'id', 'value' => $cm->id]);
-        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sid', 'value' => $submission->id]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sid', 'value' => $challenge->id]);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'aid', 'value' => $answer->id]);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'restoreautograde']);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
@@ -208,13 +208,13 @@ if ($cangrade) {
 if ($nextanswer !== null) {
     $returnto = new moodle_url('assess.php', [
         'id' => $cm->id,
-        'sid' => $submission->id,
+        'sid' => $challenge->id,
         'aid' => $nextanswer->id,
         'sesskey' => sesskey(),
     ]);
 } else {
-    $returnto = new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $submission->id, 'action' => 'showchallenge' ]);
+    $returnto = new moodle_url('challenges.php', ['id' => $cm->id, 'cid' => $challenge->id, 'action' => 'showchallenge' ]);
 }
-quest_print_assessment($quest, $submission->id, $assessment, true, $allowcomments, $returnto);
+quest_print_assessment($quest, $challenge->id, $assessment, true, $allowcomments, $returnto);
 
 echo $OUTPUT->footer();

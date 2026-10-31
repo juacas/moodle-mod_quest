@@ -1540,7 +1540,7 @@ define(['core/notification'], function(Notification) {
                         });
                     }
                     self.initialChallenges = JSON.parse(JSON.stringify(self.challenges));
-                    if (data.quest_updated) {
+                    if (data.parent_dates_updated) {
                         self.config.questStart = data.quest_datestart;
                         self.config.questEnd = data.quest_dateend;
                         self.renderTimeline();

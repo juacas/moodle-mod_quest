@@ -25,17 +25,28 @@ use mod_quest\service\autograde_service;
  * @package    mod_quest
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_quest\service\autograde_service
  */
 final class autograde_restore_test extends advanced_testcase {
     /**
      * A manual override can be removed without deleting the submitted attempt.
-     *
-     * @param string $response Submitted answer.
-     * @dataProvider answer_cases
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('answer_cases')]
-    public function test_restore_automatic_grade_removes_manual_assessment(string $response): void {
+    public function test_restore_automatic_grade_removes_manual_assessment(): void {
+        $this->restore_automatic_grade('frog');
+    }
+
+    /**
+     * An incorrect answer also restores its automatic grade and failed phase.
+     */
+    public function test_restore_incorrect_grade_removes_manual_assessment(): void {
+        $this->restore_automatic_grade('lizard');
+    }
+
+    /**
+     * Restore a manual override to the question engine's computed grade.
+     *
+     * @param string $response The answer to submit.
+     */
+    private function restore_automatic_grade(string $response): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -61,7 +72,7 @@ final class autograde_restore_test extends advanced_testcase {
         $automaticgrade = round((float)$quba->get_question_fraction($slot) * 100, 2);
         $this->assertNotEquals(75.0, $automaticgrade);
 
-        $submissionid = $DB->insert_record('quest_submissions', (object)[
+        $challengeid = $DB->insert_record('quest_submissions', (object)[
             'questid' => $quest->id,
             'userid' => $author->id,
             'title' => 'Automatic question',
@@ -76,7 +87,7 @@ final class autograde_restore_test extends advanced_testcase {
         ]);
         $answerid = $DB->insert_record('quest_answers', (object)[
             'questid' => $quest->id,
-            'submissionid' => $submissionid,
+            'submissionid' => $challengeid,
             'userid' => $student->id,
             'title' => 'Submitted answer',
             'description' => '',
@@ -120,23 +131,12 @@ final class autograde_restore_test extends advanced_testcase {
         $this->assertFalse($DB->record_exists('quest_assessments', ['id' => $assessmentid]));
         $this->assertFalse($DB->record_exists('quest_elements_assessments', ['assessmentid' => $assessmentid]));
         $this->assertTrue($DB->record_exists('question_usages', ['id' => $quba->get_id()]));
-        $submission = $DB->get_record('quest_submissions', ['id' => $submissionid], '*', MUST_EXIST);
-        $this->assertEquals($automaticgrade >= 50 ? 1 : 0, (int)$submission->nanswerscorrect);
+        $challenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
+        $this->assertEquals($automaticgrade >= 50 ? 1 : 0, (int)$challenge->nanswerscorrect);
         $this->assertEquals(
             $automaticgrade * (float)$restored->pointsmax / 100,
             (float)quest_calculate_user_score($quest->id, $student->id)
         );
     }
 
-    /**
-     * Include passing and failing attempts so both answer phases are covered.
-     *
-     * @return array Test responses.
-     */
-    public static function answer_cases(): array {
-        return [
-            'correct' => ['frog'],
-            'incorrect' => ['lizard'],
-        ];
-    }
 }

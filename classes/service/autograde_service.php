@@ -130,21 +130,21 @@ class autograde_service {
      * Start or load an existing question attempt for a user on a challenge.
      *
      * @param stdClass $quest
-     * @param stdClass $submission
+     * @param stdClass $challenge
      * @param int $userid
      * @param context $context
      * @return array [question_usage_by_activity $quba, int[] $slots]
      */
     public static function get_or_create_attempt(
         stdClass $quest,
-        stdClass $submission,
+        stdClass $challenge,
         int $userid,
         context $context
     ): array {
         global $CFG, $DB;
         require_once($CFG->libdir . '/questionlib.php');
 
-        $questions = question_reference_service::get_challenge_questions((int)$submission->id);
+        $questions = question_reference_service::get_challenge_questions((int)$challenge->id);
         if (!$questions) {
             throw new \moodle_exception('errornotquestionbankchallenge', 'quest');
         }
@@ -154,7 +154,7 @@ class autograde_service {
             SELECT * FROM {quest_answers}
             WHERE submissionid = ? AND userid = ?
             ORDER BY id DESC
-        ", [$submission->id, $userid], IGNORE_MULTIPLE);
+        ", [$challenge->id, $userid], IGNORE_MULTIPLE);
 
         if ($lastanswer && !empty($lastanswer->questionusageid)) {
             // A permitted resubmission starts a new attempt. The previous
@@ -191,7 +191,7 @@ class autograde_service {
         // Create initial answer record to persist the usage ID.
         $answer = new stdClass();
         $answer->questid = (int)$quest->id;
-        $answer->submissionid = (int)$submission->id;
+        $answer->submissionid = (int)$challenge->id;
         $answer->userid = $userid;
         $answer->title = get_string('answer', 'quest') . ' - In progress';
         $answer->description = get_string('questionbank', 'quest') . ' autograded attempt';
@@ -199,7 +199,7 @@ class autograde_service {
         $answer->descriptiontrust = 0;
         $answer->attachment = '';
         $answer->date = time();
-        $answer->pointsmax = $submission->pointsmax;
+        $answer->pointsmax = $challenge->pointsmax;
         $answer->grade = 0;
         $answer->commentforteacher = '';
         $answer->phase = ANSWER_PHASE_UNGRADED; // Phase 0 means ungraded.
@@ -217,14 +217,14 @@ class autograde_service {
      * Get or create a persistent question usage for previewing a challenge.
      *
      * @param stdClass $quest
-     * @param stdClass $submission
+     * @param stdClass $challenge
      * @param stdClass|array $question Question record or ordered slot collection.
      * @param \context $context
      * @return array [\question_usage_by_activity $quba, int[] $slots]
      */
     public static function get_or_create_challenge_preview_usage(
         stdClass $quest,
-        stdClass $submission,
+        stdClass $challenge,
         stdClass|array $question,
         \context $context
     ): array {
@@ -232,11 +232,11 @@ class autograde_service {
 
         require_once($CFG->libdir . '/questionlib.php');
 
-        if (!empty($submission->questionusageid)) {
+        if (!empty($challenge->questionusageid)) {
             try {
-                $quba = \question_engine::load_questions_usage_by_activity((int)$submission->questionusageid);
+                $quba = \question_engine::load_questions_usage_by_activity((int)$challenge->questionusageid);
                 $questionlist = is_array($question) ? $question :
-                    [(object)['question' => $question, 'maxmark' => $submission->pointsmax]];
+                    [(object)['question' => $question, 'maxmark' => $challenge->pointsmax]];
                 $usedslots = $quba->get_slots();
                 $matches = count($usedslots) === count($questionlist);
                 foreach (array_values($questionlist) as $index => $questiondata) {
@@ -259,11 +259,11 @@ class autograde_service {
         $quba = \question_engine::make_questions_usage_by_activity('mod_quest', $context);
         $quba->set_preferred_behaviour('deferredfeedback');
         $questionlist = is_array($question) ? $question :
-            [(object)['question' => $question, 'maxmark' => $submission->pointsmax]];
+            [(object)['question' => $question, 'maxmark' => $challenge->pointsmax]];
         $slots = [];
         foreach ($questionlist as $questiondata) {
             $questionrecord = $questiondata->question ?? $questiondata;
-            $mark = isset($questiondata->maxmark) ? (float)$questiondata->maxmark : (float)$submission->pointsmax;
+            $mark = isset($questiondata->maxmark) ? (float)$questiondata->maxmark : (float)$challenge->pointsmax;
             $loadedquestion = \question_bank::load_question((int)$questionrecord->id);
             $slots[] = $quba->add_question($loadedquestion, $mark);
         }
@@ -271,9 +271,9 @@ class autograde_service {
 
         \question_engine::save_questions_usage_by_activity($quba);
 
-        $submission->questionusageid = (int)$quba->get_id();
+        $challenge->questionusageid = (int)$quba->get_id();
         try {
-            $DB->set_field('quest_submissions', 'questionusageid', $submission->questionusageid, ['id' => $submission->id]);
+            $DB->set_field('quest_submissions', 'questionusageid', $challenge->questionusageid, ['id' => $challenge->id]);
         } catch (\Exception $e) {
             // In case DB upgrade hasn't run yet.
             unset($e);
@@ -483,7 +483,7 @@ class autograde_service {
      * Render the same question panel wherever a challenge is displayed.
      *
      * @param stdClass $quest Quest activity.
-     * @param stdClass $submission Challenge record.
+     * @param stdClass $challenge Challenge record.
      * @param \context $context Quest module context.
      * @param int $cmid Course module ID.
      * @param bool $showactions Whether question preview links are visible.
@@ -491,17 +491,17 @@ class autograde_service {
      */
     public static function render_challenge_questions_preview(
         stdClass $quest,
-        stdClass $submission,
+        stdClass $challenge,
         \context $context,
         int $cmid,
         bool $showactions = false
     ): string {
-        $questions = question_reference_service::get_challenge_questions((int)$submission->id);
+        $questions = question_reference_service::get_challenge_questions((int)$challenge->id);
         if (!$questions) {
             return '';
         }
 
-        [$quba] = self::get_or_create_challenge_preview_usage($quest, $submission, $questions, $context);
+        [$quba] = self::get_or_create_challenge_preview_usage($quest, $challenge, $questions, $context);
         $preview = self::render_questions_preview($quba, $context, $cmid, $showactions, false);
         return \html_writer::div(
             \html_writer::div($preview, 'card-body p-4 bg-white rounded shadow-sm'),
@@ -576,10 +576,10 @@ class autograde_service {
     }
 
     /**
-     * Process student answer submission, grade automatically, and award points.
+     * Process a student's answer, grade automatically, and award points.
      *
      * @param stdClass $quest
-     * @param stdClass $submission
+     * @param stdClass $challenge
      * @param int $userid
      * @param \question_usage_by_activity $quba
      * @param int|array|null $slot Legacy slot argument; all slots are evaluated.
@@ -587,7 +587,7 @@ class autograde_service {
      */
     public static function process_submission(
         stdClass $quest,
-        stdClass $submission,
+        stdClass $challenge,
         int $userid,
         \question_usage_by_activity $quba,
         $slot = null
@@ -623,13 +623,13 @@ class autograde_service {
         $tinitial = (int)($quest->tinitial * 86400);
         $pointsmax = scoring_calculator::calculate_points(
             $timenow,
-            (int)$submission->datestart,
-            (int)$submission->dateend,
+            (int)$challenge->datestart,
+            (int)$challenge->dateend,
             $tinitial,
-            !empty($submission->dateanswercorrect) ? (int)$submission->dateanswercorrect : null,
-            (float)$submission->initialpoints,
-            (float)$submission->pointsmax,
-            (float)$submission->pointsmin
+            !empty($challenge->dateanswercorrect) ? (int)$challenge->dateanswercorrect : null,
+            (float)$challenge->initialpoints,
+            (float)$challenge->pointsmax,
+            (float)$challenge->pointsmin
         );
 
         $answer->title = get_string('answer', 'quest') . ' - ' . userdate($timenow, get_string('strftimedatetime', 'langconfig'));
@@ -642,7 +642,7 @@ class autograde_service {
             $answer->state = ANSWER_STATE_EDITTED;
             $DB->update_record('quest_answers', $answer);
 
-            tournament_manager::update_submission_counts($submission->id);
+            tournament_manager::update_challenge_counts($challenge->id);
 
             return [
                 'passed' => true,
@@ -664,13 +664,13 @@ class autograde_service {
         $answer->state = ANSWER_STATE_EDITTED;
         $DB->update_record('quest_answers', $answer);
 
-        // Update submission aggregations and inflection points.
-        tournament_manager::update_submission_counts($submission->id);
+        // Update challenge aggregations and inflection points.
+        tournament_manager::update_challenge_counts($challenge->id);
 
         // Update user achievement points.
         leaderboard_service::update_user_scores($quest, $userid);
-        if ($submission->userid != $userid) {
-            leaderboard_service::update_user_scores($quest, $submission->userid);
+        if ($challenge->userid != $userid) {
+            leaderboard_service::update_user_scores($quest, $challenge->userid);
         }
 
         $points = 0.0;
