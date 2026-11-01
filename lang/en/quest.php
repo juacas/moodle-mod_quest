@@ -581,7 +581,8 @@ of its authorship, otherwise, the challenge could be refused of modified by the 
 </ul>';
 $string['modulehiddenerror'] = 'Module is hidden.';
 $string['modulename'] = 'QUESTOURnament';
-$string['modulename_help'] = 'QUESTOURnament is an activity that allows to develop contests. Students can engage in a competition to answer a set of challenges whose score changes in time. The challenge gains reward as the time goes by without any valid answer. This activity allows to place some preasure and motivation on the course. The game can be played individually or in teams. The scoreboard gives credit to the best participants.';
+$string['modulename_help'] = '<p>QUESTOURnament is an activity that allows teachers to run contests. Students can compete by answering a set of challenges whose score changes over time. A challenge gains value as time passes without a valid answer, providing controlled competitive pressure and motivation. The game can be played individually or in teams, and the leaderboard recognises the best participants.</p>';
+$string['modulename_tip'] = '<a href="https://juacas.github.io/moodle-mod_quest/" target="_blank" rel="noopener">Visit the QUESTOURnament website for documentation, features and teaching resources.</a>';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['myanswers'] = 'My Answers';
 $string['myanswers_help'] = '<strong>My Answers</strong>: it shows all the answers submitted by current user. For each answer, the date of submission, the actions that can be taken (View Assessment, etc.), the score obtained and its title are shown. An answer could be modified or deleted by the teacher at any time, while the student will only be able to modify or delete an answer that he has submitted till it has been assessed.';

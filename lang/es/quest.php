@@ -612,11 +612,8 @@ $string['modifsubmission_help'] = '<P align="justify">Esta opción permite a un 
 ';
 $string['modulehiddenerror'] = 'La actividad está oculta.';
 $string['modulename'] = 'QUESTOURnament';
-$string['modulename_help'] = '<UL>
-<p align="justify">El módulo QUESTOURnament incentiva el trabajo del alumno, tanto de manera individual como en equipo.</p>
-<p align="justify">Este módulo ofrece la posibilidad de responder a desafíos o preguntas planteados por el profesor o los alumnos a lo largo de un periodo de tiempo predeterminado. Tanto las respuestas como los desafíos enviados por los alumnos son evaluados. Estas evaluaciones podrán ser realizadas tanto por los profesores como por los alumnos que hayan propuesto desafíos. De estas evaluaciones dependerá la nota final de cada alumno. Esta nota final y su evolución a medida que se desarrolla el concurso podrá ser visualizada en cualquier momento por los alumnos accediendo a la tabla de clasificación del concurso que se configura dinámicamente a partir de dichas notas finales. </p>
-<p align="justify">Para la evaluación de los desafíos propuestos, así como de las respuestas enviadas se definen sendos formularios de evaluación, con elmentos de evaluación y sus correspondientes pesos, que permitirán determinar la puntuación obtenida. </p>
-</UL>';
+$string['modulename_help'] = '<p>El módulo QUESTOURnament incentiva el trabajo del alumnado, tanto de manera individual como en equipo.</p><p>Permite responder a desafíos o preguntas planteados por el profesorado o el alumnado durante un periodo determinado. Tanto las respuestas como los desafíos enviados por estudiantes pueden evaluarse. La calificación y su evolución se muestran en una tabla de clasificación que se actualiza dinámicamente.</p><p>Los formularios de evaluación de desafíos y respuestas emplean criterios con sus correspondientes pesos para determinar la puntuación obtenida.</p>';
+$string['modulename_tip'] = '<a href="https://juacas.github.io/moodle-mod_quest/" target="_blank" rel="noopener">Visita la web de QUESTOURnament para consultar la documentación, sus funcionalidades y los recursos docentes.</a>';
 $string['modulenameplural'] = 'QUESTOURnaments';
 $string['movingtophase'] = 'Moviendo a la fase {$a}';
 $string['myanswers'] = 'Mis Respuestas';

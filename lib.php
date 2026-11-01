@@ -95,6 +95,12 @@ function quest_add_instance($quest) {
  *
  *         Features are explained in moodlelib.php */
 function quest_supports($feature) {
+    // Secondary activity purposes were introduced in Moodle 5.1. Keep this
+    // check outside the switch so Moodle 4.5 never evaluates an unknown constant.
+    if (defined('FEATURE_MOD_OTHERPURPOSE') && $feature === FEATURE_MOD_OTHERPURPOSE) {
+        return MOD_PURPOSE_COLLABORATION;
+    }
+
     switch ($feature) {
         case FEATURE_GROUPS:
             return false;
@@ -122,15 +128,27 @@ function quest_supports($feature) {
             return true;
         case FEATURE_USES_QUESTIONS:
             return true;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_ASSESSMENT;
         default:
             return null;
     }
 }
+
+/**
+ * Indicate that Quest uses its own brand colours.
+ *
+ * @return bool Always true because the activity icon must not be recoloured.
+ */
+function quest_is_branded(): bool {
+    return true;
+}
+
 /**
  * Check validity of challenge dates.
  *
  * @param \stdClass $challenge
- * @return boolean
+ * @return bool False when the file cannot be served; otherwise the file response is sent.
  */
 function quest_check_challenge_dates($challenge) {
     return ($challenge->datestart >= $challenge->questdatestart &&
@@ -370,6 +388,7 @@ function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
 
     // Finally send the file.
     send_stored_file($file, 0, 0, $forcedownload, $options);
+    return true;
 }
 
 /**
@@ -931,7 +950,7 @@ function quest_grading_areas_list() {
 
 /** Create grade item for given quest.
  *
- * @param stdClass $assign record with extra cmidnumber
+ * @param stdClass $quest    record with extra cmidnumber
  * @param array $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return int 0 if ok, error code otherwise */
 function quest_grade_item_update($quest, $grades = null) {

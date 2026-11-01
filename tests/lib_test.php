@@ -45,6 +45,10 @@ final class lib_test extends advanced_testcase {
         $this->assertTrue(quest_supports(FEATURE_COMPLETION_HAS_RULES));
         $this->assertTrue(quest_supports(FEATURE_GRADE_HAS_GRADE));
         $this->assertTrue(quest_supports(FEATURE_USES_QUESTIONS));
+        $this->assertSame(MOD_PURPOSE_ASSESSMENT, quest_supports(FEATURE_MOD_PURPOSE));
+        if (defined('FEATURE_MOD_OTHERPURPOSE')) {
+            $this->assertSame(MOD_PURPOSE_COLLABORATION, quest_supports(FEATURE_MOD_OTHERPURPOSE));
+        }
         $this->assertFalse(quest_supports(FEATURE_GROUPS));
         $this->assertNull(quest_supports('unknown_feature'));
     }
