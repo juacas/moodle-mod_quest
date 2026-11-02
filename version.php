@@ -27,9 +27,9 @@
  * @package mod_quest */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026101600;
+$plugin->version = 2026110200;
 $plugin->requires = 2024100700; // Moodle 4.5 and later.
 $plugin->component = 'mod_quest';
 $plugin->cron = 600; // Period for cron to check this module (secs).
 $plugin->maturity = MATURITY_BETA; // This is considered as beta version for now.
-$plugin->release = 'v2.0.0';
+$plugin->release = 'v2.1.0';

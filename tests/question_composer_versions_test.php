@@ -26,6 +26,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('quest_get_question_versions')]
 final class question_composer_versions_test extends advanced_testcase {
     /**
      * Duplicate version numbers must not overwrite records or create duplicate options.

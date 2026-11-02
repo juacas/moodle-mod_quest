@@ -26,6 +26,7 @@ use mod_quest\service\autograde_service;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(autograde_service::class)]
 final class autograde_restore_test extends advanced_testcase {
     /**
      * A manual override can be removed without deleting the submitted attempt.
@@ -138,5 +139,4 @@ final class autograde_restore_test extends advanced_testcase {
             (float)quest_calculate_user_score($quest->id, $student->id)
         );
     }
-
 }

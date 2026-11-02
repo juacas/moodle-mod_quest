@@ -26,6 +26,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('quest_hash_password')]
 final class security_test extends advanced_testcase {
     /**
      * New Quest passwords use a verifiable salted hash instead of MD5.

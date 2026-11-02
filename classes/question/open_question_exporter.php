@@ -178,7 +178,7 @@ class open_question_exporter {
             if (trim($name) === '') {
                 $name = shorten_text(strip_tags($challenge->description), 50);
                 if (trim($name) === '') {
-                    $name = get_string('submission', 'quest') . ' ' . $challenge->id;
+                    $name = get_string('challenge', 'quest') . ' ' . $challenge->id;
                 }
             }
 

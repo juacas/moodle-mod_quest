@@ -26,6 +26,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversNothing]
 final class configuration_test extends advanced_testcase {
     /**
      * Managers use the activity-scoped Reschedule timeline when available.

@@ -26,6 +26,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('quest_add_breadcrumbs')]
 final class navigation_test extends advanced_testcase {
     /**
      * An answer page links back through the challenge and Quest activity.

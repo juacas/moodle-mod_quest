@@ -85,8 +85,9 @@ class challenge_assessed extends base {
      *
      * @return string */
     public function get_description() {
-        return "The user with id '$this->userid' assessed a Challenge in the Quest activity '" . $this->data['other']['activityid'] .
-                 "in the course '$this->courseid'. " . $this->data['other']['info'];
+        return "The user with id '$this->userid' assessed a Challenge in the Quest activity '" .
+                 $this->data['other']['activityid'] .
+                 "' in the course '$this->courseid'. " . $this->data['other']['info'];
     }
 
     /** Custom validation.

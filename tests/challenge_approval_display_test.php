@@ -25,6 +25,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversNothing]
 final class challenge_approval_display_test extends advanced_testcase {
     /**
      * Load legacy helpers used by the approval and assessment screens.
