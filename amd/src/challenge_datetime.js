@@ -135,6 +135,7 @@ define([], function() {
         selector.classList.add('d-none');
         selector.hidden = true;
         selector.setAttribute('aria-hidden', 'true');
+        selector.style.setProperty('display', 'none', 'important');
     }
 
     return {
