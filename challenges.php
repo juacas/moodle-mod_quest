@@ -313,7 +313,7 @@ if ($action == 'confirmdelete') {
             'attachment',
             null
         );
-        $composerform = new quest_print_upload_form(null, [
+        $composerform = new \mod_quest\form\challenge_form(null, [
             'challenge' => $newchallenge,
             'quest' => $quest,
             'cm' => $cm,
@@ -510,7 +510,7 @@ if ($action == 'confirmdelete') {
         'attachment',
         $newchallenge->id
     );
-    $mform = new quest_print_upload_form(
+    $mform = new \mod_quest\form\challenge_form(
         null,
         ['challenge' => $newchallenge, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
         'attachmentoptions' => $attachmentoptions,
@@ -638,7 +638,7 @@ if ($action == 'confirmdelete') {
     $draftitemid = file_get_submitted_draft_itemid('introattachments');
     file_prepare_draft_area($draftitemid, $context->id, 'mod_quest', 'attachment', 0, ['subdirs' => 0]);
     $challenge->attachment = $draftitemid;
-    $mform = new quest_print_upload_form(
+    $mform = new \mod_quest\form\challenge_form(
         null,
         ['challenge' => $challenge, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
                             'attachmentoptions' => $attachmentoptions, 'action' => $action,
@@ -1009,7 +1009,7 @@ if ($action == 'confirmdelete') {
         'attachment',
         $challenge->id
     );
-    $mform = new quest_print_upload_form(
+    $mform = new \mod_quest\form\challenge_form(
         null,
         ['challenge' => $challenge, 'quest' => $quest,
                             'cm' => $cm, 'definitionoptions' => $descriptionoptions,

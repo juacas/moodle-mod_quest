@@ -151,7 +151,7 @@ if ($action == "answer") {
         $answer->id
     );
 
-    $mform = new quest_print_answer_form(
+    $mform = new \mod_quest\form\answer_form(
         null,
         ['current' => $answer, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
         'attachmentoptions' => $attachmentoptions,
@@ -469,7 +469,7 @@ if ($action == "answer") {
     $draftitemid = file_get_submitted_draft_itemid('answer_attachment');
     file_prepare_draft_area($draftitemid, $context->id, 'mod_quest', 'answer_attachment', 0, ['subdirs' => 0]);
     $answer->attachment = $draftitemid;
-    $mform = new quest_print_answer_form(
+    $mform = new \mod_quest\form\answer_form(
         null,
         ['current' => $answer, 'quest' => $quest, 'cm' => $cm, 'definitionoptions' => $descriptionoptions,
         'attachmentoptions' => $attachmentoptions,

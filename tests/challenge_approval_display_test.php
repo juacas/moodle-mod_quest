@@ -72,7 +72,7 @@ final class challenge_approval_display_test extends advanced_testcase {
         $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge($challengeid);
         $descriptionoptions = ['context' => $context, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes];
         $attachmentoptions = ['subdirs' => false, 'maxfiles' => 0, 'maxbytes' => $course->maxbytes];
-        $form = new \quest_print_upload_form(null, [
+        $form = new \mod_quest\form\challenge_form(null, [
             'challenge' => $challenge,
             'quest' => $quest,
             'cm' => $cm,
@@ -91,7 +91,7 @@ final class challenge_approval_display_test extends advanced_testcase {
         $this->assertStringContainsString('name="datestart', $html);
 
         $modifchallenge = $DB->get_record('quest_submissions', ['id' => $challengeid], '*', MUST_EXIST);
-        $modifform = new \quest_print_upload_form(null, [
+        $modifform = new \mod_quest\form\challenge_form(null, [
             'challenge' => $modifchallenge,
             'quest' => $quest,
             'cm' => $cm,

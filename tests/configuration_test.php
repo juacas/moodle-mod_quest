@@ -28,6 +28,46 @@ use advanced_testcase;
  */
 final class configuration_test extends advanced_testcase {
     /**
+     * Managers use the activity-scoped Reschedule timeline when available.
+     */
+    public function test_schedule_url_uses_reschedule_when_available(): void {
+        global $PAGE;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
+        $cm = get_coursemodule_from_instance('quest', $quest->id, $course->id, false, MUST_EXIST);
+        $PAGE->set_cm($cm, $course);
+        $PAGE->set_url(new \moodle_url('/mod/quest/view.php', ['id' => $cm->id]));
+        $page = new \mod_quest\output\view_page($quest, $course, $cm, [], false, ['ismanager' => true]);
+
+        $data = $page->export_for_template($PAGE->get_renderer('mod_quest'));
+        $reschedule = \core_plugin_manager::instance()->get_plugin_info('local_reschedule');
+        if ($reschedule && $reschedule->is_installed_and_upgraded()) {
+            $expected = new \moodle_url('/local/reschedule/index.php', [
+                'id' => $course->id,
+                'cmid' => $cm->id,
+                'editmode' => 1,
+            ]);
+        } else {
+            $expected = new \moodle_url('/mod/quest/schedule.php', ['id' => $cm->id]);
+        }
+
+        $this->assertSame($expected->out(false), $data['scheduleurl']);
+    }
+
+    /**
+     * Form classes are available through the Moodle component autoloader.
+     */
+    public function test_form_classes_are_autoloadable(): void {
+        $this->assertTrue(class_exists(\mod_quest\form\challenge_form::class));
+        $this->assertTrue(class_exists(\mod_quest\form\answer_form::class));
+        $this->assertTrue(is_subclass_of(\mod_quest\form\challenge_form::class, \moodleform::class));
+        $this->assertTrue(is_subclass_of(\mod_quest\form\answer_form::class, \moodleform::class));
+    }
+
+    /**
      * Creating and editing an activity persists its basic settings.
      */
     public function test_create_and_update_activity_settings(): void {

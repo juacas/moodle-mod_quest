@@ -1517,16 +1517,10 @@ function quest_get_completion_state($course, $cm, $userid, $type) {
  * @param settings_navigation $settings The settings navigation object
  * @param navigation_node $questnode The node to add module settings to */
 function quest_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $questnode) {
-    global $USER, $PAGE, $CFG, $DB, $OUTPUT;
+    global $PAGE, $CFG, $DB;
 
     $questobject = $DB->get_record("quest", ["id" => $PAGE->cm->instance]);
     $context = $PAGE->cm->context;
-
-    $questnode->add(
-        'Questournaments',
-        new moodle_url('/mod/quest/index.php', ['id' => $PAGE->course->id]),
-        navigation_node::TYPE_SETTING
-    );
 
     // ...manage Teams.
     if (has_capability('mod/quest:manage', $context)) {

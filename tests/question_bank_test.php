@@ -113,7 +113,7 @@ final class question_bank_test extends advanced_testcase {
         ]]);
         $existing = question_reference_service::get_challenge_questions($challengeid);
         $existing[0]->question->maxmark = 1;
-        $form = new \quest_print_upload_form(null, [
+        $form = new \mod_quest\form\challenge_form(null, [
             'challenge' => $DB->get_record('quest_submissions', ['id' => $challengeid]),
             'quest' => $quest,
             'cm' => $cm,
@@ -478,7 +478,7 @@ final class question_bank_test extends advanced_testcase {
         ], base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=='));
         $this->assertNotFalse($file);
 
-        $form = new \quest_print_upload_form(null, [
+        $form = new \mod_quest\form\challenge_form(null, [
             'challenge' => (object)['id' => 0],
             'quest' => $quest,
             'cm' => $cm,

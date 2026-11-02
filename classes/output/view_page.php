@@ -252,7 +252,7 @@ class view_page implements renderable, templatable {
                 ? (new moodle_url('/mod/quest/team.php', ['id' => $this->cm->id]))->out(false)
                 : '',
             'scheduleurl' => !empty($this->summarydata['ismanager'])
-                ? (new moodle_url('/mod/quest/schedule.php', ['id' => $this->cm->id]))->out(false)
+                ? $this->get_schedule_url()->out(false)
                 : '',
             'hasgradinglinks' => $hasgradinglinks,
             'challengegradinghtml' => $this->summarydata['challengegradinghtml'] ?? '',
@@ -268,6 +268,27 @@ class view_page implements renderable, templatable {
             'legendhtml' => $this->legendhtml,
             'caneditdates' => !empty($this->summarydata['ismanager']),
         ];
+    }
+
+    /**
+     * Get the challenge scheduling URL.
+     *
+     * When local_reschedule is installed, use its activity-scoped view so the
+     * Quest activity and its challenges can be edited in the course timeline.
+     *
+     * @return moodle_url
+     */
+    private function get_schedule_url(): moodle_url {
+        $reschedule = \core_plugin_manager::instance()->get_plugin_info('local_reschedule');
+        if ($reschedule && $reschedule->is_installed_and_upgraded()) {
+            return new moodle_url('/local/reschedule/index.php', [
+                'id' => (int)$this->course->id,
+                'cmid' => (int)$this->cm->id,
+                'editmode' => 1,
+            ]);
+        }
+
+        return new moodle_url('/mod/quest/schedule.php', ['id' => (int)$this->cm->id]);
     }
 
     /**

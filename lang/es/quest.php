@@ -1015,9 +1015,9 @@ $string['simplechallengedisabled'] = 'No se pueden crear desafíos simples en es
 $string['specimenanswer'] = 'Formulario de Muestra de Evaluación para las Respuestas';
 $string['specimenanswer_help'] = '<P align="justify">Esta página muestra el formulario de evaluación que se emplea en la evaluación de cada una de las respuestas enviadas a un desafío en un módulo QUESTOURnament. </P>';
 $string['specimenassessmentform'] = 'Formulario de Muestra de Valoración';
-$string['specimenassessmentformanswer'] = 'Formulario de Muestra de Valoración para las Respuestas';
+$string['specimenassessmentformanswer'] = 'Evaluador para respuestas';
 $string['specimenassessmentformchallenge'] = 'Ejemplo de formulario de evaluación de desafíos';
-$string['specimenassessmentformsubmission'] = 'Formulario de Muestra de Valoración para los Desafíos';
+$string['specimenassessmentformsubmission'] = 'Evaluador para autores';
 $string['specimensubmission'] = 'Formulario de Muestra de Evaluación para los Desafíos ';
 $string['specimensubmission_help'] = '<P align="justify">Esta página muestra el formulario de evaluación que se emplea en la evaluación de los desafíos propuestos por alumnos en el módulo QUESTOURnament. </P>';
 $string['standarddeviation'] = 'Desviación estándar del Elemento {$a}:';

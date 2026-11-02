@@ -46,7 +46,7 @@ final class question_composer_challenge_test extends advanced_testcase {
         $category = $generator->create_question_category(['contextid' => $context->id]);
         $first = $generator->create_question('essay', null, ['category' => $category->id]);
         $second = $generator->create_question('essay', null, ['category' => $category->id]);
-        $form = new \quest_print_upload_form(null, [
+        $form = new \mod_quest\form\challenge_form(null, [
             'challenge' => (object)['id' => 0],
             'quest' => $quest,
             'cm' => $cm,

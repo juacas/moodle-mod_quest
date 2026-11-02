@@ -73,6 +73,11 @@
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
 }
 
+.quest-modern-datetime-input {
+    width: 22rem;
+    max-width: 100%;
+}
+
 /* Fix for question bank modal width on smaller screens */
 .quest-questionbank-modal .modal-dialog.modal-xl {
     max-width: 95%;

@@ -936,9 +936,9 @@ $string['simplechallengedisabled'] = 'Basic challenges cannot be created in this
 $string['specimenanswer'] = 'Assessment Form for Answers';
 $string['specimenanswer_help'] = '<P align="justify">This page shows the assessment form that is used to assess each of the answers submitted to a challenge of this QUESTOURnament.</P>';
 $string['specimenassessmentform'] = 'Example Assessment Form';
-$string['specimenassessmentformanswer'] = 'Example Assessment Form for answers';
+$string['specimenassessmentformanswer'] = 'Evaluator for answers';
 $string['specimenassessmentformchallenge'] = 'Example Assessment Form for challenges';
-$string['specimenassessmentformsubmission'] = 'Example Assessment Form for challenges';
+$string['specimenassessmentformsubmission'] = 'Evaluator for authors';
 $string['specimensubmission'] = 'Assessment Form for Challenges';
 $string['specimensubmission_help'] = '<P align="justify">This page shows the assessment form that is used to assess the challenges proposed by students in this QUESTOURnament.</P>';
 $string['strategy_equal'] = 'Equal distribution';

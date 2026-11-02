@@ -74,6 +74,20 @@ In contemporary higher education and professional training, passive learning mod
   - Direct numeric rank display starting from position 4 onwards (`4`, `5`, `6`...).
 - **Atomic Persistence & Integrity Safeguards**: Full transaction safety preventing date collisions, orphan calendar events, or gradebook desynchronization.
 
+### Optional Activity Rescheduler integration
+
+Quest provides a native adapter for `local_reschedule` at
+`classes/local/reschedule/adapter.php`. Moodle exposes it as
+`\mod_quest\local\reschedule\adapter`, which Reschedule discovers through the
+standard class autoloader. It handles tournament and challenge ranges through
+Quest's public scheduling services, including submitted-answer date limits and
+challenge effort estimates.
+
+This is an optional integration. The adapter is kept in its own lazily loaded
+class, so Moodle does not resolve its `local_reschedule` base class during
+normal Quest requests. Quest therefore remains installable and operational
+without declaring `local_reschedule` as a hard dependency.
+
 ---
 
 ## 3. User Manual & Operations

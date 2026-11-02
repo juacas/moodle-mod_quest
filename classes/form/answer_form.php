@@ -22,14 +22,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_quest\form;
+
 defined('MOODLE_INTERNAL') || die();
+
+use context_module;
+use moodleform;
 
 require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Form for creating or editing an answer.
  */
-class quest_print_answer_form extends moodleform {
+class answer_form extends moodleform {
     /**
      * Define the answer form fields.
      *
