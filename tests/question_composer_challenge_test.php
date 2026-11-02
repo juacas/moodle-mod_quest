@@ -26,6 +26,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_quest\form\challenge_form::class)]
 final class question_composer_challenge_test extends advanced_testcase {
     /**
      * The generated form includes a registered copy of its two selected IDs.

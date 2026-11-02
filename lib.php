@@ -606,7 +606,7 @@ function quest_user_complete($course, $user, $mod, $quest) {
     global $DB, $OUTPUT;
     if ($challenges = $DB->get_records_select("quest_submissions", "questid=? AND userid=?", [$quest->id, $user->id])) {
         foreach ($challenges as $challenge) {
-            echo get_string('submission', 'quest') . ': ' . $challenge->title . '<br />';
+            echo get_string('challenge', 'quest') . ': ' . $challenge->title . '<br />';
             quest_print_feedback($course, $challenge, $user);
         }
     } else {
@@ -630,7 +630,7 @@ function quest_user_complete($course, $user, $mod, $quest) {
 
                     echo '<tr>';
 
-                    echo get_string('submission', 'quest') . ': ' . $challenge->title . '<br />' . '</td>';
+                    echo get_string('challenge', 'quest') . ': ' . $challenge->title . '<br />' . '</td>';
 
                     echo '</tr>';
 

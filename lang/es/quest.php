@@ -1040,7 +1040,6 @@ $string['studentgrades'] = '{$a} Calificaciones';
 $string['studentsubmissions'] = '{$a} Envíos';
 $string['studentsubmissionsforassessment'] = '{$a} Envíos de los estudiantes para valoración';
 $string['subject'] = 'Desafío: ';
-$string['challenge'] = 'Desafío';
 $string['submissionend'] = 'Fecha de Cierre del Desafío';
 $string['submissionend_help'] = '<P align="justify">Permite establecer la fecha en la que se cerrará un desafío. A partir de esta fecha no será posible enviar más respuestas al desafío. Sin embargo, los profesores sí podrán seguir evaluando al autor del desafío, tanto por la pregunta planteada como por la labor desarrollada como evaluador. Asimismo, los autores de los desafíos podrán continuar evaluando las respuestas enviadas por otros alumnos.</P>
 <P align="justify">Una vez se cierre el desafío, todos los participantes podrán ver las respuestas enviadas por el resto, así como las evaluaciones y puntuaciones obtenidas. </P>

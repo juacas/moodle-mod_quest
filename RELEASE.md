@@ -1,45 +1,70 @@
-# QUESTOURnament v2.0.0 release notes
+# QUESTOURnament v2.1.0 release notes
+
+Release date: 2 November 2026.
 
 ## Requirements
 
-- Moodle 4.5 or later (`$plugin->requires = 2024100700`). Use a PHP version
-  supported by the Moodle installation.
-- Install the activity in Moodle's `mod/quest` directory. On Moodle 5.x this
-  may be under `public/mod/quest`.
-- Back up the database, files and existing Quest activity data before upgrading.
+- Moodle 4.5 or later (`$plugin->requires = 2024100700`).
+- A PHP version supported by the selected Moodle release.
+- Install the activity in `mod/quest`. On Moodle 5.x this may be located below
+  Moodle's `public` directory.
+- Back up the database, Moodle data directory and existing Quest activities
+  before upgrading.
 
-## Highlights
+`local_reschedule` is optional. QUESTOURnament remains fully operational when
+that plugin is not installed.
 
-- Compose one challenge from several ordered question-bank questions. The
-  composer provides an inline question preview, drag-to-reorder interaction,
-  per-question maximum marks and question creation or selection.
-- Combine automatically graded questions with essay or other manually graded
-  questions. Automatic marks contribute proportionally to the result; manual
-  questions use the challenge rubric.
-- Schedule challenges with an interactive timeline and editable dates.
-- Retain previous question attempts when a new submission is authorised.
-- Include linked question-bank questions and relevant question data in Moodle
-  backup and restore workflows.
-- Updated challenge, answer and ranking interfaces, plus English and Spanish
-  documentation and automated test coverage.
+## Highlights since v2.0.0
 
-## Installation and upgrade
+- Native optional integration with Activity Rescheduler. Quest activities and
+  their challenges can be edited in the course timeline while Quest's date,
+  answer and calendar-event consistency rules remain in force.
+- The **Schedule challenges** action opens Rescheduler's activity-scoped view
+  when it is available and falls back to Quest's own scheduler otherwise.
+- Challenge start and end fields use a modern date-and-time control while
+  preserving Moodle's original selector as the submitted data source and
+  retaining user-timezone behaviour.
+- Quest is presented as an assessment activity with collaboration as a
+  secondary purpose in Moodle versions that support activity chooser purposes.
+  Its branded icon retains its original colours and the chooser includes a
+  documentation link.
+- Challenge and answer forms now use Moodle's PSR-4 class autoloader. Legacy
+  challenge code was renamed and reorganised to distinguish challenges from
+  answer submissions more clearly.
+- Event handling now uses the relevant challenge and answer events together
+  with Moodle's core course-module update event. The redundant custom
+  `quest_updated` event was removed.
+- PHPUnit tests were updated for PHPUnit 11 and the supported Moodle versions.
 
-Obtain the **matching v2.0.0 package** from [Moodle Marketplace](https://marketplace.moodle.com/plugins/mod_quest)
-or [GitHub Releases](https://github.com/juacas/moodle-mod_quest/releases)
-once published. Alternatively, deploy the repository under `mod/quest` and
-update it with Git. Check `version.php` in the package before upgrading: an
-older package may not contain the features described above.
+## Upgrade notes
 
-After placing the files, visit **Site administration → Notifications** or run
-Moodle's `admin/cli/upgrade.php` to apply database changes. Purge caches and
-test a plain challenge, a fully automatic challenge, a mixed challenge and a
-backup/restore in a test course before using the release in production.
+This release does not add a required dependency or a new database table. After
+deploying the files, visit **Site administration → Notifications** or run:
 
-## License
+```bash
+php admin/cli/upgrade.php
+php admin/cli/purge_caches.php
+```
 
-GNU General Public License, version 3 or later (GPL-3.0-or-later), as declared
-in the plugin's PHP file headers. The software is supplied without warranty.
+Sites that install `local_reschedule` gain the integration automatically after
+the Moodle cache is rebuilt. Without it, the existing Quest scheduling page is
+used.
 
-See [CHANGELOG.md](CHANGELOG.md) for the change history and
-[website/install.html](website/install.html) for the three installation routes.
+Before production rollout, verify challenge creation, date editing, answer
+grading and backup/restore in a test course.
+
+## Release verification
+
+The release candidate was checked with PHP 8.3 against Moodle 4.5 and Moodle
+5.3. The Moodle Plugin CI lint, CodeSniffer, plugin validation and upgrade
+savepoint checks pass. The PHPUnit suite passes on both Moodle branches with
+75 tests and 340 assertions, using `--fail-on-warning`. The AMD build and ESLint
+checks also pass.
+
+## Licence
+
+QUESTOURnament is distributed under the GNU General Public License, version 3
+or later (`GPL-3.0-or-later`), without warranty.
+
+See [CHANGELOG.md](CHANGELOG.md) for the detailed change summary and
+[README.md](README.md) for usage and technical documentation.

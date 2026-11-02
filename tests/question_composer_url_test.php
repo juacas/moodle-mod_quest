@@ -26,6 +26,7 @@ use advanced_testcase;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('quest_question_composer_url')]
 final class question_composer_url_test extends advanced_testcase {
     /**
      * An empty composer URL can be built before any question is selected.

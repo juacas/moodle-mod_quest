@@ -28,7 +28,7 @@ namespace mod_quest\local\reschedule;
  * @author     Juan Pablo de Castro <juan.pablo.de.castro@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class adapter extends \local_reschedule\adapter\base_adapter {
+class adapter extends \local_reschedule\adapter\base_adapter implements \local_reschedule\adapter\adapter_interface {
     /** @var float Default hours for a challenge without an answer-time estimate. */
     public const DEFAULT_CHALLENGE_EFFORT = 1.0;
 
@@ -115,14 +115,18 @@ class adapter extends \local_reschedule\adapter\base_adapter {
             $challenge->answerstartvalidationmessage = $challenge->firstanswerdate > 0 ?
                 get_string('scheduleerroranswerbeforestart', 'quest', (object)[
                     'title' => format_string($challenge->title),
-                    'date' => userdate($challenge->firstanswerdate,
-                        get_string('strftimedatetimeshort', 'langconfig')),
+                    'date' => userdate(
+                        $challenge->firstanswerdate,
+                        get_string('strftimedatetimeshort', 'langconfig')
+                    ),
                 ]) : '';
             $challenge->answerendvalidationmessage = $challenge->lastanswerdate > 0 ?
                 get_string('scheduleerroranswerafterend', 'quest', (object)[
                     'title' => format_string($challenge->title),
-                    'date' => userdate($challenge->lastanswerdate,
-                        get_string('strftimedatetimeshort', 'langconfig')),
+                    'date' => userdate(
+                        $challenge->lastanswerdate,
+                        get_string('strftimedatetimeshort', 'langconfig')
+                    ),
                 ]) : '';
             $challenge->absolutelimits = self::get_answer_absolute_limits($challenge);
         }
@@ -267,7 +271,7 @@ class adapter extends \local_reschedule\adapter\base_adapter {
     #[\Override]
     public function save_batch(array $tasks): void {
         $challenges = [];
-        $flush = function() use (&$challenges): void {
+        $flush = function () use (&$challenges): void {
             if ($challenges) {
                 $this->save_challenge_schedules($challenges);
                 $challenges = [];

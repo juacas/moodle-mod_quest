@@ -4,6 +4,40 @@ Notable changes to QUESTOURnament (`mod_quest`). The version advertised by the
 current source is defined in `version.php`; a changelog entry is not evidence
 that its ZIP has already been published.
 
+## v2.1.0 — 2026-11-02
+
+### Added
+
+- Optional `local_reschedule` adapter for editing Quest activities and their
+  challenges in the course timeline without bypassing Quest consistency rules.
+- Activity-scoped Rescheduler link for **Schedule challenges**, with automatic
+  fallback to Quest's internal scheduler.
+- Progressive `datetime-local` enhancement for challenge start and end fields.
+- Assessment and collaboration activity-chooser purposes, branded icon support
+  and a link to the QUESTOURnament documentation website.
+
+### Changed
+
+- Challenge and answer forms moved from legacy root/`locallib.php` classes to
+  `mod_quest\form` classes loaded by Moodle's PSR-4 autoloader.
+- Internal functions, parameters and variables now consistently use
+  “challenge” where older code used the ambiguous “submission” terminology.
+- Event data and descriptions were normalised; course-module changes rely on
+  Moodle's core event instead of the redundant custom `quest_updated` event.
+- PHPUnit coverage was adapted to PHPUnit 11 without deprecated annotations.
+- The activity settings menu no longer adds a redundant link to the course-wide
+  Quest index page.
+
+### Fixed
+
+- Challenge date editing now presents one accessible modern control while
+  retaining and synchronising Moodle's underlying date selector.
+- `quest_pluginfile()` now returns consistently on every code path.
+- Missing challenge language-string references introduced by the terminology
+  cleanup were corrected.
+- Compatibility and code-style issues affecting Moodle 4.5 and Moodle 5.x were
+  addressed.
+
 ## v2.0.0 — 2026-10-16 (release notes prepared)
 
 ### Added

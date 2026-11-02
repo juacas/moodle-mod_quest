@@ -27,6 +27,7 @@ use mod_quest\question\question_reference_service;
  * @copyright  2026 onwards EDUVALab, University of Valladolid
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(question_reference_service::class)]
 final class question_reference_service_test extends advanced_testcase {
     /**
      * Replacing a challenge link updates the existing row instead of creating
