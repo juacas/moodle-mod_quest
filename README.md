@@ -272,6 +272,8 @@ QUESTOURnament integrates seamlessly with the Moodle Question Bank (`core_questi
 4. **Backup and restore**:
    - Challenge slots, question references, marks, order, and student attempt usages are included in Moodle backups.
 
+When the Question Bank composer needs question capabilities, QUESTOURnament may create local `Allow` overrides for adding and managing a user's own questions in that activity's module context. These are temporary in scope and apply only to the Question Bank associated with that Quest activity: they do not grant access at course or site level, and they do not expire automatically. Existing local overrides (including `Allow`, `Prevent`, and `Prohibit`) are left untouched. The separate `mod/quest:addchallenge` capability is never granted by this mechanism. Remove a locally created override from the activity's permissions if it is no longer needed.
+
 ---
 
 ### Leaderboards & Official Tournament Rankings

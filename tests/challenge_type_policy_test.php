@@ -89,6 +89,23 @@ final class challenge_type_policy_test extends advanced_testcase {
     }
 
     /**
+     * When both types are enabled globally, teachers use that setting and students use the activity choice.
+     */
+    public function test_teacher_uses_site_setting_and_student_uses_activity_setting(): void {
+        $this->resetAfterTest();
+        set_config('allowedchallengetypes', challenge_type_policy::BOTH, 'quest');
+        $simpleonly = (object)['allowqbankquestions' => challenge_type_policy::SIMPLE_ONLY];
+
+        $this->assertTrue(challenge_type_policy::allows_question_bank($simpleonly, true));
+        $this->assertFalse(challenge_type_policy::allows_question_bank($simpleonly, false));
+        $this->assertSame([
+            challenge_type_policy::SIMPLE_ONLY,
+            challenge_type_policy::QUIZ_ONLY,
+            challenge_type_policy::BOTH,
+        ], array_keys(challenge_type_policy::mode_options(true)));
+    }
+
+    /**
      * A more restrictive activity value does not grant access denied by the site.
      */
     public function test_conflicting_restrictions_do_not_grant_access(): void {

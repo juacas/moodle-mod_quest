@@ -43,9 +43,9 @@ $string['afterdeadline'] = 'Después de fecha límite: {$a}';
 $string['agreetothisassessment'] = 'Aceptar esta valoración';
 $string['allgradeshaveamaximumof'] = 'Todas las calificaciones tienen un máximo de: {$a}';
 $string['allowedchallengetypes'] = 'Tipos de desafíos permitidos';
-$string['allowedchallengetypes_desc'] = 'Restricción general para profesores y estudiantes. Cada actividad puede restringir más los tipos que crean los estudiantes. Si una actividad existente solo permite el tipo opuesto, sus estudiantes no podrán crear desafíos hasta que se actualice ese ajuste.';
+$string['allowedchallengetypes_desc'] = 'Controla qué tipos de desafíos puede crear el profesorado y limita las opciones disponibles para el alumnado en cada actividad. Si se permiten ambos tipos, el profesorado podrá elegir cualquiera de las tres opciones para el alumnado en los ajustes de la actividad.';
 $string['allowqbankquestions'] = 'Tipos de desafíos que pueden crear los estudiantes';
-$string['allowqbankquestions_help'] = 'Seleccione los tipos de desafíos que pueden crear los estudiantes en esta actividad. La restricción general del sitio también afecta a los profesores. Los valores anteriores siguen siendo compatibles: desactivado equivale a «solo desafíos simples» y activado a «ambos tipos».';
+$string['allowqbankquestions_help'] = 'Selecciona qué tipos de desafíos puede crear el alumnado en esta actividad. La configuración general del sitio limita las opciones disponibles. El profesorado se rige por la configuración general, no por este ajuste de actividad. Se mantienen los valores anteriores: desactivado equivale a «Solo desafíos básicos» y activado a «Desafíos básicos y de Question bank».';
 $string['allowresubmission'] = 'Permitir enviar de nuevo';
 $string['allowresubmit'] = 'Permitir reenvíos';
 $string['allowteams'] = 'Permitir Equipos';
@@ -202,9 +202,9 @@ $string['challengestart_help'] = '<P align="justify">Permite establecer la fecha
 <P align="justify">Si el desafío lo crea un alumno se toma como fecha de comienzo la fecha de creación del desafío, pudiendo los profesores modificar este valor al aprobar el desafío o al realizar alguna modificación sobre él.</P>
 <P align="justify">A partir de esta fecha los alumnos podrán visualizar el desafío y enviar sus respuestas. </P>
 <P align="justify">Este fecha deberá ser anterior a la Fecha de Cierre del Desafío </P>';
-$string['challengetype_both'] = 'Simples y cuestionarios';
-$string['challengetype_quiz'] = 'Solo cuestionarios';
-$string['challengetype_simple'] = 'Solo simples';
+$string['challengetype_both'] = 'Desafíos básicos y de Question bank';
+$string['challengetype_quiz'] = 'Solo desafíos de Question bank';
+$string['challengetype_simple'] = 'Solo desafíos básicos (texto abierto)';
 $string['change'] = 'Guardar Cambios';
 $string['changecalification'] = 'Cambiar Calificación';
 $string['changemanualcalification'] = 'Cambiar Calificación Manualmente';
@@ -703,9 +703,9 @@ $string['numberofassessmentelementsautor'] = 'Número de Elementos de Evaluació
 $string['numberofassessments'] = 'Número de valoraciones';
 $string['numberofassessmentsofstudentsubmissions'] = 'Número de Valoraciones enviadas por los estudiantes';
 $string['numberofassessmentsofteachersexamples'] = 'Número de Valoraciones de Ejemplo dadas por el Profesor';
-$string['numberofattachments'] = 'Número de Anexos esperados en los Envíos';
-$string['numberofattachments_help'] = '<p align="justify">El número introducido aquí determina cuántas cajas para la de subida de archivos se mostrarán cuando un estudiante o profesor realice un envío. Este número puede oscilar entre 0 y 5. Normalmente este número será 0 ó 1, pero en ciertos casos puede ser necesario permitir el envío de más de un anexo. Si el valor especificado es 0, que es además el valor por defecto para este parámetro, esto indica que no se permite adjuntar anexos en los envíos.</p>
-<p align="justify">Si, por ejemplo, el número especificado es 3, y sólo se adjuntan 2 archivos al envío, dicho envío se realiza sin que se muestre ningún mensaje de advertencia. Es decir que, cuando se envía un trabajo se puede adjuntar cualquier número de archivos hasta el máximo permitido.</p>';
+$string['numberofattachments'] = 'Número de adjuntos esperados en los desafíos';
+$string['numberofattachments_help'] = '<p align="justify">Este parámetro determina cuántos campos para subir archivos se mostrarán al crear o editar un desafío. El valor debe estar entre 0 y 5. Normalmente será 0 o 1, aunque algunos desafíos pueden necesitar más de un adjunto. El valor 0 (por defecto) indica que no se permiten adjuntos en los desafíos.</p>
+<p align="justify">Por ejemplo, si el número especificado es 3 y solo se adjuntan 2 archivos a un desafío, se podrá guardar sin mostrar ningún aviso. Se permite adjuntar cualquier cantidad de archivos hasta alcanzar el máximo configurado.</p>';
 $string['numberofnegativeresponses'] = 'Número de respuestas incorrectas';
 $string['of'] = 'de';
 $string['oldcalification'] = 'Calificación Actual';

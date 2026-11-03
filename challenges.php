@@ -44,6 +44,7 @@ require_login($course->id, false, $cm);
 quest_check_visibility($course, $cm);
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$isteacher = \mod_quest\challenge_type_policy::is_teacher($context);
 $canpreview = has_capability('mod/quest:preview', $context);
 $caneditchallenges = has_capability('mod/quest:editchallengeall', $context);
 $canapprove = has_capability('mod/quest:approvechallenge', $context);
@@ -201,7 +202,7 @@ if ($action == 'confirmdelete') {
     if (!$canaddchallenge) {
         throw new \moodle_exception('nocapabilityaddchallenge', 'quest');
     }
-    $canaddquestionbank = \mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager);
+    $canaddquestionbank = \mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher);
     if (!$canaddquestionbank) {
         throw new \moodle_exception('questionbankdisabled', 'quest');
     }
@@ -334,7 +335,7 @@ if ($action == 'confirmdelete') {
     // Create a challenge linked to an already-existing question bank question.
     require_sesskey();
     require_capability('mod/quest:addchallenge', $context);
-    if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+    if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
         throw new \moodle_exception('questionbankdisabled', 'quest');
     }
     $questionid = required_param('questionid', PARAM_INT);
@@ -398,7 +399,7 @@ if ($action == 'confirmdelete') {
     if (!$canaddchallenge) {
         throw new \moodle_exception('nocapabilityaddchallenge', 'quest');
     }
-    if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+    if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
         throw new \moodle_exception('questionbankdisabled', 'quest');
     }
     $lastchanged = optional_param('lastchanged', 0, PARAM_INT);
@@ -480,10 +481,10 @@ if ($action == 'confirmdelete') {
         throw new \moodle_exception('noquestionsselected', 'quest');
     }
     if ($hascomposition) {
-        if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+        if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
             throw new \moodle_exception('questionbankdisabled', 'quest');
         }
-    } else if (!\mod_quest\challenge_type_policy::allows_simple($quest, $ismanager)) {
+    } else if (!\mod_quest\challenge_type_policy::allows_simple($quest, $isteacher)) {
         throw new \moodle_exception('simplechallengedisabled', 'quest');
     }
     $newchallenge = new stdClass();
@@ -568,6 +569,11 @@ if ($action == 'confirmdelete') {
                     'context' => $context];
     $attachmentoptions = ['subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes];
     $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$challenge->id);
+    if ($linkedquestion && !\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
+        throw new \moodle_exception('questionbankdisabled', 'quest');
+    } else if (!$linkedquestion && !\mod_quest\challenge_type_policy::allows_simple($quest, $isteacher)) {
+        throw new \moodle_exception('simplechallengedisabled', 'quest');
+    }
     $composerquestions = [];
     $existingquestions = [];
     if ($linkedquestion) {
@@ -588,7 +594,7 @@ if ($action == 'confirmdelete') {
         }
         if ($requestedquestionids) {
             require_capability('mod/quest:addchallenge', $context);
-            if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+            if (!\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
                 throw new \moodle_exception('questionbankdisabled', 'quest');
             }
         }
@@ -676,8 +682,8 @@ if ($action == 'confirmdelete') {
         // Show a banner if this challenge is already linked to a question bank question.
         // Visible to: teachers (editchallengeall) and the author while in approval_pending state.
         if ($linkedquestion && $composerquestions) {
-            $canaddqbankquestions = (has_capability('mod/quest:addchallenge', $context) || $ismanager) &&
-                \mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager);
+            $canaddqbankquestions = (has_capability('mod/quest:addchallenge', $context) || $isteacher) &&
+                \mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher);
             if ($canaddqbankquestions) {
                 $questionids = array_map(static fn($question) => (int)$question->id, $composerquestions);
                 $questionbankbutton = html_writer::tag('button', get_string('addfromquestionbank', 'quest'), [
@@ -986,6 +992,11 @@ if ($action == 'confirmdelete') {
         throw new \moodle_exception('nopermissions', 'error', '', "Approve challenge: Not enought permissions to take this action");
     }
     $linkedquestion = \mod_quest\question\question_reference_service::get_question_for_challenge((int)$challenge->id);
+    if ($linkedquestion && !\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
+        throw new \moodle_exception('questionbankdisabled', 'quest');
+    } else if (!$linkedquestion && !\mod_quest\challenge_type_policy::allows_simple($quest, $isteacher)) {
+        throw new \moodle_exception('simplechallengedisabled', 'quest');
+    }
     $descriptionoptions = ['trusttext' => true, 'subdirs' => false, 'maxfiles' => -1, 'maxbytes' => $course->maxbytes,
                     'context' => $context];
     $attachmentoptions = ['subdirs' => false, 'maxfiles' => $quest->nattachments, 'maxbytes' => $quest->maxbytes];
