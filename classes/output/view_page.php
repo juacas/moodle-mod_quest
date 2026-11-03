@@ -227,12 +227,12 @@ class view_page implements renderable, templatable {
             'canaddchallenge' => $this->canaddchallenge &&
                 \mod_quest\challenge_type_policy::allows_simple(
                     $this->quest,
-                    !empty($this->summarydata['ismanager'])
+                    !empty($this->summarydata['isteacher'])
                 ),
             'canaddqchallenge' => $this->canaddchallenge &&
                 \mod_quest\challenge_type_policy::allows_question_bank(
                     $this->quest,
-                    !empty($this->summarydata['ismanager'])
+                    !empty($this->summarydata['isteacher'])
                 ),
             'addchallengeurl' => (new moodle_url('/mod/quest/challenges.php', [
                 'id' => $this->cm->id,

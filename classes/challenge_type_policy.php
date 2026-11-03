@@ -37,6 +37,28 @@ final class challenge_type_policy {
     public const QUIZ_ONLY = 2;
 
     /**
+     * Whether the current user has a teacher-level capability in this activity.
+     *
+     * @param \context_module $context
+     * @return bool
+     */
+    public static function is_teacher(\context_module $context): bool {
+        $teachercapabilities = [
+            'mod/quest:manage',
+            'mod/quest:preview',
+            'mod/quest:grade',
+            'mod/quest:approvechallenge',
+            'mod/quest:editchallengeall',
+        ];
+        foreach ($teachercapabilities as $capability) {
+            if (has_capability($capability, $context)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return the site restriction, defaulting to the previous behaviour.
      *
      * @return int
@@ -63,24 +85,24 @@ final class challenge_type_policy {
      * Whether an actor may create a basic challenge.
      *
      * @param \stdClass $quest Activity record.
-     * @param bool $ismanager Whether the actor manages the activity.
+     * @param bool $isteacher Whether the actor has teacher-level activity permissions.
      * @return bool
      */
-    public static function allows_simple(\stdClass $quest, bool $ismanager): bool {
+    public static function allows_simple(\stdClass $quest, bool $isteacher): bool {
         return self::global_mode() !== self::QUIZ_ONLY &&
-            ($ismanager || self::student_mode($quest) !== self::QUIZ_ONLY);
+            ($isteacher || self::student_mode($quest) !== self::QUIZ_ONLY);
     }
 
     /**
      * Whether an actor may create a question-bank challenge.
      *
      * @param \stdClass $quest Activity record.
-     * @param bool $ismanager Whether the actor manages the activity.
+     * @param bool $isteacher Whether the actor has teacher-level activity permissions.
      * @return bool
      */
-    public static function allows_question_bank(\stdClass $quest, bool $ismanager): bool {
+    public static function allows_question_bank(\stdClass $quest, bool $isteacher): bool {
         return self::global_mode() !== self::SIMPLE_ONLY &&
-            ($ismanager || self::student_mode($quest) !== self::SIMPLE_ONLY);
+            ($isteacher || self::student_mode($quest) !== self::SIMPLE_ONLY);
     }
 
     /**

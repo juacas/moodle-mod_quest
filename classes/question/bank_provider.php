@@ -289,20 +289,16 @@ class bank_provider {
     public static function ensure_student_question_capabilities(context_module $context): void {
         global $DB;
         $caps = [
-            'mod/quest:addchallenge',
             'moodle/question:add',
             'moodle/question:editmine',
             'moodle/question:viewmine',
             'moodle/question:usemine',
         ];
 
-        // Ensure student archetype roles have local permission in this context_module.
-        $studentroles = get_archetype_roles('student');
-        foreach ($studentroles as $role) {
-            foreach ($caps as $cap) {
-                assign_capability($cap, CAP_ALLOW, $role->id, $context->id, true);
-            }
-        }
+        // The overrides are local to this Quest activity; never change course or system roles.
+        $roleids = array_map(static function ($role) {
+            return (int)$role->id;
+        }, get_archetype_roles('student'));
 
         // Also ensure any roles held by the current user in course/module context have these capabilities.
         $userroles = get_user_roles($context, 0, false);
@@ -311,11 +307,29 @@ class bank_provider {
             $userroles = get_user_roles($coursecontext, 0, false);
         }
         foreach ($userroles as $ra) {
+            $roleids[] = (int)$ra->roleid;
+        }
+
+        $changed = false;
+        foreach (array_unique($roleids) as $roleid) {
             foreach ($caps as $cap) {
-                assign_capability($cap, CAP_ALLOW, $ra->roleid, $context->id, true);
+                $existing = $DB->get_record('role_capabilities', [
+                    'contextid' => $context->id,
+                    'roleid' => $roleid,
+                    'capability' => $cap,
+                ], 'id, permission');
+                if ($existing) {
+                    // Keep existing Allow, Prevent, or Prohibit overrides unchanged.
+                    continue;
+                }
+
+                assign_capability($cap, CAP_ALLOW, $roleid, $context->id);
+                $changed = true;
             }
         }
 
-        $context->mark_dirty();
+        if ($changed) {
+            $context->mark_dirty();
+        }
     }
 }

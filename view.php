@@ -53,6 +53,7 @@ require_login($course->id, false, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$isteacher = \mod_quest\challenge_type_policy::is_teacher($context);
 require_capability('mod/quest:view', $context);
 
 if ($cm->visible == 0 && !has_capability('moodle/course:viewhiddenactivities', $context)) {
@@ -296,6 +297,7 @@ if ($action == 'notavailable') {
     // 1. Gather Summary Data (Resumen de datos en la parte inicial de la página).
     $summarydata = [
         'ismanager' => $ismanager,
+        'isteacher' => $isteacher,
         'challengegradinghtml' => '',
         'answergradinghtml' => '',
         'simplecalificationhtml' => '',
@@ -619,7 +621,7 @@ if ($action == 'notavailable') {
     $legendhtml = !empty($table->data) ? get_string('legend', 'quest', $grafic) : '';
 
     // 3. Get challenges for cards.
-    if (\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+    if (\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
         \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
     }
     $challenges = \mod_quest\service\tournament_manager::get_challenges($quest->id, $USER->id);

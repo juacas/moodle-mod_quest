@@ -84,13 +84,6 @@ class mod_quest_mod_form extends moodleform_mod {
             ['subdirs' => 0, 'maxbytes' => $COURSE->maxbytes]
         );
         $mform->addHelpButton('introattachments', 'introattachments', 'quest');
-        $arraynattachments = [0, 1, 2, 3, 4, 5];
-        $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $arraynattachments);
-        $mform->addHelpButton('nattachments', "numberofattachments", "quest");
-
-        $mform->addElement('selectyesno', 'validateassessment', get_string('validateassessment', 'quest'));
-        $mform->addHelpButton('validateassessment', "validateassessment", "quest");
-
         $mform->addElement('selectyesno', 'usepassword', get_string('usepassword', 'quest'));
         $mform->addHelpButton('usepassword', "usepassword", "quest");
 
@@ -127,18 +120,10 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('select', 'ncomponents', get_string('ncomponents', 'quest'), $arrayncomponents);
         $mform->addHelpButton('ncomponents', 'ncomponents', 'quest');
 
-        $mform->addElement('header', 'privacy', get_string('showresultssection', 'quest'));
-        $mform->addElement('selectyesno', 'showclasifindividual', get_string('showclasifindividual', 'quest'));
-        $mform->addHelpButton('showclasifindividual', "showclasifindividual", "quest");
-        $mform->setDefault('showclasifindividual', 1);
-
-        $mform->addElement('selectyesno', 'showauthoringdetails', get_string('showauthoringdetails', 'quest'));
-        $mform->addHelpButton('showauthoringdetails', "showauthoringdetails", "quest");
-
-        $mform->addElement('selectyesno', 'permitviewautors', get_string('permitviewautors', 'quest'));
-        $mform->addHelpButton('permitviewautors', "permitviewautors", "quest");
-
         $mform->addElement('header', 'assessmentcharacteristics', get_string('assessmentcharacteristics', 'quest'));
+        $mform->setExpanded('assessmentcharacteristics', true);
+        $mform->addElement('selectyesno', 'validateassessment', get_string('validateassessment', 'quest'));
+        $mform->addHelpButton('validateassessment', "validateassessment", "quest");
 
         for ($i = 1; $i <= 20; $i++) {
             $arraynelements[$i] = $i;
@@ -163,6 +148,10 @@ class mod_quest_mod_form extends moodleform_mod {
             ['0' => get_string('nograde', 'quest'), '1' => get_string('accumulative', 'quest')]
         );
         $mform->addElement('header', 'questionbanksection', get_string('challengeconstruction', 'quest'));
+        $mform->setExpanded('questionbanksection', true);
+        $arraynattachments = [0, 1, 2, 3, 4, 5];
+        $mform->addElement('select', 'nattachments', get_string('numberofattachments', 'quest'), $arraynattachments);
+        $mform->addHelpButton('nattachments', "numberofattachments", "quest");
         $studentoptions = \mod_quest\challenge_type_policy::mode_options(true);
         $mform->addElement('select', 'allowqbankquestions', get_string('allowqbankquestions', 'quest'), $studentoptions);
         $mform->addHelpButton('allowqbankquestions', 'allowqbankquestions', 'quest');
@@ -179,6 +168,7 @@ class mod_quest_mod_form extends moodleform_mod {
         $questypegrades = [QUEST_TYPE_GRADE_INDIVIDUAL => get_string('typeindividual', 'quest'),
                         QUEST_TYPE_GRADE_TEAM => get_string('typeteam', 'quest')];
         $mform->addElement('header', 'gradingcharacteristics', get_string('gradingcharacteristics', 'quest'));
+        $mform->setExpanded('gradingcharacteristics', true);
         $mform->addElement('select', 'typegrade', get_string('typegrade', 'quest'), $questypegrades);
         $mform->addHelpButton('typegrade', "typegrade", "quest");
 
@@ -240,6 +230,18 @@ class mod_quest_mod_form extends moodleform_mod {
         $mform->addElement('select', 'teamporcent', get_string('teamporcent', 'quest'), $arrayteampercent);
         $mform->addHelpButton('teamporcent', "teamporcent", "quest");
         $mform->setDefault('teamporcent', 25);
+
+        $mform->addElement('header', 'privacy', get_string('showresultssection', 'quest'));
+        $mform->addElement('selectyesno', 'showclasifindividual', get_string('showclasifindividual', 'quest'));
+        $mform->addHelpButton('showclasifindividual', "showclasifindividual", "quest");
+        $mform->setDefault('showclasifindividual', 1);
+
+        $mform->addElement('selectyesno', 'showauthoringdetails', get_string('showauthoringdetails', 'quest'));
+        $mform->addHelpButton('showauthoringdetails', "showauthoringdetails", "quest");
+
+        $mform->addElement('selectyesno', 'permitviewautors', get_string('permitviewautors', 'quest'));
+        $mform->addHelpButton('permitviewautors', "permitviewautors", "quest");
+
         $mform->addElement('hidden', 'gradepass', 50);
         $mform->setType('gradepass', PARAM_INT);
 

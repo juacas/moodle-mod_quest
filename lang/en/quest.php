@@ -40,9 +40,9 @@ $string['addsubmission'] = 'Add challenge';
 $string['adjustchallenge'] = 'Edit challenge';
 $string['adminlogs'] = 'Admin logs';
 $string['allowedchallengetypes'] = 'Allowed challenge types';
-$string['allowedchallengetypes_desc'] = 'Site-wide restriction for teachers and students. Activity settings can further restrict student creation. If an existing activity allows only the opposite type, its students cannot create challenges until that activity setting is updated.';
+$string['allowedchallengetypes_desc'] = 'Controls which challenge types teachers may create and the maximum types available in each activity setting for students. When both types are allowed here, teachers can choose any of the three student options in the activity settings.';
 $string['allowqbankquestions'] = 'Challenge types students may create';
-$string['allowqbankquestions_help'] = 'Choose the challenge types students may create in this activity. The site-wide setting also applies, including to teachers. Existing values of this setting remain compatible: disabled means basic challenges only, enabled means both types.';
+$string['allowqbankquestions_help'] = 'Choose which challenge types students may create in this activity. The site-wide setting limits the available choices. Teachers are controlled by the site-wide setting, not this activity setting. Existing values remain compatible: disabled means basic challenges only, enabled means both types.';
 $string['allowresubmission'] = 'Allow to send again';
 $string['allowteams'] = 'Allow workteams';
 $string['allowteams_help'] = '<P align="justify">This parameter forces that each student taking part in this QUESTOURnament belongs to a team. In such a case, when a student access the QUESTOURnament for the first time, he will have to enter the name of the team to which he belongs.</P>
@@ -650,9 +650,9 @@ $string['nsubmissions_help'] = '<strong>Number of Challenges</strong>: number of
 $string['nsubmissionsassessment'] = 'Assessed challenges';
 $string['nsubmissionsassessment_help'] = '<strong>Assessed Challenges</strong>: number of challenges assessed of all the ones proposed by this student in the QUESTOURnament.';
 $string['numbermaxofanswers'] = 'Max number of right answers';
-$string['numberofattachments'] = 'Number of Attachments expected on Submissions';
-$string['numberofattachments_help'] = '<P align="justify">This parameter sets how many text fields will be presented to allow the submission of files when a student or a teacher makes a submission. The value of this parameter must be between 0 and 5. It will usually be 0 or 1, but in certain cases it can be necessary to allow the submission of more than one attachment. If the value specified is 0, that is also the default value for this parameter, this means that it will not be allowed to send any attachment with a submission.</P>
-<P align="justify">If, for example, the number specified is 3, and only 2 files are attached to the submission, that submission is made without showing any warning message. This means that, when a submission is made, it is allowed to attach any number of files up to the maximum specified by this parameter.</P>';
+$string['numberofattachments'] = 'Number of Attachments expected on Challenges';
+$string['numberofattachments_help'] = '<P align="justify">This parameter sets how many file upload fields are shown when a student or teacher creates or edits a challenge. The value must be between 0 and 5. It will usually be 0 or 1, but some challenges may need more than one attachment. A value of 0 (the default) means that attachments are not allowed on challenges.</P>
+<P align="justify">For example, if the number specified is 3 and only 2 files are attached to a challenge, it can still be saved without a warning. Any number of files up to this maximum is allowed.</P>';
 $string['numberofnegativeresponses'] = 'Number of negative responses';
 $string['of'] = 'of';
 $string['oldteam'] = 'Current team';

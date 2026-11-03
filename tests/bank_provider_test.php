@@ -84,4 +84,55 @@ final class bank_provider_test extends advanced_testcase {
 
         $this->assertSame((int)$question->id, (int)$usable->id);
     }
+
+    /**
+     * Temporary bank permissions stay local and do not rewrite existing role overrides.
+     */
+    public function test_student_question_permissions_are_local_and_idempotent(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $quest = $this->getDataGenerator()->create_module('quest', ['course' => $course->id]);
+        $context = \context_module::instance($quest->cmid);
+        $studentroles = get_archetype_roles('student');
+        $studentrole = reset($studentroles);
+        $capability = 'moodle/question:add';
+
+        // Add a local deny and verify the helper leaves deliberate role settings intact.
+        assign_capability('moodle/question:editmine', CAP_PREVENT, $studentrole->id, $context->id);
+        bank_provider::ensure_student_question_capabilities($context);
+
+        $this->assertSame(CAP_PREVENT, (int)$DB->get_field('role_capabilities', 'permission', [
+            'contextid' => $context->id,
+            'roleid' => $studentrole->id,
+            'capability' => 'moodle/question:editmine',
+        ]));
+
+        $localallow = $DB->get_record('role_capabilities', [
+            'contextid' => $context->id,
+            'roleid' => $studentrole->id,
+            'capability' => $capability,
+        ], '*', MUST_EXIST);
+        $this->assertSame(CAP_ALLOW, (int)$localallow->permission);
+
+        // A second call must not rewrite an already granted permission (or produce another log event).
+        $localallow->timemodified = 1;
+        $DB->update_record('role_capabilities', $localallow);
+        bank_provider::ensure_student_question_capabilities($context);
+        $this->assertSame(1, (int)$DB->get_field('role_capabilities', 'timemodified', [
+            'contextid' => $context->id,
+            'roleid' => $studentrole->id,
+            'capability' => $capability,
+        ]));
+
+        // Challenge authoring is a separate capability and is never granted by this helper.
+        $this->assertFalse($DB->record_exists('role_capabilities', [
+            'contextid' => $context->id,
+            'roleid' => $studentrole->id,
+            'capability' => 'mod/quest:addchallenge',
+        ]));
+    }
 }

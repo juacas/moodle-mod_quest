@@ -52,6 +52,7 @@ quest_check_visibility($course, $cm);
 
 $context = context_module::instance($cm->id);
 $ismanager = has_capability('mod/quest:manage', $context);
+$isteacher = \mod_quest\challenge_type_policy::is_teacher($context);
 $canpreview = has_capability('mod/quest:preview', $context);
 // Print the page header.
 $strquests = get_string("modulenameplural", "quest");
@@ -86,7 +87,7 @@ echo $OUTPUT->heading_with_help($title, "myplace", "quest");
 $actionbuttons = [];
 
 if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $timenow) {
-    if (\mod_quest\challenge_type_policy::allows_question_bank($quest, $ismanager)) {
+    if (\mod_quest\challenge_type_policy::allows_question_bank($quest, $isteacher)) {
         \mod_quest\question\bank_provider::ensure_student_question_capabilities($context);
         $addqurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'addqchallenge']);
         $actionbuttons[] = html_writer::link(
@@ -96,7 +97,7 @@ if (has_capability('mod/quest:addchallenge', $context) && $quest->dateend > $tim
         );
     }
 
-    if (\mod_quest\challenge_type_policy::allows_simple($quest, $ismanager)) {
+    if (\mod_quest\challenge_type_policy::allows_simple($quest, $isteacher)) {
         $addurl = new moodle_url('/mod/quest/challenges.php', ['id' => $cm->id, 'action' => 'submitchallenge']);
         $actionbuttons[] = html_writer::link(
             $addurl,
