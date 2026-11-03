@@ -34,6 +34,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->dirroot . '/enrol/locallib.php');
+// Keep plugin includes rooted at the Moodle instance. In a symlinked
+// development checkout, __DIR__ resolves to the source tree and can create a
+// second include path for this library.
 require_once($CFG->dirroot . '/mod/quest/locallib.php');
 
 /**
@@ -223,7 +226,7 @@ function quest_update_instance($quest, $form) {
  */
 function quest_delete_instance($id) {
     global $CFG, $DB;
-    require_once('locallib.php');
+    require_once($CFG->dirroot . '/mod/quest/locallib.php');
     // Given an ID of an instance of this module,
     // ...this function will permanently delete the instance.
     // ...and any data that depends on it..
@@ -299,7 +302,7 @@ function quest_delete_instance($id) {
 function quest_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $CFG, $DB;
 
-    require_once(__DIR__ . '/locallib.php');
+    require_once($CFG->dirroot . '/mod/quest/locallib.php');
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
@@ -420,7 +423,7 @@ function quest_question_pluginfile(
 ) {
     global $CFG, $DB;
 
-    require_once(__DIR__ . '/locallib.php');
+    require_once($CFG->dirroot . '/mod/quest/locallib.php');
     require_once($CFG->libdir . '/questionlib.php');
 
     try {
@@ -770,7 +773,7 @@ function quest_is_recent_activity($course, $isteacher, $timestart) {
     // that has occurred in QUEST activities and print it out.
     // Return true if there was output, or false is there was none.
     global $CFG;
-    require_once('locallib.php');
+    require_once($CFG->dirroot . '/mod/quest/locallib.php');
     $assessmentcontent = false;
     if (!$isteacher) { // ...teachers only need to see submissions.
         if ($logs = quest_get_assessments_logs($course, $timestart)) {
